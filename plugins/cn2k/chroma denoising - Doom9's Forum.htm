@@ -1,0 +1,4548 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="generator" content="vBulletin 3.8.5">
+
+<meta name="keywords" content=" chroma denoising, doom9,video,dvd,conversion,mpeg-2,mpeg-4,divx,xvid,avisynth">
+<meta name="description" content=" chroma denoising Avisynth Usage">
+
+
+<!-- CSS Stylesheet -->
+<style type="text/css" id="vbulletin_css"><!--
+/* Effective stylesheet produced by snapshot save */
+body { background: none repeat scroll 0% 0% rgb(255, 255, 255); color: rgb(0, 0, 0); font: 10pt verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; margin: 5px 10px 10px; }
+a:link, body_alink { color: rgb(183, 90, 62); text-decoration: none; }
+a:visited, body_avisited { color: rgb(183, 90, 62); text-decoration: none; }
+a:hover, a:active, body_ahover { color: rgb(213, 147, 128); text-decoration: none; }
+.page { background: none repeat scroll 0% 0% rgb(255, 255, 255); color: rgb(0, 0, 0); }
+td, th, p, li { font: 10pt verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.tborder { background: none repeat scroll 0% 0% rgb(255, 255, 255); color: rgb(0, 0, 0); border: 1px solid rgb(11, 25, 140); }
+.tcat { background: none repeat scroll 0% 0% rgb(162, 192, 223); color: rgb(0, 0, 0); font: bold 10pt verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.tcat a:link, .tcat_alink { color: rgb(0, 0, 0); text-decoration: none; }
+.tcat a:visited, .tcat_avisited { color: rgb(0, 0, 0); text-decoration: none; }
+.tcat a:hover, .tcat a:active, .tcat_ahover { color: rgb(255, 255, 102); text-decoration: underline; }
+.thead { background: none repeat scroll 0% 0% rgb(153, 153, 153); color: rgb(255, 255, 255); font: bold 11px tahoma,verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.thead a:link, .thead_alink { color: rgb(255, 255, 255); }
+.thead a:visited, .thead_avisited { color: rgb(255, 255, 255); }
+.thead a:hover, .thead a:active, .thead_ahover { color: rgb(255, 255, 0); }
+.tfoot { background: none repeat scroll 0% 0% rgb(162, 192, 223); color: rgb(0, 0, 0); }
+.tfoot a:link, .tfoot_alink { color: rgb(255, 255, 255); }
+.tfoot a:visited, .tfoot_avisited { color: rgb(255, 255, 255); }
+.tfoot a:hover, .tfoot a:active, .tfoot_ahover { color: rgb(255, 255, 102); }
+.alt1, .alt1Active { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(0, 0, 0); }
+.alt2, .alt2Active { background: none repeat scroll 0% 0% rgb(218, 218, 218); color: rgb(0, 0, 0); }
+.inlinemod { background: none repeat scroll 0% 0% rgb(255, 255, 204); color: rgb(0, 0, 0); }
+.wysiwyg { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(0, 0, 0); font: 10pt verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+textarea, .bginput { font: 10pt verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.bginput option, .bginput optgroup { font-size: 10pt; font-family: verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.button { font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+select { font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+option, optgroup { font-size: 11px; font-family: verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.smallfont { font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.time { color: rgb(102, 102, 134); }
+.navbar { font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.highlight { color: rgb(255, 0, 0); font-weight: bold; }
+.fjsel { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(0, 0, 0); }
+.fjdpth0 { background: none repeat scroll 0% 0% rgb(247, 247, 247); color: rgb(0, 0, 0); }
+.panel { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(0, 0, 0); padding: 10px; border: 2px outset; }
+.panelsurround { background: none repeat scroll 0% 0% rgb(218, 218, 218); color: rgb(0, 0, 0); }
+legend { color: rgb(34, 34, 156); font: 11px tahoma,verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.vbmenu_control { background: none repeat scroll 0% 0% rgb(162, 192, 223); color: rgb(255, 255, 255); font: bold 11px tahoma,verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; padding: 3px 6px; white-space: nowrap; }
+.vbmenu_control a:link, .vbmenu_control_alink { color: rgb(255, 255, 255); text-decoration: none; }
+.vbmenu_control a:visited, .vbmenu_control_avisited { color: rgb(255, 255, 255); text-decoration: none; }
+.vbmenu_control a:hover, .vbmenu_control a:active, .vbmenu_control_ahover { color: rgb(255, 255, 255); text-decoration: underline; }
+.vbmenu_popup { background: none repeat scroll 0% 0% rgb(255, 255, 255); color: rgb(0, 0, 0); border: 1px solid rgb(11, 25, 140); }
+.vbmenu_option { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(0, 0, 0); font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; white-space: nowrap; cursor: pointer; }
+.vbmenu_option a:link, .vbmenu_option_alink { color: rgb(183, 90, 62); text-decoration: none; }
+.vbmenu_option a:visited, .vbmenu_option_avisited { color: rgb(183, 90, 62); text-decoration: none; }
+.vbmenu_option a:hover, .vbmenu_option a:active, .vbmenu_option_ahover { color: rgb(213, 147, 128); text-decoration: none; }
+.vbmenu_hilite { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(255, 255, 255); font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; white-space: nowrap; cursor: pointer; }
+.vbmenu_hilite a:link, .vbmenu_hilite_alink { color: rgb(255, 255, 255); text-decoration: none; }
+.vbmenu_hilite a:visited, .vbmenu_hilite_avisited { color: rgb(255, 255, 255); text-decoration: none; }
+.vbmenu_hilite a:hover, .vbmenu_hilite a:active, .vbmenu_hilite_ahover { color: rgb(255, 255, 255); text-decoration: none; }
+.bigusername { font-size: 14pt; }
+td.thead, th.thead, div.thead { padding: 4px; }
+.pagenav a { text-decoration: none; }
+.pagenav td { padding: 2px 4px; }
+.shade, a.shade:link, a.shade:visited { color: rgb(119, 119, 119); text-decoration: none; }
+a.shade:active, a.shade:hover { color: rgb(255, 68, 0); text-decoration: underline; }
+.tcat .shade, .thead .shade, .tfoot .shade { color: rgb(221, 221, 221); }
+.fieldset { margin-bottom: 6px; }
+.fieldset, .fieldset td, .fieldset p, .fieldset li { font-size: 11px; }
+--></style>
+<link rel="stylesheet" type="text/css" href="chroma%20denoising%20-%20Doom9%27s%20Forum_files/vbulletin_important.css">
+
+
+<!-- / CSS Stylesheet -->
+
+<script type="text/javascript" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/connection-min.js"></script>
+<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+<script type="text/javascript" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/vbulletin_global.js"></script>
+<script type="text/javascript" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/vbulletin_menu.js"></script>
+
+
+	<link rel="alternate" type="application/rss+xml" title="Doom9's Forum RSS Feed" href="http://forum.doom9.org/external.php?type=RSS2">
+	
+		<link rel="alternate" type="application/rss+xml" title="Doom9's Forum - Avisynth Usage - RSS Feed" href="http://forum.doom9.org/external.php?type=RSS2&amp;forumids=33">
+	
+
+<script type="text/javascript" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/tapatalkdetect.js"></script><script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+		
+	<title> chroma denoising - Doom9's Forum</title>
+	<script type="text/javascript" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/vbulletin_post_loader.js"></script>
+	<style type="text/css" id="vbulletin_showthread_css"><!--
+/* Effective stylesheet produced by snapshot save */
+#links div { white-space: nowrap; }
+#links img { vertical-align: middle; }
+--></style>
+</head>
+<body onload="">
+<!-- logo -->
+<a name="top"></a>
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr>
+	<td><center><p><b>Welcome to <a href="http://www.doom9.org/">Doom9</a>'s Forum, THE in-place to be for everyone interested in DVD conversion.</b></p>
+<p><b>Before you start posting please read the <a href="http://forum.doom9.org/forum-rules.htm">forum rules</a>. By posting to this forum you agree to abide by the rules.</b></p></center></td>
+
+	<td id="header_right_cell" align="right">
+		 
+	</td>
+</tr>
+</tbody></table>
+<!-- /logo -->
+
+<!-- content table -->
+<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+
+
+
+
+<br>
+
+<!-- breadcrumb, login, pm info -->
+<table class="tborder" align="center" border="0" cellpadding="6" cellspacing="1" width="100%">
+<tbody><tr>
+	<td class="alt1" width="100%">
+		
+			<table border="0" cellpadding="0" cellspacing="0">
+			<tbody><tr valign="bottom">
+				<td><a href="#" onclick=""><img title="Go Back" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/navbits_start.gif" alt="Go Back" border="0"></a></td>
+				<td> </td>
+				<td width="100%"><span class="navbar"><a href="http://forum.doom9.org/index.php" accesskey="1">Doom9's Forum</a></span> 
+	<span class="navbar">&gt; <a href="http://forum.doom9.org/forumdisplay.php?f=67">Capturing and Editing Video</a></span>
+
+
+	<span class="navbar">&gt; <a href="http://forum.doom9.org/forumdisplay.php?f=33">Avisynth Usage</a></span>
+
+</td>
+			</tr>
+			<tr>
+				<td class="navbar" style="font-size:10pt; padding-top:1px" colspan="3"><a href="#"><img title="Reload this Page" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/navbits_finallink_ltr.gif" alt="Reload this Page" border="0"></a> <strong>
+	 chroma denoising
+
+</strong></td>
+			</tr>
+			</tbody></table>
+		
+	</td>
+
+	<td class="alt2" style="padding:0px" nowrap="nowrap">
+		<!-- login form -->
+		<form action="http://forum.doom9.org/login.php?do=login" method="post" onsubmit="">
+		<script type="text/javascript" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/vbulletin_md5.js"></script>
+		<table border="0" cellpadding="0" cellspacing="3">
+		<tbody><tr>
+			<td class="smallfont" style="white-space: nowrap;"><label for="navbar_username">User Name</label></td>
+			<td><input class="bginput" style="font-size: 11px" name="vb_login_username" id="navbar_username" size="10" accesskey="u" tabindex="101" value="User Name" onfocus="" type="text"></td>
+			<td class="smallfont" nowrap="nowrap"><label for="cb_cookieuser_navbar"><input name="cookieuser" value="1" tabindex="103" id="cb_cookieuser_navbar" accesskey="c" type="checkbox">Remember Me?</label></td>
+		</tr>
+		<tr>
+			<td class="smallfont"><label for="navbar_password">Password</label></td>
+			<td><input class="bginput" style="font-size: 11px" name="vb_login_password" id="navbar_password" size="10" tabindex="102" type="password"></td>
+			<td><input class="button" value="Log in" tabindex="104" title="Enter your username and password in the boxes provided to login, or click the 'register' button to create a profile for yourself." accesskey="s" type="submit"></td>
+		</tr>
+		</tbody></table>
+		<input name="s" value="" type="hidden">
+		<input name="securitytoken" value="guest" type="hidden">
+		<input name="do" value="login" type="hidden">
+		<input name="vb_login_md5password" type="hidden">
+		<input name="vb_login_md5password_utf" type="hidden">
+		</form>
+		<!-- / login form -->
+	</td>
+
+</tr>
+</tbody></table>
+<!-- / breadcrumb, login, pm info -->
+
+<!-- nav buttons bar -->
+<div class="tborder" style="padding:1px; border-top-width:0px">
+	<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+	<tbody><tr align="center">
+		
+		
+			<td class="vbmenu_control"><a href="http://forum.doom9.org/register.php" rel="nofollow">Register</a></td>
+		
+		
+		<td class="vbmenu_control"><a rel="help" href="http://forum.doom9.org/faq.php" accesskey="5">FAQ</a></td>
+		
+			
+			
+		
+		<td class="vbmenu_control"><a href="http://forum.doom9.org/calendar.php">Calendar</a></td>
+		
+			
+				
+				<td class="vbmenu_control"><a href="http://forum.doom9.org/search.php?do=getdaily" accesskey="2">Today's Posts</a></td>
+				
+				<td class="vbmenu_control"><a id="navbar_search" href="http://forum.doom9.org/search.php" accesskey="4" rel="nofollow">Search</a> </td>
+			
+			
+		
+		
+		
+		</tr>
+	</tbody></table>
+</div>
+<!-- / nav buttons bar -->
+
+<br>
+
+
+
+
+
+
+<!-- NAVBAR POPUP MENUS -->
+
+	
+	
+	
+	<!-- header quick search form -->
+	<div class="vbmenu_popup" id="navbar_search_menu" style="display:none;margin-top:3px" align="left">
+		<table border="0" cellpadding="4" cellspacing="1">
+		<tbody><tr>
+			<td class="thead">Search Forums</td>
+		</tr>
+		<tr>
+			<td class="vbmenu_option" title="nohilite">
+				<form action="http://forum.doom9.org/search.php?do=process" method="post">
+
+					<input name="do" value="process" type="hidden">
+					<input name="quicksearch" value="1" type="hidden">
+					<input name="childforums" value="1" type="hidden">
+					<input name="exactname" value="1" type="hidden">
+					<input name="s" value="" type="hidden">
+					<input name="securitytoken" value="guest" type="hidden">
+					<div><input class="bginput" name="query" size="25" tabindex="1001" type="text"><input class="button" value="Go" tabindex="1004" type="submit"></div>
+					<div style="margin-top:6px">
+						<label for="rb_nb_sp0"><input name="showposts" value="0" id="rb_nb_sp0" tabindex="1002" checked="checked" type="radio">Show Threads</label>
+						 
+						<label for="rb_nb_sp1"><input name="showposts" value="1" id="rb_nb_sp1" tabindex="1003" type="radio">Show Posts</label>
+					</div>
+				</form>
+			</td>
+		</tr>
+		
+		<tr>
+			<td class="vbmenu_option"><a href="http://forum.doom9.org/tags.php" rel="nofollow">Tag Search</a></td>
+		</tr>
+		
+		<tr>
+			<td class="vbmenu_option"><a href="http://forum.doom9.org/search.php" accesskey="4" rel="nofollow">Advanced Search</a></td>
+		</tr>
+		
+		</tbody></table>
+	</div>
+	<!-- / header quick search form -->
+	
+	
+	
+<!-- / NAVBAR POPUP MENUS -->
+
+<!-- PAGENAV POPUP -->
+	<div class="vbmenu_popup" id="pagenav_menu" style="display: none; position: absolute; z-index: 50;">
+		<table border="0" cellpadding="4" cellspacing="1">
+		<tbody><tr>
+			<td class="thead" nowrap="nowrap">Go to Page...</td>
+		</tr>
+		<tr>
+			<td class="vbmenu_option" title="">
+			<form action="http://forum.doom9.org/index.php" method="get" onsubmit="" id="pagenav_form">
+				<input class="bginput" id="pagenav_itxt" style="font-size:11px" size="4" type="text">
+				<input class="button" id="pagenav_ibtn" value="Go" type="button">
+			</form>
+			</td>
+		</tr>
+		</tbody></table>
+	</div>
+<!-- / PAGENAV POPUP -->
+
+
+
+
+
+
+
+
+
+
+<a name="poststop" id="poststop"></a>
+
+<!-- controls above postbits -->
+<table style="margin-bottom:3px" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr valign="bottom">
+	
+		<td class="smallfont"><a href="http://forum.doom9.org/newreply.php?do=newreply&amp;noquote=1&amp;p=624014" rel="nofollow"><img title="Reply" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/reply.gif" alt="Reply" border="0"></a></td>
+	
+	<td align="right"><div class="pagenav" align="right">
+<table class="tborder" border="0" cellpadding="3" cellspacing="1">
+<tbody><tr>
+	<td class="vbmenu_control" style="font-weight:normal">Page 1 of 2</td>
+	
+	
+		<td class="alt2"><span class="smallfont" title="Showing results 1 to 20 of 27"><strong>1</strong></span></td>
+ <td class="alt1"><a class="smallfont" href="http://forum.doom9.org/showthread.php?t=91381&amp;page=2" title="Show results 21 to 27 of 27">2</a></td>
+	<td class="alt1"><a rel="next" class="smallfont" href="http://forum.doom9.org/showthread.php?t=91381&amp;page=2" title="Next Page - Results 21 to 27 of 27">&gt;</a></td>
+	
+	<td style="cursor: pointer;" id="pagenav.31" class="vbmenu_control" title=""> <img alt="" title="" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/menu_open.gif" border="0"></td>
+</tr>
+</tbody></table>
+</div></td>
+</tr>
+</tbody></table>
+<!-- / controls above postbits -->
+
+<!-- toolbar -->
+<table class="tborder" style="border-bottom-width:0px" align="center" border="0" cellpadding="6" cellspacing="1" width="100%">
+<tbody><tr>
+	<td class="tcat" width="100%">
+		<div class="smallfont">
+		
+		 
+		</div>
+	</td>
+	<td style="cursor: pointer;" class="vbmenu_control" id="threadtools" nowrap="nowrap">
+		<a href="http://forum.doom9.org/showthread.php?t=91381&amp;nojs=1#goto_threadtools">Thread Tools</a>
+		<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script> <img alt="" title="" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/menu_open.gif" border="0">
+	</td>
+	
+	
+	
+	<td style="cursor: pointer;" class="vbmenu_control" id="displaymodes" nowrap="nowrap">
+		<a href="http://forum.doom9.org/showthread.php?t=91381&amp;nojs=1#goto_displaymodes">Display Modes</a>
+		<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script> <img alt="" title="" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/menu_open.gif" border="0">
+	</td>
+	
+
+	
+
+</tr>
+</tbody></table>
+<!-- / toolbar -->
+
+
+
+<!-- end content table -->
+
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+<!-- / end content table -->
+
+
+
+
+
+<div id="posts"><!-- post #624014 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit624014" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post624014" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post624014"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			13th March 2005, 02:31
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=624014&amp;postcount=1" target="new" rel="nofollow" id="postcount624014" name="1"><strong>1</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=624014#post624014" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_624014">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=34242">kassandro</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: May 2003</div>
+				<div>Location: Germany</div>
+				
+				<div>
+					Posts: 502
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_624014" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+			<!-- icon and title -->
+			<div class="smallfont">
+				
+				<strong>chroma denoising</strong>
+			</div>
+			<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+			<!-- / icon and title -->
+		
+
+		<!-- message -->
+		<div id="post_message_624014">
+			
+			Below you find as an attachment (my server is down unfortunately) a tiny plugin for chroma denoising. It is yet for YUY2 only, because analog capturing is the most likely application. <br>
+<br>
+It consists of three filters CNRT, CNRS and CNRF. <br>
+CNRT is very similar to MarcFD's CNR2, but uses a two sided approach in contrast to one sided approach in CNR2. The two sided approach has the advantage, that one doesn't have to care about scene switches and it should improve overall quality as well. The variables and the defaults are the same, but the value of the scene switch variable scdthr is ignored. Since I use different functions for calculating the weights for averaging, these default values may not be optimal. CNRT is purely temporal, whence it can be used for interlaced content.<br>
+<br>
+CNRS is a spatial analog of CNRT and has the same variables and defaults as CNRT plus one mandatory additional clip variable. The default use is the follwoing:<br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 34px;
+		text-align: left;
+		overflow: auto">CNRS(input, blurred_input)</pre>
+</div>Here blurred_input is a blurred version of the clip input, RemoveGrain(input,mode=12) for instance. The same variables as for CNRT or CNR2 can be used to tweak the filter. Being purely spatial CNRS can only be used for progressive input, though if blurred_input is only horizontally blurred, it can be used for interlaced input as well. <br>
+Because CNRT and CNRS are similar to CNR2 and uses lookup tables, it cannot be SSE optimised. The filter CNRF is very different and can be SSE optimised (would have about 1000 fps on my Prescott monster). It embodies more clearly than CNRS the following philosophy: <i>the spatial variation of the chroma is limited by the spatial variation of the luma.</i> The usage of CNRF is gain<br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 34px;
+		text-align: left;
+		overflow: auto">CNRF(input, blurred_input)</pre>
+</div>but now there are no further variables. What does CNRF do? To answer this question y, u, v be the luma and chroma values of a pixel of the clip input and yb, ub, vb be the same pixel in the clip blurred_input. Then CNRF first calculates the luma distance d=|y - yb| and then u is clipped at ub - d, ub + d, i.e. the new value = min(max(u, ub - d), ub + d) and similarily v is clipped at vb - d, vb + d. Of course, it would also be possible to replace d by a (possible fractional) multiple of d.<br>
+<br>
+The current version can be downloaded from <a href="http://home.pages.at/kassandro/Cnr2k.zip" target="_blank">here</a> 
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+		<!-- edit note -->
+			<div class="smallfont">
+				<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+				<em>
+					
+						Last edited by kassandro; 16th March 2005 at <span class="time">23:42</span>.
+					
+					
+				</em>
+			</div>
+		<!-- / edit note -->
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="kassandro is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="kassandro is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=624014" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 624014 popup menu -->
+<div class="vbmenu_popup" id="postmenu_624014_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">kassandro</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=34242">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=34242" rel="nofollow">Find More Posts by kassandro</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 624014 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #624014 --><!-- post #624062 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit624062" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post624062" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post624062"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			13th March 2005, 07:32
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=624062&amp;postcount=2" target="new" rel="nofollow" id="postcount624062" name="2"><strong>2</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=624062#post624062" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_624062">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=65119">Kagura</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Perennially Silent Member</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Oct 2004</div>
+				<div>Location: Protector of Skuld and Guardian of Her Hammer</div>
+				
+				<div>
+					Posts: 64
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_624062" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_624062">
+			
+			Would it be possible to host this on another site? Currently, the attachment system doesn't work very well. I don't see it showing up anywhere on your message. =(
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				Proud Member of the Scandanavian Contingent
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Kagura is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Kagura is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=624062" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 624062 popup menu -->
+<div class="vbmenu_popup" id="postmenu_624062_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Kagura</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=65119">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=65119" rel="nofollow">Find More Posts by Kagura</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 624062 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #624062 --><!-- post #624078 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit624078" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post624078" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post624078"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			13th March 2005, 08:26
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=624078&amp;postcount=3" target="new" rel="nofollow" id="postcount624078" name="3"><strong>3</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=624078#post624078" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_624078">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=34242">kassandro</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: May 2003</div>
+				<div>Location: Germany</div>
+				
+				<div>
+					Posts: 502
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_624078" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_624078">
+			
+			I can't see the attachment either. Download it from <a href="http://home.pages.at/kassandro/Cnr2k.zip" target="_blank">here</a>. When I edit the above message, the forum software insists that the attachment is there. It's the first time I tried such an attachment, though.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+		<!-- edit note -->
+			<div class="smallfont">
+				<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+				<em>
+					
+						Last edited by kassandro; 16th March 2005 at <span class="time">23:43</span>.
+					
+					
+				</em>
+			</div>
+		<!-- / edit note -->
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="kassandro is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="kassandro is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=624078" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 624078 popup menu -->
+<div class="vbmenu_popup" id="postmenu_624078_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">kassandro</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=34242">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=34242" rel="nofollow">Find More Posts by kassandro</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 624078 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #624078 --><!-- post #624087 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit624087" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post624087" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post624087"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			13th March 2005, 08:55
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=624087&amp;postcount=4" target="new" rel="nofollow" id="postcount624087" name="4"><strong>4</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=624087#post624087" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_624087">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=7925">Boulder</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Pig on the wing</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=7925"><img title="Boulder's Avatar" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="Boulder's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Mar 2002</div>
+				<div>Location: Hollola, Finland</div>
+				
+				<div>
+					Posts: 3,761
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_624087" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_624087">
+			
+			A moderator needs to approve the attachment before it's available.<br>
+<br>
+Thanks for the plugin, I've got another capture coming in today so it's time to play again<img src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/biggrin.gif" alt="" title="Big Grin" class="inlineimg" border="0">
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				<i>And if the band you're in starts playing different tunes<br>
+I'll see you on the dark side of the Moon...</i>
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Boulder is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Boulder is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=624087" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 624087 popup menu -->
+<div class="vbmenu_popup" id="postmenu_624087_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Boulder</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=7925">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=7925" rel="nofollow">Find More Posts by Boulder</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 624087 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #624087 --><!-- post #624162 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit624162" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post624162" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post624162"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			13th March 2005, 12:34
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=624162&amp;postcount=5" target="new" rel="nofollow" id="postcount624162" name="5"><strong>5</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=624162#post624162" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_624162">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=35914">Mug Funky</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">interlace this!</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=35914"><img title="Mug Funky's Avatar" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/image.php.gif" alt="Mug Funky's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Jun 2003</div>
+				<div>Location: i'm in ur transfers, addin noise</div>
+				
+				<div>
+					Posts: 4,500
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_624162" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_624162">
+			
+			nice stuff.  only just started playing with it (can't find many really dirty sources to be honest...) and it seems pretty fast.<br>
+<br>
+btw, it doesn't throw an error if you feed it yv12 - it just gives me green <img src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/smile.gif" alt="" title="Smilie" class="inlineimg" border="0">
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				interlace... right or wrong, just deal with it.
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Mug Funky is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Mug Funky is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=624162" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 624162 popup menu -->
+<div class="vbmenu_popup" id="postmenu_624162_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Mug Funky</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=35914">View Public Profile</a></td></tr>
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://www.mugfunky.com/">Visit Mug Funky's homepage!</a></td></tr>
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=35914" rel="nofollow">Find More Posts by Mug Funky</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 624162 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #624162 --><!-- post #624288 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit624288" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post624288" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post624288"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			13th March 2005, 18:17
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=624288&amp;postcount=6" target="new" rel="nofollow" id="postcount624288" name="6"><strong>6</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=624288#post624288" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_624288">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=34242">kassandro</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: May 2003</div>
+				<div>Location: Germany</div>
+				
+				<div>
+					Posts: 502
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_624288" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_624288">
+			
+			<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<i>Originally posted by Mug Funky </i><br>
+<b>nice stuff.  only just started playing with it (can't find many really dirty sources to be honest...) and it seems pretty fast.<br>
+<br>
+btw, it doesn't throw an error if you feed it yv12 - it just gives me green <img src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/smile.gif" alt="" title="Smilie" class="inlineimg" border="0"> </b>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>This concerns only CNRF and the reason is simple. For CNRF, but not the other two (which are not really my kids), I want to write both an SSEx-YUY2 and an SSEx-YV12 version, if the current slow YUY2 version (the SSE2 version should be 20 times faster) turns out to be useful. The description of CNRF given above is somewhat simplified, because for each "chroma pixel" there are two (and in YV12 even four) "luma pixels". CNRF can also be tweaked to be more aggressive or more conservative, but I like the philosophy implemented in CNRF (with a suitable blurred_input) that the chroma should not oscillate more than the luma.<br>
+<br>
+<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<i>Originally posted by Boulder </i><br>
+<b>A moderator needs to approve the attachment before it's available.<br>
+</b>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>Thanks for the information, I was desperately searching the attachment without any success and I though that I simply too stupid for making an attachment, but for a whimpy 8 KB attachment Moderator approvement should really not be neccessary.<br>
+<br>
+Anyway my server is back again!
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+		<!-- edit note -->
+			<div class="smallfont">
+				<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+				<em>
+					
+						Last edited by kassandro; 13th March 2005 at <span class="time">18:22</span>.
+					
+					
+				</em>
+			</div>
+		<!-- / edit note -->
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="kassandro is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="kassandro is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=624288" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 624288 popup menu -->
+<div class="vbmenu_popup" id="postmenu_624288_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">kassandro</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=34242">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=34242" rel="nofollow">Find More Posts by kassandro</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 624288 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #624288 --><!-- post #624324 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit624324" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post624324" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post624324"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			13th March 2005, 19:21
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=624324&amp;postcount=7" target="new" rel="nofollow" id="postcount624324" name="7"><strong>7</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=624324#post624324" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_624324">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=7925">Boulder</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Pig on the wing</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=7925"><img title="Boulder's Avatar" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="Boulder's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Mar 2002</div>
+				<div>Location: Hollola, Finland</div>
+				
+				<div>
+					Posts: 3,761
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_624324" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_624324">
+			
+			<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<i>Originally posted by kassandro </i><br>
+This concerns only CNRF and the reason is simple. For CNRF, but not the other two (which are not really my kids), I want to write both an SSEx-YUY2 and an SSEx-YV12 version, if the current slow YUY2 version (the SSE2 version should be 20 times faster) turns out to be useful. The description of CNRF given above is somewhat simplified, because for each "chroma pixel" there are two (and in YV12 even four) "luma pixels". CNRF can also be tweaked to be more aggressive or more conservative, but I like the philosophy implemented in CNRF (with a suitable blurred_input) that the chroma should not oscillate more than the luma.
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>Yep, the optimizations would be appreciated as it's always a good slice of time off the encoding process, which can be painfully slow when interlaced content needs to be treated. Smart bobbing means twice the amount of frames so the processing length approximately doubles..anything less is always a good thing<img src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/smile.gif" alt="" title="Smilie" class="inlineimg" border="0"><br>
+<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				for a whimpy 8 KB attachment Moderator approvement should really not be neccessary.
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>I guess it's mostly for virus checking? I can't think of any other really good reason as you can link to files that are off-site.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				<i>And if the band you're in starts playing different tunes<br>
+I'll see you on the dark side of the Moon...</i>
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Boulder is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Boulder is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=624324" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 624324 popup menu -->
+<div class="vbmenu_popup" id="postmenu_624324_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Boulder</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=7925">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=7925" rel="nofollow">Find More Posts by Boulder</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 624324 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #624324 --><!-- post #624342 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit624342" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post624342" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post624342"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			13th March 2005, 19:54
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=624342&amp;postcount=8" target="new" rel="nofollow" id="postcount624342" name="8"><strong>8</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=624342#post624342" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_624342">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=7925">Boulder</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Pig on the wing</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=7925"><img title="Boulder's Avatar" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="Boulder's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Mar 2002</div>
+				<div>Location: Hollola, Finland</div>
+				
+				<div>
+					Posts: 3,761
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_624342" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_624342">
+			
+			I did a short test and noticed that CNRF changes the colours slightly.<br>
+<br>
+See the three screenshots, one from the original MJPEG avi, one with CNR2("xoo") and one with CNRF() , blurred clip made with RemoveGrain(mode=12).<br>
+<br>
+<a href="http://www.saunalahti.fi/sam08/org2.jpg" target="_blank">Original</a> <br>
+<a href="http://www.saunalahti.fi/sam08/marcfd.jpg" target="_blank">CNR2</a> <br>
+<a href="http://www.saunalahti.fi/sam08/kassandro.jpg" target="_blank">CNRF</a><br>
+<br>
+Pay attention to the core of the ship, the one with bluish color. It's a more light blue with CNRF, more like the original with CNR2.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				<i>And if the band you're in starts playing different tunes<br>
+I'll see you on the dark side of the Moon...</i>
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Boulder is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Boulder is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=624342" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 624342 popup menu -->
+<div class="vbmenu_popup" id="postmenu_624342_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Boulder</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=7925">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=7925" rel="nofollow">Find More Posts by Boulder</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 624342 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #624342 --><!-- post #625579 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit625579" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post625579" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post625579"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			16th March 2005, 13:39
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=625579&amp;postcount=9" target="new" rel="nofollow" id="postcount625579" name="9"><strong>9</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=625579#post625579" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_625579">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=34242">kassandro</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: May 2003</div>
+				<div>Location: Germany</div>
+				
+				<div>
+					Posts: 502
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_625579" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+			<!-- icon and title -->
+			<div class="smallfont">
+				
+				<strong>Bug in CNRF</strong>
+			</div>
+			<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+			<!-- / icon and title -->
+		
+
+		<!-- message -->
+		<div id="post_message_625579">
+			
+			Sorry Boulder, I overlooked your last posting until yesterday. Because I couldn't find the bug by inspecting the source code, I finished the SSE YUY2 version and compared it with the C routine, which was used by yourself. It turned out that there was a big difference between both and I finally could find the mistake in the C version. In hindsight I really wonder that the output of CNRF looked so good. It is even difficult to spot in your pictures. I will provide a fixed version later today.<br>
+<br>
+Many thanks for realising the problem. 
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+		<!-- edit note -->
+			<div class="smallfont">
+				<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+				<em>
+					
+						Last edited by kassandro; 16th March 2005 at <span class="time">13:51</span>.
+					
+					
+				</em>
+			</div>
+		<!-- / edit note -->
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="kassandro is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="kassandro is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=625579" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 625579 popup menu -->
+<div class="vbmenu_popup" id="postmenu_625579_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">kassandro</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=34242">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=34242" rel="nofollow">Find More Posts by kassandro</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 625579 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #625579 --><!-- post #625789 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit625789" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post625789" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post625789"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			16th March 2005, 20:58
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=625789&amp;postcount=10" target="new" rel="nofollow" id="postcount625789" name="10"><strong>10</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=625789#post625789" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_625789">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=7925">Boulder</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Pig on the wing</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=7925"><img title="Boulder's Avatar" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="Boulder's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Mar 2002</div>
+				<div>Location: Hollola, Finland</div>
+				
+				<div>
+					Posts: 3,761
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_625789" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_625789">
+			
+			Oh, those CNR2 and CNRF screenshots were taken from filtered clips (LRemoveDust+CNR2/CNRF) and the original one is completely unprocessed. That's why they look a lot smoother<img src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/wink.gif" alt="" title="Wink" class="inlineimg" border="0"> Nice to hear that you found the cause, got another Get Smart! episode on the air tomorrow so I've got raw material to use for testing.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				<i>And if the band you're in starts playing different tunes<br>
+I'll see you on the dark side of the Moon...</i>
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Boulder is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Boulder is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=625789" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 625789 popup menu -->
+<div class="vbmenu_popup" id="postmenu_625789_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Boulder</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=7925">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=7925" rel="nofollow">Find More Posts by Boulder</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 625789 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #625789 --><!-- post #625879 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit625879" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post625879" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post625879"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			17th March 2005, 00:33
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=625879&amp;postcount=11" target="new" rel="nofollow" id="postcount625879" name="11"><strong>11</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=625879#post625879" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_625879">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=34242">kassandro</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: May 2003</div>
+				<div>Location: Germany</div>
+				
+				<div>
+					Posts: 502
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_625879" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+			<!-- icon and title -->
+			<div class="smallfont">
+				
+				<strong>Corrected version with SSE support</strong>
+			</div>
+			<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+			<!-- / icon and title -->
+		
+
+		<!-- message -->
+		<div id="post_message_625879">
+			
+			I have removed the attachment of the first posting in this thread and replaced by a link to the corrected. I have also updated the link from last sunday. Both links now point to the same location. I have corrected  a difficult to find bug (no crash and hard to see). Actually only one character was incorrect, which led to wrong V values. The new plugin contains also an SSE/SSE2 version of CNRF. However, with standard YUY2 the C filter of CNRF is used. The SSE is used only with planar YUY2.<br>
+<br>
+What is planar YUY2? For Avisynth there is no difference between planar and the normal interleaved YUY2. Only the organisation of the data is quite different. Thus if you display a planar YUY2 clip, you will see only garbage. The advantage of planar YUY2 is, that one can process planar YUY2 almost the same way as YV12, i.e. SSE/SSE2/SSE3 can be used nicely. Virtually any YV12 can be extended to planar YUY2. Over the course of the next months I will extend the filters RemoveDirt and RemoveGrain to planar YUY2 and remove the support for interleaved YUY2 in RemoveDirt. Especially the YUY2 performance of RemoveDust will be improved quite substantially.<br>
+<br>
+If there are no "natural" planar YUY2 clips, how can one utilise it? Answer: through the conversion filters Interleaved2Planar and Planar2Interleaved of my yet inofficial plugin SSETools (SSE2Tools is for SSE2 cpus, i.e. P4/Athlon64/Sempron 3100). Interleaved2Planar is called at the beginning of the filter chain and Planar2Interleaved is called at the end of the filter chain, but all the filters of the chain must support planar YUY2 and currently CNRF is the only one, though many temporal filter, but not CNRT, work also correctly with planar YUY2. Interleaved2Planar and Planar2Interleaved are highly optimised (should be almost bitblt speed). Since Avisynth doesn't know of planar YUY2 (actually there is also planar RGB24 and planar RGB32), one has to tell a filter, that the input is planar and not interleaved. This is usually done with boolean variable "planar". Thus <br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 114px;
+		text-align: left;
+		overflow: auto">function CNRF_SSE(clip input)
+{
+   smooth = RemoveGrain(input, mode=12).Interleaved2Planar()
+   planar = Interleaved2Planar(input)
+   return CNRF(planar, smooth, planar=true).planar2interleaved()
+}</pre>
+</div>does the same as <br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 98px;
+		text-align: left;
+		overflow: auto">function CNRF_C(clip input)
+{
+   smooth = RemoveGrain(input, mode=12)
+   return CNRF(input, smooth)
+}</pre>
+</div>but should be somewhat faster. Unfortunately the interleaved RemoveGrain(input, mode=12) is currently a big brake in CNRF_SSE. Once we have support for planar YUY2 in RemoveGrain<br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 114px;
+		text-align: left;
+		overflow: auto">function CNRF_SSE(clip input)
+{
+   planar = Interleaved2Planar(input)
+   smooth = RemoveGrain(planar, mode=12, planar=true)
+   return CNRF(planar, smooth, planar=true).planar2interleaved()
+}</pre>
+</div>should be a lot faster. <br>
+<br>
+I hope to post an YV12 version of CNRF next weekend.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="kassandro is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="kassandro is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=625879" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 625879 popup menu -->
+<div class="vbmenu_popup" id="postmenu_625879_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">kassandro</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=34242">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=34242" rel="nofollow">Find More Posts by kassandro</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 625879 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #625879 --><!-- post #625896 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit625896" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post625896" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post625896"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			17th March 2005, 01:38
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=625896&amp;postcount=12" target="new" rel="nofollow" id="postcount625896" name="12"><strong>12</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=625896#post625896" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_625896">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=40907">Chainmax</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Huh?</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=40907"><img title="Chainmax's Avatar" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/image.php.png" alt="Chainmax's Avatar" border="0" height="70" width="70"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Sep 2003</div>
+				<div>Location: Uruguay</div>
+				
+				<div>
+					Posts: 3,066
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_625896" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_625896">
+			
+			I can't wait to try CNRF_YV12 on a VHS capture that's proving to be a real bitch <img src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/smile.gif" alt="" title="Smilie" class="inlineimg" border="0">. You say that CNRT should be better than CNR2, what about CNRF? I'm currently using Cnr2("xxx",4,5,255) in order to reduce some small red and yellow bands that appear on said capture and would love to test an alternative.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Chainmax is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Chainmax is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=625896" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 625896 popup menu -->
+<div class="vbmenu_popup" id="postmenu_625896_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Chainmax</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=40907">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=40907" rel="nofollow">Find More Posts by Chainmax</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 625896 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #625896 --><!-- post #625941 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit625941" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post625941" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post625941"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			17th March 2005, 06:34
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=625941&amp;postcount=13" target="new" rel="nofollow" id="postcount625941" name="13"><strong>13</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=625941#post625941" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_625941">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=7925">Boulder</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Pig on the wing</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=7925"><img title="Boulder's Avatar" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="Boulder's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Mar 2002</div>
+				<div>Location: Hollola, Finland</div>
+				
+				<div>
+					Posts: 3,761
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_625941" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_625941">
+			
+			cnr2kSSE2.dll crashes on my system - when I use the function cnrf_sse(), VDubMod simply closes itself. Similar behaviour to what happened in SSE2-optimized RemoveGrain with some modes in the first version. The plain cnr2k.dll works.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				<i>And if the band you're in starts playing different tunes<br>
+I'll see you on the dark side of the Moon...</i>
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Boulder is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Boulder is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=625941" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 625941 popup menu -->
+<div class="vbmenu_popup" id="postmenu_625941_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Boulder</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=7925">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=7925" rel="nofollow">Find More Posts by Boulder</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 625941 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #625941 --><!-- post #626093 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit626093" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post626093" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post626093"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			17th March 2005, 13:52
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=626093&amp;postcount=14" target="new" rel="nofollow" id="postcount626093" name="14"><strong>14</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=626093#post626093" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_626093">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=34242">kassandro</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: May 2003</div>
+				<div>Location: Germany</div>
+				
+				<div>
+					Posts: 502
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_626093" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_626093">
+			
+			<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<i>Originally posted by Boulder </i><br>
+<b>cnr2kSSE2.dll crashes on my system - when I use the function cnrf_sse(), VDubMod simply closes itself. Similar behaviour to what happened in SSE2-optimized RemoveGrain with some modes in the first version. The plain cnr2k.dll works. </b>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>Boulder, you are quite right. It was the same kind of bug as with earlier SSE2 versions of RemoveGrain. A data alignment bug. Actually the bug was more a consequence of tiredness. Testing was simply insufficient. I have tested the SSE2 version only for a 720x576 video. If the YUY2 frame address and the frame width are each a multiple of 16, then the fast routine for aligned access is chosen. This routine was correct and was the only one, whihc was tested. But unfortunately I simple copied the routine for unaligned access was simply a copy of the aligned one and this it simply work. I have uploaded a corrected SSE2 version.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="kassandro is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="kassandro is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=626093" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 626093 popup menu -->
+<div class="vbmenu_popup" id="postmenu_626093_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">kassandro</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=34242">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=34242" rel="nofollow">Find More Posts by kassandro</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 626093 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #626093 --><!-- post #626116 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit626116" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post626116" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post626116"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			17th March 2005, 14:48
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=626116&amp;postcount=15" target="new" rel="nofollow" id="postcount626116" name="15"><strong>15</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=626116#post626116" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_626116">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=7925">Boulder</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Pig on the wing</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=7925"><img title="Boulder's Avatar" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="Boulder's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Mar 2002</div>
+				<div>Location: Hollola, Finland</div>
+				
+				<div>
+					Posts: 3,761
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_626116" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_626116">
+			
+			I just did a very quick-n-dirty test.<br>
+<br>
+CNRF, speed ~0.31RT, filesize 9019164 bytes<br>
+CNR2 (defaults), speed ~0.56RT, filesize 7209380 bytes<br>
+<br>
+CNR2's output looks better, it removes nasty rainbowing quite well, leaving only slight blotches which would probably be unnoticable on the TV. It's also quite a bit faster which I always appreciate.<br>
+<br>
+I used this script:<br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 210px;
+		text-align: left;
+		overflow: auto">AVISource("d:\temp\captures\testi.avi",pixel_type="YUY2")
+LeakKernelDeint(order=1,sharp=true,threshold=7) # for testing only
+Crop(0,4,696,568,true)
+BilinearResize(672,544)
+#org=CNR2()
+org=CNRF_SSE()
+ConverttoYV12()
+LRemoveDust_YUY2(4,4)
+ConverttoYUY2()
+MergeChroma(org)
+ColorMatrix(mode="rec.601-&gt;rec.709")
+AddBorders(16,16,16,16)</pre>
+</div>The script is practically the same (apart from cropping) I use for nearly all my captures. I decided to simply deinterlace (which I almost never do) for faster processing.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				<i>And if the band you're in starts playing different tunes<br>
+I'll see you on the dark side of the Moon...</i>
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Boulder is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Boulder is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=626116" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 626116 popup menu -->
+<div class="vbmenu_popup" id="postmenu_626116_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Boulder</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=7925">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=7925" rel="nofollow">Find More Posts by Boulder</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 626116 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #626116 --><!-- post #626314 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit626314" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post626314" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post626314"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			17th March 2005, 20:53
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=626314&amp;postcount=16" target="new" rel="nofollow" id="postcount626314" name="16"><strong>16</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=626314#post626314" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_626314">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=34242">kassandro</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: May 2003</div>
+				<div>Location: Germany</div>
+				
+				<div>
+					Posts: 502
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_626314" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_626314">
+			
+			<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<i>Originally posted by Boulder </i><br>
+<b>I just did a very quick-n-dirty test.<br>
+<br>
+CNRF, speed ~0.31RT, filesize 9019164 bytes<br>
+CNR2 (defaults), speed ~0.56RT, filesize 7209380 bytes<br>
+</b>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>Thanks for the test. Quite an impressive difference. It shows again that temporal smoothness is more significant for compression than spatial smoothness.<br>
+As far as speed is concerned I can do much better. When all is converted to planar ConverttoYV12(), ConverttoYUY2(), MergeChroma(org) will be superfluous. Anyway, your numbers - obviously you use CCE - do not imply that CNR2 is so much faster than CNRF. Obviously the output of CNR2 is much smoother and because of this CCE is much faster. Even if all the filters would be planar, the overall encoding would still be slower, although the time spent with Avisynth will almost be neglible then. Similarily, an unfiltered video takes about 30% more time to encode with XviD than a video with RemoveDust. <br>
+CNRF is only for progressive input. Thus deinterlacing was necessary. <br>
+<br>
+<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<b><br>
+CNR2's output looks better, it removes nasty rainbowing quite well, leaving only slight blotches which would probably be unnoticable on the TV. It's also quite a bit faster which I always appreciate.<br>
+</b>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>Does CNRT remove the rainbows? It should act very similarily to CNRS but doesn't have and doesn't need the poor scene change detection, which may easily confuse motion with a scene change. Overall CNRT should be somewhat more conservative than CNR2. Because it is twosided it is probably a bit slower than CNR2, but I tried to close the gap by most efficient programming as much as possible. <br>
+<br>
+You can monitor the agressiveness of a filter nicely with the difference filter contained in SSETools:<br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 34px;
+		text-align: left;
+		overflow: auto">difference(filtered, unfiltered)</pre>
+</div>Then the SAD difference and the number of different pixels is reported to the debugview utility (actually a pixel may be counted three times, for the Y, U and the V value). The output of difference is identical to "filtered". The difference filter has many options. One is the tolerance option<br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 34px;
+		text-align: left;
+		overflow: auto">difference(filtered, unfiltered, tolerance=5)</pre>
+</div>ignores all difference &lt;= 5. The higher the total differences, the stronger the filtering.<br>
+I can make CNRF more aggressive. However, rainbows seem to be a temporal rather than a spatial phenomenon, otherwise CNR2 couldn't remove them. As I virtually never have rainbows on my mostly progressive digital recordings, could you please provide me a 3 frame Huffyuv video, with a rainbow frame in the middle. Then I could make tests on my own. CNRF can also be made more aggressive by replacing RemoveGrain(mode=12) by RemoveGrain(mode=12).RemoveGrain(mode=12) (unfortunately quite slow currently). Unlike CNR2 or CNRT, CNRF can never creat ghosts. <br>
+<br>
+<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<b><br>
+I used this script:<br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 210px;
+		text-align: left;
+		overflow: auto">AVISource("d:\temp\captures\testi.avi",pixel_type="YUY2")
+LeakKernelDeint(order=1,sharp=true,threshold=7) # for testing only
+Crop(0,4,696,568,true)
+BilinearResize(672,544)
+#org=CNR2()
+org=CNRF_SSE()
+ConverttoYV12()
+LRemoveDust_YUY2(4,4)
+ConverttoYUY2()
+MergeChroma(org)
+ColorMatrix(mode="rec.601-&gt;rec.709")
+AddBorders(16,16,16,16)</pre>
+</div></b>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>What I do not like in this script, is that you crop and resize so early. This certainly makes the script slightly faster, but you also loose quality. Only for RemoveDirt or any block based filter early cropping and resizing makes sense. Also CNRF_SSE would have more impact, if the luma is cleaned <b>before</b> the application of CNRF_SSE. Of course, the same applies to CNR2, but CNRF would probably profit a lot more. Keep always in mind, that the amount of cleaning by any of these CNR filters depends heavily on luma smoothness. I would use the following script:<br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 210px;
+		text-align: left;
+		overflow: auto">AVISource("d:\temp\captures\testi.avi",pixel_type="YUY2")
+org=LeakKernelDeint(order=1,sharp=true,threshold=7) # for testing only
+ConverttoYV12(org)
+LRemoveDust_YUY2(4,4)
+ConverttoYUY2()
+MergeChroma(org)
+#CNR2()
+CNRF_SSE()
+Crop(0,4,696,568,true)
+BilinearResize(672,544)
+ColorMatrix(mode="rec.601-&gt;rec.709")
+AddBorders(16,16,16,16)</pre>
+</div>
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="kassandro is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="kassandro is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=626314" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 626314 popup menu -->
+<div class="vbmenu_popup" id="postmenu_626314_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">kassandro</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=34242">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=34242" rel="nofollow">Find More Posts by kassandro</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 626314 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #626314 --><!-- post #626588 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit626588" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post626588" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post626588"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			18th March 2005, 13:40
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=626588&amp;postcount=17" target="new" rel="nofollow" id="postcount626588" name="17"><strong>17</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=626588#post626588" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_626588">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=7925">Boulder</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Pig on the wing</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=7925"><img title="Boulder's Avatar" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="Boulder's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Mar 2002</div>
+				<div>Location: Hollola, Finland</div>
+				
+				<div>
+					Posts: 3,761
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_626588" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_626588">
+			
+			OK, I uploaded a 5-frame HuffYUV clip, download it at <a href="http://www.saunalahti.fi/sam08/rainbow_test.avi" target="_blank">http://www.saunalahti.fi/sam08/rainbow_test.avi</a> . I couldn't get a clip with lots of visible rainbows but you can see them easily by using UtoY() or VtoY(), there's a nice amount at the edge of the tie and the shirt.<br>
+<br>
+CNRT works almost like CNR2, probably would just need some settings adjusting. I didn't make a speed test yet as I've got an encode going on but I'll try to find some time later today. I'll also try filtering before cropping and resizing and move chroma denoising after LRemoveDust. Funny thing that I never thought that denoising luma first would help with cleaning the chroma channels, I guess that tells how much I really understand what I read<img src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/biggrin.gif" alt="" title="Big Grin" class="inlineimg" border="0">
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				<i>And if the band you're in starts playing different tunes<br>
+I'll see you on the dark side of the Moon...</i>
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Boulder is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Boulder is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=626588" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 626588 popup menu -->
+<div class="vbmenu_popup" id="postmenu_626588_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Boulder</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=7925">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=7925" rel="nofollow">Find More Posts by Boulder</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 626588 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #626588 --><!-- post #626621 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit626621" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post626621" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post626621"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			18th March 2005, 15:08
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=626621&amp;postcount=18" target="new" rel="nofollow" id="postcount626621" name="18"><strong>18</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=626621#post626621" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_626621">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=7925">Boulder</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Pig on the wing</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=7925"><img title="Boulder's Avatar" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="Boulder's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Mar 2002</div>
+				<div>Location: Hollola, Finland</div>
+				
+				<div>
+					Posts: 3,761
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_626621" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_626621">
+			
+			OK, here are results of another quick test:<br>
+<br>
+CNR2 - 0.47RT - 20 315 364 bytes<br>
+CNRT - 0.35RT - 21 381 396 bytes<br>
+CNR2 after LRemoveDust_YUY2 but before crop+resize - 0.45RT - 23 185 852 bytes<br>
+CNR2 before LRemoveDust_YUY2 but before crop+resize - 0.45RT - 23 211 384 bytes
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				<i>And if the band you're in starts playing different tunes<br>
+I'll see you on the dark side of the Moon...</i>
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Boulder is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Boulder is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=626621" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 626621 popup menu -->
+<div class="vbmenu_popup" id="postmenu_626621_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Boulder</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=7925">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=7925" rel="nofollow">Find More Posts by Boulder</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 626621 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #626621 --><!-- post #626747 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit626747" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post626747" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post626747"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			18th March 2005, 19:56
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=626747&amp;postcount=19" target="new" rel="nofollow" id="postcount626747" name="19"><strong>19</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=626747#post626747" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_626747">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=34242">kassandro</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: May 2003</div>
+				<div>Location: Germany</div>
+				
+				<div>
+					Posts: 502
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_626747" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_626747">
+			
+			<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<i>Originally posted by Boulder </i><br>
+<b>OK, here are results of another quick test:<br>
+<br>
+CNR2 - 0.47RT - 20 315 364 bytes<br>
+CNRT - 0.35RT - 21 381 396 bytes<br>
+</b>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>I am not too surprised, because I discovered today, that the initialisation of the lookup tables was not correct. If u[n,x,y] denotes the u value of the pixel at position x,y of the n-th frame. Then CNR2 replaces this value by (1-t)u(n,x,y) + t u(n-1,x,y), where the averaging  coefficient t depends on y and u value differences and CNRT is similar. However t should never be &gt; 1/2 and in my case it may attain the value 1. The same happened unfortunately with CNRS. I hope to upload a corrected version, where not only the lookup table is correctly initialised but also the algorithm is improved (CNRT and CNRS, CNRF remains unchanged). <br>
+<br>
+<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<b><br>
+CNR2 after LRemoveDust_YUY2 but before crop+resize - 0.45RT - 23 185 852 bytes<br>
+CNR2 before LRemoveDust_YUY2 but before crop+resize - 0.45RT - 23 211 384 bytes </b>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>This result is very surprising. the difference is absolutely neglible 0.1%. <br>
+<br>
+If you have time, you may test the following temporal application of CNRF (deinterlacing is not necessary). It uses the scene change detection of TemporalSoften (seems to work well with planar YUY2):<br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 114px;
+		text-align: left;
+		overflow: auto">function TCNRF(clip input)
+{
+   planar = Interleaved2Planar(input)
+   smooth = TemporalSoften(planar,1,255,255,15,2)
+   return CNRF(planar, smooth, planar=true).planar2interleaved()
+}</pre>
+</div>You may also tweak the radius parameter of TemporalSoften. <br>
+However, there is no change to beat CNR2. It is far too tame.<br>
+Here are the unfiltered/filterd differences of some sample frames with  TCNRF:<br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 242px;
+		text-align: left;
+		overflow: auto">[2868] [870] total difference = 12412, different pixels = 10788
+[2868] [871] total difference = 14866, different pixels = 13011
+[2868] [872] total difference = 15015, different pixels = 13567
+[2868] [873] total difference = 15638, different pixels = 13927
+[2868] [874] total difference = 20339, different pixels = 18251
+[2868] [875] total difference = 19653, different pixels = 17808
+[2868] [876] total difference = 15567, different pixels = 13524
+[2868] [877] total difference = 14163, different pixels = 12723
+[2868] [878] total difference = 14560, different pixels = 12829
+[2868] [879] total difference = 20423, different pixels = 17792
+[2868] [880] total difference = 19168, different pixels = 17142
+[2868] [881] total difference = 20069, different pixels = 18194
+[2868] [882] total difference = 15699, different pixels = 14080
+[2868] [883] total difference = 20574, different pixels = 18222</pre>
+</div>and here are the same frames now with CNR2:<br>
+<div style="margin:20px; margin-top:5px">
+	<div class="smallfont" style="margin-bottom:2px">Code:</div>
+	<pre class="alt2" dir="ltr" style="
+		margin: 0px;
+		padding: 6px;
+		border: 1px inset;
+		width: auto;
+		height: 242px;
+		text-align: left;
+		overflow: auto">[2868] [870] total difference = 152017, different pixels = 132789
+[2868] [871] total difference = 204315, different pixels = 179442
+[2868] [872] total difference = 184501, different pixels = 163621
+[2868] [873] total difference = 212530, different pixels = 191829
+[2868] [874] total difference = 259744, different pixels = 228510
+[2868] [875] total difference = 249652, different pixels = 222470
+[2868] [876] total difference = 294953, different pixels = 258043
+[2868] [877] total difference = 269431, different pixels = 248090
+[2868] [878] total difference = 258365, different pixels = 242860
+[2868] [879] total difference = 275824, different pixels = 249133
+[2868] [880] total difference = 369295, different pixels = 295538
+[2868] [881] total difference = 463517, different pixels = 322928
+[2868] [882] total difference = 487876, different pixels = 320502
+[2868] [883] total difference = 485125, different pixels = 303761</pre>
+</div>Note that there are only 720*576 "chroma" pixels. Thus CNR2 changes in the average about 60% of the chroma with its default values, while CNRT changes only less than 5% of all "chroma" pixels. I have to make CNRF more aggressive.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="kassandro is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="kassandro is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=626747" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 626747 popup menu -->
+<div class="vbmenu_popup" id="postmenu_626747_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">kassandro</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=34242">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=34242" rel="nofollow">Find More Posts by kassandro</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 626747 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #626747 --><!-- post #626753 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit626753" style="padding:0px 0px 6px 0px">
+	
+
+
+
+<table id="post626753" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post626753"><img title="Old" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			18th March 2005, 20:14
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=626753&amp;postcount=20" target="new" rel="nofollow" id="postcount626753" name="20"><strong>20</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=626753#post626753" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_626753">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=7925">Boulder</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Pig on the wing</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=7925"><img title="Boulder's Avatar" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="Boulder's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Mar 2002</div>
+				<div>Location: Hollola, Finland</div>
+				
+				<div>
+					Posts: 3,761
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_626753" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_626753">
+			
+			Sure, I'll give TCNRF a go tomorrow when I have the time.<br>
+<br>
+The problem with tweaking default values for chroma denoisers is IMO that the differences are very hard to notice and you practically have to either use Subtract+Levels or U/VtoY to see any changes. They might look OK in most cases but could easily smack you in the face in some strange point.<br>
+<br>
+Apart from occasional chroma ghosting, CNR2 looks good to me so it could possibly be regarded as some kind of a calibration point. The ghosting almost always appears in clips that already have some kind of ghost problems, so it's not an everyday thing. I've managed to get rid of most of that by switching back from PVR-250 to the BT8x8 card, I guess that improved chroma resolution (YUY2 vs. YV12) and all-keyframe encodes can make a huge difference<img src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/smile.gif" alt="" title="Smilie" class="inlineimg" border="0">
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				<i>And if the band you're in starts playing different tunes<br>
+I'll see you on the dark side of the Moon...</i>
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Boulder is offline" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Boulder is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=626753" rel="nofollow"><img title="Reply With Quote" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 626753 popup menu -->
+<div class="vbmenu_popup" id="postmenu_626753_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Boulder</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=7925">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=7925" rel="nofollow">Find More Posts by Boulder</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 626753 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #626753 --><div id="lastpost"></div></div>
+
+<!-- start content table -->
+<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+<!-- / start content table -->
+
+<!-- controls below postbits -->
+<table style="margin-top:-3px" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr valign="top">
+	
+		<td class="smallfont"><a href="http://forum.doom9.org/newreply.php?do=newreply&amp;noquote=1&amp;p=626753" rel="nofollow"><img title="Reply" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/reply.gif" alt="Reply" border="0"></a></td>
+	
+	
+		<td align="right"><div class="pagenav" align="right">
+<table class="tborder" border="0" cellpadding="3" cellspacing="1">
+<tbody><tr>
+	<td class="vbmenu_control" style="font-weight:normal">Page 1 of 2</td>
+	
+	
+		<td class="alt2"><span class="smallfont" title="Showing results 1 to 20 of 27"><strong>1</strong></span></td>
+ <td class="alt1"><a class="smallfont" href="http://forum.doom9.org/showthread.php?t=91381&amp;page=2" title="Show results 21 to 27 of 27">2</a></td>
+	<td class="alt1"><a rel="next" class="smallfont" href="http://forum.doom9.org/showthread.php?t=91381&amp;page=2" title="Next Page - Results 21 to 27 of 27">&gt;</a></td>
+	
+	<td style="cursor: pointer;" id="pagenav.232" class="vbmenu_control" title=""> <img alt="" title="" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/menu_open.gif" border="0"></td>
+</tr>
+</tbody></table>
+</div>
+		
+		</td>
+	
+</tr>
+</tbody></table>
+<!-- / controls below postbits -->
+
+
+
+
+
+
+
+
+
+
+<!-- lightbox scripts -->
+	<script type="text/javascript" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/vbulletin_lightbox.js"></script>
+	<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+<!-- / lightbox scripts -->
+
+
+
+
+
+
+
+
+
+
+<!-- next / previous links -->
+	<br>
+	<div class="smallfont" align="center">
+		<strong>«</strong>
+			<a href="http://forum.doom9.org/showthread.php?t=91381&amp;goto=nextoldest" rel="nofollow">Previous Thread</a>
+			|
+			<a href="http://forum.doom9.org/showthread.php?t=91381&amp;goto=nextnewest" rel="nofollow">Next Thread</a>
+		<strong>»</strong>
+	</div>
+<!-- / next / previous links -->
+
+
+
+
+
+
+
+<!-- popup menu contents -->
+<br>
+
+<!-- thread tools menu -->
+<div class="vbmenu_popup" id="threadtools_menu" style="display:none">
+<form action="http://forum.doom9.org/postings.php?t=91381&amp;pollid=" method="post" name="threadadminform">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Thread Tools<a name="goto_threadtools"></a></td>
+	</tr>
+	<tr>
+		<td class="vbmenu_option"><img title="Show Printable Version" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/printer.gif" alt="Show Printable Version"> <a href="http://forum.doom9.org/printthread.php?t=91381" accesskey="3" rel="nofollow">Show Printable Version</a></td>
+	</tr>
+	
+	
+	
+	
+	</tbody></table>
+</form>
+</div>
+<!-- / thread tools menu -->
+
+<!-- **************************************************** -->
+
+<!-- thread display mode menu -->
+<div class="vbmenu_popup" id="displaymodes_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Display Modes<a name="goto_displaymodes"></a></td>
+	</tr>
+	<tr>
+	
+		<td class="vbmenu_option" title="nohilite"><img title="Linear Mode" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/mode_linear.gif" alt="Linear Mode"> <strong>Linear Mode</strong></td>
+	
+	</tr>
+	<tr>
+	
+		<td class="vbmenu_option"><img title="Hybrid Mode" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/mode_hybrid.gif" alt="Hybrid Mode"> <a href="http://forum.doom9.org/showthread.php?mode=hybrid&amp;t=91381">Switch to Hybrid Mode</a></td>
+	
+	</tr>
+	<tr>
+	
+		<td class="vbmenu_option"><img title="Threaded Mode" class="inlineimg" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/mode_threaded.gif" alt="Threaded Mode"> <a href="http://forum.doom9.org/showthread.php?p=624014&amp;mode=threaded#post624014">Switch to Threaded Mode</a></td>
+	
+	</tr>
+	</tbody></table>
+</div>
+<!-- / thread display mode menu -->
+
+<!-- **************************************************** -->
+
+
+
+<!-- **************************************************** -->
+
+
+
+<!-- / popup menu contents -->
+
+
+<!-- forum rules and admin links -->
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr valign="bottom">
+	<td valign="top" width="100%">
+		<table class="tborder" border="0" cellpadding="6" cellspacing="1" width="210">
+<thead>
+<tr>
+	<td class="thead">
+		<a style="float:right" href="#top" onclick=""><img id="collapseimg_forumrules" src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/collapse_thead.gif" alt="" border="0"></a>
+		Posting Rules
+	</td>
+</tr>
+</thead>
+<tbody id="collapseobj_forumrules" style="">
+<tr>
+	<td class="alt1" nowrap="nowrap"><div class="smallfont">
+		
+		<div>You <strong>may not</strong> post new threads</div>
+		<div>You <strong>may not</strong> post replies</div>
+		<div>You <strong>may not</strong> post attachments</div>
+		<div>You <strong>may not</strong> edit your posts</div>
+		<hr>
+		
+		<div><a href="http://forum.doom9.org/misc.php?do=bbcode" target="_blank">BB code</a> is <strong>On</strong></div>
+		<div><a href="http://forum.doom9.org/misc.php?do=showsmilies" target="_blank">Smilies</a> are <strong>On</strong></div>
+		<div><a href="http://forum.doom9.org/misc.php?do=bbcode#imgcode" target="_blank">[IMG]</a> code is <strong>On</strong></div>
+		<div>HTML code is <strong>Off</strong></div>
+		<hr>
+		<div><a href="http://forum.doom9.org/misc.php?do=showrules" target="_blank">Forum Rules</a></div>
+	</div></td>
+</tr>
+</tbody>
+</table>
+	</td>
+	<td class="smallfont" align="right">
+		<table border="0" cellpadding="0" cellspacing="0">
+		
+		<tbody><tr>
+			<td>
+			<div class="smallfont" style="text-align:left; white-space:nowrap">
+	<form action="http://forum.doom9.org/forumdisplay.php" method="get">
+	<input name="s" value="" type="hidden">
+	<input name="daysprune" value="" type="hidden">
+	<strong>Forum Jump</strong><br>
+	<select name="f" onchange="">
+		<optgroup label="Site Areas">
+			<option value="cp">User Control Panel</option>
+			<option value="pm">Private Messages</option>
+			<option value="subs">Subscriptions</option>
+			<option value="wol">Who's Online</option>
+			<option value="search">Search Forums</option>
+			<option value="home">Forums Home</option>
+		</optgroup>
+		
+		<optgroup label="Forums">
+		<option value="43" class="fjdpth0"> Announcements and Chat</option>
+<option value="8" class="fjdpth1">     General Discussion</option>
+<option value="79" class="fjdpth1">     News</option>
+<option value="45" class="fjdpth1">     Forum / Site Suggestions &amp; Help</option>
+<option value="3" class="fjdpth0"> General</option>
+<option value="9" class="fjdpth1">     Decrypting</option>
+<option value="6" class="fjdpth1">     Newbies</option>
+<option value="5" class="fjdpth1">     DVD2AVI / DGIndex</option>
+<option value="11" class="fjdpth1">     Audio encoding</option>
+<option value="12" class="fjdpth1">     Subtitles</option>
+<option value="63" class="fjdpth1">     Linux, Mac OS X, &amp; Co</option>
+<option value="67" class="fjdpth0"> Capturing and Editing Video</option>
+<option value="33" class="fjsel" selected="selected">     Avisynth Usage</option>
+<option value="69" class="fjdpth1">     Avisynth Development</option>
+<option value="10" class="fjdpth1">     Capturing Video</option>
+<option value="59" class="fjdpth1">     DV</option>
+<option value="64" class="fjdpth1">     HDTV / DVB / TiVo</option>
+<option value="68" class="fjdpth1">     NLE - Non Linear Editing</option>
+<option value="22" class="fjdpth1">     VirtualDub, VDubMod &amp; AviDemux</option>
+<option value="74" class="fjdpth1">     New and alternative a/v containers</option>
+<option value="17" class="fjdpth0"> Video Encoding</option>
+<option value="28" class="fjdpth1">     (Auto) Gordian Knot</option>
+<option value="52" class="fjdpth1">     MPEG-4 ASP</option>
+<option value="78" class="fjdpth1">     MPEG-4 Encoder GUIs</option>
+<option value="77" class="fjdpth1">     MPEG-4 AVC / H.264</option>
+<option value="54" class="fjdpth1">     New and alternative video codecs</option>
+<option value="62" class="fjdpth1">     MPEG-2 Encoding</option>
+<option value="49" class="fjdpth0"> (HD) DVD, Blu-ray &amp; (S)VCD</option>
+<option value="47" class="fjdpth1">     One click suites for DVD backup and DVD creation</option>
+<option value="75" class="fjdpth1">     DVD Rebuilder</option>
+<option value="39" class="fjdpth1">     (HD) DVD &amp; Blu-ray authoring</option>
+<option value="61" class="fjdpth1">     Advanced authoring</option>
+<option value="50" class="fjdpth1">     IFO/VOB Editors</option>
+<option value="60" class="fjdpth1">     DVD burning</option>
+<option value="13" class="fjdpth0"> Hardware &amp; Software</option>
+<option value="15" class="fjdpth1">     Software players</option>
+<option value="73" class="fjdpth1">     Hardware players</option>
+<option value="16" class="fjdpth1">     PC Hard &amp; Software</option>
+<option value="40" class="fjdpth0"> Programming and Hacking</option>
+<option value="41" class="fjdpth1">     Development</option>
+<option value="58" class="fjdpth1">     Translations</option>
+
+		</optgroup>
+		
+	</select><input class="button" value="Go" type="submit">
+	</form>
+</div>
+			</td>
+		</tr>
+		</tbody></table>
+	</td>
+</tr>
+</tbody></table>
+<!-- /forum rules and admin links -->
+
+<br>
+
+
+
+
+
+<br>
+<div class="smallfont" align="center">All times are GMT +1. The time now is <span class="time">16:45</span>.</div>
+<br>
+
+
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+<!-- /content area table -->
+
+<form action="http://forum.doom9.org/index.php" method="get" style="clear:left">
+
+<table class="page" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+	
+	<td class="tfoot" align="right" width="100%">
+		<div class="smallfont">
+			<strong>
+				
+				<a href="http://www.doom9.org/">Doom9.org</a> -
+				
+				
+				<a href="http://forum.doom9.org/archive/index.php">Archive</a> -
+				
+				
+				
+				<a href="#top" onclick="">Top</a>
+			</strong>
+		</div>
+	</td>
+</tr>
+</tbody></table>
+
+<br>
+
+<div align="center">
+	<div class="smallfont" align="center">
+	<!-- Do not remove this copyright notice -->
+	Powered by vBulletin® Version 3.8.5<br>Copyright ©2000 - 2012, Jelsoft Enterprises Ltd.
+	<!-- Do not remove this copyright notice -->
+	</div>
+
+	<div class="smallfont" align="center">
+	<!-- Do not remove cronimage or your scheduled tasks will cease to function -->
+	<img src="chroma%20denoising%20-%20Doom9%27s%20Forum_files/cron.php.gif" alt="" border="0" height="1" width="1">
+	<!-- Do not remove cronimage or your scheduled tasks will cease to function -->
+
+	
+	</div>
+</div>
+
+</form>
+
+
+
+
+<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+
+<!-- temp -->
+<div style="display:none">
+	<!-- thread rate -->
+	
+		
+	
+	<!-- / thread rate -->
+</div>
+
+
+<script id="FoxLingoJs"><!--
+/* Script removed by snapshot save */
+--></script></body></html>

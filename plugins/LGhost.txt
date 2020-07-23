@@ -1,0 +1,49 @@
+LGhost.dll v0.3.01 Copyright(C) 2002, 2003 minamina
+
+Avisynth Plugin - Ghost Reduction (YUY2 and YV12 Only, Luminance Ghost Only)
+
+
+- Description
+
+Avisynth ghost removal plugin
+YUY2 and YV12 luminance ghost and edge ringing removal
+
+LGhost1.dll : Avisynth 1.0, 2.0
+LGhost.dll : Avisynth 2.5
+
+
+- Method of use
+
+LoadPlugin("LGhost.dll")
+LGhost(clip, mode0, shift0, intensity0, ... , mode17, shift17, intensity17)
+
+0 - 17 corresponds to up to 18 ghosts
+
+mode      0 : disabled (default)
+1 : edge ghost removal
+2 : brightness go strike removal
+3 : leading edge ghost removal
+4 : trailing edge ghost removal
+shift       shift width (-clip.width to clip.width, default 0)
+intensity  strength (-128 to 127, default 0)
+
+
+- Example
+
+LGhost(mode0 = 1, shift0 = 3, intensity0 = -15)
+LGhost(2, 4, 20, 2, 7, 10, 1, -4, -15, 1, -7, -5)
+
+
+- History
+
+2003/03/16 v0.3.01 Avisynth 2.5 version written
+YV12 mode written
+2002/12/23 v0.2.01 Added leading and trailing edge ghost removal
+LGhost.auf.avs bundled
+2002/12/15 v0.1.02 Corrected bug when using FrameCache with LGhost
+2002/11/11 v0.1.01 Open failure cord/code ??? deletion
+2002/11/03 v0.0.03 Setting UI deletion -> LGhost.auf.avs compilation
+2002/11/03 WarpSharp added to avsfilter
+2002/10/07 v0.0.02 edge ghost removal added
+2002/09/26 EraseGhost added to WarpSharp
+2002/09/24 v0.0.01 First release

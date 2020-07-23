@@ -1,0 +1,266 @@
+Smooth Deinterlace
+------------------
+SmoothDeinterlace.dll contains an adaptive deinterlacer plugin for AVISynth
+(http://www.avisynth.org).  It is based on Gunnar Thalin's SmoothDeinterlace
+plugin (http://www.guthspot.se/video/#deinterlacesmooth) for VirtualDub
+(http://www.virtualdub.org).
+
+Original port to AVISynth 2.0 (from Xesdeeni2001) you can find here:
+http://www.guthspot.se/video/AVSPorts/SmoothDeinterlacer/
+For questions on this port, please contact Xesdeeni2001 at yahoo dot com.
+
+Updated 2006-09-10:
+
+Version 1.5.5 bugfix (for AviSynth 2.5x, RGB32, YUY2 and YV12 colourspaces)
+--------------
+-  fixed loss 1 horizontal line of pixels (YV12, MMX&SSE)
+
+
+Version 1.5.4 release (for AviSynth 2.5x, RGB32, YUY2 and YV12 colourspaces)
+--------------
+- Rewritten and slightly optimized MMX&SSE code (YV12, MMX&SSE)
+- minor bug fixes (YV12, MMX&SSE)
+- final release version (YV12, MMX&SSE)
+
+
+Version 1.5.3 
+--------------
+- Fixed crash if width of YV12 source not divide by 4.
+- Fixed small picture quality loss on scenes with high movement (bug with accuracy loss in 
+  calculation). (YV12, MMX&SSE).
+- Some code cleanup
+  
+For questions and suggestions on versions 1.5.x, please contact Mikola: 
+  niko1999s at mail dot ru.
+
+Version 1.5.2 (for AviSynth 2.5x, RGB32, YUY2 and YV12 colourspaces) (modified by Mikola)
+--------------
+- Added some MMX & SSE optimizations for YV12 colourspace treatment.  
+  Speed up for YV12 sources from 1.3 - 2 times on various SSE CPUs 
+  (higher values belongs to Athlon CPU).
+  
+- "showlace" option now work for YV12 sources.
+
+
+Version 1.5 beta (for AviSynth 2.5x, RGB32, YUY2 and YV12 colourspaces) 
+--------------
+- Added native support for YV12 colourspace (added by Mikola, niko1999s at mail dot ru).  
+  It will not work faster :), but quality for YV12 sources will better, because
+  colourspace conversion will not be necessary anymore.
+- Limitations: "showlace" option will not work for YV12 sources in this version.
+
+
+For questions on versions prior 1.5 beta, please contact Xesdeeni2001 at yahoo dot com.
+--------------
+
+Original text by  Xesdeeni:
+
+Version 1.4
+-----------
+- Fixed another exception when using MPEG2DEC.dll as input.
+
+Features:
+- Added new argument called logfile, that allows specification of the log
+  file name.
+
+Version 1.3
+-----------
+- Fixed distortion when cropping before this filter
+
+Version 1.2
+-----------
+- tff now works correctly for streams which misreport their polarity
+
+Features:
+- Top field first (tff) now defaults to the polarity indicated by the
+  input stream.  It can be overridden by the tff= argument.
+
+Version 1.1
+-----------
+- Fixed an exception when using MPEG2DEC.dll as input.
+
+Version 1.0
+-----------
+Features:
+- Fast, area-based deinterlacing
+- Programmable edge detection to help eliminate false deinterlacing
+- Programmable static interframe detection to help eliminate false
+  deinterlacing
+- Color coded mode to show deinterlacing during parameter tweeking
+- Log file to track interlaced frames (programmable percentage threshold)
+- Works in RGB or YUV color spaces
+- Works with interlaced frames or successive field input
+- Can provide output at the input frame rate (like Gunnar's Area-Based
+  Deinterlace plugin for VirtualDub) or double the frame rate (like the
+  Smooth Deinterlace plugin for VirtualDub)
+- All parameters are optional
+
+Parameters (liberally stolen from Gunnar's description):
+lacethresh = (integer; default = 24) Controls the detection of interlace
+             patterns.  Lower values deinterlace more.
+edgethresh = (integer; default = 20) It's difficult to distinguish between
+             interlace lines and real edges (which should not be deinterlaced).
+             This value controls this decision. Higher value leaves more edges
+             intact.
+staticthresh = (integer; default = 35) The filter tries to detect static areas
+               to avoid deinterlacing fine details which could result in
+               flickering.  This value controls how much a pixel can vary and
+               still be called static.  Use the lowest value as possible to
+               avoid leaving interlace patterns.  Values above 50 (or so) are
+               not recommended.  Good quality video can use lower values.  If
+               you don't have any text or logos that may flicker I suggest
+               using very low values.  0 makes it work like version 1.0 of the
+               VirtualDub plugin.
+staticavg = (integer; default = 80) Controls how long the history is when
+            determining if areas are static or not.  Low values (short history)
+            find static items quckily (but may be incorrect, leaving interlace
+            patterns).  High values mean static details may flicker for a
+            longer time before stabilizing.  Also, it can be slower to react
+            when areas go from static to non-static.  Valid range is 0-100. A
+            good rule is to set static averaging >= 2 * static threshold, or
+            higher (but don't get too close to 100).
+tff = (boolean; default = polarity of input stream) Indicates whether the top
+      field occurred first in time.  DV is normally bottom field first
+      (tff=false), while (interlaced) DVD is normally top field first
+      (tff=true).
+doublerate = (boolean; default = false) Determines whether the output is to be
+             at double the input frame rate (the field rate) or the same.
+             Which one you want will depend on your intended use.
+blend = (boolean; default = false) Blends this and previous field in interlaced
+        areas. (You should probably avoid using this as it just blurs the
+        video.)
+showlace = (boolean; default = false) Areas are colored differently to help you
+           find suitable parameter values.
+           Red - Deinterlaced areas
+           Blue - Non-static areas that would be deinterlaced if interlace patterns
+                  were found
+           Green - Static areas that do contain interlace patterns but are still
+                   left untouched
+           Grey - Static areas without interlace patterns
+log = (boolean; default = false) The frames that have an interlaced area
+      exceeding the given number of percent (logpercent) are logged to a file
+      which will be placed in the current directory.  It's called
+      "DeinterlaceSmooth.log" and contains frame numbers and the interlaced
+      area (in %) for each frame.
+logpercent = (floating point number; default = 0.0)  See log above.
+logfile = (string; default = "DeinterlaceSmooth.log") Used to specify a name for
+          the log file.
+
+Usage:
+LoadPlugin("SmoothDeinterlacer.dll")
+AVISource("Test.avi")
+SmoothDeinterlace()
+
+or
+
+LoadPlugin("SmoothDeinterlacer.dll")
+AVISource("Test.avi")
+SmoothDeinterlace(tff=true, doublerate=true)
+
+Background
+----------
+I originally searched for an adaptive deinterlacer to assist me in doing
+standards conversion (PAL->NTSC & NTSC->PAL; see below).  I tried several,
+but I found Gunnar Thalin's Area-Based Deinterlacer plugin for VirtualDub
+(http://home.bip.net/gunnart/video/#deinterlacearea) to be the best.
+
+I used AVISynth's support of VirtualDub plugins to create an AVISynth script
+that would do the standards conversion for me
+(http://www.vcdhelp.com/forum/viewtopic.php?t=90816).  The results were
+quite good!
+
+However, I had to work around the fact that the Area-Based Deinterlacer only
+output at the same frame rate as the input.  (I also had to work around an
+AVISynth bug in ChangeFPS(), which has been fixed as of version 2.0.6.)
+The technique I used for the standards conversion required that I get double
+the frame rate from the deinterlacer.  This was not an option for any
+VirtualDub plugin, so I decided to port the deinterlacer to an AVISynth
+plugin, which would support a modification to deliver frames at double the
+input rate.
+
+After getting this working, I also decided to modify the code to support the
+YUV format.  This made sense, since most sources are in YUV.  It also sped
+up the operation of the deinterlacer, because it removed an internal conversion
+to luminance that was now not necessary.  My conversions were now taking half
+the time they had taken before!
+
+I wanted to update the standards conversion script for anyone interested, but
+this involved providing the modified deinterlacer as well.  With this in mind,
+I contacted Gunnar.  He was very gratious, but pointed out that his new Smooth
+Deinterlacer was better and it also output at double the input frame rate.  I
+gave it a try and found that it was what I was looking for.  However, I was now
+spoiled by the extra speed of the AVISynth, YUV version.  So I then undertook
+porting the Smooth Deinterlacer to AVISynth.
+
+Along the way, I made a few minor modifications to the operation.  I added a
+switch to allow the output to be either at the frame rate or at double the
+frame rate.  I also adapted the field polarity issues Gunnar faced in VirtualDub
+to the different environment in AVISynth.  And I did some trickery to remove the
+requirement that the input be sequential fields (it will actually take fields
+or frames).
+
+But the baseline algorithm, and indeed most of the actual lines of code, were
+liberally stolen from Gunnar's source :-)  So although I can be held responsible
+for the AVISynth port, please give Gunnar all due credit for the algorithm
+itself.
+
+Standards Conversion
+--------------------
+I had initially intended to segregate my particular use for this deinterlacer
+from the deinterlacer itself.  But at Gunnar's urging, I'm including the
+standards conversion scripts below.  I will release a bit more user-friendly
+version separately, but this will get the more technical of you on your way.
+
+NOTE 1: These scripts are meant to convert truly interlaced (or hybrid) video.
+You will achieve MUCH higher quality with progressive content (film) using
+other methods.  See vcdhelp.com or doom9.net for guides.
+
+NOTE 2: I prefer ChangeFPS() when going from PAL to NTSC.  This AVISynth filter
+replicates frames to achieve the new frame rate.  This is faster than the
+ConvertFPS() filter, and it does not introduce the "jutter" common to much
+converted video, caused by blending of adjacent fields.  It does cause a stutter
+due to the replicated frame (actually, a field), but as hard as I try, I cannot
+see it.  This may be because those of us that watch NTSC are used to the 3:2
+pulldown conversion of film to video, which contains the same type of stutter.
+However, when converting from NTSC to PAL, ChangeFPS() drops frames.  This is
+much less desirable, so I recommend ConvertFPS() when converting in this
+direction.  Perhaps my PAL-land based friends can take a look for themselves and
+let me know what they think.
+
+# PAL DV (50 fps) to NTSC DV (59.94 fps)
+LoadPlugin("SmoothDeinterlacer.dll")
+AVISource("PALDV.avi")
+SmoothDeinterlace(tff=false, doublerate=true)
+BilinearResize(720, 480)
+ChangeFPS(59.94)
+SeparateFields()
+SelectEvery(4, 0, 3)
+
+# NTSC DV (59.94 fps) to PAL DV (50 fps)
+LoadPlugin("SmoothDeinterlacer.dll")
+AVISource("NTSCDV.avi")
+SmoothDeinterlace(tff=false, doublerate=true)
+BilinearResize(720, 576)
+ConvertFPS(50)
+SeparateFields()
+SelectEvery(4, 0, 3)
+
+# PAL DVD (50 fps) to NTSC DVD (59.94 fps)
+LoadPlugin("SmoothDeinterlacer.dll")
+LoadPlugin(PluginPath + "MPEG2DEC.dll")
+InputVideo = MPEG2Source("PALDVD.d2v")
+SmoothDeinterlace(tff=true, doublerate=true)
+BilinearResize(720, 480)
+ChangeFPS(59.94)
+SeparateFields()
+SelectEvery(4, 1, 2)
+
+# NTSC DVD (59.94 fps) to PAL DVD (50 fps)
+LoadPlugin("SmoothDeinterlacer.dll")
+LoadPlugin(PluginPath + "MPEG2DEC.dll")
+InputVideo = MPEG2Source("NTSCDVD.d2v")
+SmoothDeinterlace(tff=true, doublerate=true)
+BilinearResize(720, 576)
+ConvertFPS(50)
+SeparateFields()
+SelectEvery(4, 1, 2)

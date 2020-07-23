@@ -1,0 +1,343 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>DeFlicker Plugin for AviSynth</title>
+</head>
+
+<body>
+
+<p style="margin-top: 0; margin-bottom: 0"><font color="#008000" size="5">
+DeFlicker</font>&nbsp; 
+- <font size="4">mean intensity stabilizer </font></p>
+
+<p style="margin-top: 0; margin-bottom: 0">Plugin for <a href="http://www.avisynth.org">Avisynth</a> 2.6 and Avisynth+</p>
+
+<p style="margin-top: 0; margin-bottom: 0">Version 0.6 - 20190523 by pinterf<br>
+&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">Version 0.4 - August 16, 2004<br>
+Copyright (C)2004 Alexander G. Balakhnin (aka Fizick).<br>
+<a href="http://bag.hotmail.ru">http://bag.hotmail.ru</a><br>
+&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;&nbsp;&nbsp; DeFlicker plugin 
+can remove old film intensity flicker by temporal mean luma smoothing. </p>
+
+<p style="margin-top: 0; margin-bottom: 0">Also it can&nbsp; correct blinding of 
+automatic gain control after flashes. </p>
+
+<p style="margin-top: 0; margin-bottom: 0">The luma stabilizing not only improves 
+visual impression, but can help to following noise reduction.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">
+<br>
+&nbsp;&nbsp; <font color="#008000" size="4">&nbsp;Technical details</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;&nbsp;&nbsp; I use simplified 
+AURORA method of intensity flicker correction, from book:<br>
+Restoration of Archived Film and Video<br>
+Van Roosmalen, Peter Michael Bruce<br>
+Thesis Delft University of Technology - with ref. - with Summary in Dutch<br>
+Printed by Universal Press, Veenendaal<br>
+Cover photo: Philip Broos<br>
+ISBN 90-901-2792-5<br>
+Copyright © 1999 by P.M.B. van Roosmalen</p>
+
+<p style="margin-top: 0; margin-bottom: 0">
+<font FACE="Times New Roman">(A project named AURORA was initiated in 1995, 
+stimulated by the European Union ACTS program.</p>
+
+<p ALIGN="LEFT" style="margin-top: 0; margin-bottom: 0">The acronym AURORA 
+stands for AUtomated Restoration of ORiginal film and video Archives.)</p>
+</font>
+
+<p style="margin-top: 0; margin-bottom: 0">The book file: &quot;Restoration of 
+Archived Film and Video 1999.pdf&quot; may be found in Internet.<br>
+&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;&nbsp;&nbsp; The method used 
+statistical degradation model for multiplicative and additive intensity flicker.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">Filter analyze the evolution of mean 
+intensity and its variation for frames in series.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">Than it try to remove flicker, i.e. 
+to smooth inter-frame mean luma deviation. </p>
+
+<p style="margin-top: 0; margin-bottom: 0">The filter works by&nbsp; partial compensation of 
+current frame contrast and intensity</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;to the values as in previous 
+frames . This estimation and compensation</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;is propagated from some distant 
+base frame to current, as evolution process.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">For stability, the compensation is 
+not full. When filter detects scenechange (as big mean luma or variation 
+difference),</p>
+
+<p style="margin-top: 0; margin-bottom: 0">the new base frame is set to current.</p>
+
+<p style="margin-top: 0; margin-bottom: 0"><br>
+&nbsp;&nbsp;&nbsp;
+My simplifications in current version: filter is applied to whole frame (without 
+regions, globally)</p>
+
+<p style="margin-top: 0; margin-bottom: 0">motion is not used, etc. <br>
+&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">The filter is similar to Antiflicker 
+plugin by Donald Graft, but use different smoothing method.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">The Antiflicker filter with window 
+method is very good for pure periodic flicker, if window size may be properly 
+set.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">If not, Antiflicker may or over-smooths 
+the clips, or not remove all flicker. Timeline random access is not supported.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">The VirtualDub Deflick plugin use 
+same method, works in 2 pass and ... is for VirtualDub.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">The Defliker may works more delicate, 
+with controlled smoothing, and works in 1 pass. Of course, not perfectly.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">Probably,&nbsp; similar propagation method is 
+used in new MSU-Deflicker plugin for VirtualDub.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;&nbsp;&nbsp; Some comments about filter name - 
+yes, the name is similar to Antilicker for Avisynth by D.Graft,</p>
+
+<p style="margin-top: 0; margin-bottom: 0">Antiflicker for VirtualDub by D.Graft 
+(sometimes named as &quot;Deflicker&quot;, but with filename Deflick.vdf) , </p>
+
+<p style="margin-top: 0; margin-bottom: 0">Deflick-Prepare/Process by Alessandro 
+Malanca, and&nbsp; MSU-Deflicker&nbsp;.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">But I decide to complicate this some 
+more :-) </p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;&nbsp;&nbsp;<font color="#008000" size="4"> Parameters of DeFlicker:</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">1 - input clip<br>
+percent (0.0 to 100.0, default=85) -&nbsp; influence of previous frame mean luma 
+(in percent) for temporal luma smoothing<br>
+lag&nbsp; (integer, default=25) - max distance to base frame for process of mean luma 
+estimation and compensation <br>
+noise (0 to 255, default=10) - luma noise std deviation (due to motion etc)<br>
+scene (0 to 255, default=40) - threshold for new scene (mean luma difference, or 
+std variations doubled difference)<br>
+lmin (0 to 255, default=0) - output luma min <br>
+lmax (0 to 255, default=255) - output luma max<br>
+border (0 to ?, default=0) - border width&nbsp; at all edges (in pixels), which 
+not used for estimation<br>
+info (default=false) - show info and borders on frame</p>
+
+<p style="margin-top: 0; margin-bottom: 0">debug (default=false) - produce debug info for debugview utility.<br>
+&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font size="4" color="#008000">&nbsp;&nbsp;
+</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font size="4" color="#008000">&nbsp;Using 
+for flicker removing</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;&nbsp;&nbsp; When amateur films 
+(16 or 18 or 24 fps) is transferred to video (25 or 30 fps)</p>
+
+<p style="margin-top: 0; margin-bottom: 0">by simple projection method, the very 
+big intensity flicker is produced.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">Even if special (per-frame) transfer 
+apparatus is used, some flicker also exists</p>
+
+<p style="margin-top: 0; margin-bottom: 0">due to non-steady (old !) film 
+optical properties.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">The default parameters set&nbsp; must 
+be quite good. But you may tune its.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">Load video clip, set &quot;info&quot; parameter 
+to true, analyze info (frames luma difference etc), </p>
+
+<p style="margin-top: 0; margin-bottom: 0">and set appropriate scene parameter 
+(or others).</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font color="#008000">Simple sample script:</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Courier New">Avisource(&quot;input.avi&quot;)<br>
+loadplugin(&quot;deflicker.dll&quot;)<br>
+converttoYV12()<br>
+DeFlicker(scene=30)</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Courier New"><br>
+&nbsp;</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font size="4" color="#008000">&nbsp;Using 
+for correction of blinding of automatic gain control</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Times New Roman">&nbsp;&nbsp;&nbsp; 
+All modern camcorders have automatic gain control with some rise and fall times.</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Times New Roman">After 
+sudden intensity changes (due to scene change or some flashes), the gain become 
+small,</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Times New Roman">then 
+smoothly restored to normal. Some frames is recorded as too dark. </font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Times New Roman">I can 
+propose some restoration method (may be not original), with deflicker filter.</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Times New Roman">But it 
+must be applied not forward in time, but backward, reverse </font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Times New Roman">(with 
+estimation and compensation from future frames to current one).</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Times New Roman">It can 
+be done with using of&nbsp; Avisynth command &quot;Reverse&quot; ,</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Times New Roman">but in 
+my filter it can be done simply by setting Lag to negative values. </font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Times New Roman">While 
+dark frames (after flash) is processed, the filter will not use any flashed 
+frame for luma smoothing.</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font face="Times New Roman">At 
+flashed frame, the filter must detect a scene change, also as at first frame 
+before it.</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">
+<font face="Times New Roman" color="#008000" size="4">&nbsp;&nbsp;&nbsp; 
+Combining using</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;&nbsp;&nbsp; The best results 
+for films restoration within Avisynth probably may be achieved, for example, 
+with a sequence:</p>
+
+<p style="margin-top: 0; margin-bottom: 0">1.Color, brightness correction 
+(mostly insensitive to luma variation)</p>
+
+<p style="margin-top: 0; margin-bottom: 0">2. Global motion compensation (DePan 
+-&nbsp; insensitive to luma variation)</p>
+
+<p style="margin-top: 0; margin-bottom: 0">3. Mean intensity stabilizer (Deflicker 
+- sensitive to global motion (however and to local too) )</p>
+
+<p style="margin-top: 0; margin-bottom: 0">4. Local motion compensator (MVTools 
+- sensitive to luma variation)</p>
+
+<p style="margin-top: 0; margin-bottom: 0">5. Temporal&nbsp; spots removing (DeSpot 
+- sensitive to luma variation)</p>
+
+<p style="margin-top: 0; margin-bottom: 0">6 Temporal noise reduction (RemoveDirt, 
+Dust, etc - sensitive to luma variation)</p>
+
+<p style="margin-top: 0; margin-bottom: 0">7 Spatial smoothing (Vaguedenoiser, 
+etc - insensitive to luma variation)</p>
+
+<p style="margin-top: 0; margin-bottom: 0">8 Global motion stabilizing (DepanCompensate 
+- insensitive to luma variation)</p>
+
+<p style="margin-top: 0; margin-bottom: 0">9 Coding</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">Note 1. It is listed only to show the 
+DeFlicker place.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">Note 2. I still did not complete that 
+sequense for my films :-)</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font color="#008000" size="4">&nbsp;&nbsp; 
+Features and limitations of current version </font></p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;&nbsp;&nbsp; 1. Works in 8 bit Y, YUV and YUY2 color formats.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;&nbsp;&nbsp; 2. Directly works 
+only with progressive clips (films). </p>
+
+<p style="margin-top: 0; margin-bottom: 0">For interlaced sources, you may use Avisynth functions SeparateFields and  Weave.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;&nbsp;&nbsp; 3. Not very good 
+scenechange detector in current version.</p>
+
+<p style="margin-top: 0; margin-bottom: 0"><span lang="en-us">&nbsp;&nbsp; 4. 
+Now (since v.0.4) is needed in Integer SSE&nbsp; CPU (Pentium3, Athlon)</span>
+Future versions may require SSE2.
+</p>
+
+<p style="margin-top: 0; margin-bottom: 0"><font size="4" color="#008000">
+&nbsp;&nbsp;&nbsp;
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+License</font></p>
+
+<p style="margin-top: 0; margin-bottom: 0"><br>
+This program is free software; you can redistribute it and/or modify<br>
+it under the terms of the GNU General Public License as published by<br>
+the Free Software Foundation; either version 2 of the License, or<br>
+(at your option) any later version.<br>
+<br>
+This program is distributed in the hope that it will be useful,<br>
+but WITHOUT ANY WARRANTY; without even the implied warranty of<br>
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the<br>
+GNU General Public License for more details.<br>
+<br>
+You should have received a copy of the GNU General Public License<br>
+along with this program; if not, write to the Free Software<br>
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. <br>
+&nbsp;</p>
+Documentation is distributed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">CreativeCommons BY-SA 3.0 license.</a><br>
+
+<p>Please consider to make some donation to be registered user.</p>
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;&nbsp;&nbsp;
+
+<p style="margin-top: 0; margin-bottom: 0">&nbsp;</p>
+
+<p style="margin-top: 0; margin-bottom: 0">
+<font size="4" color="#008000">&nbsp;&nbsp;&nbsp; Version changes:</font><br>
+<br>
+Version 0.1,&nbsp;June 3, 2004 - not public (beta!).<br>
+Version 0.2,&nbsp;June 5, 2004 - add reverse mode, info (still beta!).<br>
+Version 0.3,&nbsp;June 6, 2004 - add show border in info mode (still beta!).<br>
+Version 0.4,&nbsp;August 16, 2004 - add YUY2 support (still beta!), some speed 
+increase (ISSE optimized).<br>
+Version 0.5,&nbsp;20190522 (pinterf) - Allow all 8 bit Y and YUV formats, move to VS2019, AVS 2.6 interface, x64 version<br>
+Version 0.6,&nbsp;20190523 (pinterf) - SSE2 and AVX2 support, use all pixels for non-YUY2, safe calculation over 8 Mpixel<br>
+&nbsp;</p>
+
+</body>
+
+</html>

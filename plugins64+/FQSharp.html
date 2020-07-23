@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>FQSharp AviSynth and avisynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>FQSharp </h1></font>
+	 
+	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
+	  <BR> Last modified Date 17 jul 2015	  
+	  <p>This plugin operates in frequency domain and requires for avisynth 
+	<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip"> FFTw3 32 bit dll</a>  or for avisynth+ <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip"> FFTw3 64 bit dll</a> 
+	  </p>
+		<BR>plugin for avisynth versions  2.5 and 2.6 are in 32 bit, while for avisynth+ it is in 64 bit .
+	  <P> Often video  images have 
+	  three types of blur.<BR> 1. Blur due to relative movement of camera during
+		the short time the shutter is open,<BR> 2. Blur due to subjects being out of focus 
+		<BR>3. combination of both.</p>
+		  <p>Amount of blur due to out of focus is dependant on the distance of the 
+		  objects from the camera and likely to vary within same image.
+		  Motion blur is dependant on the subtended angle of the objects and therefore 
+		  will also vary. Restoring image from such blurs is almost impossible. However
+		  in certain cases a large part of image may have a constant one type of blur.
+		  This plugin may be able to restore such images.
+		</p>
+		This plugin has 4 functions.<br>
+		1. <a href="FQBlur.html">FQBlur</a>	: produces either a motion blur or out of focus blur
+		on an image or part of it.<br>
+		2. <a href="FQRestore.html">FQRestore</a> : Restores image by unblurring, given the blur estimate.<br>
+		3. FQVisual : Provides visual aid to estimate type and amount of blur
+		present in (part of) image.In experimental stage. Presently not available<br>
+		
+		4. FQAutoFocus : Experimenting. Not available now. Restores out of focus image by refocussing automatically.
+		
+	  
+	  <P> The frequency domain inversion implemented here can lead to instability.
+	   Addition of  white noise 
+	  and  limiting operator radius are included to contain ringing. 
+	  Since these also limit other frequencies, the image luma level is 
+	  affected. Corrective scaling can be applied. </P>
+	  <P>While all 3 color
+	  planes of RGB formats are processed, in case of YUY2 and Planar only 
+	  Luma (Y) is processed.RGB formats may therefore 
+		run slower as processing has to be performed on the three
+		color planes separately.</P> 
+		
+		 
+		
+<BR>
+
+
+
+<table>
+
+<tr>
+       <td><a href="../index.html">To my index page</a></td>
+	   
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>	
+</body>
+</html>

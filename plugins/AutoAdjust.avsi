@@ -1,0 +1,5 @@
+function AutoAdjust(clip clip, clip "external_clip", bool "auto_gain", float "dark_limit", float "bright_limit", float "gamma_limit", float "dark_exclude", float "bright_exclude", int "gain_mode", int "chroma_process", float "avg_safety", bool "input_tv", bool "output_tv", bool "auto_balance", float "chroma_limit", float "balance_str", int "scd_threshold", int "temporal_radius", string "change_status", bool "use_interp", bool "use_dither", bool "high_quality", bool "high_bitdepth", int "threads_count", int "asm_opt", bool "debug_view")
+{
+VersionNumber() < 2.60 ? LoadPlugin(AviSynthPluginsDir + "25/AutoAdjust.dll") : LoadPlugin(AviSynthPluginsDir + "26/AutoAdjust.dll")
+    AutoAdjust(clip, external_clip, auto_gain, dark_limit, bright_limit, gamma_limit, dark_exclude, bright_exclude, gain_mode, chroma_process, avg_safety, input_tv, output_tv, auto_balance, chroma_limit, balance_str, scd_threshold, temporal_radius, change_status, use_interp, use_dither, high_quality, high_bitdepth, threads_count, asm_opt, debug_view)
+}

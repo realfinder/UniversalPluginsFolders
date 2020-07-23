@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0072)http://students.washington.edu/ldubb/computer/Read_Me_Grape_Smoother.htm -->
+<HTML><HEAD><TITLE>AVISynth — Grape Smoother Filter</TITLE><!-- #BeginTemplate "/Templates/dtvnormal.dwt" --><!-- #BeginEditable "doctitle" --><!-- #EndEditable -->
+<META http-equiv=Content-Type content="text/html; charset=iso-8859-1">
+<STYLE type=text/css>P {
+	FONT-SIZE: 10pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+.bottommenu {
+	FONT-SIZE: 8pt; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif; TEXT-DECORATION: none
+}
+H3 {
+	FONT-WEIGHT: bold; FONT-SIZE: 10pt; FONT-STYLE: normal; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+H1 {
+	FONT-WEIGHT: bold; FONT-SIZE: 18pt; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+LI {
+	FONT-SIZE: 10pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+H2 {
+	FONT-WEIGHT: bold; FONT-SIZE: 14pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+OL {
+	FONT-SIZE: 10pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+BLOCKQUOTE {
+	FONT-SIZE: 10pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+PRE {
+	FONT-SIZE: 9pt; FONT-FAMILY: "Courier New", Courier, mono
+}
+UL {
+	FONT-SIZE: 10pt; FONT-FAMILY: Arial, Helvetica, sans-serif
+}
+</STYLE>
+
+<META content="Microsoft FrontPage 5.0" name=GENERATOR></HEAD>
+<BODY bgColor=#ffffff>
+<TABLE cellSpacing=0 cellPadding=0 width="100%" border=0>
+  <TBODY>
+  <TR>
+    <TD width=160 height=1><IMG height=1 
+      src="spacer.gif" width=1></TD>
+    <TD width=342 height=1><IMG height=1 
+      src="spacer.gif" width=1></TD>
+    <TD width=501 height=1><IMG height=1 
+      src="spacer.gif" width=1></TD></TR>
+  <TR>
+    <TD width=160><A href="http://avisynth.org/">
+    <IMG alt="AVISynth Logo" 
+      src="avisynth-logo.gif" border=0 width="527" height="137"></A></TD>
+    <TD vAlign=bottom align=right colSpan=2><FONT 
+      face="Verdana, Arial, Helvetica, sans-serif" size=5><B><!-- #BeginEditable "Page%20Title" -->Grape Smoother <!-- #EndEditable --></B></FONT></TD></TR>
+  <TR align=right bgColor=#ffcc00>
+    <TD colSpan=3><IMG height=2 
+      src="yellowspacer.gif" 
+    width="100%"></TD></TR>
+  <TR>
+    <TD colSpan=3>
+      <P> </P></TD></TR>
+  <TR>
+    <TD colSpan=3><!-- #BeginEditable "Text" -->
+      <P>This filter cleans up the picture, averaging out visual noise between 
+      frames. </P>
+      <P>When colors change just a little, the filter decides that it’s probably 
+      noise, and only slightly changes the color from the previous frame. As the 
+      change in color increases, the filter becomes more and more convinced that 
+      the change is due to motion rather than noise&nbsp;— and the new color 
+      gets more and more weight. </P>
+      <P>To use the Grape, your computer will have to be able to run MMX 
+      instructions. That means any computer more recent than an original Pentium 
+      I will do. It runs very quickly. </P>
+      <P>This filter works in the YUY2 colorspace. If your clip is encoded as 
+      RGB colors, you’ll first need to process it with ConvertToYUY2(). </P>
+      <P>The Grape Smoother AVISynth filter was written by Lindsey Dubb, 
+      copyright 2002. If you have any questions, comments, problems, or 
+      suggestions, please <A href="mailto:lindsey@alumni.caltech.edu">send me an 
+      email</A> or post to Doom9’s <A 
+      href="http://forum.doom9.org/forumdisplay.php?s=&amp;forumid=33">AVISynth 
+      Forum</A>. 
+      <HR>
+
+      <P><B><FONT face=Arial color=#993300 size=4>Smoothing </FONT></B><BR><I>An 
+      integer from 1 to 100; 30 by default </I></P>
+      <P>This is the only option. The higher you set it, the more you’ll cut 
+      down on noise&nbsp;— but the more blurring you will see. In general, 
+      reasonable values range from 10 (to soften the occasional speckle without 
+      artifacts) to 25 (to reduce noise with minimal artifacts) to 45 (for 
+      better reduction, but visible blurring) up to 80 (to average out really 
+      heavy noise at the cost of bad blurring). At extremely high <FONT 
+      face=Arial color=#993300>Smoothing</FONT> values, you’ll start to see 
+      artifactual vertical lines. </P>
+      <P>To choose a setting for it, try it on just about any comedy or 
+      drama&nbsp;— anything with close-ups of moving faces. Increase <FONT 
+      face=Arial color=#993300>Smoothing</FONT> until the suppression of noise 
+      doesn’t seem worth the blur. </P><!-- #EndEditable --></TD></TR>
+  <TR>
+    <TD colSpan=3>
+      <P> </P></TD></TR>
+  <TR>
+    <TD colSpan=3></TD></TR>
+  <TR>
+    <TD colSpan=3>
+      <P> </P></TD></TR>
+  <TR bgColor=#ffcc00>
+    <TD colSpan=3>
+      <DIV align=center><IMG height=2 
+      src="yellowspacer.gif" 
+      width="100%"></DIV></TD></TR></TBODY></TABLE><!-- #EndTemplate --></BODY></HTML>

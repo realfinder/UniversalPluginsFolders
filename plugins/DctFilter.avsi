@@ -1,0 +1,1 @@
+VersionNumber() < 2.60 ? Import(AviSynthPluginsDir + "25/DctFilter.avsi") : Import(AviSynthPluginsDir + "26/DctFilter.avsi")

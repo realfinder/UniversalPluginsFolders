@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>TransPeel AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>TransPeel </h1></font>
+	 
+	  <P> Left (first) clip rolls and optionally pulls out revealing Right Clip.
+The roll is given a center shading if shade is +ve number, or edges shaded more 
+if shade is a -ve number. If shade is zero no shading is done. If pull is true 
+the roll remains stationary and image is pulled into the roll. Otherwise the 
+roll moves in the direction, keeping the frame image stationary. 
+ All avisynth supported formats can be input.
+ 	  RGB32, RGB24 YV12 and YUY2 colorspaces  are supported by 2.5+ version.2.6 version supports all other planar formats as well. </p>  
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Left clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Right clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Overlapping frames or seconds time</td>
+       <td>overlap</td>
+       <td>integer</td>
+       <td>not more than clip length , >2 frames. If -ve taken as time in seconds</td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>direction of Roll in</td>
+       <td>dir</td>
+       <td>string</td>
+       <td>"up" , "down", "left" "right"</td>
+       <td>"up"</td>
+</tr>
+
+<tr>
+       <td>Maximum diameter of Roll in pixels</td>
+       <td>rolldia</td>
+       <td>integer</td>
+       <td>minimum 8 and not more than 1/4th of smaller of frame dimensions</td>
+       <td>80</td>
+</tr>
+
+<tr>
+       <td>shading of roll. . zero means no shading. _ve value for edges shaded 
+	   more while + ve value shades center more.</td>
+       <td>shade</td>
+       <td>integer</td>
+       <td>-255 to 255</td>
+       <td>127</td>
+</tr>
+
+<tr>
+       <td>does roll peel or moves?</td>
+       <td>peel</td>
+       <td>boolean</td>
+       <td>true or false</td>
+       <td>false</td>
+</tr>
+</table>
+
+
+<BR>#Usage examples:- 
+<pre>TransPeel(Left, Right,100,"left",80,-60,false)
+TransPeel(Left, Right,-3,"up",peel=false)
+
+TransPeel(Left, Right,100,"left",shade=-180)
+
+TransPeel(Left, Right,-4)</pre>
+
+<BR>Images during Transition with dir="up" option:
+<table>
+<tr><td><img src="peel1.JPG" width="256" height="256" border="0"></td>
+<td><img src="peel2.JPG" width="256" height="256" border="0"></td>
+<td><img src="peel3.JPG" width="256" height="256" border="0"></td>
+</tr>
+</table>
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="index.html#synopsys">Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="../../index.html">Back to my  page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+</body>
+</html>

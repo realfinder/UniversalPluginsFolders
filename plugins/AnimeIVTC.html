@@ -1,0 +1,541 @@
+<html>
+<head>
+<title>AnimeIVTC</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<style type="text/css">
+		body	      { font-family: verdana, arial, helvetica, sans-serif;
+				font-size: 12px;
+				color: #000000;
+				background-color: #B6C0CA;
+				text-align: left;
+				line-height: 150%;
+				width: 98.5%;
+				padding: 0px;
+				margin: 8px 0px 8px 8px; }
+
+		ul	      { padding: 0px;
+				margin: 0px 62px 0px 60px; }
+
+		ol	      { padding: 0px;
+				margin: 0px 62px 0px 60px; }
+
+		table	      { width: 99%; }
+
+		h1	      { font-size: 26px;
+				background-color: #90A0C0;
+				text-align: center;
+				line-height: 150%;
+				margin: 12px 0px 12px 0px; }
+
+		h2	      { font-size: 22px;
+				background-color: #90A0C0;
+				line-height: 150%;
+				padding-left: 8px;
+				margin: 12px 0px 12px 0px;
+				border-style: solid;
+				border-color: #003366;
+				border-width: 2px; }
+
+		h3	      { font-size: 18px;
+				line-height: 150%;
+				padding-left: 8px;
+				margin: 12px 0px 12px 50px;
+				border-style: solid;
+				border-color: #003366;
+				border-width: 1px; }
+
+		pre	      { font-family: "Courier New", Courier, monospace;
+				font-size: 15px;
+				background-color: #D0D0C0;
+				padding: 12px;
+				margin: 10px 0px 10px 0px;
+				border-style: solid;
+				border-color: #908030;
+				border-width: 1px; }
+
+		code	      { font-family: "Courier New", Courier, monospace;
+				font-size: 15px;
+				color: #002266;
+				letter-spacing: 1px; }
+
+		a	      { font-size: 12px;
+				color: #404A58;
+				text-decoration: none; }
+
+		a:visited     { color: #0000ff; }
+
+		a:hover	      { background-color: #EEE; }
+
+		#right	      { text-align: right; }
+
+		#justify      { text-align: justify; }
+
+		#quote	      { font-style: italic;
+				margin: 0px 50px 0px 50px; }
+
+		#precode      { color: #002266;
+				background-color: #B6C0CA;
+				padding: 0px 0px 0px 12px;
+				margin: 0px;
+				border-style: none; }
+
+		#section      { color: #002266;
+				width: 300px;
+				line-height: 75%;
+				text-align: right; }
+	</style>
+</head>
+<body>
+<h1>AnimeIVTC</h1>
+<h2>Abstract</h2>
+<br><b>Author:</b> thetoof<br>
+
+<b>Version:</b> 2.00<br>
+<b>Discussion:</b> <a href="http://forum.doom9.org/showthread.php?t=138305">forum.doom9.org</a> 
+<br><b>Category:</b>   IVTC & Decimation<br>
+<b>Requirements:</b> <br>Put all the .dll/.avsi in the "plugins" folder of avisynth. You can get them all <a href="#download">here</a>.
+<ul><li>TIVTC, TDeint and TMM by tritical <a href="http://forum.doom9.org/showthread.php?t=82264">link</a> </li>
+<li>nnEDI2 by tritical <a href="http://forum.doom9.org/showthread.php?t=147695">link</a> </li>
+<li>EEDI2 by tritical, multithreaded version by foxyshadis <a href="http://web.missouri.edu/~kes25c/">link</a> </li>
+<li>yadifmod by tritical <a href="http://avisynth.org.ru/yadif/yadif.html">link</a> </li>
+<li>TGMCmod by thetoof (in 7z archive), original version by Didée here - <a href="http://forum.doom9.org/showthread.php?p=1158000#post1158000">link</a> </li>
+<li>MVTools2 by Fizick <a href="http://avisynth.org.ru/mvtools/mvtools2.html">link</a></li>
+<li>RemoveGrain and Repair by kassandro <a href="http://avisynth.org/mediawiki/Removegrain">link</a> </li>
+<li>MaskTools by Manao <a href="http://avisynth.org/mediawiki/MaskTools">link</a> </li>
+<li>MaskTools2 by Manao <a href="http://forum.doom9.org/showthread.php?t=98985">link</a> </li>
+<li>Vinverse by tritical (original script by Didée) <a href="http://bengal.missouri.edu/~kes25c/vinverse.zip">link</a> </li>
+<li>MedianBlur by tsp <a href="http://avisynth.org/tsp/">link</a> </li>
+<li>srestore by MOmonster <a href="http://forum.doom9.org/showthread.php?t=95924">link</a> </li>
+<li>Average by mg262 <a href="http://forum.doom9.org/showthread.php?p=1129919#post1129919">link</a></li>
+<li>ReduceFlicker by kassandro <a href="http://home.arcor.de/kassandro/ReduceFlicker/ReduceFlicker.htm">link</a> </li>
+<li>SangNom by MarcFD <a href="http://avisynth.org/mediawiki/SangNom">link</a> </li>
+<li>Toon by Soulhunter (original script by mf, speedups by Didée) <a href="http://forum.doom9.org/showthread.php?t=131454">link</a> </li>
+<li>Lsfmod by LaTo <a href="http://avisynth.org/mediawiki/LSFmod">link</a>, original version by Didée here <a href="http://avisynth.org/mediawiki/LimitedSharpen">link</a> </li>
+<li>aWarpSharp and Toon rewrites by SEt <a href="http://forum.doom9.org/showthread.php?t=147285">link</a> </li>
+<li>Microsoft Visual C++ <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=200b2fd9-ae1a-4a14-984d-389c36f85647&DisplayLang=en">link</a> </li>
+<li>AvsRecursion by kassandro (put in your system32 folder... or something else if you're not running with XP 32) <a href="http://home.arcor.de/kassandro/AvsRecursion/AvsRecursion.htm">link</a> </li>
+<li>and of course, AnimeIVTC by thetoof ;-)</li>
+</ul>
+<h2>Table of contents
+</h2>
+<ul>
+  <li><a href="#Anime telecining">
+I) About anime telecining</a>
+  </li>
+  <li><a href="#functions">II) Function descriptions</a></li>
+  <li><a href="#examples">III) Examples</a></li>
+  <li><a href="#disclaimer">IV) Disclaimer</a></li>
+  <li><a href="#revisions">V) Revisions</a></li>
+  <li><a href="#download">VI) Download</a></li>
+</ul>
+<h2><a name="Anime telecining"></a>I) About anime telecining
+</h2>
+<p>This will all be explained in the upcoming new guide. </p>
+<p>Apply TComb <em>before </em>AnimeIVTC if you need to correct dotcrawl.</p>
+<p>It is NOT recommended to use animeivtc with multithreading and/or calling it multiple times in a script. If you want to multithread it, see the <a href="#examples">example scripts</a> below.</p>
+<h2><a name="functions"></a>II) Function descriptions
+</h2>
+<li><a href="#gen">General settings</a></li>
+<li><a href="#creds">Interlaced or progressive credits</a></li>
+  <li><a href="#ht">Mode=1 (Hard telecined)</a></li>
+<li><a href="#fb">Mode=2 (Field-blended)</a></li>
+    <li><a href="#dht">Mode=3 (Double hard telecined)</a></li>
+<li><a href="#hybrid">Mode=4 (Hybrid)</a></li>  
+
+<p><code>AnimeIVTC</code> (<var>clip i, int "mode", int "aa", int "precision", int "killcomb", int "cache", bool "ifade"
+		, bool "chrfix"
+		, bool "blend"  
+		, bool "normconv"
+		, int "pattern"
+		, int "pass", bool "rendering" 
+		, int "bbob", int "cbob", string "edimode", int "degrain", int "omode"
+		, int "i1", int "i2", int "e1", int "e2", int "e3", int "p1", int "p2" 
+		, int "overlap", int "pel", int "search", bool "nnedi2pel", string "credconv"
+		, float "dark", int "thin", int "sharp", int "smooth", bool "stabilize", int "tradius", int "aapel", int "aaov", int "aablk", int "aatype"</var>)
+</p>
+<h3><a name="gen"></a>General parameters </h3>
+<p><var>mode</var> : Required parameter. Defines the function's behavior</p>
+<ul><li>1 : Hard telecined</li>
+<li>2 : Field blended</li>
+<li>3 : Double hard telecine</li>
+<li>4 : Hybrid</li>
+</ul>
+<p><em>chrfix</em> : Use to correct chroma swap between fields (to find out, apply bob() on your clip and examine the frames. If at some point the chroma of a frame is in the other and vice-versa, the issue is present).</p>
+<ul>
+  <li>True</li>
+  <li>False (default)</li>
+</ul>
+<p><em>ifade</em> : Detects and corrects interlaced fade-ins. Use for mode=1 or 4 since the clip is bobbed in mode=2 and 3.</p>
+<ul>
+  <li>True</li>
+  <li>False (default for speed concerns, but enabling it can be safer)</li>
+</ul>
+<p><em>cache</em> : Sets amount of frames to cache for all functions using scriptclip to prevent seeking issues + frame order mess-up with temporal filters. Using too much will result in crashing, so use less if you get memory issues.</p>
+<ul>
+  <li>0 to inf.  (default=10)</li>
+</ul>
+<p><var>killcomb</var> : Removes any residual combing. Use for mode=1 or 4 since the clip is bobbed in mode=2 and 3.</p>
+<ul>
+  <li>0 : No combing removal (default)</li>
+  <li>1 : Combing removal with vinverse() </li>
+  <li>2 : Slower, but more aggressive combing removal by using mcbob's method</li>
+  <li>3 : Even slower, but better detail preservation and sharpness. Same as aa=3 [daa()]</li>
+</ul>
+<p><var>aa</var> : Antialiasing. 
+None is necessarily better than the others, but one is more adapted to your needs.</p>
+Example <a href="Images/aliased.jpg">without</a> and <a href="Images/anti-aliasing.jpg">with</a> anti-aliasing
+<ul>
+  <li>-1: Compare by interleaving the different aa options</li>
+  <li>0 : No aa</li>
+<li>1 : EEDI2() based aa [can be called externally as ediaa()]</li>
+<li>2 : Average of a spatial interpolations of each fields + contra-sharpening [can be called externally as daa()]</li>
+<li>3 : Edge targeted Sangnom() aa leaving the rest of the frame untouched - watch out for detail loss... if you can spare some additionnal processing time, take a look at aa=4 [can be called externally as maa()]</li>
+<li>4 : Line darkening, warp sharpening, edge targeted  aa, limited sharpening and temporal stabilizing [can be called externally as SharpAAMCmod()]</li>
+</ul>
+<p><b>The following options are meant for aa=4</b> [SharpAAMCmod()]</p>
+<p><var>aatype</var> : Select the filter used for aa</p>
+<ul><li>"Sangnom" (default)</li>
+<li>"EEDI2" (slower, but sometimes has better detail preservation than Sangnom) </li>
+</ul>
+<p><var>dark</var> : Line darkening strength by using Toon</p>
+<ul><li>0 to 1 (default=0.2)</li>
+</ul>
+<p><var>thin</var> : Higher = thinner lines by using warpsharp</p>
+<ul>
+  <li>default = 10</li>
+</ul>
+<p><var>sharp</var> : Post-sharpening strength of LSFmod</p>
+<ul>
+  <li>0 to inf. (default = 150)</li>
+</ul>
+<p><var>smooth</var> : Post-softening strength of LSFmod</p>
+<ul><li>0 to 100 (default = 100)</li>
+<li>-1 = The function will (try to) autocalculate a good value</li>
+</ul>
+<p><var>stabilize</var> : Edge stabilizing through motion compensation with MDegrain's temporal averaging - use if the edges are unstable (trembling, flickering...) or as a edge-directed smart soothe().</p>
+<ul><li>True</li>
+<li>False (default)</li>
+</ul>
+<p><var>tradius</var> : Temporal radius (# of frames*2+1) of the stabilization.</p>
+<ul>
+  <li>0 to 3 (default=2)</li>
+</ul>
+<p><var>aapel</var> : Supersampling factor for motion vector calculations when using stabilize=true. Higner = better, but slower</p>
+<ul><li>1, 2 or 4 (default=1)</li>
+</ul>
+<p><var>aablk</var> : Size of the blocks for motion vector calculations when using stabilize=true. Larger blocks are less sensitive to noise, are faster, but also less accurate.</p>
+<ul>
+  <li>4, 8 or 16 (default=8 for SD and 16 for HD)</li>
+</ul>
+<p><var>aaov</var> : Overlap of the blocks for motion vector calculation when using stabilize=true. Higner = better, but slower</p>
+<ul>
+  <li>Must be even and up to half <var>aablk</var> (default=4 for SD and 8 for HD)</li>
+</ul>
+<p><a href="#functions">Back to top</a></p>
+<h3><a name="creds" id="creds"></a>Interlaced or progressive credits</h3>
+<p><var>i1/i2/p1/p2/e1/e2/e3</var> : Give the frame numbers to the function so that each section is processed correctly. Use your <strong>source</strong>'s frame numbers. You do not have to specify all of them. Example - a bit of the telecined episode + interlaced opening credits + episode + progressive ending credits + next episode preview. Use <em>e1=w,i1=x,e2=y,p1=z,e3=a</em>.</p>
+<ul>
+  <li><em>i1</em> Last frame of the 1st interlaced section of the clip</li>
+  <li><em>i2</em> Last frame of the 2nd interlaced section of the clip</li>
+  <li><em>p1</em> Last frame of the 1st progressive section of the clip</li>
+  <li><em>p2</em> Last frame of the 2nd progressive section of the clip</li>
+  <li><em>e1</em> Last frame of the 1st telecined/double hard telecined/field blended/hybrid section of the clip </li>
+  <li><em>e2</em> Last frame of the 2nd telecined/double hard telecined/field blended/hybrid section of the clip </li>
+  <li><em>e3</em> Last frame of the 3rd telecined/double hard telecined/field blended/hybrid section of the clip </li>
+</ul>
+<p><var>omode</var> : Determines the output framerate</p>
+<ul>
+  <li>1 : Converts the credits to the framerate of the episode to maintain a Constant Frame Rate. Mandatory for norm conversions.</li>
+  <li>2 : Credits are maintained at 29.97 fps (half their full temporal resolution) to create a <a href="#vfr">Variable Frame Rate</a> clip.  <b>Intended for mkv files.</b></li>
+</ul>
+<p><var>credconv</var> : Determines how the credits will be converted for <strong><em>omode=1</em></strong><em></em></p>
+<ul>
+  <li>&quot;mocomp&quot; : Use motion-compensation. Use when you have low motion backgrounds to get a blend free and stable clip.</li>
+  <li>&quot;blend&quot; : Blend frames together to reduce framerate<b></b></li>
+</ul>
+<p><var>overlap</var> : Overlap of the blocks for motion vector calculation. Higner = better, but slower. <strong>Use for &quot;mocomp&quot;</strong>.</p>
+<ul>
+  <li>0, 2 or 4 for SD (default=4)</li>
+  <li>0, 2, 4, 6 or 8 for HD (default=8)</li>
+</ul>
+<p><var>pel</var> : Supersampling factor for motion vector calculation. Higner = better, but slower. <strong>Use for &quot;mocomp&quot;</strong>.</p>
+<ul>
+  <li>1, 2 or 4 (default=2)</li>
+</ul>
+<p><var>search</var> : Have fun testing. 4 and 5 are usually better than 2 for roughly the same speed. <strong>Use for &quot;mocomp&quot;</strong>.</p>
+<ul>
+  <li>2 (Logarithmic search, also named Diamond Search)</li>
+  <li>3 (Exhaustive search) - slowest, but best results SAD-wise (basically the mo-comp is done by calculating the sum of absolute differences between blocks to determine if it is the same element moving or a different one) Attempt at lame joke: no, we're not talking about this here...   <a href="http://en.wikipedia.org/wiki/Sexual_arousal_disorder">SAD</a></li>
+  <li>4 (Hexagon search - similar to x264) (default)</li>
+  <li>5   (Uneven Multi Hexagon search - similar to x264) </li>
+</ul>
+<p><var>nnedi2pel</var> : Use nnEDI2 for interpolation. True = usually better. <strong>Use for &quot;mocomp&quot;</strong>.</p>
+<ul>
+  <li>true </li>
+  <li>false (default)</li>
+</ul>
+<p><var>pass</var> : Creating a VFR clip requires two passes. The file you must use for your final encode/subsequent filtering must be the one generated by pass=2.<b> Use for omode=2</b>.</p>
+<ul>
+  <li>1 : Open with vdub, file-run video analysis pass, wait until the end, close vdub OR do a rendering pass (saving the filtered clip in a lossless (i.e. with Lagarith or HuffYUV) avi file for further use to avoid computing the same thing twice - once for analysis and another to decimate) (default)</li>
+  <li>2 : Reload the same script with pass=2. Use the new avi file as source if you did a rendering pass. After all subsequent filtering, encode. Then, take the "timecode.txt" file and add it as the timecode for the video stream in mkvmerge.</li>
+</ul>
+<p><var>rendering</var> : If you did a rendering pass , this will only be VFR decimation based on the files written by pass=1.<strong> Use for omode=2 and pass=2.</strong> </p>
+<ul>
+  <li>True (you did a rendering pass and only want to decimate in pass=2)</li>
+  <li>False (you did not create any intermediate file) (default)</li>
+</ul>
+<p><var>cbob</var> : Higher = slower, but more precise... Here, it's <i>almost</i> only about quality vs speed. <strong>Use for interlaced credits</strong>.</p>
+<ul>
+  <li>0 : Fastest, TDeint alone</li>
+  <li>1 : Better (TDeint + nnedi2 for interpolation)</li>
+  <li>2 : Even better (TDeint + nnedi2  + motion mask)</li>
+  <li>3 : Alternate (Yadifmod + nnedi2 for interpolation) </li>
+  <li>4 : Most stable bobber around - TGMC. Slow. (default)</li>
+</ul>
+<p><var>edimode</var> : Tells which filter to use for spatial interpolation with<strong> <em>cbob=4</em></strong>. The "best" one depends on your source. <strong>Use for interlaced credits</strong>.</p>
+<ul>
+  <li>"yadif"</li>
+  <li>"eedi2"</li>
+  <li>"nnedi2" (default) </li>
+</ul>
+<p><var>degrain</var> : Temporal radius (# of frames to use * 2 + 1) for the final degraining step with<strong> <em>cbob=4</em></strong>. Higher = slower + more noise removal + more stable. <strong>Use for interlaced credits</strong>.</p>
+<ul>
+  <li>1 (default)</li>
+  <li>2</li>
+  <li>3</li>
+</ul>
+<p><a href="#functions">Back to top</a></p>
+<h3><a name="ht"></a>Hard telecine (mode=1)</h3>
+<p><var>precision</var> : Higher = slower, but more precise... Here, it's only about quality vs speed.</p>
+<ul>
+<li>0 : Fastest, tfm only</li>
+<li>1 : Better (uses Tdeint to deinterlace)</li>
+<li>2 : Even better (Tdeint + nnedi2 for interpolation)</li>
+<li>3 : Optimal (Tdeint + nned2i + motion mask) (default)</li>
+</ul>
+<p><em>blend</em> : If you have a case of blend telecine, or blend-deinterlacing of telecined footage. 3:2 pattern - 3 clear, 2 blended. Weight must be 50/50.</p>
+<ul>
+  <li>True</li>
+  <li>False (default)</li>
+</ul>
+<p>&nbsp;</p>
+<a href="#functions">Back to top</a>
+<h3><a name="fb"></a>Field blended (mode=2)</h3>
+<p><var>bbob</var> : Higher = slower, but more precise... Here, it's <i>almost</i> only about quality vs speed. Mo-comp is not recommended for blended material, but I left in case you have stability issues with the other bobbers.</p>
+<ul>
+<li>0 : Fastest, TDeint alone</li>
+<li>1 : Better (TDeint + nnedi2 for interpolation)</li>
+<li>2 : Even better (TDeint + nnedi2  + motion mask)</li>
+<li>3 : Alternate (Yadifmod + nnedi2 for interpolation) (default)</li>
+<li>4 : Most stable bobber around - TGMC. Slow. </li>
+</ul>
+<p><var>edimode</var> : Tells which filter to use for spatial interpolation with<strong> <em>cbob=4</em></strong>. The "best" one depends on your source.</p>
+<ul>
+  <li>"yadif"</li>
+  <li>"eedi2"</li>
+  <li>"nnedi2" (default) </li>
+</ul>
+<p><var>degrain</var> : Temporal radius (# of frames to use * 2 + 1) for the final degraining step with<strong> <em>cbob=4</em></strong>. Higher = slower + more noise removal + more stable.</p>
+<ul>
+  <li>1 (default)</li>
+  <li>2</li>
+  <li>3</li>
+</ul>
+<p><em>normconv</em> : Set to true if your source was blend-converted from PAL to NTSC or vice-versa.</p>
+<ul>
+  <li>True : Change framerate to 25fps if your source is NTSC or to 23.976fps if it's PAL</li>
+  <li>False : Keep 25fps if source is PAL and 23.976 if source is NTSC (default)</li>
+</ul>
+<p><a href="#functions">Back to top</a></p>
+<h3><a name="dht"></a>Double hard telecine (mode=3)</h3>
+<p><var>cbob</var> : Higher = slower, but more precise... Here, it's <i>almost</i> only about quality vs speed.</p>
+<ul>
+  <li>0 : Fastest, TDeint alone</li>
+  <li>1 : Better (TDeint + nnedi2 for interpolation)</li>
+  <li>2 : Even better (TDeint + nnedi2  + motion mask)</li>
+  <li>3 : Alternate (Yadifmod + nnedi2 for interpolation) </li>
+  <li>4 : Most stable bobber around - TGMC. Slow. (default)</li>
+</ul>
+<p><var>edimode</var> : Tells which filter to use for spatial interpolation with<strong> <em>cbob=4</em></strong>. The "best" one depends on your source.</p>
+<ul><li>"yadif"</li>
+<li>"eedi2"</li>
+<li>"nnedi2" (default) </li>
+</ul>
+<p><var>degrain</var> : Temporal radius (# of frames to use * 2 + 1) for the final degraining step with<strong> <em>cbob=4</em></strong>. Higher = slower + more noise removal + more stable.</p>
+<ul><li>1 (default)</li>
+<li>2</li>
+<li>3</li>
+</ul>
+<p><var>pattern</var> : Tells the function how to decimate to 23.976 fps.</p>
+<ul>
+  <li>0 Safest. Uses TDecimate. (default)</li>
+  <li>-1 Compare 1 to 5.</li>
+  <li>1 to 5 If your source has a fixed pattern, finding it with -1 and using the appropriate one will be faster and visually better, but as soon as there's a change, everything will be a mess. Be careful.</li>
+</ul>
+<p><a href="#functions">Back to top</a></p>
+<h3><a name="hybrid"></a>Hybrid (mode=4)</h3>
+<p><var>precision</var> : Higher = slower, but more precise... Here, it's only about quality vs speed.</p>
+<ul>
+  <li>0 : Fastest, tfm only</li>
+  <li>1 : Better (uses Tdeint to deinterlace)</li>
+  <li>2 : Even better (Tdeint + nnedi2 for interpolation)</li>
+  <li>3 : Optimal (Tdeint + nned2i + motion mask) (default)</li>
+</ul>
+<p><var>omode</var> : Determines the output framerate</p>
+<ul>
+  <li>1 : Converts the 30p sections to 24p by blending frames together to maintain a Constant Frame Rate. </li>
+  <li>2 : 30p sections are maintained at 29.97 fps  to create a Variable Frame Rate clip. <b>Intended for mkv files.</b></li>
+</ul>
+<p><var>pass</var> : Creating a VFR clip requires two passes. Rendering passes are only recommended when you have interlaced or progressive credits or when <em>ifade=true</em>. You will not see the results of killcomb and aa in pass=1. The file you must use for your final encode/subsequent filtering must be the one generated by pass=2.<b> Use for omode=2</b>.</p>
+<ul>
+  <li>1 : Open with vdub, file-run video analysis pass, wait until the end, close vdub OR do a rendering pass (saving the filtered clip in a lossless (i.e. with Lagarith or HuffYUV) avi file for further use to avoid computing the same thing twice - once for analysis and another to decimate) (default)</li>
+  <li>2 : Reload the same script with pass=2. Use the new avi file as source if you did a rendering pass. After all subsequent filtering, encode. Then, take the "timecode.txt" file and add it as the timecode for the video stream in mkvmerge.</li>
+</ul>
+<p><var>rendering</var> : If you did a rendering pass , this will only be VFR decimation based on the files written by pass=1.<strong> Use for omode=2 and pass=2.</strong></p>
+<ul>
+  <li>True (you did a rendering pass and only want to decimate in pass=2)</li>
+  <li>False (you did not create any intermediate file) (default)</li>
+</ul>
+<p><a href="#functions">Back to top</a></p>
+<h2><a name="examples"></a>III) Examples
+</h2>
+<p>AnimeIVTC is quite easy to use... if you have questions after reading this manual, please post in the AnimeIVTC thread.</p>
+<p>Here is a way to multithread it, but you can use the concept in many different ways (loading from different hard drives + outputting to different hard drives and so forth). I only used 3 threads because more was too much for the source HDD, even when writing to 4 different ones. Do NOT use for VFR encodes, where analysis and decimation must be done in one shot.</p>
+<pre>
+xxxsource(&quot;file.ext&quot;)
+threads = 3
+s=AnimeIVTC([settings]) 
+a=s.trim(0,int(framecount(s)/threads))
+b=s.trim(int(framecount(s)/threads)+1,int(framecount(s)/threads-1))
+c=s.trim(int(framecount(s)/threads-1)+1,0) 
+a #load this script in vdub and save as rendering1, then change a to b and save as rendering2, ideally on a different HDD... etc etc
+
+#then, for further processing or encoding, load your different files and splice them, such as:
+#a=avisource(rendering1 file with path)
+#b=avisource(rendering2 file with path)
+a+b+.....
+</pre>
+<br><a href="#functions">Back to top</a>
+<h2><a name="disclaimer"></a>IV) Disclaimer
+</h2>
+<p>This script uses plugins distributed under terms of the GNU GPL license, without any warranty. See 'gpl.txt'.<br>
+Documentation is distributed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">CreativeCommons BY-SA 3.0 license.</a><br>
+<p>Please consider donating for support. I may be doing this for the fun of it, but I'm still a poor student :p<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="image" src="https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1">
+<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
+">
+</form></p>
+</p>
+
+<h2><a name="revisions"></a>V) Revisions
+</h2>
+<small>
+<p><small>2.00 Released 2010-01-07 by thetoof</small></p>
+</small>
+<ul>
+  <li>v2 because of the syntax changes</li>
+  <li>Compatibility with MVtools2</li>
+  <li>Compatibility with srestore for field blended</li>
+  <li>New (and better) decimation for dht</li>
+  <li>The user will determine the end frames of every sections in case of progressive/interlaced credits and the rest will all be done internally (no need to switch between the checks since it was a pain)</li>
+  <li>Handling of the blend-decimation of hybrid sections in omode=1</li>
+  <li>More aa and killcomb options</li>
+  <li>New parameter to fix chroma swap between fields</li>
+  <li>New parameter to fix blend telecine</li>
+  <li>New parameter to fix interlaced fade-ins</li>
+  <li>The modes are &quot;re-thought&quot; : mode=1 (hard telecine) mode=2 (field blended) mode=3 (double hard telecine) mode=4 (hybrid) At the moment you define a frame # for interlaced or progressive credits, the function adapts itself</li>
+  <li>Memory usage decreased for a few modes</li>
+  <li>No need to specify the region of your source (done internally) Single parameter added (bool &quot;normconv&quot;) to go from one to another</li>
+  <li>More accurate external pelclip with nnedi2 for optimal motion vectors calculation</li>
+  <li>Rewriting of the function from scratch to prevent memory waste and other issues (I had patched with a few tricks here and there which made it harder to read. It's almost all gone now)</li>
+  <li>Maybe a few other things I'll add when I remember what I changed in the last year or so ;)</li>
+</ul>
+<small>
+<p>1.06 Released 2008-10-08 by thetoof</p>
+<ul>
+  <li>Fixed bug when using mode=6 with the checks</li>
+  <li>Faster aa=4 when settings=0</li>
+  <li>Fixed mt=false issues</li>
+  <li>Fixed 1/2-pel registration error between the original and antialiased clip, due to EEDI2 for aa=1</li>
+  <li>Fixed bug where edge masking was disabled with mc=false</li>
+  <li>Added aatype argument to aa=4 (use sangnom or eedi2 for anti-aliasing)</li>
+  <li>aapel's default is now 1 (faster)</li>
+  <li>re-added idx for aa=4 (faster)</li>
+  <li>Removed useless messages in the checks</li>
+  <li>Changed AssumeFPS with ChangeFPS for region conversions</li>
+  <li>Added RequestLinear call after cdeblend to prevent false "hey, it's not deblending well" assumptions when seeking</li>
+  <li>Added AvsRecursion & aWarpsharp to the requirements archive</li>
+  <li>Added corrected TempGaussMC_beta1mod</li>
+  <li>Updated the docs to include the info on how to combine the lossless rendering pass and the analysis pass with vfr decimation</li>
+</ul>
+<p>1.05 Released 2008-09-18 by thetoof</p>
+<ul>
+  <li>Added string "edimode"</li>
+  <li>Added int "degrain"</li>
+  <li>Fixed typos in the docs</li>
+  <li>Removed ineffective error message about the external audio file</li>
+  <li>Added the plugins needed for aa=4 + bob/precision=3 in the "requirements" archive & list</li>
+</ul>
+<p>1.04 Released 2008-09-17 by thetoof</p>
+<ul>
+  <li>Fixed check=3 and check=10 to be compatible with the new add-ons</li>
+  <li>Corrected typo in the error message asking to specify the omode</li>
+  <li>Disabled aa comparison when using one of the check=x</li>
+  <li>nnedipel's default is now false</li>
+  <li>Changed the order of the filters so that all the stream (not only the ivtced sections) can be processed with killcomb and aa</li>
+  <li>Fixed syntax errors with mode=7</li>
+</ul>
+<p>1.03 Released 2008-09-16 by thetoof</p>
+<ul>
+  <li>Fixed bug when splicing clips at different framerates</li>
+  <li>Fixed bug where frames were lost to decimation in mode=6</li>
+  <li>Fixed bug causing the "tfm.txt" file to be overwritten every time the script was loaded</li>
+  <li>Fixed idx values in the MVAnalyse and MVFlowFPS calls</li>
+  <li>Use of 2 different pelclips if prefiltered clip is used before motion vectors calculation to prevent b0rked output</li>
+  <li>Removed omode=3 for optimal vfr decimation</li>
+  <li>Less memory usage by using a named clip for all the blankclips</li>
+  <li>Changed syntax to be compatible with the newest version of mrestore</li>
+  <li>Faster blends and duplicates detection for decimate=5 by using dclip=i.bob().reduceflicker(strength=1) in mrestore</li>
+  <li>Replaced nnediaa with ediaa for better aliasing removal (aa=1)</li>
+  <li>Added functions in the script to fix "There is no function named iseven/isodd" bug</li>
+  <li>Added "MT" parameter to use with the multithreaded version of MVTools</li>
+  <li>Added support for fieldblended PAL & norm-conversion restoration</li>
+  <li>Added support for 30p credits on top of telecined background</li>
+  <li>New check function to get the frame numbers of the 30p sections (check=0)</li>
+  <li>New check function to see the prefiltered clip of the 30p sections (check=9)</li>
+  <li>Argument "pureint" changed to "mix"</li>
+  <li>15 new "mix" modes for all the possibilities for 30p and 30i credits</li>
+  <li>Replaced decimate=0 with pass=0</li>
+  <li>New AA function by Mystery Keeper (aa=4)</li>
+  <li>Re-added the possibility to use killcomb=0, but default remains 1</li>
+  <li>Changed "precision"'s default to 3 for all modes</li>
+  <li>Cosmetic changes</li>
+  <li>Included TempGaussMC_beta1mod in the requirements package to make bob=3 work with the new "MT" parameter</li>
+  <li>Docs update + formatting improvement, reformulation here and there...</li>
+  
+</ul>
+<p>1.02 Released 2008-06-19 by thetoof</p>
+<ul>
+  <li>No more "HD" setting (done automatically)</li>
+  <li>Vinverse can't be removed from the filter chain, resulting in a speed improvement (killcomb=0 doesn't exist anymore)</li>
+  <li>Decimate=0 can be used with any mode as a preparation to mode=7 (run a lossless rendering pass of decimate=0 and then load the resulting file with mode=7) for compressibility improvement through VFR</li>
+</ul>
+<p>1.01 Released 2008-06-12 by thetoof</p>
+<ul>
+  <li>Correction of syntax errors for mode=7 </li>
+</ul>
+<p>1.00 Released 2008-06-01 by thetoof</p>
+<ul>
+  <li>Initial release of the function. </li>
+</ul>
+</small>
+
+<h2><a name="download"></a>VI) Download</h2>
+
+
+<h3><a href="http://www.mediafire.com/download.php?kjjlukmmdzj">Download AnimeIVTC & all necessary plugins (7z/2.48 MB)</a>
+
+</body>
+</html>

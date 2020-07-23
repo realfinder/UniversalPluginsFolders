@@ -1,0 +1,1179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>stickboy's AviSynth Stuff</title>
+<link rel="stylesheet" href="stickboy%27s%20AviSynth%20Stuff_files/global.css" type="text/css" title="Default">
+<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="http://avisynth.org/stickboy/rss.xml">
+<style type="text/css" title="Default"><!--
+/* Effective stylesheet produced by snapshot save */
+.itemHeader { margin-bottom: 0px; }
+.itemDescription { margin-top: 0px; margin-bottom: 0px; }
+.functionName { font-weight: bold; }
+h3 kbd { font-size: 110%; }
+#scripts, #plugins, #other, #wishlist, #todo, #avGeneral, #history { padding-bottom: 1em; margin-top: 1em; margin-bottom: 1em; border-bottom: 1px solid black; }
+#historylist { height: 15em; overflow: auto; margin: 0em 2em; border: 1px solid black; }
+#historylist td { padding-bottom: 0.25em; padding-top: 0.25em; }
+#w3bug { float: right; text-align: right; }
+#counter { font-size: 0px; }
+--></style>
+</head>
+
+<body>
+
+<div id="mainTitle">
+	<p class="breadCrumbs">
+	<a href="http://www.avisynth.org/">AviSynth</a> &gt; <a href="http://avisynth.org/mediawiki/Shared_functions">Shared Functions</a> &gt;
+	</p>
+	<h1>stickboy's AviSynth Stuff</h1>
+</div>
+
+<div class="mission">
+	<p>
+	This page contains functions and plug-ins that I have written for
+	<a href="http://www.avisynth.org/" class="unemphasized">AviSynth</a>,
+	an open-source, script-based, non-linear video editor.
+	</p>
+	<p>
+	My goals are to write functions and plug-ins that improve the
+	expressiveness and readability of the scripting language; I want to make it
+	easier for other people to write AviSynth scripts.
+	</p>
+</div>
+
+<div id="scripts">
+	<h2>Functions</h2>
+	<div class="indent">
+		<p>
+		Documentation for each function is included in the script file itself.  To
+		use these functions, either download the <kbd>.avsi</kbd> script and copy
+		it to your AviSynth plug-ins directory, or copy and paste the functions you
+		want into your own script.
+		</p>
+
+		<p>
+		Some functions may require using the latest stable version of AviSynth and
+		also may require <kbd>jdl-util.avsi</kbd>.
+		</p>
+
+		<h3 id="util" class="itemHeader"><kbd><a href="http://avisynth.org/stickboy/jdl-util.avsi">jdl-util.avsi</a></kbd></h3>
+		<div class="indent">
+		<p class="itemDescription">
+		General-purpose, utility functions.<br>
+		<em>My other scripts are dependent on this file.</em>
+		</p>
+		<ul class="functionList">
+			<li>
+				<code class="functionName">Min</code>,
+				<code class="functionName">Max</code>,
+				<code class="functionName">Clamp</code><br>
+				These functions are superceded by the more general versions in my <a href="#plugins" class="unemphasized">Min/Max plug-in</a>.
+			</li>
+			<li><code class="functionName">Quote</code>, <code class="functionName">Endl</code></li>
+			<li><code class="functionName">AssertEval</code></li>
+			<li><code class="functionName">Throw</code></li>
+			<li><code class="functionName">Undefined</code></li>
+			<li><code class="functionName">NullClip</code></li>
+			<li><code class="functionName">JDL_ImageSource</code> (<a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=58954">rationale and discussion</a>)</li>
+			<li>
+				<code class="functionName">Trim2</code>,
+				<code class="functionName">Trim3</code>
+				(<a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=58358">rationale and discussion</a>)<br>
+				I recommend using these instead of <code>Trim</code> in your own user-defined functions.
+			</li>
+			<li>
+				<code class="functionName">JDL_LengthenClip</code><br>
+				Superceded by my <a href="#plugins" class="unemphasized">ApplyEvery plugin</a>.
+			</li>
+			<li><code class="functionName">SetParity</code></li>
+			<li><code class="functionName">AssumeScaledFPS</code></li>
+			<li><code class="functionName">JDL_ShiftFrame</code></li>
+			<li>
+				<code class="functionName">NoArgFunctionWrapper</code> (<a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=56536">rationale and discussion</a>)<br>
+				Allows the use of <code>Animate</code> or <code>ApplyRange</code> with functions or filters that take no arguments.
+			</li>
+			<li><code class="functionName">JDL_FunctionDefined</code></li>
+			<li>
+				<code class="functionName">HasVideo</code>,
+				<code class="functionName">HasAudio</code>
+			</li>
+		</ul>
+		</div>
+
+		<h3 id="range" class="itemHeader"><kbd><a href="http://avisynth.org/stickboy/jdl-range.avsi">jdl-range.avsi</a></kbd></h3>
+		<div class="indent">
+		<p class="itemDescription">
+		Functions that operate on ranges in a clip.
+		</p>
+		<ul class="functionList">
+			<li>
+				<code class="functionName">JDL_ApplyRange</code>,
+				<code class="functionName">JDL_ApplyRangeOld</code>
+			</li>
+			<li><code class="functionName">JDL_ApplyFrame</code></li>
+			<li>
+				<code class="functionName">JDL_ApplyEvery</code><br>
+				Superceded by my <a href="#plugins" class="unemphasized">ApplyEvery plugin</a>.
+			</li>
+			<li><code class="functionName">JDL_SimpleApplyEvery</code></li>
+			<li><code class="functionName">JDL_DeleteRange</code></li>
+			<li><code class="functionName">JDL_SingleFrame</code></li>
+			<li><code class="functionName">JDL_ReplaceRange</code></li>
+			<li><code class="functionName">JDL_FreezeRegion</code></li>
+			<li><code class="functionName">JDL_FreezeLoop</code></li>
+		</ul>
+		</div>
+
+		<h3 id="telecine" class="itemHeader"><kbd><a href="http://avisynth.org/stickboy/jdl-telecine.avsi">jdl-telecine.avsi</a></kbd></h3>
+		<div class="indent">
+		<p class="itemDescription">
+		Functions for use with telecined material.
+		</p>
+		<ul class="functionList">
+			<li><code class="functionName">JDL_Telecine</code></li>
+			<li>
+				<code class="functionName">JDL_IVTCPattern</code>,
+				<code class="functionName">JDL_IVTCPattern2</code>,
+				<code class="functionName">JDL_IVTCPatternSegment</code>
+			</li>
+			<li>
+				<code class="functionName">JDL_DecimatePattern</code>,
+				<code class="functionName">JDL_DecimatePattern2</code>
+			</li>
+			<li><code class="functionName">JDL_ShowFrameOffset</code></li>
+		</ul>
+		</div>
+
+		<h3 id="interlace" class="itemHeader"><kbd><a href="http://avisynth.org/stickboy/jdl-interlace.avsi">jdl-interlace.avsi</a></kbd></h3>
+		<div class="indent">
+		<p class="itemDescription">
+		Functions for use with interlaced material.
+		</p>
+		<ul class="functionList">
+			<li>
+				<code class="functionName">JDL_SelectField</code>,
+				<code class="functionName">JDL_SelectTopField</code>,
+				<code class="functionName">JDL_SelectBottomField</code>
+			</li>
+			<li><code class="functionName">JDL_ReverseFieldDominance</code></li>
+			<li>
+				<code class="functionName">JDL_UnfoldFieldsVertical</code>,
+				<code class="functionName">JDL_FoldFieldsVertical</code>
+				(<a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=59029">rationale and discussion</a>)<br>
+				These functions provide a means to use spatial-temporal filters on interlaced clips.
+			</li>
+			<li><code class="functionName">JDL_InterlacedResize</code></li>
+			<li><code class="functionName">JDL_SimpleBob</code></li>
+			<li><code class="functionName">JDL_DupeField</code></li>
+			<li><code class="functionName">JDL_Interlace</code></li>
+		</ul>
+		</div>
+
+		<h3 id="effects" class="itemHeader"><kbd><a href="http://avisynth.org/stickboy/jdl-effects.avsi">jdl-effects.avsi</a></kbd></h3>
+		<div class="indent">
+		<p class="itemDescription">
+		Functions for creating effects.  Also includes miscellaneous, exotic, and specialized functions.
+		</p>
+		<ul class="functionList">
+			<li><code class="functionName">JDL_Blackout</code></li>
+			<li><code class="functionName">JDL_Silence</code></li>
+			<li>
+				<code class="functionName">JDL_FadeIO</code>,
+				<code class="functionName">JDL_FadeVideo</code>,
+				<code class="functionName">JDL_FadeAudio</code>
+			</li>
+			<li><code class="functionName">JDL_Invert</code></li>
+			<li><code class="functionName">JDL_Wipe</code> (<a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=58690">discussion</a>)</li>
+			<li><code class="functionName">JDL_MaskTransition</code> (<a href="http://forum.doom9.org/showthread.php?s=&amp;postid=378590">discussion</a>)</li>
+			<li><code class="functionName">JDL_Fill</code></li>
+			<li><code class="functionName">JDL_Slow</code></li>
+			<li><code class="functionName">JDL_ReplaceFirstScanline</code></li>
+			<li>
+				<code class="functionName">JDL_SplitYUV</code>,
+				<code class="functionName">JDL_MergeYUV</code>,
+				<code class="functionName">JDL_SplitRGB</code>
+			</li>
+			<li><code class="functionName">JDL_SplitScreenCompare</code></li>
+		</ul>
+		</div>
+
+		<h3 id="wrapper" class="itemHeader"><kbd><a href="http://avisynth.org/stickboy/jdl-wrappers.avsi">jdl-wrappers.avsi</a></kbd></h3>
+		<div class="indent">
+		<p class="itemDescription">
+		Various wrapper functions.
+		</p>
+		<ul class="functionList">
+			<li><code class="functionName">AudioGraphWrapper</code> (<a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=59412">rationale and discussion</a>)</li>
+			<li><code class="functionName">TemporalSoftenPreset</code></li>
+			<li><code class="functionName">LevelsWrapper</code></li>
+			<li><code class="functionName">CropWrapper</code></li>
+			<li><code class="functionName">AssumeFPS/ChangeFPS/ConvertFPS</code> (<a href="http://forum.doom9.org/showthread.php?t=104681">rationale and discussion</a>)</li>
+		</ul>
+		</div>
+	</div>
+</div><!-- scripts -->
+
+<div id="plugins">
+	<h2>Plug-ins (<a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=72999">discussion</a>)</h2>
+	<div class="indent">
+		<p>
+		Documentation for each plug-in is included.  Source code also is included under a BSD-style license.
+		</p>
+
+		<h3 class="itemHeader"><a href="http://avisynth.org/stickboy/ApplyEvery.zip">ApplyEvery</a></h3>
+		<div class="indent">
+			<p class="itemDescription">
+			(v0.3.1) A collection of AviSynth functions that operate at regular intervals in a clip.
+			</p>
+			<ul class="functionList">
+				<li>
+					<code class="functionName">ApplyEvery</code><br>
+					Applies a filter at regular intervals in a clip.
+				</li>
+				<li>
+					<code class="functionName">DeleteEvery</code><br>
+					A complement to the built-in <code>SelectEvery</code> function.
+				</li>
+				<li>
+					<code class="functionName">DeleteFrames</code><br>
+					A variable-argument version of the built-in <code>DeleteFrame</code> function.
+				</li>
+				<li>
+					<code class="functionName">InterleaveEvery</code><br>
+					Mixes two clips together in a specified pattern. Undoes the work of <code>SelectEvery</code> and <code>DeleteEvery</code>.
+				</li>
+				<li>
+					<code class="functionName">RepeatEveryFrame</code><br>
+					Repeats every frame a specified number of times.
+				</li>
+				<li><code class="functionName">LengthenClip</code></li>
+				<li>
+					<code class="functionName">WhileEval</code><br>
+					Provides a crude looping construct.
+				</li>
+			</ul>
+		</div>
+
+		<!--
+		<h3 class="itemHeader"><a href="DeleteEvery.zip">DeleteEvery</a></h3>
+		<div class="indent">
+			<p class="itemDescription">
+			(v0.1.2) Provides functions <code>DeleteEvery</code> (a complement to the built-in <code>SelectEvery</code> function) and <code>DeleteFrames</code> (a variable-argument version of the built-in <code>DeleteFrame</code> function).
+			</p>
+		</div>
+		-->
+
+		<!--
+		<h3 class="itemHeader"><a href="FunctionDefined.zip">FunctionDefined</a></h3>
+		<div class="indent">
+			<p class="itemDescription">
+			(v0.1.0) Determines whether a function is defined. (Yes, there's a chicken-and-egg problem here.  Script authors may wish to use my <code>JDL_FunctionDefined</code> function instead.)
+			</p>
+		</div>
+		-->
+
+		<h3 class="itemHeader"><a href="http://avisynth.org/stickboy/GetSystemEnv.zip">GetSystemEnv</a></h3>
+		<div class="indent">
+			<p class="itemDescription">
+			(v0.3.0) Retrieves system environment variables.
+			</p>
+			<ul class="functionList">
+				<li><code class="functionName">GetSystemEnv</code></li>
+				<li><code class="functionName">GetWorkingDir</code></li>
+				<li><code class="functionName">SetWorkingDir</code></li>
+				<li><code class="functionName">GetFileInfo</code></li>
+			</ul>
+		</div>
+
+		<h3 class="itemHeader"><a href="http://avisynth.org/stickboy/MinMax.zip">Min/Max</a></h3>
+		<div class="indent">
+			<p class="itemDescription">
+			(v0.1.1) <code>Min</code>/<code>Max</code> functions that can take variable numbers of arguments.
+			</p>
+			<!--
+			<ul class="functionList">
+				<code class="functionName">Min</code>,
+				<code class="functionName">Max</code>,
+				<code class="functionName">Clamp</code>
+			</ul>
+			-->
+		</div>
+
+		<h3 class="itemHeader"><a href="http://avisynth.org/stickboy/RemapFrames.zip">RemapFrames</a></h3>
+		<div class="indent">
+			<p class="itemDescription">
+			(v0.3.1) A collection of functions to rearrange frames between clips.
+			Remaps the frame indices in a clip or from a second clip as specified
+			by an input text file or by an input string.  Efficient alternatives
+			to long chains of <code>FreezeFrame</code>, <code>DeleteFrame</code>,
+			or <code>ApplyRange</code>.
+			</p>
+			<ul class="functionList">
+				<li>
+					<code class="functionName">RemapFrames</code><br>
+				</li>
+				<li><code class="functionName">RemapFramesSimple</code></li>
+				<li><code class="functionName">ReplaceFramesSimple</code></li>
+			</ul>
+		</div>
+
+		<h3 class="itemHeader"><a href="http://avisynth.org/stickboy/SelectByString.zip">SelectByString</a></h3>
+		<div class="indent">
+			<p class="itemDescription">
+			(v0.3.0) A version of AviSynth's <code>Select</code> function that operates on
+			strings
+			<!-- (Requires the <a href="http://kevin.atkinson.dhs.org/avisynth_c/">AviSynth C</a> plug-in.) -->
+			</p>
+			<!--
+			<ul class="functionList">
+				<li><code class="functionName">SelectByString</code></li>
+				<li><code class="functionName">SelectByStringEval</code></li>
+			</ul>
+			-->
+		</div>
+
+		<h3 class="itemHeader"><a href="http://avisynth.org/stickboy/Shuffle.zip">Shuffle</a></h3>
+		<div class="indent">
+			<p class="itemDescription">
+			(v0.1.5) Randomly shuffles the frames in a clip.
+			</p>
+		</div>
+
+		<h3 class="itemHeader"><a href="http://avisynth.org/stickboy/TestHarness.zip">TestHarness</a></h3>
+		<div class="indent">
+			<p class="itemDescription">
+			(v0.1.1) Provides simple logging and testing functions.  Intended primarily for use by developers.
+			</p>
+			<ul class="functionList">
+				<li>
+					<code class="functionName">LogOpen</code>,
+					<code class="functionName">LogClose</code>,
+					<code class="functionName">LogString</code>
+				</li>
+				<li><code class="functionName">SetCacheHints</code></li>
+				<li><code class="functionName">ScanClip</code></li>
+				<li><code class="functionName">CompareFiles</code></li>
+			</ul>
+		</div>
+
+		<h3 class="itemHeader"><a href="http://avisynth.org/stickboy/Threshold.zip">Threshold</a></h3>
+		<div class="indent">
+			<p class="itemDescription">
+			(v0.1.2) Threshold and coring functions.  They map pixels
+			darker than a specified threshold to pure black; all other
+			pixels can be mapped to pure white or can be left untouched.
+			</p>
+			<!--
+			<ul class="functionList">
+				<li><code class="functionName">Threshold</code></li>
+				<li><code class="functionName">Core</code></li>
+			</ul>
+			-->
+		</div>
+	</div>
+</div><!-- plugins -->
+
+<div id="other">
+	<h2>Other AviSynth Stuff</h2>
+
+	<div class="indent">
+
+	<h3 class="itemHeader">Working around AviSynth limitations</h3>
+	<ul>
+		<li>
+			<a href="http://www.avisynth.org/oldwiki/index.php?page=Wrapper">Wrapper functions</a> (<a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=60532">discussion</a>)<br>
+			Examples of <em>wrapper</em> functions to set default values to filters or to create
+			presets for them.
+		</li>
+		<li><a href="http://forum.doom9.org/showthread.php?p=367841#post367841">Using recursion for looping (a.k.a. strings as a poor-man's array)</a></li>
+		<li><a href="http://forum.doom9.org/showthread.php?p=357262#post357262">Applying filters at regular intervals</a> (see also: <code>ApplyEvery</code> or <code>JDL_ApplyEvery</code> above)</li>
+		<li><a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=71597">Using double quotes (<code>"</code>) within AviSynth strings</a> (by WarpEnterprises)</li>
+		<li><a href="http://avisynth.org/stickboy/ternary_eval.html">Using the ternary operator (<code>?:</code>) with multiple statements</a></li>
+	</ul>
+
+	<h3 class="itemHeader">Other writings</h3>
+	<ul>
+		<li><a href="http://avisynth.org/stickboy/DoubleWeave.html">Why does <code>DoubleWeave</code> change the field-order?</a></li>
+		<li><a href="http://forum.doom9.org/showthread.php?p=520674#post520674">Generating multiple AVS files from a directory list</a></li>
+		<!-- http://forum.doom9.org/showthread.php?p=582059#post582059 -->
+	</ul>
+
+	<h3 class="itemHeader">Samples</h3>
+	<ul>
+		<li>
+			<a href="http://avisynth.org/stickboy/etc/logo-example.zip">Logo example</a><br>
+			Demonstrates how to overlay a logo with transparency on a clip and how to fade it in and out.
+		</li>
+	</ul>
+
+	<h3 class="itemHeader"><a href="http://avisynth.org/stickboy/avisynth.syn">TextPad syntax definition file for AviSynth</a></h3>
+
+	</div>
+</div><!-- other -->
+
+<!--
+<div id="wishlist">
+	<h2 class="itemHeader">My AviSynth Wishlist</h2>
+	<ul>
+		<li>tail-recursion optimization</li>
+		<li>an MPEG1 source plug-in, assumably &quot;borrowed&quot; from VirtualDub's MPEG1 parser</li>
+		<li>a Flash source plug-in</li>
+		<li>user-defined functions that can take a variable number of arguments</li>
+		<li>a plug-in to import Photoshop filters</li>
+		<li>a plug-in to import Premiere/After Effects filters</li>
+		<li>namespaces</li>
+		<li>lexical scope</li>
+		<li>alpha masks</li>
+		<li>user-level switch and loop constructs</li>
+		<li>&quot;WavSynth&quot;</li>
+	</ul>
+</div> --><!-- wishlist -->
+
+<!--
+<div id="todo">
+	<h2 class="itemHeader">To Do</h2>
+	<ul>
+		<li>write a plug-in to retrieve the fourCC code to a clip (or to a file, if not feasible)</li>
+		<li>cloud generation plug-in</li>
+		<li>fire/plasma generation plug-in</li>
+		<li>improve AviSynth autoloader error messages (e.g., if an autoloaded script has an error, display the script name)</li>
+		<li>figure out how to make a JDL_MergeRGB function</li>
+		<li>fix the line number counter in the AviSynth file parser</li>
+		<li>write a ChangeSampleRate plug-in that changes the audio sampling rate by duplicating or deleting samples</li>
+		<li>figure out a better way to handle audio for RemapFrames, et al.?</li>
+	</ul>
+</div> --><!-- todo -->
+
+<!--
+<div id="avGeneral">
+	<h2 class="itemHeader">General A/V Links</h2>
+	<ul>
+		<li><a href="http://www.dvdmadeeasy.com/glossary/index.html">Glossary of DVD Terms</a></li>
+		<li><a href="http://www.tangentsoft.net/video/mpeg/reviews/">MPEG Encoder Comparison</a> (a little dated now, though)</li>
+		<li><a href="http://bmrc.berkeley.edu/frame/research/mpeg/mpegfaq.html">Berkeley Multimedia Research Center MPEG1 FAQ</a></li>
+		<li><a href="http://bmrc.berkeley.edu/frame/research/mpeg/mpeg2faq.html">Berkeley Multimedia Research Center MPEG2 FAQ</a></li>
+		<li><a href="http://www.math.ttu.edu/~kesinger/dvd/">DVD Cases and Hub Images</li>
+		<li><a href="advc100-comparison/index.html">My WinTV-401 and ADVC-100 comparison</a></li>
+	</ul>
+</div> --><!-- avGeneral -->
+
+<div id="history">
+	<h2 class="itemHeader">Revision history</h2>
+	<div id="historylist" class="indent">
+		<table class="itemDescription">
+			<tbody><tr valign="top">
+				<td class="iso-date">2010-11-26</td>
+				<td>
+					<ul>
+						<li>
+							Fixed a mistake in <code>JDL_IVTCPattern2</code>. (Thanks, Mark I.!)
+							typo in <code>HasVideo</code>. (Thanks, tacman1123!)
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2008-10-16</td>
+				<td>
+					<ul>
+						<li>
+							Fixed a typo in <code>HasVideo</code>. (Thanks, tacman1123!)
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2008-09-13</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>JDL_SimpleBob</code> and <code>JDL_InterlacedResize</code> to <kbd>jdl-interlace.avsi</kbd>.
+						</li>
+						<li>
+							Adjusted some script comments.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2008-07-08</td>
+				<td>
+					<ul>
+						<li>
+							Added a link to <kbd>logo-example.zip</kbd>.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2008-06-28</td>
+				<td>
+					<ul>
+						<li>
+							Fixed a syntax error in <code>JDL_SplitYUV</code>.  Oops.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2008-06-09</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>SetWorkingDir</code> to my GetSystemEnv plug-in.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2006-09-24</td>
+				<td>
+					<ul>
+						<li>
+							Rewrote <code>JDL_ImageSource</code> in <kbd>jdl-util.avsi</kbd>.
+						</li>
+						<li>
+							Updated comments in a number of files.  Many functions are now commented to list their external requirements.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2006-01-02</td>
+				<td>
+					<ul>
+						<li>
+							Created an <a href="http://avisynth.org/stickboy/rss.xml" class="unemphasized">RSS feed for updates</a>.
+						</li>
+						<li>
+							Added preset-aware <code>AssumeFPS</code>/<code>ChangeFPS</code>/<code>ConvertFPS</code> wrappers to <kbd>jdl-wrappers.avsi</kbd>.
+						</li>
+						<li>
+							Added <code>GetFileInfo</code> to my GetSystemEnv plug-in and fixed a bug.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2005-08-26</td>
+				<td>
+					<ul>
+						<li>
+							Updated my RemapFrames plug-in.  The <code>RemapFrames</code> function's argument handling was broken.  I also updated the documentation to provide some examples for adapting existing AviSynth scripts.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2005-04-03</td>
+				<td>
+					<ul>
+						<li>
+							Added my GetSystemEnv plug-in.  Moved <code>GetWorkingDir</code> from my TestHarness plug-in to GetSystemEnv.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2005-01-23</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>RepeatEveryFrame</code> to my ApplyEvery plug-in.  Fixed some integer overflow issues too.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2005-01-10</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>JDL_IVTCPatternSegment</code> to my <kbd>jdl-telecine.avsi</kbd>.
+						</li>
+						<li>
+							Slight tweaks to <code>JDL_ReverseFieldDominance</code>.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-12-24</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>ReplaceFramesSimple</code> to my RemapFrames plug-in.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-12-19</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>AssumeScaledFPS</code> to <kbd>jdl-util.avsi</kbd>.  Modified many of my other scripts to use it.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-12-07</td>
+				<td>
+					<ul>
+						<li>
+							Slight tweak to <code>JDL_SimpleApplyEvery</code> to filter first.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-09-26</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>JDL_FreezeLoop</code> to <kbd>jdl-range.avsi</kbd>.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-08-14</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>RemapFramesSimple</code> to my RemapFrames plug-in.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-07-26</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>HasAudio</code> to <kbd>jdl-util.avsi</kbd>.  Updated a number of functions in <kbd>jdl-effects.avsi</kbd> to handle clips without audio tracks correctly.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-07-07</td>
+				<td>
+					<ul>
+						<li>
+							Fixed an off-by-one discrepancy in <code>JDL_Wipe</code>.  Added <code>JDL_MaskTransition</code> to <kbd>jdl-effects.avsi</kbd>.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-07-03</td>
+				<td>
+					<ul>
+						<li>
+							Added my TestHarness plug-in.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-06-26</td>
+				<td>
+					<ul>
+						<li>
+							Added my RemapFrames plug-in.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-06-13</td>
+				<td>
+					<ul>
+						<li>
+							<kbd>jdl-effects.avsi</kbd> now contains miscellaneous, exotic functions too.  Moved <code>JDL_ReplaceFirstScanline</code> into it and added <code>JDL_SplitYUV</code>, <code>JDL_MergeYUV</code>, <code>JDL_SplitRGB</code>, and <code>JDL_SplitScreenCompare</code>.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-06-02</td>
+				<td>
+					<ul>
+						<li>
+							Improved error-checking in a number of functions.  Split off <code>JDL_ReverseFieldDominance</code>, <code>JDL_UnfoldFieldsVertical</code>, <code>JDL_FoldFieldsVertical</code>, and <code>JDL_Interlace</code> into a separate <kbd>jdl-interlace.avsi</kbd> file.  Added functions <code>JDL_SelectField</code>, <code>JDL_SelectTopField</code>, and <code>JDL_SelectBottomField</code>.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-05-31</td>
+				<td>
+					<ul>
+						<li>
+							I realized that <code>JDL_ReverseFieldDominance</code> and <code>JDL_SimpleBob</code> were kind of broken.  I've rewritten <code>JDL_ReverseFieldDominance</code> and removed its <code>bobFunc</code> parameter; it now always uses AviSynth's internal <code>Bob</code> function.  The behaviors of the various bob deinterlacers out there are too inconsistent, and keeping the bob function generic isn't worth it.  Consequently, <code>JDL_SimpleBob</code> is no longer necessary, and I've removed it until it's fixed.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-04-13</td>
+				<td>
+					<ul>
+						<li>
+							Fixed a stupid Shuffle bug.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-04-10</td>
+				<td>
+					<ul>
+						<li>
+							Minor updates to ApplyEvery and Threshold.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-04-08</td>
+				<td>
+					<ul>
+						<li>
+							Added an <code>else</code> parameter to SelectByString/SelectByStringEval.
+						</li>
+						<li>
+							Updated <code>JDL_Wipe</code> and <code>TemporalSoftenPreset</code> to use the new version of SelectByString.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-04-03</td>
+				<td>
+					<ul>
+						<li>
+							Removed my FunctionDefined plug-in and replaced it with a user-defined function (<code>JDL_FunctionDefined</code>).  A plug-in version doesn't make sense for script authors to use, since it has a chicken-and-egg problem.
+						</li>
+						<li>
+							<code>JDL_Telecine</code> and <code>JDL_IVTCPattern</code> now set the field-order correctly in the output clip.
+						</li>
+						<li>
+							Added <code>WhileEval</code> to my ApplyEvery plug-in.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-04-01</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>JDL_SimpleApplyEvery</code> to <kbd>jdl-range.avsi</kbd>.
+						</li>
+						<li>
+							Modified <code>JDL_LengthenClip</code> and <code>JDL_ApplyEvery</code> to use my ApplyEvery plug-in if available.
+						</li>
+						<li>
+							Minor updates to ApplyEvery.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-31</td>
+				<td>
+					<ul>
+						<li>
+							Merged the ApplyEvery and DeleteEvery plug-ins and added a new <code>InterleaveEvery</code> function.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-20</td>
+				<td>
+					<ul>
+						<li>
+							I got tired of looking up the parameter order to <code>Crop</code>, so I added <code>CropWrapper</code> to <kbd>jdl-wrappers.avsi</kbd>.  Oh, and the link's fixed too now.
+						</li>
+						<li>
+							Added <code>Undefined</code> and fixed a bug in <code>JDL_ImageSource</code>'s compatibility check in <kbd>jdl-util.avsi</kbd> .
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-20</td>
+				<td>
+					<ul>
+						<li>
+							Added an experimental ApplyEvery plug-in.
+						</li>
+						<li>
+							Modified <code>JDL_ImageSource</code> to work with the <span class="iso-date">2004-03-20</span> AviSynth alpha binary.  Older AviSynth versions are still supported too.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-19</td>
+				<td>
+					<ul>
+						<li>
+							Added my DeleteEvery plug-in.
+						</li>
+						<li>
+							Improved error reporting in SelectByString.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-16</td>
+				<td>
+					<ul>
+						<li>
+							Added stricter argument checks to Threshold.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-15</td>
+				<td>
+					<ul>
+						<li>
+							Added stricter argument type-checking to SelectByString.
+						</li>
+						<li>
+							Modified seeding behavior to Shuffle and updated the Shuffle examples (again).
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-14</td>
+				<td>
+					<ul>
+						<li>
+							Simplified <code>JDL_Interlace</code> and <code>JDL_ReverseFieldDominance</code>. (Hopefully I didn't break anything.)
+						</li>
+						<li>
+							Made the <var>start</var> and <var>end</var> parameters to <code>JDL_ImageSource</code> optional.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-12</td>
+				<td>
+					<ul>
+						<li>
+							Added my Threshold plug-in.
+						</li>
+						<li>
+							Updated the Shuffle examples.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-10</td>
+				<td>
+					<ul>
+						<li>
+							Added my FunctionDefined plug-in.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-09</td>
+				<td>
+					<ul>
+						<li>
+							Added my Shuffle plug-in.
+						</li>
+						<li>
+							Tweaked some of the error-handling code in SelectByString.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-07</td>
+				<td>
+					<ul>
+						<li>
+							Modified <code>TemporalSoftenPreset</code> to allow overriding of preset values.
+						</li>
+						<li>
+							Added <code>Endl</code> to <kbd>jdl-util.avsi</kbd>.
+						</li>
+						<li>
+							Added a link to WarpEnterprises' awesome triple-quote discovery and an article about (ab)using the ternary operator (both under "Working around AviSynth limitations").
+						</li>
+						<li>
+							Fixed a few omissions in the TextPad syntax definition file.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-03</td>
+				<td>
+					<ul>
+						<li>
+							Added my Min/Max plug-in.
+						</li>
+						<li>
+							Minor updates to the SelectByString documentation and examples.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-03-02</td>
+				<td>
+					<ul>
+						<li>
+							Updated my SelectByString plug-in.  No longer requires AviSynth C.  It also now includes better documentation and examples.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-02-29</td>
+				<td>
+					<ul>
+						<li>
+							Added <kbd>jdl-wrappers.avsi</kbd>.
+						</li>
+						<li>
+							Updated TextPad syntax definition file.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-02-02</td>
+				<td>
+					<ul>
+						<li>
+							I keep forgetting why <code>DoubleWeave</code> flips the field-order, so I wrote an article about it for reference.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2004-01-24</td>
+				<td>
+					<ul>
+						<li>
+							Fixed: <code>JDL_FreezeRegion</code> didn't work with YUY2 and didn't allow the start frame to be the same as the end frame.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2003-12-23</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>JDL_Slow</code> to <kbd>jdl-effects.avsi</kbd>.
+						</li>
+						<li>
+							Moved <code>JDL_Blackout</code>, <code>JDL_Silence</code>, <code>JDL_FadeIO</code>, <code>JDL_FadeVideo</code>, and <code>JDL_FadeAudio</code> to <kbd>jdl-effects.avsi</kbd>.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2003-11-21</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>JDL_FadeIO</code> and <code>JDL_FadeVideo</code> to <kbd>jdl-util.avsi</kbd>.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2003-11-03</td>
+				<td>
+					<ul>
+						<li>
+							Added <code>JDL_FadeAudio</code> to <kbd>jdl-util.avsi</kbd>.
+						</li>
+						<li>
+							Added <code>JDL_Fill</code> to <kbd>jdl-effects.avsi</kbd>.
+						</li>
+						<li>
+							Minor changes to <kbd>jdl-telecine.avsi</kbd>.
+						</li>
+						<li>
+							Added additional error-checking to <code>JDL_ApplyRange</code>.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2003-09-21</td>
+				<td>
+					<ul>
+						<li>
+							Changed the syntax to <code>JDL_Blackout</code> and
+							<code>JDL_Silence</code> and moved them to
+							<kbd>jdl-util.avsi</kbd>.  They no longer operate on
+							ranges directly and instead are intended to be used
+							with <code>ApplyRange</code> (or <code>JDL_ApplyRange</code>).
+							Be sure to use <a href="http://cultact-server.novi.dk/kpo/avisynth/avs_cvs.html" class="unemphasized">the latest version of AviSynth</a>
+							when using <code>ApplyRange</code> on audio.
+						</li>
+						<li>
+							Modified <code>JDL_ApplyRange</code> to filter before
+							splicing (the old implementation spliced first).  This
+							change affects the behavior of temporal filters and
+							of filters that operate on frame numbers. (It also more
+							closely matches the behavior of the internal
+							<code>ApplyRange</code> function.)
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2003-09-13</td>
+				<td>
+					<ul>
+						<li>
+							Added my simplistic SelectByString AviSynth C plug-in.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2003-09-06</td>
+				<td>
+					<ul>
+						<li>
+							Added the following functions to <kbd>jdl-util.avsi</kbd>:
+							<code>quote</code>, <code>AssertEval</code>,
+							<code>JDL_LengthenClip</code>
+						</li>
+						<li>
+							Added <code>JDL_ApplyEvery</code> to <kbd>jdl-range.avsi</kbd>
+						</li>
+						<li>
+							Renamed most functions to avoid potential namespace
+							clashes.  It's ugly, I know, and I apologize for any
+							inconvenience it causes.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2003-08-31</td>
+				<td>
+					<ul>
+						<li>
+							Modified <code>IVTCPattern</code>/<code>IVTCPattern2</code>
+							slightly (again).
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2003-08-20</td>
+				<td>
+					<ul>
+						<li>
+							Oops, I broke <code>Trim2</code>'s support for negative
+							values of <var>end</var>.  Should be fixed now,
+							hopefully without breaking anything else.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2003-08-16</td>
+				<td>
+					<ul>
+						<li>
+							Fixed: <code>ReplaceRange</code>/<code>BlankRange</code>/<code>Blackout</code>/<code>Silence</code>
+							didn't work if the range was at the start or at the end of a clip.
+						</li>
+						<li>
+							Added an option to <code>ReverseFieldDominance</code>
+							to bob-deinterlace the first and last frames of the
+							output clip.  I'm not sure how useful this is.
+						</li>
+						<li>
+							Added the following functions to <kbd>jdl-util.avsi</kbd>:
+							<code>min</code>, <code>max</code>, <code>clamp</code>,
+							<code>SimpleBob</code>, <code>ShiftFrame</code>
+						</li>
+						<li>
+							Modified <code>IVTCPattern</code>/<code>IVTCPattern2</code>
+							slightly.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2003-08-13</td>
+				<td>
+					<ul>
+						<li>
+							Modified a number of functions to handle null clips properly.
+						</li>
+						<li>
+							Bounds-checking for <code>Trim2</code> significantly relaxed;
+							now allows bounds beyond the end of the clip.
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="iso-date">2003-08-09</td>
+				<td>
+					<ul>
+						<li>
+							Initial release of scripts.
+						</li>
+					</ul>
+				</td>
+			</tr>
+		</tbody></table>
+	</div><!-- historylist -->
+</div><!-- history -->
+
+<div id="w3bug">
+	<a title="Subscribe for updates with RSS 2.0" href="http://avisynth.org/stickboy/rss.xml"><span style="border:1px solid;border-color:#FC9 #630 #330 #F96;padding:0 3px;font:bold 10px verdana,sans-serif;color:#FFF;background:#F60;text-decoration:none;margin:0;">RSS 2.0</span></a><br>
+
+	<div id="counter">
+		<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+		<script type="text/javascript" src="stickboy%27s%20AviSynth%20Stuff_files/counter_xhtml.js"></script><span class="statcounter"><a class="statcounter" href="http://www.statcounter.com/" target="_blank"><img src="stickboy%27s%20AviSynth%20Stuff_files/t.php.png" alt="StatCounter - Free Web Tracker and Counter" border="0"></a></span>
+
+		<noscript><div class="statcounter"><a class="statcounter" href="http://www.statcounter.com/"><img style="border:0" class="statcounter" src="http://c3.statcounter.com/counter.php?sc_project=438240&amp;amp;java=0" alt=""></a></div></noscript>
+	</div><!-- counter -->
+</div><!-- w3bug -->
+
+<address>
+Questions?  Comments?  Bugs?  I welcome feedback. <a href="http://www.taenarum.com/contact.html">Contact me.</a><br>
+Please direct general AviSynth questions to the <a href="http://forum.doom9.org/forumdisplay.php?f=33">AviSynth Usage forum on doom9.org</a>.
+</address>
+
+<p>
+Written by James D. Lin (stickboy) and assigned to the <a href="http://creativecommons.org/licenses/publicdomain/" class="unemphasized">public domain</a>.
+</p>
+
+
+
+<script id="FoxLingoJs"><!--
+/* Script removed by snapshot save */
+--></script></body></html>

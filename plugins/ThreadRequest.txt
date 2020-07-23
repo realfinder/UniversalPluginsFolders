@@ -1,0 +1,68 @@
+===========================================================
+Syntax:
+
+ThreadRequest(clip, int "cache", int "queue", int "warmingup", string "name")
+
+Syntax of ThreadRequest() is almost the same as PipeLine().
+ cache : Number of cached frame. Note that this plugin does the sequential access as much as possible if the access flies within the range of cash.(default 3)
+ queue : Size of queue used for delivery from thread. It might be about 3 enough as long as it is not a filter that changes extremely the processing speed.(default 3)
+ warmingup : Frequency in which GetFrame is done from the main thread when processing begins. This evades the problem that the thread start running before the construction of the filter is completed.(default 5)
+ name : Identifier to report on execution time of thread with text file when filter is unloaded. If this is empty, it won't be reported.(default "")
+
+Synchronize(int "cache", string "name")
+
+Take synchronization of each threads.
+ cache : Number of cached frame.(default 3)
+ name : Identifier specified to construct one critical section with two or more Synchronize. If this is empty, the section becomes peculiar to the Synchronize.(Default: "")
+===========================================================
+Usage:
+
+#example_1
+Filter1()
+ThreadRequest()
+Filter2()
+ThreadRequest()
+Filter3()
+
+#example_2
+Synchronize(20)
+Interleave(\
+    Filter().SelectEvery(4, 0).ThreadRequest(),\
+    Filter().SelectEvery(4, 1).ThreadRequest(),\
+    Filter().SelectEvery(4, 2).ThreadRequest(),\
+    Filter().SelectEvery(4, 3).ThreadRequest()\
+)
+
+#environment
+   CPU : intel X5560
+   Mem: 3GB (DDr3-10700 1GBx3)
+   OS : WindowsXP
+AviSynth: 2.6 SET (32bit)
+
+#Source
+Elephant's Dream (Cineform 1920x1080px2879frames)
+
+#script
+avisource("elephantsdream1080.avi")
+threadrequest(10,5,2).Splin36resize(2048,1152)
+threadrequest(10,5,2).assumeframebased()
+threadrequest(10,5,2).seperatefields()
+threadrequest(10,5,2).selectevery(8,0,1,2,3,2,5,4,7,6,7)
+threadrequest(10,5,2).weave()
+edeinted = threadrequest(10,5,2).tdeint()
+threadrequest(10,5,2).tfm(edeint=edeinted)
+threadrequest(10,5,2).tdecimate()
+threadrequest(10,5,2).blur(0,1)
+threadrequest(10,5,2).sharpen(0,1)
+threadrequest(10,5,2).spline36resize(640,360)
+trim(0,2878)
+
+#Benchmark
+  Virtualdub 1.9.9 (Cineform)
+
+#Results
+-no Threading
+Finished in 00:04:59
+
+- with ThreadRequest()
+Finished in 00:01:58

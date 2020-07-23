@@ -1,0 +1,1199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" >
+<head>
+<title>SoftSharpen</title>
+<base href=".//"/>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" media="screen" type="text/css" title="Design" href="softsharpen_style.css" />
+
+</head>
+
+<body>
+
+<a name="generateur"></a>
+
+<div id="conteneur" class="conteneur2">
+
+	<br/>	
+	<br/>	
+
+
+<div class="conteneur"><br/><table class="table">
+	<tr>
+		<td class="titre"><b> -- Générer une commande SoftSharpen (version 8.8) -- </b></td>
+
+	</tr>
+	<tr>
+		<td style="text-align:center;"><br/>Preset (optionnel) <input type=button style="width:45;" onclick="pr7anim();" value=Anim> <input type=button style="width:45;" onclick="pr7film();" value=Film> <input type=button style="width:45;" onclick="pr7light();" value=Light> <input type=button style="width:45;" onclick="pr7vhs();" value=VHS> <input type=text style="width:50px;" id=pr7> <span class="bulle2"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"><span><b>Anim : </b>Traitement particulier pour une animation<br/><b>Film : </b>Pour un film DivX (visages non débuités pendant le traitement)<br/><b>Light : </b>Traitement faible pour une source déjà propre<br/><b>VHS : </b>Traitement fort pour une source "pas terrible"<br/><br/>On peut préciser un preset, puis spécifier des valeurs particulières pour <br/> certains paramètres ci-dessous lorsque les valeurs par défaut ne sont pas satisfaisantes.</span></span>
+
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type=button id=RaZ onclick="miseAzero();" value="Remise à zéro des constantes">
+</td>
+	</tr>
+	
+</table>
+
+<hr/> 
+
+<table class="table">
+	<tr>
+		<td class="colonne1">Nom de variable de la vidéo à traiter (optionnel) <input type=text id=video value=video> <span class="bulle1"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"><span>
+
+			Exemple d'un code avisynth où une variable fait référence à la vidéo créée<br/><br/>
+
+			<div class="script">
+				video = AviSource("video.avi")<br/>
+				video = video.Tweak(sat=1.1)<br/>
+				video = video.SoftSharpen()<br/>
+				return(video)
+				</div><br/>
+
+
+
+			La même chose, mais sans nom de variable pour la vidéo créée<br/><br/>
+			<div class="script">
+				AviSource("video.avi")<br/>
+				Tweak(sat=1.1)<br/>
+				SoftSharpen()<br/>
+
+			</div>
+</td>
+
+		<td class="colonne2"></td>
+	</tr>
+</table>
+
+<hr/>
+
+<table class="table">
+	<tr>
+		<td class="colonne1">Redimentionner horizontalement (optionnel) <input type=text id=horiz> <span class="bulle1"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"><span>entier positif multiple de 4 (conseillé multiple de 16)</span></span><br/>
+
+							 Redimentionner verticalement (optionnel) <input type=text id=vertic> <span class="bulle1"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"><span>entier positif multiple de 4 (conseillé multiple de 16)</span></span></td>
+
+		<td class="colonne2">Nombre d'images par seconde (optionnel) <input type=text id=fps> <span class="bulle2"><a href="SoftSharpen.html#blend_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>flottant positif <br/>Modifie le nombre d'images, sans modifier la durée de la vidéo.<br/> Traitement optimisé pour une diminution de fréquence,<br/> conseillé pour les sources avec blend.
+<br/> <br/> Cliquer pour obtenir une explication</span></span></td>
+
+	</tr>
+</table>
+
+<hr/>
+
+<table class="table">
+	<tr>
+
+		<td class="colonne1">Netteté <input type=text id=sharp>  <span class="bulle1"><a href="SoftSharpen.html#sharp_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>entier positif (conseillé entre 13 et 25) ou 0 pour désactiver <br/> <br/> Cliquer pour obtenir une explication</span></span><br/></td>
+		<td class="colonne2">Balance : Contour (0) <-+-> Texture (9) <input type=text id=sharpW> <span class="bulle2"><a href="SoftSharpen.html#sharp_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>entier entre 0 et 9 (conseillé entre 0 et 5) <br/> <br/> Cliquer pour obtenir une explication</span></span></td>
+
+	</tr>
+</table>
+
+<hr/>
+
+<table class="table">
+	<tr>
+		<td class="colonne1">Puissance de floutage des objets en mouvement <input type=text id=blur> <span class="bulle1"><a href="SoftSharpen.html#blur_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>entier positif (conseillé entre 12 et 20) ou 0 pour désactiver le floutage<br/><br/>Cliquer pour obtenir une explication</span></span></td>
+		<td class="colonne2">Seuil de floutage du mouvement <input type=text id=move> <span class="bulle2"><a href="SoftSharpen.html#move_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>entier positif (aux environs de 30 ou 35) ou 0 pour désactiver l'analyse de mouvement<br/><br/>Plus le seuil est bas, plus le floutage se déclanche facilement <br/> et plus la netteté s'estompe rapidement<br/><br/>Cliquer pour obtenir une explication</span></span></td>
+
+	</tr>
+</table>
+
+<hr/>
+
+<table class="table">
+	<tr>
+		<td class="colonne1">Débruitage spatial <input type=text id=denois> <span class="bulle1"><a href="SoftSharpen.html#denois_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>entier positif, souvent entre 2 et 10, ou 0 pour désactiver <br/><br/> Cliquer pour obtenir une explication</span></span><br/>
+							 Débruitage temporel <input type=text id=denoisT> <span class="bulle1"><a href="SoftSharpen.html#denois_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>entier positif, souvent entre 3 et 10, ou 0 pour désactiver <br/><br/> Cliquer pour obtenir une explication</span></span></td>
+
+		<td class="colonne2"><img src="./images/info4.png" style="width:27px; vertical-align:bottom; visibility:hidden;"><br/>
+							 Profondeur d'analyse 
+							<input type=radio name=MD id=MD1 value=1> 1
+							<input type=radio name=MD id=MD2 value=2> 2
+							<input type=radio name=MD id=MD3 value=3> 3
+							<span class="bulle2"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"><span>1, 2 ou 3 <br/><br/>Evidemment, plus la profondeur d'analyse est importante,<br/>plus le temps de traitement augmente... </span></span></td>
+	</tr>
+</table>
+
+<hr/>
+
+<table class="table">
+	<tr>
+
+		<td class="colonne1">Deringing <input type=text id=derin> <span class="bulle1"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"><span>entier positif, souvent entre 1 et 10, ou 0 pour désactiver</span></span><br/>
+							 Deblocking <input type=text id=debl> <span class="bulle1"><a href="SoftSharpen.html#debl_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>entier positif, souvent entre 1 et 20, ou 0 pour désactiver  <br/> <br/> Cliquer pour obtenir une explication</span></span><br/>
+
+							 Debanding <input type=text id=deban> <span class="bulle1"><a href="SoftSharpen.html#deban_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>flottant positif, souvent entre 1.2 et 2, ou 0 pour désactiver <br/><br/>Incompatible avec avisynth MT, <br/>et passif sur images en niveaux de gris (greyscale) <br/> <br/> Cliquer pour obtenir une explication</span></span><br/>
+
+							 Deblending <input type=text id=blend> <span class="bulle1"><a href="SoftSharpen.html#blend_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>entier positif, compris entre 2 et 20, conseillé entre 5 et 10, ou 0 pour désactiver  <br/> <br/> Cliquer pour obtenir une explication</span></span><br/>
+		<td class="colonne2"></td>
+
+	</tr>
+</table>
+
+<hr/>
+
+<table class="table">
+	<tr>
+
+		<td class="colonne1">Accentuer les lignes noires <input type=text id=line> <span class="bulle1"><a href="SoftSharpen.html#line_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>entier positif, souvent entre 10 et 40, ou 0 pour désactiver <br/> <br/> Cliquer pour obtenir une explication</span></span></td>
+		<td class="colonne2">Affiner les lignes noires <input type=text id=thin> <span class="bulle2"><a href="SoftSharpen.html#line_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span><b>/!\ expérimental /!\</b><br/><br/>entier positif (conseillé entre 1 et 4) ou 0 pour désactiver<br/><br/>Cette option est réservée aux dessins animés. <br/> <br/> Cliquer pour obtenir une explication</span></span></td>
+
+	</tr>
+</table>
+
+<hr/>
+
+<table class="table">
+	<tr>
+		<td class="colonne1">Optimisation du constraste, gain de lumière <input type=text id=gain value=0> <span class="bulle1"><a href="SoftSharpen.html#gain_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span><b>/!\ expérimental /!\</b><br/><br/>flottant positif (conseillé entre 1 et 5) ou 0 pour désactiver <br/> <br/> Cliquer pour obtenir une explication</span></span></td>
+		<td class="colonne2"></td>
+
+	</tr>
+</table>
+
+<hr/>
+
+<table class="table">
+	<tr>
+		<td class="colonne1">Niveau de DCT <input type=text id=dct> <span class="bulle1"><a href="SoftSharpen.html#dct_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>entier compris entre 0 et 14 (conseillé entre 4 et 7) ou 0 pour désactiver <br/> <br/> Cliquer pour obtenir une explication</span></span></td>
+		<td class="colonne2"></td>
+	</tr>
+
+</table>
+
+<hr/>
+
+<table class="table">
+	<tr>
+		<td class="colonne1">Vidéo entrelacée <input type=checkbox name=deint id=deint value=true> <span class="bulle1"><a href="SoftSharpen.html#deint_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>Cocher cette option pour désentrelacer la video <br/> <br/> Cliquer pour obtenir une explication</span></span><br/>
+							 Anti-aliasing <input type=checkbox name=aa id=aa value=true> <span class="bulle1"><a href="SoftSharpen.html#aa_explain"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"></a><span>Cocher cette option pour lancer le traitement d'anti-aliasing <br/> <br/> Cliquer pour obtenir une explication</span></span></td>
+
+		<td class="colonne2"></td>
+	</tr>
+</table>
+
+<hr/>
+
+<table class="table">
+	<tr>
+
+		<td class="colonne1">Traitement "rapide" <input type=checkbox name=fast id=fast value=true> <span class="bulle1"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"><span>Cocher cette option pour accélerer le traitement,<br/>mais au prix d'une qualité moindre</span></span></td>
+
+		<td class="colonne2"></td>
+	</tr>
+</table>
+
+<hr/>
+
+<table class="table">
+
+	<tr>
+		<td class="colonne1">Debug verbose <input type=checkbox name=verbose id=verbose value=true> <span class="bulle1"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"><span>Cocher cette option pour faire afficher les constantes du script sur l'image</span></span></td>
+
+		<td class="colonne2">Debug show <input type=checkbox name=show id=show value=true> <span class="bulle2"><img src="./images/info4.png" style="width:25px; vertical-align:bottom;"><span>Cocher cette option pour faire apparaître sur l'image les zones traitées : <br/>- en vert, les zones avec hausse de netteté ; <br/>- en bleu, les zones floutées ; <br/>- en rouge, les zones débruitées.</span></span></td>
+	</tr>
+</table>
+
+<hr/>
+
+<table class="table">
+	<tr>
+
+		<td class="colonne3"><b>La commande avisynth est </b><input type=button onclick="formule();" value="code avisynth"><br/>
+						 	 <textarea id=code cols=49 rows=3> </textarea></td>
+
+		<td class="colonne2"><b>Répertoire des dll </><input type=text style="width:120px;" id=folder value=""> <input type=button onclick="formuleb();" value="code"><br/>
+							 <textarea id=codeb cols=41 rows=3> </textarea></td>
+
+	</tr>
+
+</table>
+<br/>
+<div style="text-align:right; padding-right:20px; font-size:0.8em; color:#336699;">Subbat & Leon1789</div><br/>
+</div>
+
+
+	<br/><br/>
+<hr/>
+	<br/><br/>
+
+
+	<a name="aa_explain"></a>
+
+	
+	<div class="titre">Option <b>"Anti-aliasing"</b> (aa) de SoftSharpen...
+	</div><br/><br/>
+
+	Comme son nom l'indique, l'option <b>"Anti-aliasing"</b> est un remède contre l'aliasing (effet d'escalier formant des petites lignes brisées visuellement désagréables).<br/><br/>
+
+	Dans la commande SoftSharpen, valider cette option se traduira comme suit :<br/><br/>
+
+	
+	<div class="script2">SoftSharpen(<b>aa=true</b>)</div><br/><br/>
+	
+	<img src="./images/attention.png" style="height:25px; vertical-align:bottom;">
+	L' <b>"Anti-aliasing"</b> est très gourmand en temps de traitement et floute légèrement l'image : il faut donc l'utiliser uniquement si nécessaire, et souvent effectuer une hausse de <a href="SoftSharpen.html#sharp_explain"><b>"Netteté"</b></a> (paramètre sharp de SoftSharpen) pour compenser l'effet floutant.<br/><br/><br/>
+
+	Afin d'illustrer ce qu'apporte l'option <b>"Anti-aliasing"</b>, il vous est proposé un comparatif, en image, pour constater le "rendu" vidéo :<br/>
+	<ul>
+		<li>Anti-aliasing (aa=true) 
+		<li>Anti-aliasing + Hausse de Netteté (aa=true, sharp=25)
+	</ul>
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+	
+	<div class="nb">NB : l'image grise annexe présente les "escaliers" sur lesquels le traitement a porté.</div><br/><br/>
+
+	<div style="text-align:center;">
+
+		<a onMouseOver="put_image(5,0,2);" >
+		<span class="bulle3"><img src="./images/aa0.jpg" height="70px"/><span>Source</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(5,1,2);" >
+		<span class="bulle4"><img src="./images/aa1.jpg" height="70px"/><span>Anti-aliasing (aa=true)</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(5,2,2);" >
+		<span class="bulle4"><img src="./images/aa2.jpg" height="70px"/><span>Anti-aliasing + Hausse de Netteté (aa=true, sharp=25)</span></span></a>
+
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=aa src="./images/aa0.jpg" >
+		<img name=aa_rvb src="./images/aa0_rvb.png" >
+	</div>
+
+	
+
+        <br/><br/>
+	<br/><br/>
+
+
+	<a name="blend_explain"></a>
+	
+	<div class="titre">L'option de <b>"Deblending"</b> (blend) de SoftSharpen...
+	</div><br/><br/>
+
+	Comme son nom essaie de l'indiquer, l'option de <b>"Deblending"</b> permet de réduire l'effet étrange de <b>"blend"</b> pouvant apparaître sur une vidéo. Typiquement, ceci est dû à un changement de fréquence d'images par seconde effectué avec un mélangeur d'image. Il en résulte des images contenant des objets fantômes, genre personnages à 2 têtes, 4 bras et 2 épées... Les valeurs conseillées pour cette option oscillent entre 5 et 10 (nombre entier). Plus la valeur est petite, plus l'effet de correction est important. La correction de <b>"blend"</b> peut être conjuguée à une diminution optimisée de la fréquence d'images par seconde (option <b>"fps"</b> de SoftSharpen).
+	<br/><br/>
+
+	Dans la commande SoftSharpen, valider cette option se traduira comme suit :<br/><br/>
+	<div class="script2">SoftSharpen(<b>blend=Deblend</b>)</div><br/><br/>
+
+	
+	<img src="./images/attention.png" style="height:25px; vertical-align:bottom;">
+        Une utilisation adéquate de la correction de <b>"blend"</b> permet à la fois une augmentation de la netteté de la vidéo, mais aussi de sa compressibilité. <br/>
+	A trop haute dose (c'est-à-dire pour des valeurs faibles de <b>"blend"</b>), la correction de blend peut provoquer une perte conséquente d'images nécéssaires au bon déroulement de la vidéo. Par exemple, un effet d'acoups peut apparaîte lors de <a href="http://fr.wikipedia.org/wiki/Travelling" target=wiki>travelling</a>. Il faut donc utiliser cette option uniquement quand cela est nécessaire.
+
+	<br/><br/><br/>
+
+	Afin d'illustrer ce qu'apporte l'option de <b>"Deblending"</b>, il vous est proposé une image pour constater le "rendu" vidéo :<br/>
+	<ul>
+
+		<li>Deblending activé (blend=15)
+	</ul>
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+	
+	<div style="text-align:center;">
+
+		<a onMouseOver="put_image(11,0,1);" >
+		<span class="bulle3"><img src="./images/blend0.jpg" height="70px"/><span>Source</span></span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(11,15,1);" >
+		<span class="bulle4"><img src="./images/blend15.jpg" height="70px"/><span>Deblending activé (blend=15)</span></span></a>
+
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=blend src="./images/blend0.jpg" >
+	</div>
+	
+
+	<br/><br/>
+	<br/><br/>
+
+
+	<a name="blur_explain"></a>
+
+	
+	<div class="titre">Paramètrage de l'option <b>"Floutage"</b> (blur) de SoftSharpen...
+	</div><br/><br/>
+
+	Comme son nom l'indique, l'option <b>"Floutage"</b> permet de flouter votre vidéo, précisément en fonction du mouvement des objets (à ce sujet, voir le paramètre <a href="SoftSharpen.html#move_explain">Seuil de mouvement</a>). 
+	Les valeurs conseillées oscillent entre 12 et 20 (nombre entier).<br/><br/>
+
+	Dans la commande SoftSharpen, cette option se traduira comme suit :<br/><br/>
+	<div class="script2">SoftSharpen(<b>blur=floutage</b>)</div><br/><br/>
+	
+	<img src="./images/attention.png" style="height:25px; vertical-align:bottom;">
+	Le <b>"Floutage"</b> des objets en mouvement ne se voit pas quand on regarde une vidéo défiler normalement : on ne peut voir le flou que lors d'un arrêt sur image. Par ailleurs, même sur une vidéo figée, ce <b>"Floutage"</b> n'est pas excessif et ne choque pas.
+	L'intérêt du  <b>"Floutage"</b> du mouvement est double : d'une part, il permet d'économiser du débit (de manière très modérée malheureusement), contrairement à la hausse de netteté (qui, elle, est très gourmande). D'autre part, ce  <b>"Floutage"</b> permet d'estomper dans une certaine mesure les artefacts pouvant éventuellement apparaître sur les objets en mouvement (sur une source de trop bas débit, ou après le fort débruitage temporel par exemple).
+
+	<br/><br/><br/>
+
+	Afin d'illustrer ce qu'apporte l'option de  <b>"Floutage"</b>, il vous est proposé une image pour constater le "rendu" vidéo :<br/>
+	<ul>
+		<li>Floutage des mouvements (blur=30) : le bras à l'arrière plan bouge, de droite à gauche, pour fermer le rideau. On peut flouter ce mouvement.</li>
+	</ul>
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+
+	
+	<div class="nb">NB : sur l'image annexe, le bleu indique la zone floutée (mouvement de bras).</div><br/><br/>
+
+	<div style="text-align:center;">
+		<a onMouseOver="put_image(2,0,2);" >
+		<span class="bulle3"><img src="./images/blur0.jpg" height="70px"/><span>Source</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(2,30,1);" >
+		<span class="bulle4"><img src="./images/blur30.jpg" height="70px"/><span>Mouvement flouté (blur=30)</span></span></a>
+
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=blur src="./images/blur0.jpg">
+		<img name=blur_rvb src="./images/blur0_rvb.png">
+	</div>
+
+	
+	<br/><br/>
+	<br/><br/>
+
+
+	<a name="dct_explain"></a>
+	
+	<div class="titre">Paramètrage de l'option <b>"Dis. Cos. Trans."</b> (dct) de SoftSharpen...
+	</div><br/><br/>
+
+	L'objectif de l'option <b>"DCT"</b> est de permettre une diminution du débit vidéo en limitant volontairement la précision de la <a href="http://fr.wikipedia.org/wiki/Transform%C3%A9e_en_cosinus_discr%C3%A8te"  target=wiki>DCT</a> utilisée par les codecs vidéos. Cela implique une perte de qualité plus ou moins importante en fonction de la diminution du débit. Les valeurs conseillées pour cette option oscillent entre 4 et 7 (nombre entier).
+	<br/><br/>
+
+	Dans la commande SoftSharpen, cette option se traduit comme suit :<br/><br/>
+	<div class="script2">SoftSharpen(<b>dct=DCT</b>)</div><br/><br/>
+	
+	<img src="./images/attention.png" style="height:25px; vertical-align:bottom;">
+	Si, après employé SoftSharpen, on exécute à nouveau un traitement d'image (*), l'effet de l'option <b>"DCT"</b> sera annulé. Pour que l'option "<b>DCT</b>" soit intéressante, il faut que le résultat du traitement par SoftSharpen soit envoyé "directement" au codec vidéo. Enfin, l'option <b>"DCT"</b> ne peut être validée que si les largeur et hauteur de l'image sont multiples de 16.
+
+<br/> (*) Changer la fréquence FPS, incruster des sous-titres, ne comptent pas comme des traitements d'image.
+
+	<br/><br/><br/>
+	
+	Afin d'illustrer ce qu'apportent l'option <b>"DCT"</b>, il vous est proposé un comparatif, en image, du "rendu" vidéo selon 4 paramètrages distincts :<br/>
+	<ul>
+		<li>Petite valeur = pas de perte de qualité, mais diminution limitée du débit (dct=3)</li>
+		<li>Valeur intermédiaire = diminution sensible du débit, faible perte de qualité (dct=6)</li>
+		<li>Valeur élevée = forte diminution du débit, mais déterioration sensible de l'image (dct=9)</li>
+		<li>Valeur excessive = diminution extrême du débit, mais image inexploitable (dct=12)</li>
+	</ul>
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+
+	<div class="nb">NB : l'image grise annexe présente les lieux et intensités des modifications dues à l'option "<b>DCT</b>", ainsi que le poids de l'image obtenue à gauche.</div><br/><br/>
+
+
+	<div style="text-align:center;">
+
+		<a onMouseOver="put_image(8,0,1);" >
+		<span class="bulle3"><img src="./images/dct0.jpg" height="70px"/><span>Source</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(8,3,1);" >
+		<span class="bulle3"><img src="./images/dct3.jpg" height="70px"/><span>Petite valeur = pas de perte de qualité, mais diminution limitée du débit (dct=3)</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(8,6,1);" >
+		<span class="bulle4"><img src="./images/dct6.jpg" height="70px"/><span>Valeur intermédiaire = diminution sensible du débit, faible perte de qualité (dct=6)</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(8,9,1);" >
+		<span class="bulle4"><img src="./images/dct9.jpg" height="70px"/><span>Valeur élevée = forte diminution du débit, mais déterioration sensible de l'image (dct=9)</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(8,12,1);" >
+		<span class="bulle4"><img src="./images/dct12.jpg" height="70px"/><span>Valeur excessive = diminution extrême du débit, mais image inexploitable (dct=12)</span></span></a>
+
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=dct src="./images/dct0.jpg">
+		<img name=dct_rvb src="./images/dct0_rvb.jpg">
+	</div>
+
+
+	<br/><br/>
+	<br/><br/>
+
+	<a name="deban_explain"></a>
+	
+	<div class="titre">L'option de <b>"Debanding"</b> (deban) de SoftSharpen...
+	</div><br/><br/>
+
+	Comme son nom essaie de l'indiquer, l'option de <b>"Debanding"</b> permet de réduire l'effet de <b>"blanding"</b>, un effet de vague apparaissant sur les larges plages de couleur légèrement dégradée. Cela peut être dû par exemple un débruitage spatial trop important. Les valeurs conseillées pour cette option oscillent entre 1.2 et 2.0 (nombre flotant). Plus la valeur est grande, plus l'effet de correction est important.
+	<br/><br/>
+
+	Dans la commande SoftSharpen, valider cette option se traduira comme suit :<br/><br/>
+	<div class="script2">SoftSharpen(<b>deban=Debanding</b>)</div><br/><br/>
+
+	
+	<img src="./images/attention.png" style="height:25px; vertical-align:bottom;">
+        Cette option n'a malheureusement pas l'air de fonctionner sur les sources en niveaux de gris.
+
+	<br/><br/><br/>
+
+	Afin d'illustrer ce qu'apporte l'option de <b>"Debanding"</b>, il vous est proposé une image pour constater le "rendu" vidéo :<br/>
+	<ul>
+
+		<li>Debanding activé (deban=2.0)
+	</ul>
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+	
+	<div style="text-align:center;">
+
+		<a onMouseOver="put_image(12,0,1);" >
+		<span class="bulle3"><img src="./images/deban0.jpg" height="70px"/><span>Source avec vagues sur le fond uni et les cheveux</span></span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(12,2,1);" >
+		<span class="bulle4"><img src="./images/deban2.jpg" height="70px"/><span>Debanding activé (deban=2.0)</span></span></a>
+
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=deban src="./images/deban0.jpg" >
+	</div>
+	
+
+	<br/><br/>
+	<br/><br/>
+
+
+	<a name="debl_explain"></a>
+
+	
+	<div class="titre">L'option de <b>"Deblocking"</b> (debl) de SoftSharpen...
+	</div><br/><br/>
+
+	Comme son nom l'indique, l'option de <b>"Deblocking"</b> permet de réduire les blocs disgracieux pouvant apparaître sur une vidéo. Typiquement, ceci est dû à une compression excessive, ou parfois à un <a href="SoftSharpen.html#denois_explain">débruitage temporel</a> trop fort dans SoftSharpen. Les valeurs conseillées pour cette option oscillent entre 1 et 20 (nombre entier). 
+	<br/><br/>
+
+	Dans la commande SoftSharpen, valider cette option se traduira comme suit :<br/><br/>
+	<div class="script2">SoftSharpen(<b>debl=Deblocking</b>)</div><br/><br/>
+
+	
+	<img src="./images/attention.png" style="height:25px; vertical-align:bottom;">
+	A haute dose, le <b>"Deblocking"</b> provoque un certain floutage de l'image : ne l'utiliser que si nécessaire.
+        <br/>Par ailleurs, cette option est incompatible avec avisynth MT.
+
+	<br/><br/><br/>
+
+	Afin d'illustrer ce qu'apporte l'option de  <b>"Deblocking"</b>, il vous est proposé une image pour constater le "rendu" vidéo :<br/>
+	<ul>
+
+		<li>Deblocking activé (debl=20)
+	</ul>
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+	
+	<div style="text-align:center;">
+
+		<a onMouseOver="put_image(10,0,1);" >
+		<span class="bulle3"><img src="./images/debl0.jpg" height="70px"/><span>Source</span></span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(10,20,1);" >
+		<span class="bulle4"><img src="./images/debl20.jpg" height="70px"/><span>Deblocking activé (debl=20)</span></span></a>
+
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=debl src="./images/debl0.jpg" >
+	</div>
+	
+
+	<br/><br/>
+	<br/><br/>
+
+
+	<a name="deint_explain"></a>
+
+	
+	<div class="titre">L'option de <b>"Désentrelacement"</b> (deint) de SoftSharpen...
+	</div><br/><br/>
+
+	Comme son nom l'indique, l'option de <b>"Désentrelacement"</b> permet de désentrelacer une vidéo <a href="http://fr.wikipedia.org/wiki/Entrelacement_(vid%C3%A9o)" target=wiki>entrelacée</a>...<br/><br/>
+
+	Dans la commande SoftSharpen, valider cette option se traduira comme suit :<br/><br/>
+	<div class="script2">SoftSharpen(<b>deint=true</b>)</div><br/><br/>
+
+	
+	<img src="./images/attention.png" style="height:25px; vertical-align:bottom;">
+	Le <b>"Désentrelacement"</b> est gourmand en temps de calcul : ne l'utiliser que si nécessaire.
+	Ne pas confondre l'entrelacement d'une vidéo et l'<a href="SoftSharpen.html#aa_explain">aliasing</a>.
+
+	<br/><br/><br/>
+
+	Afin d'illustrer ce qu'apporte l'option de  <b>"Désentrelacement"</b>, il vous est proposé une image pour constater le "rendu" vidéo :<br/>
+	<ul>
+
+		<li>Désentrelacement (deint=true)
+	</ul>
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+	
+	<div style="text-align:center;">
+
+		<a onMouseOver="put_image(6,0,1);" >
+		<span class="bulle3"><img src="./images/deint0.jpg" height="70px"/><span>Source</span></span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(6,1,1);" >
+		<span class="bulle4"><img src="./images/deint1.jpg" height="70px"/><span>Désentrelacement (deint=true)</span></span></a>
+
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=deint src="./images/deint0.jpg" >
+	</div>
+	
+
+	<br/><br/>
+	<br/><br/>
+	
+	<a name="denois_explain"></a>
+	
+	<div class="titre">Paramètrage des options de <b>"Débruitages spatial et temporel"</b> (denois et denoisT) de SoftSharpen...
+	</div><br/><br/>
+
+	Comme leurs noms l'indiquent, les options de <b>"Débruitage"</b> permettent de débruiter une vidéo, dans le but d'améliorer le rendu et/ou de diminuer le débit nécessaire.
+	Pour chaque pixel de l'image, le principe du <b>"Débruitage spatial"</b> repose sur l'analyse d'une petite région autour de ce pixel pour détecter si celui-ci est bruité ou pas (et corrige le pixel le cas échéant). Le principe du <b>"Débruitage temporel"</b> est repose sur l'analyse de ce pixel sur les images précentes et suivantes. Bien qu'il existe des filtres de débruitage spatio-temporels "tout-en-un", les deux <b>"Débruitages"</b> sont indépendants dans SoftSharpen.
+	Les valeurs conseillées pour ces débruitages oscillent entre 2 et 10 (nombre entier).
+	<br/><br/>
+
+	Dans la commande SoftSharpen, ces options se traduiront comme suit :<br/><br/>
+
+	<div class="script2">SoftSharpen(<b>denois=débruitage_spatial, denoisT=débruitage_temporel</b>)</div><br/><br/>
+	
+	<img src="./images/attention.png" style="height:25px; vertical-align:bottom;">
+	L'utilisation du <b>"Débuitage"</b> est relativement coûteuse en temps de traitement, mais son impact sur la compressibilité est indéniable et permet d'encoder à débit inférieur pour une même qualité d'image. Cependant, ne pas tomber dans l'excès, modérer le niveau du débruitage, sinon le résultat perd rapidement en qualité : perte de détails, lessivage des textures, blocking sur les mouvements, effet de vague sur les dégradés...
+	<br/>
+	Par défaut, SoftSharpen utilise le gain de débit obtenu par le <b>"Débuitage"</b> pour réhausser la netteté de l'image (qui, elle, est très gourmande en débit).
+
+	<br/><br/><br/>
+
+	
+	Afin d'illustrer ce qu'apportent les options des <b>"Débruitage"</b>, il vous est proposé un comparatif, en image, du "rendu" vidéo selon 2 paramètrages distincts :<br/>
+	<ul>
+		<li>Débruitage correct = amélioration de l'image (denois=5)</li>
+		<li>Débruitage excessif = détérioration de l'image (denois=25)</li>
+	</ul>
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+
+	
+	<div class="nb">NB : la zone rouge sur l'image annexe indique où le debruitage a lieu. "Plus c'est rouge, plus le débuitage est important !"</div><br/><br/>
+
+
+	<div style="text-align:center;">
+		<a onMouseOver="put_image(4,0,2);" >
+		<span class="bulle3"><img src="./images/denois0.jpg" height="70px"/><span>Source</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(4,5,1);" >
+		<span class="bulle4"><img src="./images/denois5.jpg" height="70px"/><span>Débruitage correct = amélioration de l'image (denois=5)</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(4,25,1);" >
+		<span class="bulle4"><img src="./images/denois25.jpg" height="70px"/><span>Débruitage excessif = détérioration de l'image (denois=25)</span></span></a>
+
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=denois src="./images/denois0.jpg">
+		<img name=denois_rvb src="./images/denois0_rvb.png">
+
+	</div>
+
+	
+	<br/><br/>
+	<br/><br/>
+
+	<a name="line_explain"></a>
+	
+	<div class="titre">Paramètrage de l'option <b>"Lignes"</b> (line) de SoftSharpen...
+	</div><br/><br/>
+
+	L'option <b>"Lignes"</b> permet de renforcer les lignes noires de la vidéo. Les valeurs conseillées oscillent entre 10 et 40 (nombre entier).<br/>
+
+	L'option <b>"Lignes"</b> dispose d'un "sous-paramètre", l' <b>"Affinage"</b>, permettant d'affiner les lignes noires. L' <b>"Affinage"</b> est essentiellement utile pour les dessins animés et ses valeurs conseillées varient de 1 à 4.<br/><br/>
+
+	Dans la commande SoftSharpen, cette option se traduira comme suit :<br/><br/>
+	<div class="script2">SoftSharpen(<b>line=Lignes.Affinage</b>)</div><br/><br/>
+	
+	<img src="./images/attention.png" style="height:25px; vertical-align:bottom;">
+	Même si SoftSharpen en limite l'impact, le renforcement des lignes noires implique une augmentation de débit. Il est donc préférable ne pas monter trop haut son niveau, évitant par la même occasion de faire apparaître des artefacts.<br/><br/><br/>
+
+	
+	Afin d'illustrer ce qu'apporte l'option <b>"Lignes"</b> et de son sous-paramètre <b>"Affinage"</b>, il vous est proposé un comparatif, en image, du "rendu" vidéo selon 3 paramètrages distincts :<br/>
+	<ul>
+		<li>Accentuation modérée sans affinage (line=20.0)</li>
+		<li>Accentuation forte sans affinage (line=40.0)</li>
+		<li>Accentuation et affinage forts (line=40.4)</li>
+	</ul>
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+	
+
+	<div style="text-align:center;">
+		<a onMouseOver="put_image(9,0,1);" >
+		<span class="bulle3"><img src="./images/line0.jpg" height="70px"/><span>Source</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(9,20,1);" >
+		<span class="bulle3"><img src="./images/line20.jpg" height="70px"/><span>Accentuation modérée sans affinage (line=20.0)</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(9,40,1);" >
+		<span class="bulle4"><img src="./images/line40.jpg" height="70px"/><span>Accentuation forte sans affinage (line=40.0)</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(9,404,1);" >
+		<span class="bulle4"><img src="./images/line404.jpg" height="70px"/><span>Accentuation et affinage forts (line=40.4)</span></span></a>
+		
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=line src="./images/line0.jpg">
+
+	</div>
+
+	<br/><br/>
+	<br/><br/>
+
+	<a name="move_explain"></a>
+
+	
+	<div class="titre">Paramètrage du <b>"Seuil de Mouvement"</b> (move) de SoftSharpen...
+	</div><br/><br/>
+
+	En analysant plusieurs images consécutives, on peut déterminer la quantité de mouvement des objets. Le <b>"Seuil de Mouvement"</b> est un niveau séparant
+	les objets déclarés "relativement statitiques" et ceux déclarés "très mobiles". Cette différenciation est utile lorsque l'on veut optimiser la hausse de netteté d'une image,
+	ou même en flouter une partie.
+	Les valeurs conseillées pour ce <b>"Seuil"</b> oscillent autours de 35 (nombre entier).<br/><br/>
+
+	Dans la commande SoftSharpen, cette option se traduira comme suit :<br/><br/>
+	<div class="script2">SoftSharpen(<b>move=seuil</b>)</div><br/><br/>
+
+	
+	<img src="./images/attention.png"  style="height:25px; vertical-align:bottom;">
+	Réhausser la netteté est certes visuellement intéressant, mais très coûteux en débit. De plus, lors d'un mouvement, la netteté d'un objet ne se voit pas avec l'oeil humain (mais avec l'oeil d'un codec, si !) : il paraît donc contreproductif de réhausser la netteté d'un objet en mouvement. C'est le seuil de floutage qui permet de spécifier à partir de quelle vitesse de déplacement on ne veut plus réhausser la netteté de l'objet. 
+	<br/>
+	Pour aller plus loin encore dans une économie de débit, un floutage peut avoir lieu sur ces zones en mouvement (voir aussi l'option de <a href="SoftSharpen.html#blur_explain">floutage</a>). Plus le seuil est bas,  plus la netteté s'estompe rapidement et plus le floutage se déclanche facilement (dans le cas où l'option de floutage est activée).
+
+	<br/><br/><br/>
+
+	Afin d'illustrer ce qu'apporte le paramètre <b>"Move"</b>, il vous est proposé un comparatif, en image, du "rendu" vidéo selon 2 paramètrages distincts :<br/>
+	<ul>
+		<li>Détectection du mouvement (move=35) : sur l'image proposée,
+		un bras à l'arrière plan bouge de droite à gauche, pour fermer le rideau. Par défaut dans SoftSharpen, ce mouvement est détecté puis flouté. Le reste de l'image est considéré comme immobile et SoftSharpen en réhausse la netteté. </li>
+
+		<li>Désactivation de la recherche de mouvement (move=0) :
+		en fait, imposer move=0 désactive la recherche de mouvement. Par conséquent, tout objet sera considéré comme immobile, rien ne sera flouté, la hausse de netteté se fera sur l'ensemble de l'image.</li>
+	</ul>
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+
+	
+	<div class="nb">NB : sur l'image annexe, le vert indique une hausse de netteté, le bleu indique un floutage.</div><br/><br/>
+
+
+	<div style="text-align:center;">
+		<a onMouseOver="put_image(3,1,2);" >
+		<span class="bulle3"><img src="./images/move1.jpg" height="70px"/><span>Source</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(3,35,1);" >
+		<span class="bulle3"><img src="./images/move35.jpg" height="70px"/><span>Détectection du mouvement (move=35) puis floutage</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(3,0,1);" >
+		<span class="bulle4"><img src="./images/move0.jpg" height="70px"/><span>Désactivation de la recherche de mouvement (move=0) et donc aucun floutage</span></span></a>
+
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=move src="./images/move1.jpg">
+		<img name=move_rvb src="./images/move1_rvb.png">
+
+	</div>
+
+	
+
+	<br/><br/>
+	<br/><br/>
+
+	<a name="sharp_explain"></a>
+	
+	<div class="titre">Paramètrage de l'option <b>"Netteté"</b> (sharp) de SoftSharpen...
+	</div><br/><br/>
+
+	Comme son nom l'indique, l'option <b>"Netteté"</b> permet d'améliorer la netteté de votre vidéo. Les valeurs conseillées oscillent entre 13 et 25 (nombre entier).<br/>
+
+	L'option <b>"Netteté"</b> dispose d'un "sous-paramètre", la <b>"Balance"</b>, permettant d'appliquer cette dernière plutôt sur les contours ou sur les textures. La valeur de cette <b>"Balance"</b>
+	varie de <b>"0"</b> à <b>"9"</b>. Règlée à <b>"0"</b>, la <b>"Netteté"</b> s'appliquera sur les contours, alors qu'à <b>"9"</b>, elle s'appliquera sur les textures.<br/><br/>
+
+	Dans la commande SoftSharpen, cette option se traduira comme suit :<br/><br/>
+	<div class="script2">SoftSharpen(<b>sharp=netteté.balance</b>)</div><br/><br/>
+	
+	<img src="./images/attention.png" style="height:25px; vertical-align:bottom;">
+	Même si SoftSharpen en limite l'impact, l'augmentation de netteté est gourmande en débit. Il est donc préférable ne pas monter trop haut son niveau, évitant par la même occasion de faire apparaître des artefacts.<br/>
+	De la même manière, plus la balance penche vers le coté Texture, plus c'est couteux !<br/><br/><br/>
+
+	
+	Afin d'illustrer ce qu'apporte l'option <b>"Netteté"</b> et de son sous-paramètre <b>"Balance"</b>, il vous est proposé un comparatif, en image, du "rendu" vidéo selon 3 paramètrages distincts :<br/>
+	<ul>
+		<li>Augmentation de la netteté des contours (sharp=25.0)</li>
+		<li>Augmentation de la netteté des contours et des textures (sharp=25.5)</li>
+		<li>Augmentation de la netteté des textures (sharp=25.9)</li>
+
+	</ul>
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+	
+	<div class="nb">NB : la zone verte sur l'image annexe indique la zone où la hausse de netteté a eu lieu. "Plus c'est vert, plus la hausse est importante !"</div><br/><br/>
+
+
+	<div style="text-align:center;">
+		<a onMouseOver="put_image(1,0,2);" >
+		<span class="bulle3"><img src="./images/sharp0.jpg" height="70px"/><span>Source</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(1,250,1);" >
+		<span class="bulle3"><img src="./images/sharp250.jpg" height="70px"/><span>Amélioration de la netteté des contours (sharp=25.0)</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(1,255,1);" >
+		<span class="bulle4"><img src="./images/sharp255.jpg" height="70px"/><span>Amélioration de la netteté des contours et des textures (sharp=25.5)</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(1,259,1);" >
+		<span class="bulle4"><img src="./images/sharp259.jpg" height="70px"/><span>Amélioration de la netteté des textures (sharp=25.9)</a>
+		
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=sharp src="./images/sharp0.jpg">
+		<img name=sharp_rvb src="./images/sharp0_rvb.png">
+	</div>
+
+	
+	<br/><br/>
+	<br/><br/>
+
+	<a name="gain_explain"></a>
+
+	
+	<div class="titre">Paramètrage de la <b>"Lumière et contraste"</b> (gain) de SoftSharpen...
+	</div><br/><br/>
+
+	Comme son nom l'indique, l'option <b>"Lumière et contraste"</b> permet d'améliorer la luminosité de votre vidéo et d'en optimiser le contraste de manière automatique, en fonction des scènes. La valeur du paramètre indique un niveau maximum de l'augmentation. Les valeurs conseillées oscillent entre 1 et 5 (nombre entier).<br/>
+
+	Dans la commande SoftSharpen, cette option se traduira comme suit :<br/><br/>
+	<div class="script2">SoftSharpen(<b>gain=lumiere</b>)</div><br/><br/>
+	
+	<img src="./images/attention.png" style="height:25px; vertical-align:bottom;">
+
+	L'augmentation de la luminosité n'est pas constante sur l'ensemble de la vidéo car elle est gérée de manière automatique : il se peut qu'il n'y ait aucun changement sur certaines scènes. Par ailleurs, l'utilisation de ce paramètre induit une augmentation du débit (sur les passages où l'optimisation du contraste a lieu) puisqu'il accentue les différences de luminosité de l'image. Enfin, sur des sources dont la luminosité varie rapidement, l'utilisation de l'option <b>"Lumière et contraste"</b> est déconseillée...
+	<br/><br/><br/>
+
+	Afin d'illustrer ce qu'apporte l'option de  <b>"Lumière et contraste"</b>, il vous est proposé une image pour constater le "rendu" vidéo :<br/>
+	<ul>
+
+		<li>Gain de lumière et optimisation du contraste (gain=3)
+	</ul>
+
+	
+	Il vous suffit donc de passer la souris sur l'une des vignettes pour voir apparaître son rendu...<br/><br/>
+	
+	<div style="text-align:center;">
+		<a onMouseOver="put_image(7,0,1);" >
+		<span class="bulle3"><img src="./images/gain0.jpg" height="70px"/><span>Source</span></span></a>&nbsp;&nbsp;
+
+		<a onMouseOver="put_image(7,3,1);" >
+		<span class="bulle4"><img src="./images/gain3.jpg" height="70px"/><span>Gain de lumière et optimisation du contraste (gain=3)</span></span></a>
+
+		<br/><div class="retour"><span class="bulle2"><a href="SoftSharpen.html#generateur"><img src="./images/retour.png" style="height:55px; vertical-align:bottom;"></a><span>retour au générateur de code avisynth</span></span></div>
+
+		<br/><br/>
+		<img name=gain src="./images/gain0.jpg">
+	</div>
+
+	<br/><br/>
+
+	<br/><br/>
+
+	
+	<div style="text-align:right; padding-right:20px; font-size:0.8em; color:#336699;">Subbat & Leon1789</div><br/>
+</div>
+
+
+<script type="text/javascript"> 
+var c = new Array() ;
+
+function get_value(str)
+{
+if (document.getElementById(str+"1").checked==true) {return document.getElementById(str+"1").value}
+if (document.getElementById(str+"2").checked==true) {return document.getElementById(str+"2").value}
+if (document.getElementById(str+"3").checked==true) {return document.getElementById(str+"3").value}
+}
+
+function maj()
+{
+c[1] = document.getElementById("pr7").value
+c[2] = document.getElementById("sharp").value
+c[3] = document.getElementById("sharpW").value              
+c[4] = document.getElementById("blur").value
+c[5] = document.getElementById("move").value
+c[6] = document.getElementById("denois").value
+c[7] = document.getElementById("denoisT").value
+c[8] = get_value("MD")
+c[9] = document.getElementById("dct").value
+c[10] = document.getElementById("derin").value
+c[11] = document.getElementById("debl").value
+c[12] = document.getElementById("deban").value
+c[13] = document.getElementById("line").value
+c[14] = document.getElementById("thin").value
+c[15] = document.getElementById("blend").value
+}
+
+function pr7defaut()
+{
+document.getElementById("pr7").value=""
+document.getElementById("sharp").value="21"
+document.getElementById("sharpW").value="0"              
+document.getElementById("move").value="30"
+document.getElementById("blur").value="15"
+document.getElementById("denois").value="8"
+document.getElementById("denoisT").value="8"
+document.getElementById("MD1").checked=true
+document.getElementById("derin").value="4"
+document.getElementById("deban").value="0"
+document.getElementById("debl").value="0"
+document.getElementById("blend").value="0"
+document.getElementById("line").value="0"
+document.getElementById("thin").value="0"
+document.getElementById("dct").value="6"
+maj()
+document.getElementById("deint").checked=false
+document.getElementById("aa").checked=false
+document.getElementById("fast").checked=false
+document.getElementById("verbose").checked=false
+document.getElementById("show").checked=false
+}
+
+pr7defaut()
+
+function pr7anim()
+{
+document.getElementById("pr7").value="anim"
+document.getElementById("sharp").value="15"
+document.getElementById("sharpW").value="0"              
+document.getElementById("blur").value="20"
+document.getElementById("move").value="30"
+document.getElementById("denois").value="10"
+document.getElementById("denoisT").value="6"
+document.getElementById("MD1").checked=true
+document.getElementById("derin").value="3"
+document.getElementById("deban").value="1.5"
+document.getElementById("debl").value="0"
+document.getElementById("blend").value="0"
+document.getElementById("line").value="10"
+document.getElementById("thin").value="0"
+document.getElementById("dct").value="6"
+maj()
+}
+
+function pr7film()
+{
+document.getElementById("pr7").value="film"
+document.getElementById("sharp").value="19"
+document.getElementById("sharpW").value="0"              
+document.getElementById("blur").value="15"
+document.getElementById("move").value="30"
+document.getElementById("denois").value="5"
+document.getElementById("denoisT").value="7"
+document.getElementById("MD1").checked=true
+document.getElementById("derin").value="3"
+document.getElementById("deban").value="0"
+document.getElementById("debl").value="0"
+document.getElementById("blend").value="0"
+document.getElementById("line").value="0"
+document.getElementById("thin").value="0"
+document.getElementById("dct").value="5"
+maj()
+}
+
+function pr7light()
+{
+document.getElementById("pr7").value="light"
+document.getElementById("sharp").value="13"
+document.getElementById("sharpW").value="0"              
+document.getElementById("blur").value="12"
+document.getElementById("move").value="30"
+document.getElementById("denois").value="2"
+document.getElementById("denoisT").value="5"
+document.getElementById("MD1").checked=true
+document.getElementById("derin").value="2"
+document.getElementById("deban").value="0"
+document.getElementById("debl").value="0"
+document.getElementById("blend").value="0"
+document.getElementById("line").value="0"
+document.getElementById("thin").value="0"
+document.getElementById("dct").value="4"
+maj()
+}
+
+function pr7vhs()
+{
+document.getElementById("pr7").value="vhs"
+document.getElementById("sharp").value="25"
+document.getElementById("sharpW").value="0"              
+document.getElementById("blur").value="20"
+document.getElementById("move").value="30"
+document.getElementById("denois").value="10"
+document.getElementById("denoisT").value="10"
+document.getElementById("MD2").checked=true
+document.getElementById("deban").value="0"
+document.getElementById("blend").value="0"
+document.getElementById("derin").value="5"
+document.getElementById("debl").value="5"
+document.getElementById("line").value="10"
+document.getElementById("thin").value="0"
+document.getElementById("dct").value="7"
+maj()
+}
+
+function miseAzero()
+{
+pr7defaut()
+pr7light()
+document.getElementById("sharp").value="0"
+document.getElementById("sharpW").value="0"              
+document.getElementById("blur").value="0"
+document.getElementById("move").value="0"
+document.getElementById("denois").value="0"
+document.getElementById("denoisT").value="0"
+document.getElementById("deban").value="0"
+document.getElementById("derin").value="0"
+document.getElementById("debl").value="0"
+document.getElementById("blend").value="0"
+document.getElementById("line").value="0"
+document.getElementById("thin").value="0"
+document.getElementById("dct").value="0"
+document.getElementById("gain").value="0"
+document.getElementById("horiz").value=""
+document.getElementById("vertic").value=""
+document.getElementById("fps").value=""
+}
+
+function formule()
+{
+if (document.getElementById("sharp").value=="") {document.getElementById("sharp").value="0"}
+if (document.getElementById("sharpW").value=="") {document.getElementById("sharpW").value="0"}
+if (document.getElementById("move").value=="") {document.getElementById("move").value="0"}
+if (document.getElementById("blur").value=="") {document.getElementById("blur").value="0"}
+if (document.getElementById("denois").value=="") {document.getElementById("denois").value="0"}
+if (document.getElementById("denoisT").value=="") {document.getElementById("denoisT").value="0"}
+if (document.getElementById("deban").value=="") {document.getElementById("deban").value="0"}
+if (document.getElementById("derin").value=="") {document.getElementById("derin").value="0"}
+if (document.getElementById("debl").value=="") {document.getElementById("debl").value="0"}
+if (document.getElementById("line").value=="") {document.getElementById("line").value="0"}
+if (document.getElementById("thin").value=="") {document.getElementById("thin").value="0"}
+if (document.getElementById("dct").value=="") {document.getElementById("dct").value="0"}
+if (document.getElementById("gain").value=="") {document.getElementById("gain").value="0"}
+
+st = ""
+st_ = ""
+
+if (document.getElementById("video").value != "")
+{
+st += document.getElementById("video").value
++ " = "
++ document.getElementById("video").value
++ "."
+}
+
+st += "SoftSharpen("
+
+if (document.getElementById("pr7").value != "")
+{
+st += "preset=\""+document.getElementById("pr7").value+"\""
+st_ = ", "
+}
+
+if (document.getElementById("horiz").value != "")
+{
+st += st_ + "width="+document.getElementById("horiz").value
+st_ = ", "
+}
+
+if (document.getElementById("vertic").value != "")
+{
+st += st_ + "height="+document.getElementById("vertic").value
+st_ = ", "
+}
+
+if (document.getElementById("fps").value != "")
+{
+st += st_ + "fps="+document.getElementById("fps").value
+st_ = ", "
+}
+
+if (document.getElementById("sharp").value != c[2]
+  || document.getElementById("sharpW").value != c[3])
+{
+st += st_+ "sharp="+document.getElementById("sharp").value
+         + "."+document.getElementById("sharpW").value
+st_ = ", "
+}
+
+if (document.getElementById("denois").value != c[6])
+{
+st += st_ + "deNois="+document.getElementById("denois").value
+st_ = ", "
+}
+
+if (document.getElementById("denoisT").value != c[7]
+  || get_value("MD") != c[8])
+{
+st += st_ + "deNoisT="+document.getElementById("denoisT").value
+          + "."+ get_value("MD")
+st_ = ", "
+}
+
+if (document.getElementById("derin").value != c[10])
+{
+st += st_ + "deRin="+document.getElementById("derin").value
+st_ = ", "
+}
+
+if (document.getElementById("deban").value != c[12])
+{
+st += st_ + "deBan="+document.getElementById("deban").value
+st_ = ", "
+}
+
+if (document.getElementById("debl").value != c[11])
+{
+st += st_ + "deBl="+document.getElementById("debl").value
+st_ = ", "
+}
+
+if (document.getElementById("blend").value != c[15])
+{
+st += st_ + "Blend="+document.getElementById("blend").value
+st_ = ", "
+}
+
+if (document.getElementById("line").value != c[13]
+  || document.getElementById("thin").value != c[14])
+{
+st += st_ + "line="+document.getElementById("line").value
+        + "."+document.getElementById("thin").value              
+st_ = ", "
+}
+
+if (document.getElementById("move").value != c[5])
+{
+st += st_ + "move="+document.getElementById("move").value
+st_ = ", "
+}
+
+if (document.getElementById("blur").value != c[4])
+{
+st += st_ + "blur="+document.getElementById("blur").value
+st_ = ", "
+}
+
+if (document.getElementById("dct").value != c[9])
+{
+st += st_ + "dct="+document.getElementById("dct").value
+st_ = ", "
+}
+
+if (document.getElementById("gain").value != 0)
+{
+st += st_ + "gain="+document.getElementById("gain").value
+st_ = ", "
+}
+
+if (document.getElementById("deint").checked == true)
+{
+st += st_ + "deInt=true"
+st_ = ", "
+}
+
+if (document.getElementById("aa").checked == true)
+{
+st += st_ + "aa=true"
+st_ = ", "
+}
+
+if (document.getElementById("fast").checked == true)
+{
+st += st_ + "fast=true"
+st_ = ", "
+}
+
+if (document.getElementById("verbose").checked == true)
+{
+st += st_ + "verbose=true"
+st_ = ", "
+}
+
+if (document.getElementById("show").checked == true)
+{
+st += st_ + "show=true"
+st_ = ", "
+}
+
+st += ")"
+
+document.getElementById("code").value = st
+} 
+
+function formuleb()
+{ 
+document.getElementById("codeb").value=
+"LoadPlugin(\""+document.getElementById("folder").value
++ "\\ASharp.dll"+"\")" +"\n"
++"LoadPlugin(\""+document.getElementById("folder").value
++ "\\DctFilter.dll"+"\")" +"\n"
++"LoadPlugin(\""+document.getElementById("folder").value
++ "\\Deen.dll"+"\")" +"\n"
++"LoadPlugin(\""+document.getElementById("folder").value
++ "\\DGDecode.dll"+"\")" +"\n"
++"LoadPlugin(\""+document.getElementById("folder").value
++ "\\GradFun2db.dll"+"\")" +"\n"
++"LoadPlugin(\""+document.getElementById("folder").value
++ "\\MSharpen.dll"+"\")" +"\n"
++"LoadPlugin(\""+document.getElementById("folder").value
++ "\\mt_MaskTools"+"\")" +"\n"
++"LoadPlugin(\""+document.getElementById("folder").value
++ "\\mvTools2.dll"+"\")" +"\n"
++"LoadPlugin(\""+document.getElementById("folder").value
++ "\\RemoveGrainSSE2.dll"+"\")" +"\n"
++"LoadPlugin(\""+document.getElementById("folder").value
++ "\\TDeint.dll"+"\")" +"\n" 
++"Import(\""+document.getElementById("folder").value 
++ "\\SoftSharpen.avsi"+"\")"
+}
+
+if (screen.width<1300)    document.getElementById('conteneur').className = "conteneur3";
+
+function put_image(type,n,ext)
+{
+if (type==1) {type = "sharp"}
+if (type==2) {type = "blur"}
+if (type==3) {type = "move"}
+if (type==4) {type = "denois"}
+if (type==5) {type = "aa"}
+if (type==6) {type = "deint"}
+if (type==7) {type = "gain"}
+if (type==8) {type = "dct"}
+if (type==9) {type = "line"}
+if (type==10) {type = "debl"}
+if (type==11) {type = "blend"}
+if (type==12) {type = "deban"}
+if (ext==1) {ext = "jpg"}
+if (ext==2) {ext = "png"}
+document.images[type].src = "./images/"+type+n+".jpg"
+document.images[type+"_rvb"].src = "./images/"+type+n+"_rvb."+ext
+}
+
+</script>
+

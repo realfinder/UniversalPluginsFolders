@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectTVLook AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectTVLook </h1></font>
+	 
+	  <P> The EffectTVLook function on a base image creates a old TV set type
+	  image from a second clip (TV dimensions will be proportional to this clip
+	  dimensions) . The color of cabinet and color bias as well as
+	   size , placement of the TV can be specified. The size and placement can be
+	   linearly varied along clip. A transition can also be done by properly
+	   specified dimensions. By cascading with some frame offsets, slide show can
+	    be created.As old CRT TV sets are brighter, may have some color bias, using col
+		parameter this can be done. As they were non flat panels, curvature is introduced
+		in the image.
+		
+		Quality of interpolation if set to high will run slower. If the original
+		 image is being enlarged in the TV then quality may be set high.
+RGB32, RGB24  formats only are supported
+
+
+ </p>  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip on which TV image is to be placed </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td> clip  which forms TV image  </td>
+       <td></td>
+       <td>clip</td>
+       <td>same color format as the first clip</td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td></td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>none</td>
+</tr>
+<tr>
+       <td>Color of the TV cabinet</td>
+       <td>cab</td>
+       <td>integer</td>
+       <td>in RRGGBB format</td>
+       <td>$1f0f0f</td>
+</tr>
+
+<tr>
+       <td>Color bias for the TV image</td>
+       <td>col</td>
+       <td>integer</td>
+       <td>in RRGGBB format</td>
+       <td>$1f1f2f</td>
+</tr>
+
+<tr>
+       <td>left x coordinate of TV set at start</td>
+       <td>lx</td>
+       <td>integer</td>
+       <td>less than width of frame</td>
+       <td>0</td>
+</tr>
+
+<tr>
+       <td>top y coordinate of TV set at start</td>
+       <td>ty</td>
+       <td>integer</td>
+       <td>less than frame height</td>
+       <td>0</td>
+</tr>
+<tr>
+       <td>width of TV set at start</td>
+       <td>ln</td>
+       <td>integer</td>
+       <td> At least a part of TV be seen</td>
+       <td>half of frame width</td>
+</tr>
+
+<tr>
+       <td>left x coordinate of TV set at end</td>
+       <td>elx</td>
+       <td>integer</td>
+       <td>less than width of frame</td>
+       <td>lx</td>
+</tr>
+
+<tr>
+       <td>top y coordinate of TV set at end</td>
+       <td>ety</td>
+       <td>integer</td>
+       <td>less than frame height</td>
+       <td>ty</td>
+</tr>
+<tr>
+       <td>width of TV set at end</td>
+       <td>eln</td>
+       <td>integer</td>
+       <td>half of frame width </td>
+       <td>ln</td>
+</tr>
+
+<tr>
+       <td>Quality of interpolation</td>
+       <td>hq</td>
+       <td>boolean</td>
+       <td>true for high ( slow) false for low (fast)</td>
+       <td>false</td>
+</tr>
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>
+im1 = imagereader(-----------)
+im2 = imagereader(-----------)
+EffectTVlook(im1,im2)
+EffectTVlook(im1,im2,hq = false,lx = 460, ln=104, ty = 350,elx=0,ety = 0, eln = 1020,cab = $3f1f1f,col = $1f1f3f)
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="TVLook0.jpeg" border="0">
+
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectLens AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectLens </h1></font>
+	 
+	  <P> EffectLens function magnifies a specified circular disc area. The 
+	  magnification can be constant in the disc or vary from center to edges
+	  ( drop=true). The lens center moves from the initial center coordinates 
+	  in pixels to the final coordinates.
+	RGB32, RGB24, YUY2 and YV12 formats only are supported
+
+ </p>  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+<tr>
+       <td>Radius of lens</td>
+       <td>radius</td>
+       <td>integer</td>
+       <td>8 or more, less than half of smaller dimension of frame</td>
+       <td>1/8th smaller frame dimension</td>
+</tr>
+
+<tr>
+       <td>magnification at start</td>
+       <td>magx</td>
+       <td>integer</td>
+       <td>2 to 12</td>
+       <td>4</td>
+</tr>
+
+<tr>
+       <td>initial x coordinate </td>
+       <td>initx</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>mid frame</td>
+</tr>
+
+<tr>
+       <td> initial y coordinate</td>
+       <td>inity</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>mid frame</td>
+</tr>
+<tr>
+       <td>Final x coordinate</td>
+       <td>finalx</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>initx</td>
+</tr>
+
+<tr>
+       <td> Final y coordinate</td>
+       <td>finaly</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>inity</td>
+</tr>
+<tr>
+       <td>is drop effect required?</td>
+       <td>drop</td>
+       <td>boolean</td>
+       <td>true for yes, false for no</td>
+       <td>false</td>
+</tr>
+
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>EffectLens(last,51,158,60,5,40,240,400,240,false)
+For stationary lens position, uniform magnification:-
+EffectLens(last,51,158,60,5,40,240)
+For stationary lens, varying magnification:-
+EffectLens(last,51,158,drop=true)
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="lens.jpg" border="0">
+
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

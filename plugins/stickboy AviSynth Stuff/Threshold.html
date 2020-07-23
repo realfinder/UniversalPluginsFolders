@@ -1,0 +1,265 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; CHARSET=ISO-8859-1" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<title>Threshold</title>
+<style type="text/css">
+<!--
+/* general typeface stuff */
+
+	h1, h2, h3, h4, h5, h6, th, .heading, .caption { font-family: Arial, Helvetica, sans-serif; }
+	body, p, td, ul, ol, address, cite, blockquote, .text { font-family: "Times New Roman", Times, serif; }
+
+	tt, pre, code, kbd, samp, .fixed { font-family: "Courier New", Courier, monospace; font-size: smaller; }
+
+	code, kbd { white-space: nowrap; }
+
+	address, cite, var, em, i { font-style: italic; }
+	th, strong, b { font-weight: bold; }
+
+	acronym, abbr, .slang { text-decoration: none; border-bottom: #00CC00 dotted 1px; cursor: help; }
+
+/* link stuff */
+
+	a:link { color: #0000FF; background: transparent; }
+	a:visited { color: #9966FF; background: transparent; }
+	a:hover { color: #6666FF; background: transparent; }
+	a:active { color: #FF0000; background: transparent; }
+	a.unemphasized { text-decoration: none; }	/* not underlined */
+	a:hover.unemphasized { text-decoration: underline; }
+
+	a.unemphasized img { border-style: none; }
+
+/* margin stuff */
+
+	ul, ol { margin-top: 0; margin-bottom: 0; }
+
+/* miscellaneous stuff */
+
+	.date { white-space: nowrap; }
+	hr { border: 0; border-top: black solid thin; margin: 0; clear: both; height: 1px;  }
+
+/* document-specific stuff */
+
+	body
+	{
+		background: #FFFFFF;
+		color: #000000;
+	}
+
+	#header { border-bottom: black solid 1px; padding-bottom: 0.5em; }
+
+	#header h1 { margin: 0; }
+	#header p, #footer p { font-family: Arial, Helvetica, sans-serif; }
+
+	#versionText
+	{
+		font-weight: bold;
+		margin: 0;
+		position: absolute;
+		top: 1em;
+		right: 10px;
+	}
+
+ 	#description
+	{
+		font-weight: bold;
+		margin: 0;
+	}
+
+	#author { margin: 1em 0 0 0; }
+	#content .subBody { margin-left: 2em; }
+
+	.syntax { margin-bottom: 0; }
+	.syntaxAnnotation { margin-left: 2em; margin-top: 0; }
+
+	pre.example
+	{
+		border-left: 5px solid #CCC;
+		margin-left: 1.5em;
+		padding-left: 5px;
+		font-size: 90%;
+		line-height: 110%;
+	}
+
+	#historylist
+	{
+		/*
+		height: 15em;
+		overflow: auto;
+		margin: 0em 2em 0em 2em;
+		border: black solid 1px;
+		*/
+	}
+
+	#footer
+	{
+		padding-top: 0;
+		padding-bottom: 0;
+		margin-top: 1em;
+		margin-bottom: 1em;
+		border-top: black solid 1px;
+	}
+-->
+</style>
+</head>
+
+<body>
+
+<div id="header">
+	<h1>Threshold</h1>
+	<p id="versionText">
+		v0.1.2 (<span class="date">2004-04-10</span>)
+	</p>
+	<p id="description">
+		An AviSynth plug-in to provide simple threshold and coring functions.
+	</p>
+	<p id="author">
+		by James D. Lin (<a href="http://www.avisynth.org/stickboy/">stickboy</a>)
+	</p>
+</div><!-- header -->
+
+<div id="content">
+
+<h2>Overview</h2>
+<div class="subBody">
+<p>
+<code>Threshold</code> maps all pixels darker than a specified threshold to
+pure black and all other pixels to pure white.
+</p>
+<p>
+<code>Core</code> is similar; it maps all pixels darker than a specified
+threshold to pure black, but it leaves all other pixels untouched.
+</p>
+</div>
+
+<h2>Syntax</h2>
+<div class="subBody">
+<pre>
+Threshold(clip <var>c</var>, int &quot;<var>threshold</var>&quot;, int &quot;<var>low</var>&quot;, int &quot;<var>high</var>&quot;)
+Core(clip <var>c</var> int <var>threshold</var>, int &quot;<var>low</var>&quot;, bool &quot;<var>debug</var>&quot;)
+</pre>
+</div>
+
+<h2>Threshold Parameters</h2>
+<div class="subBody">
+<table cellspacing="10">
+	<tr valign="top">
+		<td><code>&quot;<var>threshold</var>&quot;</code></td>
+		<td>
+			All pixels darker than the threshold value will be mapped to
+			the <var>low</var> value.  All other pixels will be mapped to
+			the <var>high</var> value.<br />
+			Range: [0, 255] (Default: 128)
+		</td>
+	</tr>
+	<tr valign="top">
+		<td><code>&quot;<var>low</var>&quot;</code></td>
+		<td>
+			(Default: 16 for YUV clips; 0 for RGB clips)<br />
+			Range: [0, 255]
+		</td>
+	</tr>
+	<tr valign="top">
+		<td><code>&quot;<var>high</var>&quot;</code></td>
+		<td>
+			Range: [0, 255] (Default: 235 for YUV clips; 255 for RGB clips)
+		</td>
+	</tr>
+</table>
+</div>
+
+<h2>Core Parameters</h2>
+<div class="subBody">
+<table cellspacing="10">
+	<tr valign="top">
+		<td><code><var>threshold</var></code></td>
+		<td>
+			All pixels darker than the threshold value will be mapped to
+			the <var>low</var> value.  All other pixels will be left untouched.<br />
+			Range: [0, 255]
+		</td>
+	</tr>
+	<tr valign="top">
+		<td><code>&quot;<var>low</var>&quot;</code></td>
+		<td>
+			Range: [0, 255] (Default: 16 for YUV clips; 0 for RGB clips)
+		</td>
+	</tr>
+	<tr valign="top">
+		<td><code>&quot;<var>debug</var>&quot;</code></td>
+		<td>
+			Pass true to map all pixels affected by <code>Core</code>
+			to bright green instead of to the <var>low</var> value.<br />
+			Range: [0, 255] (Default: false)
+		</td>
+	</tr>
+</table>
+</div>
+
+<h2>Usage</h2>
+<div class="subBody">
+<p>
+<code>Threshold</code> and <code>Core</code> currently support only YUY2,
+RGB24, and RGB32 colorspaces.
+</p>
+
+<p>
+Behavior can be different in YUV and RGB colorspaces.  That is, if you call
+Threshold or Core on a YUY2 clip, there can be significant differences if
+you call <code>ConvertToRGB()</code> first.
+</p>
+
+<p>
+In YUV mode, <var>threshold</var> is <em>not</em> scaled to the [16, 235]
+CCIR-601 range.  If you need it scaled, then you unfortunately will need
+to compute the scaled threshold yourself.
+</p>
+
+<p>
+I don't know anything about MMX/SSE optimizations, so these functions are
+not as fast as they probably ought to be.
+</p>
+</div>
+
+<h2>Revision History</h2>
+<div id="historylist">
+<ul>
+	<li>
+		0.1.2
+		<ul>
+			<li>
+				 Minor fix to handle the case where <span style="white-space:nowrap;"><var>threshold</var> &lt; <var>low</var></span>.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.1.1
+		<ul>
+			<li>
+				 Added stricter argument checks.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.1.0
+		<ul>
+			<li>
+				Initial release.
+			</li>
+		</ul>
+	</li>
+</ul>
+</div><!-- historylist -->
+
+</div><!-- content -->
+
+<div id="footer">
+<p>
+Copyright &copy; 2004 James D. Lin
+</p>
+</div>
+
+</body>
+</html>

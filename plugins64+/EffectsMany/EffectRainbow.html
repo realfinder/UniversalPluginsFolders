@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectRainBow AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectRainBow </h1></font>
+	 
+	  <P>EffectRainbow adds a rainbow to the image centered at the specified 
+	  coordinates and with a given radius. The center coordinates and radius 
+	  can be linearly varied during the effect by specifying the Final coordinates
+	   and radius. Left and right cut off of rainbow display can be specified 
+	   and varied during effect. (these cutoffs were introduced as an user wanted these to
+	   block the rainbow due to buildings).
+	   RGB32, RGB24 YUY2 and YV12 color formats only are supported at this time.
+
+ </p>  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td>radius of rainbow at start</td>
+       <td>rad</td>
+       <td>integer</td>
+       <td>60 or more</td>
+       <td>1/2 of frame height</td>
+</tr>
+
+<tr>
+       <td>x coordinate of rainbow center at start</td>
+       <td>x</td>
+       <td>integer</td>
+       <td>ensure rainbow part is seen</td>
+       <td>mid frame</td>
+</tr>
+<tr>
+       <td>y coordinate of rainbow center at start</td>
+       <td>y</td>
+       <td>integer</td>
+       <td>ensure rainbow part is seen</td>
+       <td>mid frame</td>
+</tr>
+
+<tr>
+       <td>radius of rainbow at end</td>
+       <td>endr</td>
+       <td>integer</td>
+       <td>60 or more</td>
+       <td>rad</td>
+</tr>
+
+<tr>
+       <td>x coordinate of rainbow center atend</td>
+       <td>endx</td>
+       <td>integer</td>
+       <td>ensure rainbow part is seen</td>
+       <td>x</td>
+</tr>
+<tr>
+       <td>y coordinate of rainbow center at end</td>
+       <td>endy</td>
+       <td>integer</td>
+       <td>ensure rainbow part is seen</td>
+       <td>y</td>
+</tr>
+<tr>
+       <td>x cut off, left of which rainbow will not be seen at start</td>
+       <td>xleft</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>0</td>
+</tr>
+<tr>
+       <td>x cut off, right of which rainbow will not be seen at start</td>
+       <td>xright</td>
+       <td>integer</td>
+       <td>more than xleft and within frame</td>
+       <td>frame width</td>
+</tr>
+
+<tr>
+       <td>x cut off, left of which rainbow will not be seen at end</td>
+       <td>endxleft</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>xleft</td>
+</tr>
+<tr>
+       <td>x cut off, right of which rainbow will not be seen at end</td>
+       <td>endxright</td>
+       <td>integer</td>
+       <td>more than endxleft and within frame</td>
+       <td>xright</td>
+</tr>
+
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>EffectRainbow(last,51,150,120, 0,250,180,480,250,20,200,120,300)
+EffectRainbow(last,51,150,120, x=200, endx=300)
+EffectRainbow(last,51,150,rad=100, xleft=50, xright=150)
+EffectRainbow(last,51,150,xleft=40, endxleft=200)
+
+For stationary Rainbow using defaults:
+EffectRainbow(last,51,151)
+
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="rainbow.jpg" border="0">
+
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

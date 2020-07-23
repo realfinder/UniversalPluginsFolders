@@ -1,0 +1,516 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title>MipSmooth filter for AviSynth</title>
+</head>
+<body alink="#333333" vlink="#666666" link="#666666"
+ style="color: rgb(0, 0, 0); background-color: rgb(224, 222, 176);">
+<h1 style="font-family: helvetica,arial,sans-serif;"><small>MipSmooth
+for AviSynth.</small></h1>
+<pre style="font-family: helvetica,arial,sans-serif;"><small>v1.12</small></pre>
+<small><br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> This is the
+MipSmoother - a reinvention of SmoothHiQ and Convolution3D. MipSmooth
+was made to enable smoothing of larger pixel areas than 3x3(x3), to
+remove blocks and smoothing out low-frequency noise. </span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> It is my hope
+that when this filter has been tweaked it will be better than C3D at
+smoothing out flat surfaces and gradients. This should be good for
+cartoons/anime, but it actually also helps film footage quite nicely.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br>
+<big><a href="MipSmooth_1_12.zip">Download MipSmooth 1.12</a></big><br
+ style="font-family: helvetica,arial,sans-serif;">
+</small>
+<h2 style="font-family: helvetica,arial,sans-serif;"><small>Requirements:<br>
+</small></h2>
+<ul style="font-family: helvetica,arial,sans-serif;">
+  <small> </small><li><small>YV12, RGB and YUY2 support.<br>
+    </small></li>
+  <small> </small><li><small>CPU capable of running Integer SSE code.
+(P3, Athlon and newer).</small></li>
+  <li><small>AviSynth 2.5 required.<br>
+    </small></li>
+  <li><small>AviSynth 2.5.3 recommended.<br>
+    </small></li>
+  <li><small>Resolution divideable by 4 in width (8 for YUY2).<br>
+    </small></li>
+  <small> </small>
+</ul>
+<h2 style="font-family: helvetica,arial,sans-serif;"><small>Syntax:<br>
+</small></h2>
+<small><span style="font-family: helvetica,arial,sans-serif;"> Basic
+syntax: </span><span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">MipSmooth()</span><span
+ style="font-family: helvetica,arial,sans-serif;"> - all parameters are
+optional.</span><br style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> Extended syntax: </span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">MipSmooth([clip],[optional
+arguments])</span><br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> There are a
+number of arguments that control how much smoothing will be applied:</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">preset
+= "MovieHQ" / "MovieLQ" / "AnimeHQ" / "AnimeLQ" / "VHS" / "Rainbow" /
+"Custom"</span><br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> Loads a built-in
+preset as new defaults. See the preset section for more information.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">spatial
+= 5, <br>
+temporal = 4, <br>
+spatial_chroma =6, <br>
+temporal_chroma =54, <br>
+scenechange = 2.0 </span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> All numbers are
+valid in the ranges 0 - 255 and this defines the threshold for each mode
+of blending. </span><br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> The thresholds
+can be compared to the ones of C3D, except higher thresholds smooth much
+less than C3D.</span><br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> The default
+settings are quite conservative, and only slightly smooths out surfaces.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> "Temporal
+influence" is replaced by overall scenechange detection.&nbsp;
+Scenechanges will disable temporal processing in either direction. Use
+"show = true" to display the values on each frame.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">method&nbsp;
+= "strong" / "soft" /&nbsp; "supersoft" / "superstrong"&nbsp; </span><span
+ style="font-style: italic; font-family: helvetica,arial,sans-serif;">-
+default: "supersoft"</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> This setting
+controls how much blurring is applied. The </span><span
+ style="font-style: italic; font-family: helvetica,arial,sans-serif;">strong</span><span
+ style="font-family: helvetica,arial,sans-serif;"> settings makes the
+filter have a larger impact, whereas </span><span
+ style="font-style: italic; font-family: helvetica,arial,sans-serif;">soft</span><span
+ style="font-family: helvetica,arial,sans-serif;"> is more gentle. In
+general </span><span
+ style="font-style: italic; font-family: helvetica,arial,sans-serif;">strong</span><span
+ style="font-family: helvetica,arial,sans-serif;"> should give best
+results on anime, and </span><span
+ style="font-style: italic; font-family: helvetica,arial,sans-serif;">soft</span><span
+ style="font-family: helvetica,arial,sans-serif;"> should be best for
+filmed material.<br>
+<span style="font-style: italic;">SuperSoft / SuperStrong</span> uses a
+slightly different approach, and in general leads to fewer artifacts.
+These two are an general a bit softer than non-super modes.<br
+ style="font-family: helvetica,arial,sans-serif;">
+</span> <br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">downsizer
+= "reduce", "point", "bilinear", "bicubic", "lanczos" </span><span
+ style="font-style: italic; font-family: helvetica,arial,sans-serif;">-
+default: "reduce"</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">upsizer
+= "point", "bilinear", "bicubic", "lanczos" </span><span
+ style="font-style: italic; font-family: helvetica,arial,sans-serif;">-
+default: "bilinear"</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> These two
+parameters control how the lower resolution maps are created. There
+might not be a very big visual impact, when using different resizers.
+Experiments are welcome!</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">scalefactor
+= 0.5</span><br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> This option sets
+the scale of each mipmap. This is how much each frame is reduced in each
+iteration. The original resolution is multiplied by this value.&nbsp;
+Usable values are from 0.2 to 4.0, however only values between 0.4 and
+1.5 are recommended. When this setting is 1.0 no spatial blurring is
+done, but this isn't recommended - use spatial = 0 instead. Experiment
+with values above 1.0 - they might be useful.<br>
+This affects the radius of the blur. The lower the scalefactor is, the
+bigger the radius of the blur - and the more crosstalk you'll get.<br
+ style="font-family: helvetica,arial,sans-serif;">
+</span> <span style="font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"><big><span
+ style="font-family: monospace;">
+mipsmooth(downsizer="lanczos",upsizer="bilinear", scalefactor=1.5,
+method = "strong") <br>
+<br>
+</span></big>The above script produces very nice gentle smoothing for
+instance, but is very slow.<br>
+<br style="font-family: helvetica,arial,sans-serif;">
+</span> <span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">weigh
+= true / false</span> <br>
+</small><small><span style="font-family: helvetica,arial,sans-serif;">
+This option selects whether mips should be weighed based on how blurred
+they are.&nbsp; The most blurred mips are weighed the lowest.&nbsp; This
+option is equal to "Weighed Average" in SmoothHiQ, or "soft" matrix in
+Convolution3D.<br>
+<br>
+This option has only effect if SuperMip-mode is used.&nbsp; It reduces
+the amount of blur when turned on, so it can be used to achieve higher
+thresholds without artifacts.<br>
+<br>
+</span></small><small><br>
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">show
+= true / false</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> Shows
+information about scenechange differences, and the settings being used.<br>
+This setting will have no effect in RGB24 mode - use RGB32 instead!<br
+ style="font-family: helvetica,arial,sans-serif;">
+</span> <span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;"></span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span
+ style="font-weight: bold; font-family: helvetica,arial,sans-serif;">storecustom
+= true / false</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> This will store
+the settings being used in the registry. </span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> To reinvoke
+these presets later, use preset="custom" parameter.<br>
+</span></small><small><span
+ style="font-family: helvetica,arial,sans-serif;">This will not
+automatically become the default parameters.</span></small><br
+ style="font-family: helvetica,arial,sans-serif;">
+<h2 style="font-family: helvetica,arial,sans-serif;"><small>Presets</small><br>
+</h2>
+<font size="-1"><span style="font-family: helvetica,arial,sans-serif;">Presets
+are a set of builtin settings to help you get started. The names of the
+parameters are not case sensitive.<br>
+<br>
+All presets are loaded as default values. That means that it is still
+possible to finetune preset settings by setting individual parameters.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;">For example: </span><span
+ style="font-style: italic; font-family: helvetica,arial,sans-serif;">MipSmooth(preset
+= "movieHQ", scenechange = 8)</span><span
+ style="font-family: helvetica,arial,sans-serif;"> will use the MovieHQ,
+but with scenechange set to 8.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+</font>
+<h4 style="font-family: helvetica,arial,sans-serif;"><font size="-1">MovieHQ<br>
+</font></h4>
+<small><span style="font-family: helvetica,arial,sans-serif;"><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">This
+preset is for natual movies in high quality.</span></font><br>
+<br>
+<span style="font-family: monospace;">Spatial: 4</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal: 5</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Spatial Chroma: 5</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal Chroma: 7</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scenechange: 2.0</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Method: SuperSoft</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Downsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Upsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scalefactor: 0.85<br>
+Weigh = true<br>
+</span> </span></small>
+<h4 style="font-family: helvetica,arial,sans-serif;"><font size="-1">MovieHQ2<br>
+</font></h4>
+<small><span style="font-family: helvetica,arial,sans-serif;"><font
+ size="-1"><span style="font-family: helvetica,arial,sans-serif;">This
+preset is for natual movies in high quality.</span></font><br>
+<br>
+<span style="font-family: monospace;">Spatial: 2</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal: 2</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Spatial Chroma: 3</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal Chroma: 3</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scenechange: 2.5</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Method: SuperSoft</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Downsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Upsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scalefactor: 0.75<br>
+Weigh = true</span></span></small>
+<h4 style="font-family: helvetica,arial,sans-serif;"><small>MovieLQ</small></h4>
+<small><span style="font-family: helvetica,arial,sans-serif;">This
+preset is for natural movies that need more smoothing, to have more
+blocks and noise removed.</span><br>
+<br>
+</small><small><span style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;">Spatial: 8</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal: 7</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Spatial Chroma: 10</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal Chroma: 8</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scenechange: 3.5</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Method: SuperSoft</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Downsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Upsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scalefactor: 0.65<br>
+</span></span></small><small><span
+ style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;">Weigh = true</span></span></small><br>
+<h4 style="font-family: helvetica,arial,sans-serif;"><small>MovieLQ2</small></h4>
+<small><span style="font-family: helvetica,arial,sans-serif;">This
+preset is for natural movies that need more smoothing, to have more
+blocks and noise removed.</span><br>
+<br>
+</small><small><span style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;">Spatial: 4</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal: 4</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Spatial Chroma: 5</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal Chroma: 5</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scenechange: 3.5</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Method: SuperStrong</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Downsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Upsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scalefactor: 0.65<br>
+</span></span></small><small><span
+ style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;">Weigh = true</span></span></small><br>
+<br>
+<h4 style="font-family: helvetica,arial,sans-serif;"><small>VHS</small></h4>
+<small><span style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;">Spatial: 9</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal: 6</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Spatial Chroma: 10</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal Chroma: 9</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scenechange: 5.0</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Method: SuperStrong</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Downsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Upsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scalefactor: 0.60<br>
+</span></span></small><small><span
+ style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;">Weigh = true</span></span></small><br>
+<h4 style="font-family: helvetica,arial,sans-serif;"><small>AnimeHQ</small></h4>
+<small><span style="font-family: helvetica,arial,sans-serif;">This is
+for slight blockremoval and gradient restoration. It has more spatial
+smoothing than ordinary video to help recreate flat and gradient
+surfaces.</span><br>
+</small><small><span style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;"><br>
+Spatial: 6</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal: 8</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Spatial Chroma: 6</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal Chroma: 8</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scenechange: 5.0</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Method: SuperSoft</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Downsizer: Bicubic</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Upsizer: Bicubic</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scalefactor: 0.60<br>
+</span></span></small><small><span
+ style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;">Weigh = true</span></span></small><br>
+<h4 style="font-family: helvetica,arial,sans-serif;"><small>AnimeLQ</small></h4>
+<font size="-1"><span style="font-family: helvetica,arial,sans-serif;">This
+is for more noisy material with more blocks and noise.</span></font><br
+ style="font-family: monospace;">
+<br style="font-family: monospace;">
+<small><span style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;">Spatial: 5</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal: 5</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Spatial Chroma: 5</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal Chroma: 7</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scenechange: 5.5</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Method: SuperStrong</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Downsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Upsizer: Bicubic</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scalefactor: 0.5<br>
+</span></span></small><small><span
+ style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;">Weigh = true</span></span></small><br>
+<h4 style="font-family: helvetica,arial,sans-serif;"><small>Rainbow</small><br>
+</h4>
+<font size="-1"><span style="font-family: helvetica,arial,sans-serif;">This
+might help removing rainbow flicker. See <a
+ href="http://forum.doom9.org/showthread.php?s=&amp;threadid=62873">this
+thread at Doom9</a> for info and alternatives. Reduce scalefactor for
+even more rainbow removal, but more chroma blurring.</span></font><br
+ style="font-family: monospace;">
+<br style="font-family: monospace;">
+<small><span style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;">Spatial: 0</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal: 0</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Spatial Chroma: 255</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Temporal Chroma: 255</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scenechange: 2.0</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Method: SuperStrong</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Downsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Upsizer: Bilinear</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">Scalefactor: 0.65<br>
+</span></span></small><small><span
+ style="font-family: helvetica,arial,sans-serif;"><span
+ style="font-family: monospace;">Weigh = true</span></span></small><br>
+<h4 style="font-family: helvetica,arial,sans-serif;"><small>Custom</small></h4>
+<font size="-1"><span style="font-family: helvetica,arial,sans-serif;">This
+will read settings that has been stored in the registry, and use these
+as default settings.<br>
+If there is no settings stored in the registry, an error will be thrown.<br
+ style="font-family: helvetica,arial,sans-serif;">
+</span><span style="font-family: helvetica,arial,sans-serif;">At any
+time it is possible to use <span style="font-style: italic;">"storecustom=true"</span>
+this will then store the current settings in the registry, and these
+will then be used as the custom parameters<br>
+<br>
+</span></font>
+<h2><small><span style="font-family: helvetica,arial,sans-serif;">Examples
+&amp; Tricks:</span></small></h2>
+Try experimenting with quite hard softening with very low thresholds.
+For example:<br>
+<span style="font-family: monospace;">mipsmooth(spatial=2, temporal=2,
+method="superstrong", scalefactor=0.75, weigh=true)</span><br
+ style="font-family: monospace;">
+This is a quite good setting for high quality material, which will
+stabilize the image and give much better compression and still
+retaining a quite high amount of detail. These modes are implemented as
+"MovieHQ2" and "MovieLQ2" presets.<br>
+<br>
+<span style="font-family: monospace;">MipSmooth(spatial=255,
+scenechange=0, method="soft")</span><br style="font-family: monospace;">
+This will give a very soft image - seen in some commercials and soap
+operas.<br>
+<br>
+<span style="font-family: monospace;">MipSmooth(spatial=255,
+scenechange=0, method="strong", scalefactor=0.65)</span><br>
+This will smooth the image very much like a soft gaussian blur.<br>
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">MipSmooth(spatial=255,
+scenechange=255, temporal=255, method="superstrong", scalefactor=0.6,
+weigh=false)</span><br>
+This will also give a very soft image with some temporal blurring.<br>
+<br>
+When cropping right before this filter, use "align=true" parameter,
+available in AviSynth 2.5.3 and later. This will in most cases give a
+slight speedup.<br>
+<h2 style="font-family: helvetica,arial,sans-serif;"><small>Background
+information:</small></h2>
+<small><span style="font-family: helvetica,arial,sans-serif;"> "Mip"
+comes from "MipMap", which is a term used in the realtime 3D-graphics
+world, and basicly describes a downsampled version of a texture (bitmap
+surfaces of 3D objects), that is used, when the object is far
+away.&nbsp; MipMaps are always half the size of the original image.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> What MipSmooth
+does is actually very simple:</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> It takes the
+source frame, and creates three new versions, each half the size of the
+previous. This is done by using </span><span
+ style="font-style: italic; font-family: helvetica,arial,sans-serif;">ReduceBy2</span><span
+ style="font-family: helvetica,arial,sans-serif;">, or a selectable
+resizer. These frames are then all scaled back up to original size using </span><span
+ style="font-style: italic; font-family: helvetica,arial,sans-serif;">BilinearResize</span><span
+ style="font-family: helvetica,arial,sans-serif;">.&nbsp; These frames
+are then compared to the original, and if the difference is below the
+threshold, the information is used to form the final pixel.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> The same is done
+to the previous and the next frame - and all these three frames and
+their "blurred" mipmaps are used to reconstruct each pixel.</span><br
+ style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> Threshold is
+adjusted to that more blurred images are given a lower threshold than
+the sharper versions.<br>
+<br>
+Supermip first creates three frames (supermips) from spatially blurred
+images and does a temporal softening on these three framres. This
+greatly reduces artifacts on heavy denoising/blurring.<br
+ style="font-family: helvetica,arial,sans-serif;">
+</span> <br style="font-family: helvetica,arial,sans-serif;">
+<span style="font-family: helvetica,arial,sans-serif;"> Further possible
+improvements:</span><br style="font-family: helvetica,arial,sans-serif;">
+</small>
+<ul style="font-family: helvetica,arial,sans-serif;">
+  <li><small>Adjustable number of mips.<br>
+    </small></li>
+  <li><small>Image examples in documentation.</small></li>
+  <li><small>GUI.<br>
+    </small></li>
+  <small> </small>
+</ul>
+<h2 style="font-family: helvetica,arial,sans-serif;"><small>Changes:</small><br>
+</h2>
+<pre>v1.1.2<br>* Removed reduce completely, as it was causing chroma shifts. (Thanks Fizick)<br>* Fixed incorrect frame fetched on last mip of previous frame. (Thanks Fizick)</pre>
+<pre>v1.1.1<br>* BugFix: Weigh = true was not being respected, and always turned off.<br>* Adjusted presets and added "MovieHQ2", "MovieLQ2".<br>* Bugfix: YUY2 mode never uses reduce to avoid occational crashes.<br><br>v1.1<br>* Added weigh = true / false. This offers a softer blurring, like soft matrix in C3D or weighed average in SmoothHiQ.<br>* Scenechange was only half of what it was supposed to be. All presets adjusted.<br>* Presets adjust - generally doing less blurring.<br>* Custom presets should be recreated.<br><br>v1.0<br>* Massive speedup - this requires an AviSynth dated October 11th or later. This will give a &gt;100% speedup.<br>* Two new SuperMip modes. These mode reduces artifacts greatly.<br>* Scenechange values can be float values.<br>* Presets adjusted (preserves more detail in general).<br>* Fixed: Nasty bug that provided wrong thresholds on first mip. Quality improved!<br>* Fixed: Mips have a minimum size (16x16 pixels) to avoid resizer crashes.<br>* Added resolution checks to avoid crashes.<br><br>v0.9: <br>* Added presets. <br>* Added storecustom parameter to store a custom preset. <br>* Capable of running YUY2 material. For now chroma thresholds are ignored in YUY2. <br>* Capable of running in RGB mode (RGB24 and RGB32).<br>* The Reduce downsizer is now interchangeable with bilinear, and only used when the settings allow it. <br>* "show=true" now displays information onscreen.<br>* Fixed: Luma thresholds were also being used as chroma thresholds.<br><br>v0.2: <br>* Added optional resizers. <br>* Added "strong" method - now default. Previous default was "soft". <br>* Added scalefactor to allow different mip scaling. <br>* Mod 16 restriction lifted with new downscalers. <br><br>v0.1: <br>* Initial release.<br></pre>
+</body>
+</html>

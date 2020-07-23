@@ -1,0 +1,10 @@
+body{text-align:justify}
+p,ul{max-width:50em}
+table{border-collapse:separate;border-color:#808080;border-spacing:2px;border-style:outset;border-width:1px}
+td,th{border-color:#808080;border-style:inset;border-width:1px;max-width:50em;padding:0.25em;white-space:nowrap}
+th{font-weight:bold}
+.empty{border-width:0}
+.wrap{white-space:normal}
+#examples .head{font-weight:bold;margin:0}
+#examples div{display:inline-block;margin:1em 0;text-align:center}
+#examples p{margin:0 0 0.5em 0;padding:0}

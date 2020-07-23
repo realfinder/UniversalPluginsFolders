@@ -1,0 +1,46 @@
+## ReduceFlicker for Avisynth2.6/Avisynth+
+	This is a rewite of ReduceFlicker which written by Rainer Wittmann.
+	This plugin has only ReduceFlicker(). ReduceFluctuation() and LockClense() are not implemented.
+
+### Requirements:
+	- avisynth2.60/avisynth+r1576 or later.
+	- WindowsVista sp2 or later.
+	- Visual C++ Redistributable Packages for Visual Studio 2015.
+
+### Syntax:
+	ReduceFlicker(clip, int "strength", bool "aggressive", bool "grey", int "opt")
+
+#### clip:
+	All planar formats(YV24/YV16/YV12/YV411/Y8) are supported.
+
+#### strength:
+	Specify the strength of ReduceFlicker. Higher values mean more aggressive operation.
+
+	1 - makes use of 4(current + 2*previous + 1*next) frames .
+	2(default) - makes use of 5(current + 2*previous + 2*next) frames.
+	3 - makes use of 7(current + 3*previous + 3*next) frames.
+
+#### aggressive:
+	If set this to true, then a significantly more aggressive variant of the algorithm is selected.
+	Default value is false.
+
+#### grey:
+	Whether chroma planes will be processed or not. If set this to true, chroma planes will be garbage.
+	Default value is false.
+
+#### opt:
+	Controls which cpu optimizations are used.
+	Currently, this filter has three(C++, SSE2 and AVX2) routines.
+
+	0 - use C++ routine.
+	1(default) - use SSE2 routine.
+	2 - use AVX2 routine.
+
+	If you are using Avisynth2.60, you shouldn't set this to 2.
+	Avisynth+ has no problem.
+
+### Lisence:
+	GPLv2 or later.
+
+### Source code:
+	https://github.com/chikuzen/ReduceFlicker/

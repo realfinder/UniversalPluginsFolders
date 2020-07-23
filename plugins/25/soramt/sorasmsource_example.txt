@@ -1,0 +1,57 @@
+imaging that you have a avs script to run.
+you are like to use a plugin foo that will eat 1400MB memory.
+
+ffvideosource(...)
+foo()
+
+there is no problem. then,
+you have another plugin bar that will eat 1400MB memory
+
+ffvideosource(...)
+foo()
+bar()
+
+a little anxious? after this, foo comes back
+
+ffvideosource(...)
+foo()
+bar()
+foo()
+
+1400 + 1400 + 1400 = 4200
+it's over the limit of a single process if your tool to read the avs is 32bit.
+
+if you are running a 64-bit system,
+you may have more than 4GB memory. it affords the script in fact.
+
+let's split the script reading action into multiple processes.
+
+
+script1.avs:
+
+ffvideosource(...)
+foo()
+
+
+then use sorasmserver to run this:
+sorasmserver.exe sc1 script1.avs
+
+
+script2.avs:
+
+sorasmsource("sc1")
+bar()
+
+
+the same:
+sorasmserver.exe sc2 script2.avs
+
+
+what's more:
+
+
+script3.avs
+sorasmsource("sc2")
+foo()
+
+now, use your encoder to read script3.avs :p

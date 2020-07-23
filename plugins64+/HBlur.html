@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>HBlur AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>HBlur </h1></font>
+	 
+	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
+	  <BR> Last modified Date Aug 2014 
+	  
+	  <P> For testing some of the plugins, I needed a plugin that produces various
+	  types of blurred images. So I authored this and it may be useful to others. 
+		This plugin works on on all color planes of RGB format, and Luma of YUY2
+		 and YV12 format data.</p>
+	  
+	  <P> HBlur blurs the image either linearly (as seen in linear motion), or 
+	  in a circular form ( as seen in out of focus images). For completeness it 
+	  can also blurs in a rectangular grid shape. As borders remain unblurred for
+	  any further work cropping borders is recommended.</P>
+	  
+	<BR>Input clip preferably be field based. 
+<BR>
+
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip </td>
+       <td></td>
+       <td>clip</td>
+       <td>prefer have the fields separated</td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>blur  end point x coordinate or radius of blur</td>
+       <td>x</td>
+       <td>integer</td>
+       <td> for "focus" 2  to 1/8 window smaller dimension
+	   		for "line" -1/8 to 1/8 of frame width.
+			for "rect" 1 to 1/8 of frame width.</td>
+       <td>5</td>
+</tr>
+
+<tr>
+       <td>blur end point coordinate </td>
+       <td>y</td>
+       <td>integer</td>
+       <td>for "line"  -1/8 to 1/8 window height. 
+	   For "rect" 1 to 1/8 of frame height</td>
+       <td>5</td>
+</tr>
+
+<tr>
+       <td>type of blur</td>
+       <td>blur</td>
+       <td>string</td>
+       <td>"line", "focus", "rect"</td>
+       <td>"line"</td>
+</tr>
+
+
+
+</table>
+
+
+<BR>#Usage examples:- 
+<pre>
+Directshowsource("H:\EURO004.AVI").converttoYV12()
+assumeframebased()
+eur=separatefields()
+HBlur( eur, blur = "focus", x = 6)	
+# or
+HBlur( eur, blur = "line", x = 6, y = -3)
+# or
+HBlur( eur, blur = "rect", x = 6, y = 3)	
+
+</pre>
+
+<BR> below is  illustration of results. Top is input. Below are the blurred image with script above. 
+<BR><img src="HBlur0.jpg" width="720" height="960" alt="" border="0">
+<BR>
+<table>
+
+<tr>
+       <td><a href="../index.html">To my index page</a></td>
+	  
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>	
+</body>
+</html>

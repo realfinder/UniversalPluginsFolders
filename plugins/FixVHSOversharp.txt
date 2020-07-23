@@ -1,0 +1,49 @@
+FixVHSOversharp (Beta 2) 
+
+This filter aims to repair the light and dark halos that follow high contrast edges in VHS sources. You can see this effect particularly in B/W videos or anywhere that is a high brightness.  (You sometimes see this same effect on DVD sources as well - not nearly as noticeable though.)  This filter targets the areas of the frame that are effected only thus avoiding applying any kind of blur or smooth filter to the entire frame. 
+
+The filter dll includes two filters: FixVHSOversharp, which fixes the edges where the oversharp is on the right of the edge and FixVHSOversharpL which fixes the problem on the left of the edge.  I usually run both filters on every frame. 
+
+
+Changes
+
+I filter's algorithm has been made much less aggressive resulting in more natural edge.  (i.e. the flickeing edge issue as been eliminated) As are result, however, you may have to run the filter twice to correct some edges. (results are to taste)
+
+
+Usage 
+
+FixVHSOversharp(clip clip, int brightness_change, int detection_width, int offset) 
+
+FixVHSOversharpL(clip clip, int brightness_change, int detection_width, int offset) 
+
+
+brightness_change: The minimum brightness change to examine for the oversharp problem.  (If there isn't an oversharp problem it won't try to fix anything.) I usually set this to 40. 
+
+detection_width: The width in pixels of the oversharp scanning window.  I usually set this value to 12 or 14. 
+Offset: The position in pixels of the working pixel.  I usually set this to 8 (or detection_width-4). 
+
+
+Example:
+
+For general repair:   	FixVHSOversharpL(30,12,8) 
+			FixVHSOversharp(30,14,10) 
+
+For better results:	FixVHSOversharpL(30,12,8) 
+			FixVHSOversharp(30,14,10) 
+			FixVHSOversharp(30,12,8) 
+
+
+Limitations 
+This filter is YUV format only. 
+
+
+Known Issues 
+
+Some VHS sources may require the filter to be applied twice (per edge) to completely remove the oversharp problem.
+
+
+Usage Suggestions 
+
+Apply this filter high up in your filter chain.  The filter algorithm operates on the one scan line at a time so it is safe to use on interlaced material. 
+
+For best results when running the filter twice, be sure to use different detection width and offset values on the second run.

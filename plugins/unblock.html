@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Unblock</title>
+<link rel="stylesheet" type="text/css" href="../avisynth.css">
+<!--
+Automatically generated, don't change:
+$Id$
+-->
+</head>
+<body>
+<h1>Unblock</h1>
+<h2>Abstract</h2>
+<b>author:</b> Alexander Balakhnin 'Fizick'<br>
+<b>version:</b> 1.1<br>
+<b>download:</b> <a href="http:/avisynth.org.ru/">http://avisynth.org.ru/</a> <br>
+<b>category:</b>  Misc plugins<br>
+<b>requirements:</b> YV12 color format<br>
+<b>license:</b> GPL
+<hr>
+
+<h2>Information</h2>
+
+<p>UnBlock is a filter that removes the "blockiness" of heavily or moderately compressed images with statistical approach.</p>
+<p>It is spatial filter for blocks with size 8x8. </p>
+<p>Like other deblocking filters, Unblock must be applyed before crop (left, top if not mod 8), resize, denoise and other filters 
+which may modify block boudaries.
+</p>
+<p>UnBlock does not require any user input:
+the algorithm determines which edge transitions are (most likely to be) blocking artifacts by
+analyzing the image itself. It automatically corrects image as far as possible.
+</p>
+
+<p> Plugin uses deblocking algorithm and code library developed by John Costella.
+ See  <a href="http://www.assassinationscience.com/johncostella/unblock/">his web page</a> 
+ for very detailed information.
+From the original paper: </p>
+<p><code>We don't have the original image, so we can't be sure
+that there isn't a sharp discontinuity in the original image that happens to lie right on the
+boundary. If we removed all discrepancies unconditionally, we would automatically blur out
+any such sharp edge that happens to unfortunately fall in the wrong place.
+It is impossible to avoid such an error in every possible case, but we can do so statistically.
+ For any given image, the distribution of the magnitudes of the block boundary discontinuity
+errors will be determined by the amount of compression employed (the "quality factor").
+By computing the distribution of boundary discrepancies across the entire image, and comparing
+it to the distribtuion of "discrepancies" calculated in the interior of the blocks, we can
+quantify, statistically, the amount to which the compression has introduced block artifacts.
+Now, what are we to do with these statistical distributions? A reasonable ansatz is that
+we should reduce each boundary discrepancy by an amount that will make the interior and
+boundary discrepancy distributions the same, as far as possible.
+</code>
+ </p>
+ 
+<p> In my (Fizick) opinion, the algorithm is really good for strong blockiness 
+but is not very safe for weak blockiness - it can partially destroy some thin image details.
+
+</p>
+
+<h2>Syntax and parameters</h2>
+
+<p><code>Unblock</code> (<var>clip, bool "chroma", bool "photo", bool "cartoon")</var></p>
+
+<p>first parameter is the source clip.</p>
+
+<p><var>chroma</var>  - Set this flag to <var>false</var> to not deblock chroma. Default=true.</p>
+
+<p><var>photo</var> - Set this flag to <var>true</var> if you know for certain that the
+image is "photographic" (i.e., continuous tone). This tells Unblock to
+be somewhat more aggressive in removing block artifacts; more accurately, it leans to
+the "aggressive" side of its statistical confidence interval. Default=false.</p>
+
+<var>cartoon</var> - Set this flag to <var>true</var> if you know for certain that the image is
+"cartoon-like" (i.e., solid blocks of color with sharp boundaries between them). This
+tells Unblock to be somewhat less aggressive in removing block artifacts;
+more accurately, it leans to the "conservative" side of its statistical confidence interval.
+Default=false.</p>
+
+<h2>Example</h2>
+<pre>
+loadplugin("unblock.dll")
+avisource("g:\test.avi")
+converttoYV12()
+unblock(cartoon=true)
+</pre>
+
+<h2>Discussion</h2>
+<p>doom9 forum at <a href="http://forum.doom9.org/showthread.php?t=133059">http://forum.doom9.org/showthread.php?t=133059</a></p>
+
+<h2> License</h2>
+<p>This plugin is free software released under the GNU GPL license. See file gpl.txt.<br>
+Documentation is distributed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">CreativeCommons BY-SA 3.0 license.</a><br>
+Please donate for support.</p>
+<p>License terms of costella_unblock library:<br>
+Copyright © 1989–2007 John P. Costella.<br>
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software")
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+</p>
+<p>The above copyright notice and this permission notice shall be included 
+in all copies or substantial portions of the Software.
+</p>
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING
+FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+</p>
+
+<h2>Revisions</h2>
+
+<p>Version 1.0 (23.12.2007) - initial</p>
+
+<p>Version 1.1 (25.12.2007) - separately process color planes (a little faster)</p>
+
+<h3><a href="unblock11.zip">Download Unblock plugin version 1.1</a></h3>
+
+</body>
+</html>

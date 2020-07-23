@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+<META NAME="description" CONTENT="RemoveBlend ReadMe File">
+<META NAME="keywords" CONTENT="RemoveBlend">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso_8859_1">
+	<title>RemoveBlend - Readme file</title>
+</head>
+<body BGCOLOR="#FFFFFF">
+<font face=verdana>
+<center><u><h2>RemoveBlend : Blended frames remover for AviSynth<br></u>
+<br><br></h2></center>
+<ul>
+This filter is designed for Avisynth 2.5<br>
+It would work only with Avisynth 2.5 or greater<br>
+Works in YV12 and TFF only.<br>
+</ul>
+<h3>Purpose:</h3>
+<ul>
+This filter is used to remove blended fields/frames<br>
+</ul>
+<h3>Usage:</h3>
+<ul>
+	Add the following lines to your avisynth script :<br>
+	<ul><code><br>
+	LoadPlugin("removeblend.dll")<br>
+	</ul></code><br>
+	or just copy removeblend.dll to your avisynth plugins directory.<br>
+	Syntax:<br>
+	<ul><code><br>
+removeblend(clip, int threshold, float dthresh, float cthresh, float bthresh, int mode, bool interlaced, bool tff, bool show, bool info, bool decomb)<br>
+	</ul></code><br>
+	
+	<u>mode</u>
+	<ul> relates to the algorithm used to find best estimator for coefficients A and B<br>
+		<ul>0 - naive - calculate medians for A and B coefficients separately - FAST</ul>
+		<ul>1 - gift-wrap - calculate median for (A, B) coefficients using gift-wrap algorithm - SLOOOOOW</ul>
+		<ul>2 - quickhull - calculate median for (A, B) coefficients using quickhull algorithm - SLOW</ul>
+		<ul>default: 0<br></ul>
+	</ul><br>
+	
+	<u>threshold</u>
+	<ul>pixel luma difference threshold<br>
+		<ul>if pixel luma abs(prev - next) < threshold then don't include it in calculation</ul>
+		<ul>same as deblend/unblend<br></ul>
+		<ul>default: 5<br></ul>
+	</ul><br>
+	
+	<u>dthresh</u>
+	<ul>blend threshold<br>
+	progressive mode: if calculated coefficients A*B < dthresh then it's blend<br>
+	interlaced mode: if A*B < pow (threshold, 2) then it's blend<br>
+			 if only A < dthresh or B < dthresh then it's duplicate<br>
+		<ul>default: 0.03</ul>
+	</ul><br>
+ 	
+	<u>cthresh</u>
+	<ul>min outlier threshold<br>
+	progressive mode: not used<br>
+	interlaced mode: if any of A or B mean values < cthresh then corresponding field is not considered related<br>
+	regardless of other conditions that may be satisfied<br>
+		<ul>default: 0.05</ul>
+	</ul><br>
+	
+	<u>bthresh</u>
+	<ul>max outlier threshold<br>
+	progressive mode: not used<br>
+	interlaced mode: if any of A or B mean values > bthresh then corresponding field is not considered related<br>
+	regardless of other conditions that may be satisfied<br>
+		<ul>default: 1.1</ul>
+	</ul><br>
+ 	 	
+	<u>pixels</u>
+	<ul>number of pixels to include in calculation<br>
+		<ul>default: 50</ul>
+	</ul><br>
+ 	
+	<u>interlaced</u>
+	<ul>progressive mode: false</ul>
+	<ul>interlaced mode: true - in interlaced mode fields are treated separately<br>
+		<ul>default: false</ul>
+	</ul><br>
+
+	<u>decomb</u>
+	<ul>try to decomb as many frames as possible<br>
+	used in interlaced mode<br>
+		<ul>default: true</ul>
+ 	</ul><br>
+ 	
+	<u>show</u>
+	<ul>show original frame<br>
+	used in info mode<br>
+		<ul>default: false</ul>
+ 	</ul><br>
+	
+	<u>info</u>
+	<ul>show coefficients and replacement decisions<br>
+		<ul>default: false</ul>
+	</ul><br>
+
+ 	<u>tff</u>
+	<ul>top field first - used for interlaced only<br>
+		<ul>default: true</ul><br>
+	</ul><br>
+</ul>
+
+<h3>Theory:</h3>
+<ul>
+At first this filter is assuming that the frame (or field in interlaced mode) is a blend of previous and next
+so that the following condition is satisfied:<br><br>
+<ul>Frame = A * Previous + B * Next </ul><br>
+Then it tries to find coefficients A and B that satisfy the equation and find median and mean values for both.
+Next standard deviation and coefficient of variance for A and B are found and used in making decisions about blending.
+For progressive sources it just checks if:<br><br>
+<ul>Acv * Bcv < dthresh</ul><br>
+For interlaced sources it works on individual fields. The field is considered a blend if: <br><br>
+<ul>Acv * Bcv < pow (thresh, 2)</ul><br>
+However, if any of A or B mean is lower than cthresh (i.e. around zero or negative) or greater than bthresh then this coefficient is disregarded.<br>
+If individual Acv or Bcv are lower than dthresh then the field is considered a duplicate of previous or next field.<br>
+Filter uses only "pixels" number of pixels for calculation, choosing the "most different" pixels - these are pixels with greatest luma differences between previous and next frame/field. Some outliers are removed prior to calculation to protect
+from noise.<br><br>
+The plugin is designed to handle only those streams that have fully qualified predecessor and successor fields/frames
+around blends such as:<br><br>
+Progressive: <br>
+	<ul><code><br>
+	A  AB B  BC C  CD D ...
+	</code><br></ul><br>
+Interlaced: <br>
+	<ul><code><br>
+	A&nbsp;&nbsp;AB&nbsp;B&nbsp;&nbsp;C&nbsp;&nbsp;CD&nbsp;D ...<br>
+	a&nbsp;&nbsp;b&nbsp;&nbsp;bc&nbsp;c&nbsp;&nbsp;d&nbsp;&nbsp;d ...
+	</code><br></ul><br>
+Progressive blend is replaced with the frame which coefficient of variance is found lower, while interlaced blends are reconstructed using either previous bottom or next top field, depending on the combination of various conditions being met. If two subsequent replacements in progressive mode are pending, the second is disabled. In interlaced mode some of these are allowed:<br><br>
+	<ul> 1st top - 2nd bottom</ul>
+	<ul> 1st decombed - 2nd bottom</ul>
+	<ul> 1st any - 2nd decombed</ul><br>
+
+Tipically after removeblend you will get a lot of duplicate frames and in case of interlaced source some of them will be
+combed, so you'll need decomb and decimate filters to get rid of those.
+
+</ul>
+
+<h3>Examples:</h3>
+<ul>
+
+</ul>
+
+<ul>Since there is no "good" blend threshold first you need to find one so add the following lines to your 
+avisynth script:<br>
+	<ul><code><br>
+	avisource("your_clip.avi")<br>
+	removeblend(show=true, info=true)<br>
+	</ul></code><br><br>
+Load script in Virtualdub and step through video. Check calculated coefficients and replacing decision. If any condition 
+is met then corresponding coefficient's value will be printed yellow so while looking at the source frame you can easily 
+see if you need to adjust certain threshold. Tipically you will search for reasonable value for "dthresh".
+When you finally decide upon the parameter values load removeblend with "show=false, info=false" and enjoy.<br><br>
+If you cannot find reasonable dthresh you may try to increase number of pixels or try with modes 1 and 2, but be
+carefull not to use too many pixels since these
+modes are really slow. In default mode (0) using 100 pixels from 720*576 the speed is around 10 fps on my Athlon XP 1900.
+</ul>
+	
+<h3>Limitations:</h3>
+<ul>
+Currently it works only with YV12 TFF source. You may convert BFF to TFF with:
+	
+	<ul><code><br>
+	avisource("your_clip.avi").separatefields().trim(1,0).weave()<br>
+	</code><br>
+	</ul>
+</ul>
+
+<h3>History:</h3>
+<ul>
+This Filter is inspired by deblend and unblend filters.<br>
+Initially I used it to clean camcorder telecined progressive source.<br>
+</ul>
+	<ul><u>version 0.1 (1.5.2004)</u><br>
+		<ul>First naive progressive version.</ul>
+	</ul>
+	<ul><u>version 0.2 (5.5.2004)</u><br>
+		<ul>Implemented gift-wrap and quickhull median algorithms.</ul>
+		<ul>Interlaced (TFF only) version.</ul>
+	</ul>
+	<ul><u>version 0.2.1 (8.5.2004)</u><br>
+		<ul>Fixed "info" bug.</ul>
+		<ul>Added "decomb" and "bthresh" parameters.</ul>
+		<ul>Changed progressive replacement decision.</ul>
+		<ul>Added restrictions for subsequent replacements.</ul>
+		<ul>Compacted decision code.</ul>
+	</ul>
+
+<br>
+<h3>Distribution:</h3>
+<ul>
+This is a free sofware distribued under the terms of the GNU GPL<br>
+It uses a lot of code borrowed from Bach, D.Graft and Ernst Peché plugins.<br>
+The only restriction is to e-mail me if you want to do something with the source.<br>
+</ul>
+
+<h3>Download:</h3>
+<ul>
+<a href="http://bossanovaguitar.com/video/removeblend-0.2.1.zip">Download RemoveBlend 0.2.1</a><br>
+</ul>
+
+<h3>Contact:</h3>
+<ul>
+The best thing to do is to post at <a href="http://www.doom9.org">Doom9 forum</a>.<br>
+Alternatively you can mail me at <a href="mailto:violao@bossanovaguitar.com">bossanovaguitar.com</a>.<br>
+I hope you'll find this little program useful!<br>
+<br>
+<br>
+<p align="Right">
+Last update 8.5.2004. <a href="mailto:violao@bossanovaguitar.com">Violao</a><br>
+</body>
+</html>

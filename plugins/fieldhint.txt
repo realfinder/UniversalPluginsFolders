@@ -1,0 +1,18 @@
+FieldHint combines arbitrary fields from the input clip, and optionally adds Telecide-compatible postprocessing hints.
+
+usage:
+FieldHint(clip, string ovr, bool show)
+
+ovr: required.
+Filename from which to read field pairs.
+Format:
+	0,0,-
+	3,42,+
+	1,2
+Each line consist of a pair of numbers: the frames from which to take
+the top and bottom fields, respectively.
+The optional 3rd parameter sets postprocessing hints.
+("+" => mark as interlaced. "-" => mark as progressive.)
+
+show: (default: false)
+Prints the field numbers and overrides on each frame.

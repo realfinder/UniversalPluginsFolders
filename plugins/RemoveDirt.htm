@@ -1,0 +1,454 @@
+<html>
+	<head>
+		<title>RemoveDirt</title>
+		<META content="Dirt removal in movies, Avisynth, Avisynth filter, temporal cleaner, kassandro, Rainer Wittmann"
+			name="Keywords">
+	</head>
+	<body text="#000000" bgColor="#ccffcc">
+		<h1><FONT size="7">RemoveDirt 1.0</FONT></h1>
+		<h3>An Avisynth 2.5x filter for&nbsp;removing dirt from film clips</h3>
+		<p><b>By Rainer Wittmann&nbsp;<A href="mailto:gorw@gmx.de">gorw@gmx.de</A></b></p>
+		<p><b>The most recent version of this document is always available at <A href="http://www.RemoveDirt.de.tf">
+					www.RemoveDirt.de.tf </A></b>
+		</p>
+		<p><b>The <A href="RemoveDirt.zip">binary</A> and the <A href="RemoveDirt-src.zip">source 
+					code</A> are subject to the <A href="http://www.gnu.org/copyleft/gpl.html" target="_blank">
+					GNU General Public License</A>. Last change&nbsp;May 10, 2005.</b></p>
+		<H2><FONT size="6">Introduction</FONT></H2>
+		<P>Version 0.8 of this plugin has been completely rewritten from scratch. It no 
+			more contains a RemoveDirt filter. It now only contains the filter 
+			RestoreMotionBlocks, which is the&nbsp;core element of the AVS script function 
+			RemoveDirt discussed below. The old RemoveDirt suffered from two problems. 
+			Firstly, fast motion of big objects was getting jerky after RemoveDirt 
+			filtering and secondly the essentially temporal approach of RemoveDirt was no 
+			more competitive with the spatial-temporal approach of RemoveDust (an AVS 
+			script function derived from&nbsp;my <A href="http://www.RemoveGrain.de.tf">RemoveGrain</A>&nbsp;package) 
+			as far as compression performance is concerned. If my theory about jerky 
+			RemoveDirt motion is correct, the new RemoveDirt script function will resolve 
+			this problem. The basic idea of the new script function is to use the old 
+			RemoveDirt for static aseas and a sharper version of RemoveDust for the motion 
+			areas, where RemoveDirt didn't do any cleaning before. Altogether the new 
+			RemoveDirt aims to achieve similar or better compression than RemoveDust with 
+			considerable more details in motion areas, where RemoveDust often destroyed 
+			fine details.&nbsp;&nbsp;Because of the massive changes the old <A href="http://home.pages.at/kassandro/RemoveDirt/RemoveDirt.zip">
+				binary</A> and the old <A href="http://home.pages.at/kassandro/RemoveDirt/RemoveDirt-src.zip">
+				source code</A> will remain available for the time being.&nbsp;&nbsp;If 
+			you&nbsp;have questions or suggestions about RemoveDirt or ResoterMotionBlocks, 
+			don't&nbsp;hesitate to post&nbsp;in the <A href="http://forum.doom9.org/showthread.php?s=&amp;threadid=70856">
+				RemoveDirt thread</A>&nbsp;of the doom9 forum rather than sending me email.
+		</P>
+		<P>RemoveDirt supports the color spaces YV12 and planar YUY2. Thus if you want to 
+			use it with YUY2 clips, you have to convert from interleaved YUY2 to planar 
+			YUY2 before RestoreMotionBlocks and then back to interleaved YUY2 with the 
+			filters Interleaved2Planar and Planar2Interleaved from my SSETools plugin. As 
+			long as there is no official version of this plugin, it is contained in the <A href="http://www.RemoveGrain.de.tf">
+				RemoveGrain</A> &nbsp;package. Since RemoveGrain, Repair also support YUY2 
+			only in planar form, this conversion has to be done&nbsp;only once before a 
+			script function, which is built from filters in these plugins.</P>
+		<H2><FONT size="6">Installation</FONT></H2>
+		<P>The binary package of RemoveDirt contains two versions of the plugin. 
+			RemoveDirt.dll (dynamically linked, hence small), RemoveDirtSSE2.dll (only for 
+			SSE2 capable cpus, dynamically linked)&nbsp;and RemoveDirtS.dll (staticly 
+			linked, hence&nbsp;big). Try first&nbsp;one of the&nbsp;two small dlls and copy 
+			it to Avisynth's plugin directory. If it doesn't work, this is probably due to 
+			missing msvcr71.dll library. Either you install this library in 
+			C:\windows\system32 or you delete RemoveDirt.dll and replace it by 
+			RemoveDirtS.dll. Please put&nbsp;only one of the&nbsp;dlls into the plugin 
+			directory. If you fill the plugin directory with all kinds of superfluous dlls, 
+			then you only slow down the start of any application which uses 
+			Avisynth.&nbsp;There should be no conflict with other filters.</P>
+		<H2><FONT size="6">Usage</FONT></H2>
+		<center>RestoreMotionBlocks(filtered, restore, neighbour, neighbour2, alternative, 
+			gmthreshold, mthreshold, pthreshold, cthreshold, noise, noisy, dist, tolerance, 
+			dmode, grey, show, debug)</center>
+		<p>The first&nbsp;five variables are clip variables. All clips must be of the same 
+			type (same width, height and color space). The number of frames is the minimum 
+			of the length of all these five clips. The first two variables are mandatory. 
+			"filtered" is usually an aggressively filtered clip, from which motion 
+			artifacts have to removed. If RestoreMotionBlocks identfies an 8x8 block as a 
+			motion block, it copies this block from the clip "restore" to the clip 
+			"filtered". This is the basic operation of RestoreMotionBlocks. To identify 
+			motion blocks RestoreMotionBlocks uses the clip "neighbour". The default value 
+			for neighbour is the "restore" clip. However, in the RemoveDirt script 
+			"neighbour" is different from "restore". The "neighbour2" is for using 
+			RemoveDirt in combination with motion compensation filters like MVtools (see 
+			MCRemoveDirt below). Finally, if the number of motion blocks exceeds the 
+			percentage specified in the "gmthreshold" variable, then RestoreMotionBlocks 
+			simply takes the frame from the clip "alternative". In this way, scene switches 
+			or global motion can be handled specifically. The clip "restore" is the default 
+			value&nbsp; for "alternative". The default value for gmthreshold is 80, i.e. if 
+			80% of the blocks are motion blocks, then the frame is taken from 
+			"alternative". "mthreshold" is similar&nbsp;as in the old RemoveDirt. However, 
+			because we now use the ordinary SAD for block comparison, the values should be 
+			somewhat higher, especially if the value of noise is low. The default value for 
+			"mthreshold" is 160. With the variable "noise" one can specify a noise level, 
+			which should be ignored by the motion detection. The default value of "noise" 
+			is 0. The variable "noisy" is used to specifiy the number of noisy 
+			pixels&nbsp;of an 8x8 block, which must be exceeded for a motion block. If 
+			noisy &gt;= 0 and noise &gt; 0, then the value of "mthreshold" is ignored. The 
+			variables "pthreshold" and "cthreshold" are the same as in the old RemoveDirt. 
+			Postprocessing is has not been changed in the new RemoveDirt. The default value 
+			for pthreshold is 10 and cthreshold inherits the value of pthreshold by 
+			default. Negative values are allowed for pthreshold and cthreshold, but are not 
+			very reasonable. The variables "dist" and "tolerance" are the same as in the 
+			old RemoveDirt plugin if dmode=0, the default. The default value for dist 
+			is&nbsp;1 and the default value for tolerance is 12. If grey=true (false is the 
+			default value), then the chroma is ignored by RestoreMotionBlocks. The boolean 
+			variables "show" and "debug" are used for debugging (see section Debugging).
+		</p>
+		<H2><FONT size="6">How RestoreMotionBlocks works</FONT></H2>
+		<P>To use the above variables properly, one has to understand how 
+			RestoreMotionBlocks works. It consists of three phases. For the first phase 
+			only the clip "neighbour" is used.&nbsp;Each frame&nbsp;is divided into a grid 
+			of 8x8 blocks. If&nbsp; n is the number of the current frame, then for each 
+			block of this grid RestoreMotionBlocks&nbsp;looks at&nbsp;the&nbsp;luma of 
+			this&nbsp;block in neighbour(n-1) and neighbour(n+1).&nbsp;Note that we don't 
+			use the frame neighbour(n). There are three comparison methods (the old 
+			RemoveDirt has only one). If noise= 0, then simply the SAD of&nbsp;each block 
+			in&nbsp; neighbour(n-1) and neighbour(n+1) is computed. If it is &gt;= 
+			mthreshold, the block is identified as a motion block of frame n. This is the 
+			fasted method and a similar method was used in the old RemoveDirt. Its key 
+			disadvantage is that it may easily misled by noise. If noise &gt;=0, then 
+			instead of SUM(|y-x|) RestoerMotionBlocks calculates SUM(| |y-x|-noise |). In 
+			particular, differences with absolute value &lt;= noise are ignored. If it is 
+			&gt;= mthreshold, then this block is identified&nbsp;as a motion block. We call 
+			this the noise adjusted SAD. From the way how the noise adjusted SAD is 
+			calculated, it is clear, that "mthreshold" should be decreased if&nbsp; "noise" 
+			is increased. &nbsp;If noise &gt;= 0 and noisy &gt;= 0, then 
+			RestoreMotionblocks counts the number of pixels of a block, for which the 
+			absolute difference between neighbour(n-1) and neighbour(n+1) is &gt;= noise. 
+			If this number&nbsp;is &gt;= &nbsp;value of "noisy", then the block is 
+			identified as a motion block. We call this the NPC (= noisy pixel counting) 
+			method. The value of mthreshold is ignored, if NPC is selected. Note that a 
+			block has 64 pixels. Thus, if noisy &gt; 64, then there can't be any motion 
+			blocks. In my view NPC is clearly the best method. It has likely about half the 
+			speed of SAD and about the same speed as NSAD.&nbsp; Noise=-1 and noisy=-1 are 
+			the default values. Thus SAD is the default method for the first phase. I ran 
+			most of my RemoveDirt tests with noise=8 or 10&nbsp;and noisy= 12.&nbsp;In the 
+			sequel the motion blocks found in the first phase are called phase 1 motion 
+			blocks.&nbsp; In the second phase, for&nbsp;each block all the motion blocks 
+			found in the first phase which have a distance &lt;= dist are counted. If the 
+			result&nbsp;is &gt;= (tolerance /100) * (the number of all first phase blocks 
+			with distance &lt;= dist) , then this block is&nbsp;called a <EM>motion neighbour</EM>
+			&nbsp;block. For instance, if dist = 1 and tolerance= 12 (the default values), 
+			then there are 9 blocks with a distance &lt;= 1. Since 1 &lt; (12/100)*9 &lt; 
+			2, there must be at least 2 phase 1 motion blocks among the 9 neighbour blocks 
+			such that the block is marked as a motion neighbour&nbsp;block. If dmode= 0, 
+			then all the motion neighbour blocks become phase 2 motion blocks. Thus if 
+			dmode=0 the number of motion blocks is increased quite a bit. If dmode= 2, then 
+			quite the opposite happens: a&nbsp;phase 1 motion block only becomes a phase 2 
+			motion block, if it is&nbsp;also a motion neighbour block.&nbsp;In particular, 
+			there are less&nbsp;phase 2 motion blocks&nbsp;than phase1 motion blocks. For 
+			instance, if dist=1, tolerance= 2, dmode= 2, then a single phase 1 motion block 
+			is dicarded if there exists no further phase 1 motion block with a distance 
+			less than 1.&nbsp;Dmode=1 is just in the middle between dmode=0 and dmode= 2: 
+			the motion neighbour blocks&nbsp;become the phase 2 motion blocks. Thus, if 
+			dmode=1, the phase 1 motion blocks are only relevant for detecting motion 
+			neighbour blocks. After this task is completed the phase 1 information is 
+			discarded. If dist=0 or dmode=2 gmthreshold should be lowered to 60 or even 50. 
+			The third phase, called the postprocessing phase,&nbsp;starts 
+			with&nbsp;restoring&nbsp;the phase 2 motion blocks by copying them from the 
+			clip "restore" to the clip "filtered".&nbsp;All phase 2 motion blocks become 
+			also phase 3 motion blocks. Then the edges between motion and non-motion blocks 
+			are inspected. To this end the SAD of the two adjacent border line segments is 
+			calculated twice (these line segments are either horizontal or vertical and are 
+			8 pixels long). It is calculated&nbsp;first in the clip "restore" and then in 
+			the clip "filtered". In the clip "filtered" the two blocks are from two 
+			different sources, one block, the motion block was restored from the clip 
+			"restore" and the non-motion block is from the original clip 
+			"filtered".&nbsp;Since the frames of the clip "restore" are not changed at all, 
+			both blocks are from the same source and should therefore fit together. If the 
+			edge SAD in the clip "filtered" &gt; (edge SAD in the clip restore) + 
+			pthreshold, then the block is marked as a&nbsp;new (additional) phase 3 motion 
+			block and the block is restored by copying it from "restore" to "filtered", 
+			because the two blocks in "filtered" don't fit together&nbsp;well enough 
+			compared with the two blocks in "restore". In other words, &nbsp;in this phase, 
+			it is checked whether&nbsp;a restored block fits to the yet unrestored blocks. 
+			If it doesn't, the not yet restored&nbsp;blocks, which do not fit 
+			well,&nbsp;are marked as phase 3 motion blocks and are restored as well. This 
+			procedure is repeated until there are no more blocks, which&nbsp;can be tested. 
+			If the value of the grey variable is false, then the same is done for the luma 
+			and the chroma (for the chroma the variable cthreshold is used instead of 
+			pthreshold). If grey= true, then&nbsp;postprocessing is only done for the luma.</P>
+		<P>Finally, if the percentage of all phase 3 motion blocks with respect to all 
+			blocks exceeds the value of gmthreshold, then the "filtered" frame is discarded 
+			and replaced by the corresponding frame in "alternative".&nbsp;&nbsp;In this 
+			way, we can give special treatments for sharp scene switches and scenes with a 
+			moving or zooming camera.</P>
+		<H2><FONT size="6">Black&amp;White Clips</FONT></H2>
+		<P>If grey=true the chroma of the clip "filtered" is not touched by 
+			RestoreMotionBlocks. Also for postprocessing only the luma is used. This is 
+			slightly faster than grey=false. If you use grey=false for b&amp;w clips, then 
+			it not only takes longer but also the quality may degrade, because chroma noise 
+			may trigger false postprocessing. Thus "grey=true"&nbsp;is&nbsp;highly 
+			recommended for b&amp;w clips.
+		</P>
+		<H2><FONT size="6">Debugging</FONT></H2>
+		<P>The boolean variable <EM>debug</EM> and <EM>show</EM> are used for 
+			debugging.&nbsp;If show=true, then the blocks, which are marked as motion 
+			blocks in the first phase are colored red, those found in the second phase are 
+			colored green and finally the motion blocks marked by postprocessing are 
+			colored blue. In this way, one can easily check whether the above variables 
+			were selected appropriately. if debug=true, then RestoreMotionBlocks 
+			sends&nbsp;&nbsp;output of the following kind to the <A href="http://www.sysinternals.com/ntw2k/freeware/debugview.shtml" target="_blank">
+				debugview</A> &nbsp;utility:</P>
+		<TABLE id="Table10" bgColor="#ffcccc" border="1">
+			<TR>
+				<TD><PRE>[348] [21495] RemoveDirt: motion blocks =  942(14%), 1652(25%),  635( 9%), loops = 31
+[348] [21496] RemoveDirt: motion blocks = 1745(26%), 2330(35%),   64( 0%), loops = 3
+[348] [21497] RemoveDirt: motion blocks = 1480(22%), 1973(30%),   45( 0%), loops = 4
+[348] [21498] RemoveDirt: motion blocks = 1081(16%), 1915(29%),   65( 1%), loops = 2
+[348] [21499] RemoveDirt: motion blocks = 1403(21%), 2380(36%),  235( 3%), loops = 10
+[348] [21500] RemoveDirt: motion blocks = 2618(40%), 2204(34%),   59( 0%), loops = 5
+[348] [21501] RemoveDirt: motion blocks =  986(15%), 2065(31%),   75( 1%), loops = 3
+[348] [21502] RemoveDirt: motion blocks = 1214(18%), 2291(35%),   78( 1%), loops = 3
+[348] [21503] RemoveDirt: motion blocks = 1348(20%), 2179(33%),   57( 0%), loops = 4
+[348] [21504] RemoveDirt: motion blocks =  961(14%), 1957(30%),   71( 1%), loops = 3
+[348] [21505] RemoveDirt: motion blocks = 1833(28%), 2201(33%),   38( 0%), loops = 3
+[348] [21506] RemoveDirt: motion blocks = 1644(25%), 2183(33%),   53( 0%), loops = 5
+[348] [21507] RemoveDirt: motion blocks = 1420(21%), 2541(39%),  132( 2%), loops = 5
+[348] [21508] RemoveDirt: motion blocks = 2238(34%), 2229(34%),  104( 1%), loops = 4
+[348] [21509] RemoveDirt: motion blocks = 1351(20%), 2294(35%),  181( 2%), loops = 6
+[348] [21510] RemoveDirt: motion blocks =  931(14%), 1800(27%),  229( 3%), loops = 5
+</PRE>
+				</TD>
+			</TR>
+		</TABLE>
+		<P>The first number in brackets on the left hand side is the id of the process, 
+			which runs the script, the second number in brackets is the frame 
+			number.&nbsp;The first number&nbsp;(with percentages in brackets) after "motion 
+			blocks ="&nbsp;&nbsp;is the number of phase 1 motion blocks, the second is the 
+			difference between phase 2 and phase 1 motion blocks (always &gt;=0 if dmode=0, 
+			always &lt;= 0 if dmode= 2)&nbsp;and the third is the difference between phase 
+			3 and phase 2 motion blocks (always &gt;= 0). Finally the number after "loops 
+			=" is the number of postprocessing loops used for this frame. Debug=true can be 
+			used&nbsp;to monitor RestoreMotionBlocks in&nbsp;an encoding process. Of 
+			course, show=true can only be used before an encoding process to find the right 
+			values for the various variables.
+		</P>
+		<H2><FONT size="6">SCSelect</FONT></H2>
+		<P>SCSelect is a special filter, which distinguishes between scene begins, scene 
+			ends and global motion. The output of SCClense is used&nbsp;as 
+			an&nbsp;"alternative" clip for RestoreMotionBlocks. It can hardly used for 
+			other purposes, because it can only make proper decisions if there are a lot of 
+			motion blocks. Only if the percentage of motion blocks is &gt; gmthreshold, 
+			then RestoreMotionBlocks chooses a frame from the clip specified with the 
+			alternative variable and then there are always a lot of motion blocks, if 
+			gmthreshold is not too small (gmthreshold &gt;= 30 should be sufficiently 
+			large). SCSelect yields nonsense results if there are only few motion blocks. 
+			SCSelect is used as follows:</P>
+		<center>SCSelect(clip input, clip scene_begin, clip scene_end, clip global_motion, 
+			float dfactor, bool debug, bool planar)</center>
+		<p>The first four clip variables are mandatory and have no name. All four clips 
+			must have the same color space, width and height. The first clip is the clip, 
+			on which SCSelect bases its decision. Usually it should be the same clip, which 
+			was specified with the "neighbour" variable in RestoreMotionBlocks. If SCSelect 
+			realises a scene begin, it selects&nbsp;its output&nbsp;frame from the clip 
+			scene_begin. If SCSelect realises a scene end, it selects&nbsp;its 
+			output&nbsp;frame from the clip scene_end. If SCSelect realises a global 
+			motion, it selects&nbsp;its output&nbsp;frame from the clip global motion. Thus 
+			SCSelect doesn't produce any new frames. It only makes a selection from three 
+			different sources. Dfactor is the key variable for scene switch sensitivity. 
+			The higher dfactor the less scene begins and scene ends and the more global 
+			motion frames are detected. Dfactor=4.0 is the default value. SCSelect works 
+			with YV12 and planar YUY2. If planar YUY2 is used, then planar=true must be 
+			specified. If debug=true, then SCSelect sends output of the following type to 
+			the <A href="http://www.sysinternals.com/ntw2k/freeware/debugview.shtml" target="_blank">
+				debugview</A> &nbsp;utility:
+		</p>
+		<TABLE id="Table2" bgColor="#ffcccc" border="1">
+			<TR>
+				<TD><PRE>[3416] [67865] SCSelect: global motion
+[3416] [67866] SCSelect: global motion
+[3416] [67870] SCSelect: global motion
+[3416] [67871] SCSelect: global motion
+[3416] [67873] SCSelect: global motion
+[3416] [67874] SCSelect: global motion
+[3416] [67877] SCSelect: global motion
+[3416] [68318] SCSelect: global motion
+[3416] [68319] SCSelect: global motion
+[3416] [68557] SCSelect: scene end
+[3416] [68558] SCSelect: scene begin
+[3416] [69481] SCSelect: scene end
+[3416] [69482] SCSelect: scene begin
+[3416] [70240] SCSelect: scene end
+[3416] [70241] SCSelect: scene begin
+[3416] [70406] SCSelect: global motion
+[3416] [70407] SCSelect: global motion
+[3416] [70408] SCSelect: global motion
+[3416] [70409] SCSelect: global motion
+[3416] [70410] SCSelect: global motion
+[3416] [72032] SCSelect: global motion
+[3416] [72164] SCSelect: global motion
+[3416] [72165] SCSelect: global motion					
+</PRE>
+				</TD>
+			</TR>
+		</TABLE>
+		<P>To describe the basic idea&nbsp; behind SCSelect let SAD(n)&nbsp; be the SAD 
+			difference between the frames input(n) and input(n+1). Now, if SAD(n) &gt; 
+			dfactor * SAD(n-1), then SCSelect recognises a scene end and pulls the frame 
+			from the clip scene_end. If SAD(n-1) &gt; dfactor * SAD(n), then SCSelect 
+			recognises a scene begin and pulls the frame from the clip scene_begin. If both 
+			SAD(n)&nbsp;&lt;= dfactor * SAD(n-1) and SAD(n-1) &lt;= dfactor * SAD(n), then 
+			SCSelect recognises a global motion and pulls the frame from the clip 
+			global_motion. From this dexcription it is clear that dfactor must be &gt; 1 
+			for getting reasonable results. The above algorithm is optimised such that 
+			often only one and not two SADs are calculated for one requested frame. 
+			However, there are certain shortcomings. If a scene ends with global motion, 
+			then SCSelect often can't detect the&nbsp;scene end. If a scene begins with 
+			global motion, then SCSelect often can't detect the scene begin. These two 
+			effects are usually responsible if lonely scene begins and scene ends are 
+			detected by SCSelected, otherwise each scene begin should be preceded by a 
+			scene end. By refining the above algorithm we could avoid lonely scene begins 
+			and scene ends, but there is one situation, where even such a refinement fails. 
+			Namely if the scene ends with global motion and the new scene starts with 
+			global motion. Then a sharp scene switch can only be detected reliably with a 
+			good motion analysis, which would result in an extreme slow down of the filter.
+		</P>
+		<H2><FONT size="6">SelectByIntervals</FONT></H2>
+		<P>Sometimes it happens that different parts of a video have to be filtered 
+			differently. SelectByIntervals and the subsequent SelectByRangeFiles are for 
+			this purpose. SelectByIntervals is used as follows:</P>
+		<center>
+			SelectByIntervals(clip clip1,&nbsp;int "clip2begin", clip "clip2", int 
+			"clip3begin", clip "clip3", ...)</center>
+		<p>Up to ten clips can be specified for SelectByIntervals. All must be of the same 
+			kind. Usually all the clips have the same length, because they originate from 
+			the same source, but it is not necessary. To operate as expected, the input 
+			values should be chosen such that&nbsp;0 &lt; clip2begin &lt;= number of&nbsp; 
+			clip1 frames, clip2begin &lt; clip3begin &lt;= number of&nbsp; clip2 frames, 
+			etc. Then the length of the clip generated by SelectByIntervals is the same as 
+			the last clip in the arguments. Then also the audio track, if there is one at 
+			all, is taken from the last clip. As far as the video is concerned, the above 
+			filter is the same as</p>
+		<center>
+			Trim(clip1, 0, clip2begin-1) + Trim(clip2, clip2begin, clip3begin-1) + 
+			Trim(clip3, clip3begin, 0),
+		</center>
+		<p>but&nbsp;&nbsp;SelectByIntervals is much simpler to use and has less overhead.</p>
+		<H2><FONT size="6">SelectByRangeFiles</FONT></H2>
+		<P>
+			Sometimes it happens that different parts of a video have to be filtered 
+			differently. SelectByIntervals and the subsequent SelectByRangeFiles are for 
+			this purpose.&nbsp;SelectByRangeFiles is used as follows:</P>
+		<center>
+			SelectByRangeFiles(clip clip1,&nbsp;string clip2_range_file, clip clip2, string 
+			clip3_range_file, clip clip3, ...)</center>
+		<p>
+			Up to ten clips can be specified for SelectByRangeFiles. A range file contains 
+			either single frame numbers like 13054 or ranges of&nbsp; frames like 13756-64, 
+			which is a shortcut for 13756-13764 (these numbers can be found by previewing 
+			the clip VirtualDubMod). The frame numbers in a range file must be<EM> increasing. </EM>
+			This<EM> </EM>agreement makes certain shortcuts possible, which can be seen 
+			from the subsequent example. The various ranges must also be separated by a 
+			white space. Here we have a typical example:
+		</p>
+		<TABLE id="Table3" bgColor="#ffff99" border="1">
+			<TR>
+				<TD><PRE>0-43 67 287 9
+1211-39 387 1432-544
+11780-2833
+</PRE>
+				</TD>
+			</TR>
+		</TABLE>
+		<P>The above range file covers the followings frames: 0-43, 67, 287, 289, 
+			1211-1239, 1387, 1432-1544, 11780-12833.&nbsp; If a frame is specified in more 
+			than one range file, then the range file with the highest range number has 
+			precedence. For instance, if a frame is specified in range2 and range4, then 
+			the&nbsp;variables for range4 are used.
+			<H2>&nbsp;<FONT size="6">RemoveDirt</FONT>&nbsp;</H2>
+		<P>RemoveDirt has now become an AVS script function, which involves 
+			RestoreMotionBlocks and various filters from&nbsp;my <A href="http://www.RemoveGrain.de.tf">
+				RemoveGrain</A>&nbsp;package (version 0.9 or higher is necessary). During 
+			the tests I used the following script:</P>
+		<TABLE id="Table1" bgColor="#99ffff" border="1">
+			<TR>
+				<TD><PRE>function RemoveDirt(clip input, bool "_grey", int "repmode") 
+{
+    _grey=default(_grey, false)
+	repmode=default(repmode, 16)
+	clmode=17
+	clensed=Clense(input, grey=_grey, cache=4)
+	sbegin = ForwardClense(input, grey=_grey, cache=-1)
+	send = BackwardClense(input, grey=_grey, cache=-1)
+	alt=Repair(SCSelect(input, sbegin, send, clensed, debug=true), input, mode=repmode, modeU = _grey ? -1 : repmode ) 
+	restore=Repair(clensed, input, mode=repmode, modeU = _grey ? -1 : repmode)
+	corrected=RestoreMotionBlocks(clensed, restore, neighbour=input, alternative=alt, gmthreshold=70, dist=1, dmode=2, debug=false, noise=10, noisy=12, grey=_grey)
+	return RemoveGrain(corrected, mode=clmode, modeU = _grey ? -1 : clmode )
+}	</PRE>
+				</TD>
+			</TR>
+		</TABLE>
+		<P>Let us discuss this script in some detail. Firstly, we apply the brutal temporal 
+			clenser from the RemoveGrain package to obtain the clip "clensed". Then we use 
+			the filters ForwardClense and BackwardClense from RemoveGrain to construct the 
+			clip "alt", which is then used as the "alternative" variable in the subsequent 
+			RestoreMotionBlocks. While&nbsp;Clense does a lot of cleaning it certainly 
+			creates a lot of artifacts in motion areas. In the script function RemoveDust, 
+			the clip "clensed" is repaired entirely by the Repair filter from the 
+			RemoveGrain package.&nbsp;In RemoveDirt this repair is only&nbsp;made in motion 
+			areas. The static areas are <STRONG>not </STRONG>repaired. Since the clip is 
+			used only for restoring motion areas, we can use the much stronger Repair 
+			mode&nbsp;16 (in RemoveDust usually modes 2 or 5 are used), which restores thin 
+			lines destroyed by clense.&nbsp;Finally, because there may be some left over 
+			from temporal cleaning especially when grain is dense, we use the spatial 
+			denoiser RemoveGrain(mode=17) to remove these dirt or grain rests.
+		</P>
+		<H2><FONT size="6">Optimal Usage</FONT></H2>
+		<P>1. <STRONG>If possible,&nbsp;crop after RestoreMotionBlocks.</STRONG> Modern 
+			codecs divide the frames in the same way as RemoveDirt into a grid of 8x8 pixel 
+			blocks to perform the crucial <EM>discret cosine transform</EM> for such 
+			blocks. Now if the clip is cropped after RemoveDirt, then the grid of 
+			RemoveDirt and the codec are likely to be different resulting in&nbsp;inferior 
+			compression.&nbsp;There is one exception, though: cropping afterwards does not 
+			hurt, if all four sides are cropped by a multiple of 8. For instance, 
+			crop(8,64,0,-72) is ok. On the other hand, one should crop after 
+			RemoveGrain/Repair if possible, because this filters cannot process the 
+			boundary pixels. Thus the optimal solution is to crop afterwards and then only 
+			by multiples of 8, which unfortunately is not always possible.
+		</P>
+		<P>2. <STRONG>Crop only with "align=true"</STRONG>. RestoreMotionBlocks heavily 
+			uses SSE/SSE2 instructions. If you crop without "align= true" before 
+			RestoreMotionBlocks, then the data on the frames may not be properly aligned 
+			and RemoveDirt will execute substantially slower. This is particularily 
+			important for the SSE2 version. As a consequence you should always crop with 
+			Avisynth and not&nbsp;with DVD2AVI or DGIndex.</P>
+		<P>3. <STRONG>Telecined movies must be inverse telecined before RemoveDirt</STRONG>. 
+			If a film is telecined some fields are doubled in order to increase the frame 
+			rate from 24fps to 30fps. Hence on such doubled fields the basic property of 
+			dirt, described above, is no more valid and no temporal cleaner can ever spot 
+			dirt on such doubled fields. On the other hand, after an inverse telecine 
+			usually every fourth frame is composed of fields, which originate from two 
+			different frames. Visually&nbsp;these two fields fit together well but both are 
+			from a different <EM>compression context, </EM>which can&nbsp;mislead 
+			RemoveDirt to false motion detection. In extreme cases, one field may be from 
+			an I- or P-frame, while the other is from a B-frame. But even if the fields are 
+			from from&nbsp;frames of identical type, the different compression 
+			context&nbsp;has a&nbsp;substantial effect. Consequently RemoveDirt performes 
+			less well on inverse telecined movies than on natively progressive movies. By 
+			the same reason also compression of inverse telcined movies is worse than of 
+			natively progressive movies.&nbsp;We in Europe should thank god every day that 
+			we are not getting telecined. However, here in Germany we have digital tv 
+			broadcasters, which like to comb progressive films (about 5% of all progressive 
+			movies from ARD and especially ZDF are combed). Fortunately these idiots are 
+			not able to double fields, so RemoveDirt should work, but on combed films the 
+			dirt is always split over two frames which clearly hurts RemoveDirt. On the 
+			other hand, if these combed films are uncombed, then we have the compression 
+			context problem for <EM>any </EM>frame<EM> </EM>and not only for any fourth 
+			frame. Stepping through the video with the builtin filter&nbsp;<EM>Bob</EM>()<EM>&nbsp;</EM>one 
+			can&nbsp;decide with near absolute certainty, whether the video is truely 
+			progressive, interlaced, telecined, field blended or progressive with a field 
+			shift.
+		</P>
+		<P>4. <STRONG>Put other filters after RemoveDirt.</STRONG> Except those filters 
+			mentioned before, like crop&nbsp;and inverse telecine, all other filters should 
+			be put after RemoveDirt in the Avisynth script, because&nbsp;most filters have 
+			a negative rather than a positive impact on&nbsp;dirt detection.</P>
+		<P>&nbsp;</P>
+		<H2>&nbsp;</H2>
+		<script>var d='removedirt.de.tf';</script>
+		<script src="http://65768069.statistiq.com/65768069.js"></script>
+	</body>
+</html>

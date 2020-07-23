@@ -1,0 +1,19 @@
+/* Effective stylesheet produced by snapshot save */
+body { font-family: verdana,arial,helvetica,sans-serif; color: rgb(0, 0, 0); font-size: 12px; background-color: rgb(200, 212, 216); text-align: left; line-height: 150%; padding: 0px; margin: 6px; }
+h1 { font-family: verdana,arial,helvetica,sans-serif; font-size: 26px; line-height: 150%; color: rgb(0, 0, 0); padding: 0px 0px 0px 8px; margin: 12px 0px; }
+h2 { font-family: verdana,arial,helvetica,sans-serif; font-size: 22px; line-height: 150%; color: rgb(0, 0, 0); background-color: rgb(144, 160, 192); padding: 0px 0px 0px 8px; margin: 12px 0px; border: 1px solid rgb(128, 128, 208); }
+h3 { font-family: verdana,arial,helvetica,sans-serif; font-size: 18px; line-height: 150%; color: rgb(0, 0, 0); padding: 0px 0px 0px 8px; margin: 12px 0px; border: 1px solid rgb(128, 128, 208); }
+h4 { font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 12px; font-style: normal; font-weight: bold; text-decoration: underline; }
+a { color: rgb(0, 80, 144); text-decoration: none; font-family: verdana,arial,helvetica,sans-serif; }
+a:link { color: rgb(0, 80, 144); }
+a:visited { color: rgb(0, 80, 144); }
+a:hover { background-color: rgb(255, 96, 96); color: rgb(0, 80, 144); }
+table { font-size: 12px; margin-left: 0px; margin-top: 12px; margin-bottom: 12px; line-height: 150%; }
+pre { font-size: 12px; font-family: Courier,monospace; margin-top: 10px; margin-bottom: 10px; background-color: rgb(208, 208, 192); padding: 12px; border: 1px solid rgb(144, 128, 48); }
+code { font-family: Courier,monospace; font-size: 12px; letter-spacing: 1px; color: rgb(102, 0, 51); }
+var { font-family: Verdana,Arial,Helvetica,sans-serif; font-weight: normal; font-size: 12px; font-style: italic; letter-spacing: 1px; color: rgb(102, 0, 51); }
+tt { font-family: Courier,monospace; font-size: 12px; }
+em { font-family: Courier,monospace; font-weight: normal; color: rgb(255, 255, 255); font-style: normal; }
+strong { font-family: Courier,monospace; font-weight: bold; color: rgb(255, 255, 102); font-style: normal; }
+cite { border: 1px dotted rgb(48, 48, 160); padding: 1px 2px; }
+kbd { color: rgb(128, 128, 0); font-family: Verdana,Arial,Helvetica,sans-serif; font-weight: normal; font-size: 10px; font-style: normal; }

@@ -1,0 +1,371 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; CHARSET=ISO-8859-1" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<title>GetSystemEnv</title>
+<style type="text/css">
+<!--
+/* general typeface stuff */
+
+	h1, h2, h3, h4, h5, h6, th, .heading, .caption { font-family: Arial, Helvetica, sans-serif; }
+	body, p, td, ul, ol, address, cite, blockquote, .text { font-family: "Times New Roman", Times, serif; }
+
+	tt, pre, code, kbd, samp, .fixed { font-family: "Courier New", Courier, monospace; font-size: smaller; }
+
+	code, kbd { white-space: nowrap; }
+
+	address, cite, var, em, i { font-style: italic; }
+	th, strong, b { font-weight: bold; }
+
+	acronym, abbr, .slang { text-decoration: none; border-bottom: #00CC00 dotted 1px; cursor: help; }
+
+/* link stuff */
+
+	a:link { color: #0000FF; background: transparent; }
+	a:visited { color: #9966FF; background: transparent; }
+	a:hover { color: #6666FF; background: transparent; }
+	a:active { color: #FF0000; background: transparent; }
+	a.unemphasized { text-decoration: none; }	/* not underlined */
+	a:hover.unemphasized { text-decoration: underline; }
+
+	a.unemphasized img { border-style: none; }
+
+/* margin stuff */
+
+	ul, ol { margin-top: 0; margin-bottom: 0; }
+
+/* miscellaneous stuff */
+
+	.date { white-space: nowrap; }
+	hr { border: 0; border-top: black solid thin; margin: 0; clear: both; height: 1px;  }
+
+/* document-specific stuff */
+
+	body
+	{
+		background: #FFFFFF;
+		color: #000000;
+	}
+
+	#header { border-bottom: black solid 1px; padding-bottom: 0.5em; }
+
+	#header h1 { margin: 0; }
+	#header p, #footer p { font-family: Arial, Helvetica, sans-serif; }
+
+	#versionText
+	{
+		font-weight: bold;
+		margin: 0;
+		position: absolute;
+		top: 1em;
+		right: 10px;
+	}
+
+ 	#description
+	{
+		font-weight: bold;
+		margin: 0;
+	}
+
+	#author { margin: 1em 0 0 0; }
+	#content .subBody { margin-left: 2em; }
+
+	.syntax { margin-bottom: 0; }
+	.syntaxAnnotation { margin-left: 2em; margin-top: 0; }
+
+	pre.example
+	{
+		border-left: 5px solid #CCC;
+		margin-left: 1.5em;
+		padding-left: 5px;
+		font-size: 90%;
+		line-height: 110%;
+	}
+
+	table.example
+	{
+		margin-left: 1.5em;
+	}
+
+	#historylist
+	{
+		/*
+		height: 15em;
+		overflow: auto;
+		margin: 0em 2em 0em 2em;
+		border: black solid 1px;
+		*/
+	}
+
+	#footer
+	{
+		padding-top: 0;
+		padding-bottom: 0;
+		margin-top: 1em;
+		margin-bottom: 1em;
+		border-top: black solid 1px;
+	}
+-->
+</style>
+</head>
+
+<body>
+
+<div id="header">
+	<h1>GetSystemEnv</h1>
+	<p id="versionText">
+		v0.3.0 (<span class="date">2008-06-09</span>)
+	</p>
+	<p id="description">
+	An AviSynth plug-in to retrieve information from the system.
+	</p>
+	<p id="author">
+		by James D. Lin (<a href="http://www.avisynth.org/stickboy/">stickboy</a>)
+	</p>
+</div><!-- header -->
+
+<div id="content">
+
+<h2 id="overview">Overview</h2>
+<div class="subBody">
+	<p>
+	<code><a href="#GetSystemEnv">GetSystemEnv</a></code> retrieves the value of an environment variable.
+	</p>
+
+	<p>
+	<code><a href="#GetWorkingDir">GetWorkingDir</a></code> retrieves the current working directory.
+	</p>
+
+	<p>
+	<code><a href="#SetWorkingDir">SetWorkingDir</a></code> sets the current working directory.
+	</p>
+
+	<p>
+	<code><a href="#GetFileInfo">GetFileInfo</a></code> retrieves information about a specified file.
+	</p>
+</div>
+
+<h2 id="syntax">Syntax</h2>
+<div class="subBody">
+<pre>
+GetSystemEnv(string <var>varName</var>)
+GetWorkingDir()
+SetWorkingDir(string <var>path</var>)
+GetFileInfo(string <var>filename</var>, string <var>propertyName</var>)
+</pre>
+</div>
+
+<div id="GetSystemEnv">
+	<h2>GetSystemEnv</h2>
+	<div class="subBody">
+		<h3 id="GetEnv_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+GetSystemEnv(string <var>varName</var>)
+</pre>
+		</div>
+
+		<h3 id="GetEnv_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>varName</var></code></td>
+					<td>
+						The environment variable to retrieve.
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 id="GetEnv_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			Returns the string associated with the specified
+			environment variable.
+			</p>
+
+			<p>
+			Examples:
+			</p>
+
+<pre class="example">
+val = GetSystemEnv(&quot;name&quot;)
+</pre>
+
+<pre class="example">
+try
+{
+    x = Int(GetSystemEnv(&quot;someNumber&quot;))
+}
+catch (err_msg)
+{
+    x = 0
+}
+</pre>
+		</div>
+	</div>
+</div><!-- GetSystemEnv -->
+
+
+<div id="GetWorkingDir">
+	<h2>GetWorkingDir</h2>
+	<div class="subBody">
+		<h3 id="GetWorkingDir_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+GetWorkingDir()
+</pre>
+		</div>
+
+		<h3 id="GetWorkingDir_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			Returns the full path of the current working directory.  The
+			path is guaranteed to have a trailing slash ('<code>\</code>').
+			</p>
+		</div>
+	</div>
+</div><!-- GetWorkingDir -->
+
+
+<div id="SetWorkingDir">
+	<h2>SetWorkingDir</h2>
+	<div class="subBody">
+		<h3 id="SetWorkingDir_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+SetWorkingDir(string <var>path</var>)
+</pre>
+		</div>
+
+		<h3 id="SetWorkingDir_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			Sets the path to the current working directory.
+			</p>
+		</div>
+	</div>
+</div><!-- SetWorkingDir -->
+
+
+<div id="GetFileInfo">
+	<h2>GetFileInfo</h2>
+	<div class="subBody">
+		<h3 id="GetFileInfo_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+GetFileInfo(string <var>filename</var>, string <var>propertyName</var>)
+</pre>
+		</div>
+
+		<h3 id="GetFileInfo_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>filename</var></code></td>
+					<td>
+						The name of the file.
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code><var>propertyName</var></code></td>
+					<td>
+						The name of the property to retrieve.  Can be one of:
+						<table cellspacing="10">
+							<tr valign="top">
+								<td><code>&quot;creationTime&quot;</code></td>
+								<td>
+									The date and time the file was created.
+								</td>
+							</tr>
+							<tr valign="top">
+								<td><code>&quot;modificationTime&quot;</code></td>
+								<td>
+									The date and time the file was last modified.
+								</td>
+							</tr>
+							<tr valign="top">
+								<td><code>&quot;accessTime&quot;</code></td>
+								<td>
+									The date and time the file was last accessed.
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 id="GetFileInfo_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			Returns the property value for the specified file.
+			</p>
+
+			<p>
+			Examples:
+			</p>
+
+<pre class="example">
+filename = &quot;D:\someFile.avi&quot;
+AVISource(filename)
+Subtitle(GetFileInfo(filename, &quot;creationTime&quot;))
+</pre>
+		</div>
+	</div>
+</div><!-- GetFileInfo -->
+
+
+<h2>Revision History</h2>
+<div id="historylist">
+<ul>
+	<li>
+		0.3.0
+		<ul>
+			<li>
+				Added <code>SetWorkingDir</code>.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.2.0
+		<ul>
+			<li>
+				Added <code>GetFileInfo</code>.
+			</li>
+			<li>
+				Fixed a buffer overflow in <code>GetWorkingDir</code>.  Oops.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.1.1
+		<ul>
+			<li>
+				<code>GetSystemEnv</code> and <code>GetWorkingDir</code> now throw errors instead of returning the &quot;undefined&quot; AviSynth value.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.1.0
+		<ul>
+			<li>
+				Initial release.
+			</li>
+		</ul>
+	</li>
+</ul>
+</div><!-- historylist -->
+
+</div><!-- content -->
+
+<div id="footer">
+<p>
+Copyright &copy; 2005-2008 James D. Lin<br />
+Some portions copyright &copy; 2000 Andrei Alexandrescu and Petru Marginean.<br />
+</p>
+</div>
+
+</body>
+</html>

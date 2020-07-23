@@ -1,0 +1,435 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; CHARSET=ISO-8859-1" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<title>TestHarness</title>
+<style type="text/css">
+<!--
+/* general typeface stuff */
+
+	h1, h2, h3, h4, h5, h6, th, .heading, .caption { font-family: Arial, Helvetica, sans-serif; }
+	body, p, td, ul, ol, address, cite, blockquote, .text { font-family: "Times New Roman", Times, serif; }
+
+	tt, pre, code, kbd, samp, .fixed { font-family: "Courier New", Courier, monospace; font-size: smaller; }
+
+	code, kbd { white-space: nowrap; }
+
+	address, cite, var, em, i { font-style: italic; }
+	th, strong, b { font-weight: bold; }
+
+	acronym, abbr, .slang { text-decoration: none; border-bottom: #00CC00 dotted 1px; cursor: help; }
+
+/* link stuff */
+
+	a:link { color: #0000FF; background: transparent; }
+	a:visited { color: #9966FF; background: transparent; }
+	a:hover { color: #6666FF; background: transparent; }
+	a:active { color: #FF0000; background: transparent; }
+	a.unemphasized { text-decoration: none; }	/* not underlined */
+	a:hover.unemphasized { text-decoration: underline; }
+
+	a.unemphasized img { border-style: none; }
+
+/* margin stuff */
+
+	ul, ol { margin-top: 0; margin-bottom: 0; }
+
+/* miscellaneous stuff */
+
+	.date { white-space: nowrap; }
+	hr { border: 0; border-top: black solid thin; margin: 0; clear: both; height: 1px;  }
+
+/* document-specific stuff */
+
+	body
+	{
+		background: #FFFFFF;
+		color: #000000;
+	}
+
+	#header { border-bottom: black solid 1px; padding-bottom: 0.5em; }
+
+	#header h1 { margin: 0; }
+	#header p, #footer p { font-family: Arial, Helvetica, sans-serif; }
+
+	#versionText
+	{
+		font-weight: bold;
+		margin: 0;
+		position: absolute;
+		top: 1em;
+		right: 10px;
+	}
+
+ 	#description
+	{
+		font-weight: bold;
+		margin: 0;
+	}
+
+	#author { margin: 1em 0 0 0; }
+	#content .subBody { margin-left: 2em; }
+
+	.syntax { margin-bottom: 0; }
+	.syntaxAnnotation { margin-left: 2em; margin-top: 0; }
+
+	pre.example
+	{
+		border-left: 5px solid #CCC;
+		margin-left: 1.5em;
+		padding-left: 5px;
+		font-size: 90%;
+		line-height: 110%;
+	}
+
+	table.example
+	{
+		margin-left: 1.5em;
+	}
+
+	#historylist
+	{
+		/*
+		height: 15em;
+		overflow: auto;
+		margin: 0em 2em 0em 2em;
+		border: black solid 1px;
+		*/
+	}
+
+	#footer
+	{
+		padding-top: 0;
+		padding-bottom: 0;
+		margin-top: 1em;
+		margin-bottom: 1em;
+		border-top: black solid 1px;
+	}
+-->
+</style>
+</head>
+
+<body>
+
+<div id="header">
+	<h1>TestHarness</h1>
+	<p id="versionText">
+		v0.1.1 (<span class="date">2005-04-03</span>)
+	</p>
+	<p id="description">
+	An AviSynth plug-in to provide simple logging and testing functions.
+	</p>
+	<p id="author">
+		by James D. Lin (<a href="http://www.avisynth.org/stickboy/">stickboy</a>)
+	</p>
+</div><!-- header -->
+
+<div id="content">
+
+<h2 id="overview">Overview</h2>
+<div class="subBody">
+	<p>
+	<code><a href="#LogOpen">LogOpen</a></code> creates a new log file.
+	</p>
+
+	<p>
+	<code><a href="#LogClose">LogClose</a></code> closes and flushes the specified log file.
+	</p>
+
+	<p>
+	<code><a href="#LogWrite">LogString</a></code> appends a message to the specified log file.
+	</p>
+
+	<p>
+	<code><a href="#SetCacheHints">SetCacheHints</a></code> sets the cache hints to the input clip.
+	</p>
+
+	<p>
+	<code><a href="#ScanClip">ScanClip</a></code> requests each frame in order from the input clip.
+	</p>
+
+	<p>
+	<code><a href="#CompareFiles">CompareFiles</a></code> compares the contents of the two specified files.
+	</p>
+</div>
+
+<h2 id="syntax">Syntax</h2>
+<div class="subBody">
+<pre>
+LogOpen(string <var>filename</var>, bool &quot;<var>append</var>&quot;)
+LogClose(string <var>filename</var>)
+LogString(string <var>filename</var>, string <var>message</var>)
+
+SetCacheHints(clip <var>c</var>, int <var>hintsType</var>, int <var>radius</var>)
+
+ScanClip(clip <var>c</var>)
+
+CompareFiles(string <var>filename1</var>, string <var>filename2</var>, bool &quot;<var>binary</var>&quot;)
+</pre>
+</div>
+
+<div id="LogOpen">
+	<h2>LogOpen</h2>
+	<div class="subBody">
+		<h3 id="LogOpen_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+LogOpen(string <var>filename</var>, bool &quot;<var>append</var>&quot;)
+</pre>
+		</div>
+
+		<h3 id="LogOpen_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>filename</var></code></td>
+					<td>
+						The desired name of the log file.
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code>&quot;<var>append</var>&quot;</code></td>
+					<td>
+						Pass true to append to an existing file.<br />
+						Pass false to overwrite it.<br />
+						(Default: false)
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</div><!-- LogOpen -->
+
+
+<div id="LogClose">
+	<h2>LogClose</h2>
+	<div class="subBody">
+		<h3 id="LogClose_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+LogClose(string <var>filename</var>)
+</pre>
+		</div>
+		<h3 id="LogClose_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>filename</var></code></td>
+					<td>
+						The name of the log file to close.
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</div><!-- LogClose -->
+
+<div id="LogString">
+	<h2>LogString</h2>
+	<div class="subBody">
+		<h3 id="LogString_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+LogString(string <var>filename</var>, string <var>message</var>)
+</pre>
+		</div>
+
+		<h3 id="DeleteFrames_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>filename</var></code></td>
+					<td>
+						The name of the log file.
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code><var>message</var></code></td>
+					<td>
+						The message to write.
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 id="LogString_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			Creates the specified log file if it doesn't exist already.
+			</p>
+		</div>
+	</div>
+</div><!-- LogString -->
+
+
+<div id="SetCacheHints">
+	<h2>SetCacheHints</h2>
+	<div class="subBody">
+		<h3 id="SetCacheHints_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+SetCacheHints(clip <var>c</var>, int <var>hintsType</var>, int <var>radius</var>)
+</pre>
+		</div>
+
+		<h3 id="SetCacheHints_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>hintsType</var></code></td>
+					<td>
+						Specifies what to cache.  Must be one of the following values:
+						<ul>
+							<li>0: CACHE_NOTHING</li>
+							<li>1: CACHE_RANGE</li>
+							<li>2: CACHE_ALL</li>
+							<li>3: CACHE_AUDIO</li>
+							<li>4: CACHE_AUDIO_NONE</li>
+						</ul>
+						(I really don't understand what each of these values means.  Sorry.)
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code><var>radius</var></code></td>
+					<td>
+						The radius of frames to cache.  Or something.  Beats me.
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 id="SetCacheHints_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			This function allows a script to set the cache hints to a clip directly.
+			</p>
+			<p>
+			This function is a <em>mutator</em>; it modifies an existing
+			clip directly.  It does <em>not</em> return a new clip.
+			</p>
+		</div>
+	</div>
+</div><!-- SetCacheHints -->
+
+
+<div id="ScanClip">
+	<h2>ScanClip</h2>
+	<div class="subBody">
+		<h3 id="ScanClip_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+ScanClip(clip <var>c</var>)
+</pre>
+		</div>
+
+		<h3 id="ScanClip_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			Requests all frames from a clip upon script load.  Useful when
+			used in conjunction with <code>WriteFile</code>.
+			</p>
+
+			<p>
+			For example, the following script outputs a log file that lists
+			the frame numbers selected via <code>SelectEvery</code> and
+			compares the results to expected values:
+			</p>
+
+<pre class="example">
+BlankClip(length=100)
+WriteFile(GetWorkingDir() + "frames.log", "current_frame", append=false)
+
+# Disable caching to WriteFile.  If caching is not disabled here, if a
+# frame is requested multiple times, only the first request will output
+# to the log file.
+SetCacheHints(0, 0)
+
+SelectEvery(5, 0, 0, 1, 2)
+
+ScanClip()
+
+# check that the output frame numbers match the expected values
+Assert(CompareFiles("frames.log", "expectedFrames.log"),
+\      "Frame numbers don't match expected values")
+</pre>
+		</div>
+	</div>
+</div><!-- ScanClip -->
+
+
+<div id="CompareFiles">
+	<h2>CompareFiles</h2>
+	<div class="subBody">
+		<h3 id="CompareFiles_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+CompareFiles(string <var>filename1</var>, string <var>filename2</var>, bool &quot;<var>binary</var>&quot;)
+</pre>
+		</div>
+
+		<h3 id="CompareFiles_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td>
+						<code><var>filename1</var></code><br />
+						<code><var>filename2</var></code>
+					</td>
+					<td>
+						The names of the two files to compare.
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code>&quot;<var>binary</var>&quot;</code></td>
+					<td>
+						Pass true to perform a binary comparison of the two files.<br />
+						Pass false to perform a textual comparison.<br />
+						(Default: true)
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 id="CompareFiles_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			Returns true if the two files have identical contents, false otherwise.
+			</p>
+		</div>
+	</div>
+</div><!-- CompareFiles -->
+
+
+<h2>Revision History</h2>
+<div id="historylist">
+<ul>
+	<li>
+		0.1.1
+		<ul>
+			<li>
+				Moved <code>GetWorkingDir</code> into a separate GetSystemEnv plug-in.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.1.0
+		<ul>
+			<li>
+				Initial release.
+			</li>
+		</ul>
+	</li>
+</ul>
+</div><!-- historylist -->
+
+</div><!-- content -->
+
+<div id="footer">
+<p>
+Copyright &copy; 2004&#8211;2005 James D. Lin
+</p>
+</div>
+
+</body>
+</html>

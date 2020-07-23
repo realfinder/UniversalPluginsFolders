@@ -1,0 +1,40 @@
+/*
+	UnsharpHQ ver 0.5
+	Copyright (c) 2011-2014, Lucas De Lio (lucasdelio@gmail.com).
+
+	This file is part of UnsharpHQ.
+
+    UnsharpHQ is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    UnsharpHQ is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with UnsharpHQ.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+UnsharpHQ is a video plugin for Avisytnh 2.5x.
+
+	REQUIRES
+* YV12 colorspace input.
+* SSE2 capable CPU.
+
+	USAGE
+UnsharpHQ(int THRESHOLD,float SHARPSTR,float SMOOTH,bool SHOW)
+
+	PARAMETERS
+(All parameters are optional).
+* THRESHOLD: (Default = 20)  The value to determine whether or not to sharp a pixel based on the luminance change between their neighbors. Any value >0 can be used.
+* SHARPSTR : (Default = 4.0) The sharp strength for the pixels to be sharped. Values from 2 to 10 are recommended.
+* SMOOTH   : (Default = 0.5) The smooth strength to pixels not sharped. Use this with 0 if you don't want any smooth, or just leave it with default.
+* SHOW   : (Default = false) The debug or not parameter. Set this to true will show a green video showing the zones to be sharped or not, this is useful to adjust your threshold to your right value.
+
+	EXAMPLES
+Unsharphq()           #All by default, this is useful in most cases.
+Unsharphq(20,15.0)    #Very strong sharp.
+Unsharphq(debug=true) #Run in debug mode.

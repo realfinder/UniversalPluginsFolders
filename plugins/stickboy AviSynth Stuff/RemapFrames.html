@@ -1,0 +1,537 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; CHARSET=ISO-8859-1" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<title>RemapFrames</title>
+<style type="text/css">
+<!--
+/* general typeface stuff */
+
+	h1, h2, h3, h4, h5, h6, th, .heading, .caption { font-family: Arial, Helvetica, sans-serif; }
+	body, p, td, ul, ol, address, cite, blockquote, .text { font-family: "Times New Roman", Times, serif; }
+
+	tt, pre, code, kbd, samp, .fixed { font-family: "Courier New", Courier, monospace; font-size: smaller; }
+
+	code, kbd { white-space: nowrap; }
+
+	address, cite, var, em, i { font-style: italic; }
+	th, strong, b { font-weight: bold; }
+
+	acronym, abbr, .slang { text-decoration: none; border-bottom: #00CC00 dotted 1px; cursor: help; }
+
+/* link stuff */
+
+	a:link { color: #0000FF; background: transparent; }
+	a:visited { color: #9966FF; background: transparent; }
+	a:hover { color: #6666FF; background: transparent; }
+	a:active { color: #FF0000; background: transparent; }
+	a.unemphasized { text-decoration: none; }	/* not underlined */
+	a:hover.unemphasized { text-decoration: underline; }
+
+	a.unemphasized img { border-style: none; }
+
+/* margin stuff */
+
+	ul, ol { margin-top: 0; margin-bottom: 0; }
+
+/* miscellaneous stuff */
+
+	.date { white-space: nowrap; }
+	hr { border: 0; border-top: black solid thin; margin: 0; clear: both; height: 1px;  }
+
+/* document-specific stuff */
+
+	body
+	{
+		background: #FFFFFF;
+		color: #000000;
+	}
+
+	#header { border-bottom: black solid 1px; padding-bottom: 0.5em; }
+
+	#header h1 { margin: 0; }
+	#header p, #footer p { font-family: Arial, Helvetica, sans-serif; }
+
+	#versionText
+	{
+		font-weight: bold;
+		margin: 0;
+		position: absolute;
+		top: 1em;
+		right: 10px;
+	}
+
+ 	#description
+	{
+		font-weight: bold;
+		margin: 0;
+	}
+
+	#author { margin: 1em 0 0 0; }
+	#content .subBody { margin-left: 2em; }
+
+	.syntax { margin-bottom: 0; }
+	.syntaxAnnotation { margin-left: 2em; margin-top: 0; }
+
+	pre.example
+	{
+		border-left: 5px solid #CCC;
+		margin-left: 1.5em;
+		padding-left: 5px;
+		font-size: 90%;
+		line-height: 110%;
+	}
+
+	table.example
+	{
+		margin-left: 1.5em;
+	}
+
+	#historylist
+	{
+		/*
+		height: 15em;
+		overflow: auto;
+		margin: 0em 2em 0em 2em;
+		border: black solid 1px;
+		*/
+	}
+
+	#footer
+	{
+		padding-top: 0;
+		padding-bottom: 0;
+		margin-top: 1em;
+		margin-bottom: 1em;
+		border-top: black solid 1px;
+	}
+-->
+</style>
+</head>
+
+<body>
+
+<div id="header">
+	<h1>RemapFrames</h1>
+	<p id="versionText">
+		v0.3.1 (<span class="date">2005-08-26</span>)
+	</p>
+	<p id="description">
+		An AviSynth plug-in that remaps the frame indices in a clip as specified by an input text file or by an input string.
+	</p>
+	<p id="author">
+		by James D. Lin (<a href="http://www.avisynth.org/stickboy/">stickboy</a>)
+	</p>
+</div><!-- header -->
+
+<div id="content">
+
+<h2 id="overview">Overview</h2>
+<div class="subBody">
+	<p>
+	<code>RemapFrames</code>, <code>RemapFramesSimple</code>, and
+	<code>ReplaceFramesSimple</code> provide general control over
+	manipulation of frame indices in a clip.  They can be used in cases
+	where <code> SelectEvery</code> isn't suitable, such as when the
+	desired frames don't follow a regular pattern.
+	</p>
+
+	<p>
+	<code>RemapFrames</code>/<code>RemapFramesSimple</code>/<code>ReplaceFramesSimple</code>
+	also are efficient alternatives to long chains of <code>FreezeFrame</code>,
+	<code>DeleteFrame</code>, or <code>ApplyRange</code> calls.
+	</p>
+
+	<p>
+	<code>RemapFramesSimple</code> and <code>ReplaceFramesSimple</code> are
+	less powerful than <code>RemapFrames</code> but use a much simpler,
+	more basic syntax.
+	</p>
+</div>
+
+<h2 id="RemapFrames_syntax">Syntax</h2>
+<div class="subBody">
+<pre>
+RemapFrames(clip <var>baseClip</var>, string &quot;<var>filename</var>&quot;, string &quot;<var>mappings</var>&quot;, clip &quot;<var>sourceClip</var>&quot;)
+RemapFramesSimple(clip <var>c</var>, string &quot;<var>filename</var>&quot;, string &quot;<var>mappings</var>&quot;)
+ReplaceFramesSimple(clip <var>baseClip</var>, clip <var>sourceClip</var>, string &quot;<var>filename</var>&quot;, string &quot;<var>mappings</var>&quot;)
+</pre>
+</div>
+
+
+<h2 id="RemapFrames">RemapFrames</h2>
+<div class="subBody">
+	<h3 id="RemapFrames_params">Parameters</h3>
+	<div class="subBody">
+		<table cellspacing="10">
+			<tr valign="top">
+				<td><code><var>baseClip</var></code></td>
+				<td>
+					Frames from <var>sourceClip</var> are mapped into <var>baseClip</var>.
+				</td>
+			</tr>
+			<tr valign="top">
+				<td><code>&quot;<var>filename</var>&quot;</code></td>
+				<td>
+					The name of the text file that specifies the new frame mappings.
+				</td>
+			</tr>
+			<tr valign="top">
+				<td><code>&quot;<var>mappings</var>&quot;</code></td>
+				<td>
+					Mappings also may be given directly in a string.  Overrides frame mappings given by <var>filename</var>.
+				</td>
+			</tr>
+			<tr valign="top">
+				<td><code>&quot;<var>sourceClip</var>&quot;</code></td>
+				<td>
+					The source clip used to supply the new, remapped frames.<br />
+					(Default: Same as <var>baseClip</var>.)
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<h3 id="RemapFrames_usage">Usage</h3>
+	<div class="subBody">
+		<p>
+		<strong>Does not affect the audio track.</strong>
+		</p>
+
+		<p>
+		Each line in the text file or in the mappings string must have one
+		of the following forms:
+		</p>
+		<ul>
+			<li>
+				<code><var>a</var> <var>z</var></code><br />
+				Replaces frame <var>a</var> in <var>baseClip</var> with frame <var>z</var> from
+				<var>sourceClip</var>.
+			</li>
+			<li>
+				<code>[<var>a</var> <var>b</var>] z</code><br />
+				Replaces all frames in the inclusive range <var>a</var>..<var>b</var>
+				of <var>baseClip</var> with frame <var>z</var> from <var>sourceClip</var>.
+			</li>
+			<li>
+				<code>[<var>a</var> <var>b</var>] [<var>y</var> <var>z</var>]</code><br />
+				Replaces all frames in the range <var>a</var>..<var>b</var>
+				of <var>baseClip</var> with frames in the range
+				<var>y</var>..<var>z</var> from the <var>sourceClip</var>.
+				If the input and output ranges do not have equal sizes,
+				frames will be duplicated or dropped evenly from <var>y
+				</var>..<var>z</var> to match the size of <var>a</var>..<var>b</var>.
+				If <span style="white-space:nowrap;"><var>y</var>&nbsp;&gt;&nbsp;<var>z</var></span>,
+				the order of the output frames is reversed.
+			</li>
+			<li>
+				<code># comment</code><br />
+				A comment.  Comments may appear anywhere on a line; all
+				text from the start of the <code>#</code> character to the
+				end of the line is ignored.
+			</li>
+		</ul>
+
+		<p>
+		Sample data file:
+		</p>
+
+<pre class="example">
+[0 9] [0 4]     # the first ten frames will be 0, 0, 1, 1, 2, 2, 3, 3, 4, 4
+10 5            # show frame 5 in frame 10's place
+[15 20] 6       # replace frames 15..20 with frame 6
+[25 30] [35 40] # replace frames 25..30 with frames 35..40
+[50 60] [60 50] # reverse the order of frames 50..60
+</pre>
+
+		<p>
+		Within each line, all whitespace is ignored.
+		</p>
+
+		<p>
+		By default, all frames are mapped to themselves.
+		</p>
+
+		<p>
+		If multiple lines remap the same frame, the last remapping
+		overrides any previous ones.
+		</p>
+
+<pre class="example">
+# the frames in the generated clip will be
+# 4, 0, 0, 0, 0, 0, 6, 7, ...
+[0 5] 0
+0 3
+0 4
+</pre>
+
+		<p>
+		<strong>The output clip always will have the same number of frames
+		as the input clip.</strong>  To delete frames, remap the
+		appropriate frames and then call <code>Trim</code> afterward.
+		</p>
+
+<pre class="example">
+BlankClip(length=100).ShowFrameNumber()
+
+# Replace frames 50..89 with 60..99.  This effectively deletes frames
+# 50..59.
+RemapFrames(mappings=&quot;[50 89] [60 99]&quot;)
+
+# Trim off the excess.
+Trim(0, 89)
+</pre>
+
+		<p>
+		To add duplicate frames, call
+		<code><a href="http://www.avisynth.org/stickboy/">LengthenClip</a></code>
+		first and then remap the appropriate frames.
+		</p>
+
+<pre class="example">
+BlankClip(length=100).ShowFrameNumber()
+
+LengthenClip(110)
+
+# Duplicate frame 50 ten times, and delay all the subsequent frames by
+# ten frames.
+RemapFrames(mappings=&quot;[50 59] 50
+                      [60 109] [50 99]&quot;)
+</pre>
+
+	</div>
+</div>
+
+
+<h2 id="RemapFramesSimple">RemapFramesSimple</h2>
+<div class="subBody">
+	<h3 id="RemapFramesSimple_params">Parameters</h3>
+	<div class="subBody">
+		<table cellspacing="10">
+			<tr valign="top">
+				<td><code>&quot;<var>filename</var>&quot;</code></td>
+				<td>
+					The name of the text file that specifies the new frame mappings.
+				</td>
+			</tr>
+			<tr valign="top">
+				<td><code>&quot;<var>mappings</var>&quot;</code></td>
+				<td>
+					Mappings alternatively may be given directly in a string.  <strong>Unlike <code>RemapFrames</code>, <var>mappings</var> and <var>filename</var> cannot be used together.</strong>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<h3 id="RemapFramesSimple_usage">Usage</h3>
+	<div class="subBody">
+		<p>
+		<strong>Does not affect the audio track.</strong>
+		</p>
+
+		<p>
+		<code>RemapFramesSimple</code> takes a text file or a mappings
+		string consisting of a sequence of frame numbers.  <strong>The
+		number of frame mappings determines the number of frames in the
+		output clip.</strong>  For example:
+		</p>
+
+<pre class="example">
+# Generate a clip containing only the first five frames.
+RemapFramesSimple(mappings=&quot;0 1 2 3 4&quot;)
+</pre>
+
+<pre class="example">
+# Duplicate frame 20 five times.
+RemapFramesSimple(mappings=&quot;20 20 20 20 20&quot;)
+</pre>
+
+	</div>
+</div>
+
+
+<h2 id="ReplaceFramesSimple">ReplaceFramesSimple</h2>
+<div class="subBody">
+	<h3 id="ReplaceFramesSimple_params">Parameters</h3>
+	<div class="subBody">
+		<table cellspacing="10">
+			<tr valign="top">
+				<td>
+					<code><var>baseClip</var></code><br />
+					<code><var>sourceClip</var></code>
+				</td>
+				<td>
+					Frames from <var>baseClip</var> are replaced by frames from <var>sourceClip</var>.
+				</td>
+			</tr>
+			<tr valign="top">
+				<td><code>&quot;<var>filename</var>&quot;</code></td>
+				<td>
+					The name of the text file that specifies the frames to replace.
+				</td>
+			</tr>
+			<tr valign="top">
+				<td><code>&quot;<var>mappings</var>&quot;</code></td>
+				<td>
+					Replacement frames alternatively may be given directly in a string.</strong>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<h3 id="ReplaceFramesSimple_usage">Usage</h3>
+	<div class="subBody">
+		<p>
+		<strong>Does not affect the audio track.</strong>
+		</p>
+
+		<p>
+		<code>ReplaceFramesSimple</code> takes a text file or a mappings
+		string consisting of sequences or ranges of frame numbers to replace.
+		For example:
+		</p>
+
+<pre class="example">
+# Replaces frames 10..20, 25, and 30 from <var>baseClip</var> with the
+# corresponding frames from <var>sourceClip</var>.
+ReplaceFramesSimple(<var>baseClip</var>, <var>sourceClip</var>, mappings=&quot;[10 20] 25 30&quot;)
+</pre>
+
+<pre class="example">
+# Inverse-telecine a clip and fix individual frames that still show
+# combing.
+c = src.Telecide(...).Decimate(...)
+deinterlaced = c.KernelDeint(...)
+
+# Replace frames 30, 40, 50 with their deinterlaced versions.
+ReplaceFramesSimple(c, deinterlaced, mappings=&quot;30 40 50&quot;)
+</pre>
+
+	</div>
+</div>
+
+
+<h2 id="AdaptingScripts">Adapting Existing Scripts</h2>
+<table>
+	<tr valign="top" align="left">
+		<th>Using <code>FreezeFrame</code></th>
+		<th>Using <code>RemapFrames</code></th>
+	</tr>
+	<tr valign="top">
+		<td>
+<pre class="example">
+BlankClip(length=100).ShowFrameNumber()
+FreezeFrame(10, 11, 10)
+FreezeFrame(15, 16, 16)
+FreezeFrame(20, 24, 21)
+FreezeFrame(30, 32, 31)
+FreezeFrame(35, 36, 36)
+</pre>
+		</td>
+		<td>
+<pre class="example">
+BlankClip(length=100).ShowFrameNumber()
+RemapFrames(mappings=&quot;[10 11] 10
+                      [15 16] 16
+                      [20 24] 21
+                      [30 32] 31
+                      [35 36] 36&quot;)
+</pre>
+		</td>
+	</tr>
+</table>
+<table>
+	<tr valign="top" align="left">
+		<th>Using <code>ApplyRange</code></th>
+		<th>Using <code>ReplaceFramesSimple</code></th>
+	</tr>
+	<tr valign="top">
+		<td>
+<pre class="example">
+BlankClip(length=100).ShowFrameNumber()
+ApplyRange(10, 11, &quot;SomeFilter&quot;)
+ApplyRange(15, 16, &quot;SomeFilter&quot;)
+ApplyRange(20, 24, &quot;SomeFilter&quot;)
+ApplyRange(30, 32, &quot;SomeFilter&quot;)
+ApplyRange(35, 36, &quot;SomeFilter&quot;)
+</pre>
+		</td>
+		<td>
+<pre class="example">
+src = BlankClip(length=100).ShowFrameNumber()
+filtered = src.SomeFilter()
+ReplaceFramesSimple(src, filtered,
+\                   mappings=&quot;[10 11]
+                              [15 16]
+                              [20 24]
+                              [30 32]
+                              [35 36]&quot;)
+</pre>
+		</td>
+	</tr>
+</table>
+
+
+<h2>Revision History</h2>
+<div id="historylist">
+<ul>
+	<li>
+		0.3.1
+		<ul>
+			<li>
+				Fixed <code>RemapFrames</code> which was seriously broken
+				because I forgot that initial clip parameters can't be
+				optional.  As a consequence, I had to rearrange
+				<code>RemapFrames</code>'s parameter order.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.3.0
+		<ul>
+			<li>
+				Added <code>ReplaceFramesSimple</code>.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.2.0
+		<ul>
+			<li>
+				Added <code>RemapFramesSimple</code>.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.1.1
+		<ul>
+			<li>
+				Now retains field parity information of the remapped frames.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.1.0
+		<ul>
+			<li>
+				Initial release.
+			</li>
+		</ul>
+	</li>
+</ul>
+</div><!-- historylist -->
+
+</div><!-- content -->
+
+<div id="footer">
+<p>
+Copyright &copy; 2005 James D. Lin<br />
+Some portions copyright &copy; 2000 Andrei Alexandrescu and Petru Marginean.<br />
+Some portions written by Charles B. Falconer.<br />
+<a class="unemphasized" href="http://forum.doom9.org/showthread.php?s=&amp;threadid=78004">Thanks to rhombus for the idea</a>.
+</p>
+</div>
+
+</body>
+</html>

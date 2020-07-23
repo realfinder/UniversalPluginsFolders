@@ -1,0 +1,298 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title> GRunT - Easier Run-time Scripting for Avisynth</title>
+</head>
+<body>
+<h1>GRunT</h1>
+Document v1.0.1 (Gavino, 27th September 2008)
+<h2>Contents</h2>
+<ol>
+  <li><a href="#intro">Introduction</a></li>
+  <li><a href="#features">Summary of Features</a></li>
+  <li><a href="#filters">Run-time filters</a></li>
+  <li><a href="#functions">Run-time functions</a></li>
+  <li><a href="#condfilter">ConditionalFilter</a></li>
+  <li><a href="#bugfix">Bug fix</a></li>
+  <li><a href="#config">Configuration</a></li>
+  <li><a href="#ref">Filters and Functions Reference</a></li>
+  <li><a href="#hist">Plugin Revision History</a></li>
+</ol>
+<a name="intro"></a>
+<h2>Introduction</h2>
+<p>
+Since v2.52, Avisynth has included a very powerful
+<a href="http://avisynth.org/mediawiki/Runtime_environment">run-time environment</a> (also known as the 'conditional' environment).
+This was a great step forward,
+supporting complex video processing that would be difficult or impossible to perform in a normal script.
+However, it is not easy to use - the behaviour of run-time scripts (especially in combination) can be hard to understand
+and there are usability problems concerning scope and lifetime of
+<a href="http://avisynth.org/mediawiki/The_script_execution_model/Scope_and_lifetime_of_variables#Runtime_scripts">
+variables</a>.
+</p>
+<p align=center>
+<font size=-1><i>"Cond. filters are quite complex - and sometimes I am even surprised of the outcome"</i> - <a href="http://forum.doom9.org/showthread.php?p=338712#post338712">sh0dan</a></font>
+</p>
+<p>
+Some of the difficulty is inherent in the concept itself, requiring a clear understanding of the difference between the compiling
+and frame-serving phases of Avisynth. However, many of the problems stem from specific limitations of the interface
+presented by the run-time filters/functions and the details of their implementation which, with the benefit of hindsight,
+we can see could have been done differently.
+</p>
+<p>
+<b>GRunT</b> (Gavino's Run-Time) is a plugin which addresses these and other problems, making the run-time system much easier to use.
+</p>
+<a name="features"></a>
+<h2>Summary of Features</h2>
+<p>
+GRunT provides the following features:
+<ol>
+<li>A simple, natural and robust way to pass variables into a run-time script from 'outside'</li>
+<li>A run-time script can optionally be evaluated in its own independent scope</li>
+<li>Run-time functions can be called from a user function</li>
+<li>Run-time functions can be applied to any frame (relative to the current one)</li>
+<li>Additional variant of ConditionalFilter with single boolean expression</li>
+<li>Fixes a fairly serious <a href="http://forum.doom9.org/showthread.php?t=138755">bug</a> in the run-time system</li>
+<li>Lightweight plugin extending the standard run-time environment, minimal time and memory overhead</li>
+<li>100% backwards compatible with existing scripts</li>
+</ol>
+</p>
+<p>
+Backwards compatibility is an important design objective of GRunT. It means that you can put the plugin in your plugins folder
+and all correctly functioning scripts will continue to operate exactly as before.
+</p>
+<p>
+GRunT should be useful to anyone who uses the run-time filters, from those who make occasional use of ScriptClip
+to those who write complex functions based on run-time features (such as Restore24 or MRestore).
+</p>
+<a name="filters"></a>
+<h2>Run-time filters</h2>
+<p>
+The plugin provides extended versions of the following run-time filters:
+<ul>
+<li>ScriptClip</li>
+<li>FrameEvaluate</li>
+<li>ConditionalFilter</li>
+<li>WriteFile</li>
+<li>WriteFileIf</li>
+</ul>
+</p>
+<p>Some users may prefer not to use the same names as the original filters, so the alternative names GScriptClip,
+GFrameEvaluate, GConditionalFilter, GWriteFile and GWriteFileIf may also be used.
+However, if running on version <b>2.57 or earlier</b> of Avisynth, then <b>only</b> the alternative names may be used.
+(This restriction is necessary for technical reasons - sorry about that.)</p>
+<p>
+Each filter is 100% backwards compatible with its standard equivalent, but has two additional optional arguments:
+<ul>
+<li>
+<i>string</i> <b>args</b> - the variables whose values are to be imported into the run-time script, 
+written as a list of names separated by commas.<br>
+The given variable names are <b>evaluated in the current (compile-time)
+context</b>, so can include function parameters or local variables.<br>
+Each value becomes the (initial) value of the corresponding variable at each invocation of the run-time script
+(ie for each frame produced by the filter).<br>
+</li>
+<li>
+<i>bool</i> <b>local</b> - if true, the filter will evaluate its run-time script in a new variable scope, avoiding unintended sharing
+of variables between run-time scripts.<br>
+Default is <i>true</i> if <i>args</i> is also specified, otherwise <i>false</i> (to preserve backwards compatibility).
+</li>
+</ul>
+</p>
+<p>
+A short example (based on the
+<a href= "http://avisynth.org/mediawiki/The_script_execution_model/Scope_and_lifetime_of_variables#A_variables_scope_and_lifetime_example">
+original</a>) shows how this greatly simplifies passing function parameters into a run-time script.
+<pre>
+function bracket_luma(clip c, float th1, float th2) {
+  Assert(0 <= th1 && th1 < th2 && th2 <= 255, "Invalid thresholds!")
+  ScriptClip(c, """
+    avl = AverageLuma()
+    avl <= th1 ? last.BlankClip() : avl >= th2 ? last.BlankClip(color=color_white) : last
+  """, args="th1,th2", local=true)
+}
+</pre>
+<p>
+This is much easier than the standard approach of dynamically building the runtime script using string concatenation, 
+or passing the values via global variables.
+</p>
+<p align=center>
+<font size=-1><i>"I really do not like this global variable business with ScriptClip ..."</i> - <a href="http://forum.doom9.org/showthread.php?p=585239#post585239">stickboy</a></font>
+</p>
+<p>
+And because the run-time script is evaluated in its own scope, there is now no problem in calling <i>bracket_luma</i> more
+than once in the same script (previously the variables <i>th1</i> and <i>th2</i> of different instances could interfere with
+each other). 
+</p>
+<p>
+Elements of the <i>args</i> string can also take the form '<i>name</i>=<i>expression</i>' - the expression is evaluated
+<b>in the current context</b> and, as in the simple case, is used to set the initial value of the named variable in the
+run-time script. For example,
+<pre>args="x, y=n+1, c=c.Trim(2, 0)"</pre>
+will provide values for the variables <i>x</i>, <i>y</i> and <i>c</i> which are used in the run-time script.<br>
+Here <i>y</i> need not even exist in the current environment (although <i>x</i>, <i>n</i> and <i>c</i> must).
+</p>
+<p>
+Evidently, the simple form (without the expression) is just a shorthand for the more general form, with the variable name
+itself being used as the expression.<br>
+So, for example,
+<pre>args="x, y, z"</pre> is equivalent to <pre>args="x=x, y=y, z=z"</pre>
+passing the values of the compile-time variables <i>x</i>, <i>y</i> and <i>z</i> (from <i>outside</i> the run-time script)
+into the variables of the same name <i>inside</i> the script.
+</p>
+<p>
+Spaces may be freely used (or not) inside the <i>args</i> string, just as in Avisynth function calls.
+</p>
+<a name="functions"></a>
+<h2>Run-time functions</h2>
+<p>
+The plugin also provides the following extensions to the run-time functions (such as AverageLuma):
+<ol>
+<li>These functions can now be called inside a user function, when (and only when) the user function is called from a run-time script.</li>
+<li>Each function has a new optional <i>int</i> argument, which can be used to get the value from
+another frame, relative to the current one.<br>
+For example, <code>AverageLuma(-1)</code> returns the value for the previous frame.</li>
+</ol>
+</p>
+<p>
+Note that to support the first feature, <i>current_frame</i> is now a <i>global</i> variable (see <a href="http://forum.doom9.org/showthread.php?t=138392">discussion</a>).
+However, the second feature means that it is no longer necessary to change <i>current_frame</i> to access other frames.
+In fact, for most purposes, you can forget that <i>current_frame</i> exists as an explicit variable.
+</p>
+<p>
+Here is an example of a weighted second order luma interpolation function:
+<pre>
+  function InterpLuma2(clip c) {
+    lm_k = AverageLuma(c)
+    lm_km1 = AverageLuma(c, -1)
+    lm_kp1 = AverageLuma(c, 1)
+    dvg = (lm_km1 - 2 * lm_k + lm_kp1) / 2
+    return lm_k + Sign(dvg) * Sqrt(Abs(dvg))
+  }
+</pre>
+This function can be called from any run-time script. Previously, something like this this had to be done by assigning to
+<i>current_frame</i> (or using additional filters, eg Trim(1,0)), and the code had to be written directly in the run-time
+script rather than in a function.
+</p>
+<p>
+In effect, we are now able to write run-time functions of our own, derived from the standard ones. Here is another example:
+<pre>
+  function AverageRed(clip c) {
+    return RGBDifference(ShowRed(c), BlankClip(c))
+  }
+</pre>
+</p>
+<p>
+Note too that, while useful in its own right, the ability to call run-time functions in a user function gives you more than
+just that. For the first time, it allows an <i>entire</i> run-time script to be put inside a function body,
+called for example like this:
+</p>
+<pre>ScriptClip("MyFunc()")</pre>
+<p>
+As the function body will be evaluated in a separate scope, this is another way of eliminating the problem of
+unintended sharing of variables between run-time scripts. However, you may prefer to write the run-time script 'in-line'
+and invoke the run-time filter with <i>local=true</i>.
+</p>
+<a name="condfilter"></a>
+<h2>ConditionalFilter</h2>
+<p>
+For added convenience, there is a new variant of ConditionalFilter which takes a single boolean expression instead
+of three separate parameters as at present. This is useful when the condition to be tested is a compound one or is already
+available in boolean form (like <code>IsCombed()</code>). For example,
+</p>
+<pre>ConditionalFilter(c, c1, c2, "AverageLuma(c1) > AverageLuma() && AverageLuma(c1) > AverageLuma(c2)")</pre>
+<p>where previously you would have to say</p>
+<pre>ConditionalFilter(c, c1, c2, "AverageLuma(c1) > AverageLuma() && AverageLuma(c1) > AverageLuma(c2)", "=", "true")</pre>
+<p>Note that this form of ConditionalFilter also makes it easier use the relational operators <code><=</code>,
+<code>>=</code> and <code>!=</code>, which are not supported as the <i>operator</i> in the standard ConditionalFilter.</p>
+<a name="bugfix"></a>
+<h2>Bug fix</h2>
+<p>
+The plugin fixes a fairly serious <a href="http://forum.doom9.org/showthread.php?t=138755">bug</a> I discovered in the run-time system.
+This fix is needed if you are running a version of Avisynth prior to build 080620 of 2.58.
+(GRunT actually originated as a means to demonstrate this bug-fix, but I have now extended it to do a lot more.)
+</p>
+<p>
+Since things like ScriptClip are often hidden deep inside huge functions like Restore24, you may be affected by this bug
+without even realising it.
+</p>
+<a name="config"></a>
+<h2>Configuration</h2>
+<p>
+For the extended run-time filters, the default for <i>local</i> is <i>false</i> unless <i>args</i> is also specified
+(for compatibility reasons).
+However, I recommend always using <i>local=true</i> unless you really need to communicate values of variables from one
+run-time script to another (note that you can always use global variables for this).
+</p>
+<p>
+To this end, the plugin provides a function <i>GRTConfig</i> which allows the default behaviour to be changed.<br>
+So, <code>GRTConfig(local=true)</code> sets the default to <i>local=true</i> for all subsequent filters.
+</p>
+<a name="ref"></a>
+<h2>Filters and Functions Reference</h2>
+<p>
+For reference, the complete interface to the extended run-time <b>filters</b> is as follows
+(see <a href="#filters">above</a> for a description of the <i>args</i> and <i>local</i> parameters):
+</p>
+<p><code>ScriptClip </code>(<var>clip, string function, bool &quot;show&quot;, bool
+&quot;after_frame&quot;,
+string &quot;args&quot;, bool &quot;local&quot;</var>)
+<p><code>FrameEvaluate </code>(<var>clip, string function, bool &quot;show&quot;, bool
+&quot;after_frame&quot;,
+string &quot;args&quot;, bool &quot;local&quot;</var>)
+<p><code>ConditionalFilter </code>(<var>clip testclip, clip source1, clip source2,
+string filter, string operator, string value, bool &quot;show&quot;,
+string &quot;args&quot;, bool &quot;local&quot;</var>)
+<br><code>ConditionalFilter </code>(<var>clip testclip, clip source1, clip source2,
+string condition, bool &quot;show&quot;,
+string &quot;args&quot;, bool &quot;local&quot;</var>)
+<p><code>WriteFile </code>(<var>clip, string filename, string expression1, 
+  ... , string expression16, bool &quot;append&quot;, bool &quot;flush&quot;,
+string &quot;args&quot;, bool &quot;local&quot;</var>)
+<br><code>WriteFileIf </code>(<var>clip, string filename, string expression1, 
+  ... , string expression16, bool &quot;append&quot;, bool &quot;flush&quot;,
+string &quot;args&quot;, bool &quot;local&quot;</var>)
+<p>The alternative names <code>GScriptClip</code>, <code>GFrameEvaluate</code>, <code>GConditionalFilter</code>,
+<code>GWriteFile</code> and <code>GWriteFileIf</code> may also be used (and with Avisynth version 2.57 or earlier,
+<b>must</b> be used).</p>
+<p>
+Here is the complete list of run-time <b>functions</b>, with their extended interface.
+</p>
+  <code>AverageLuma </code>(<var>clip, int offset</var>)<br>
+  <code>AverageChromaU </code>(<var>clip, int offset</var>)<br>
+  <code>AverageChromaV </code>(<var>clip, int offset</var>)<br>
+  <code>RGBDifference </code>(<var>clip1, clip2, int offset</var>)<br>
+  <code>LumaDifference </code>(<var>clip1, clip2, int offset</var>)<br>
+  <code>ChromaUDifference </code>(<var>clip1, clip2, int offset</var>)<br>
+  <code>ChromaVDifference </code>(<var>clip1, clip2, int offset</var>)<br>
+  <code>RGBDifferenceFromPrevious </code>(<var>clip, int offset</var>)<br>
+  <code>YDifferenceFromPrevious </code>(<var>clip, int offset</var>)<br>
+  <code>UDifferenceFromPrevious </code>(<var>clip, int offset</var>)<br>
+  <code>VDifferenceFromPrevious </code>(<var>clip, int offset</var>)<br>
+  <code>RGBDifferenceToNext </code>(<var>clip, int offset</var>)<br>
+  <code>YDifferenceToNext </code>(<var>clip, int offset</var>)<br>
+  <code>UDifferenceToNext </code>(<var>clip, int offset</var>)<br>
+  <code>VDifferenceToNext </code>(<var>clip, int offset</var>)<br>
+  <code>YPlaneMax </code>(<var>clip, float threshold, int offset</var>)<br>
+  <code>UPlaneMax </code>(<var>clip, float threshold, int offset</var>)<br>
+  <code>VPlaneMax </code>(<var>clip, float threshold, int offset</var>)<br>
+  <code>YPlaneMin </code>(<var>clip, float threshold, int offset</var>)<br>
+  <code>UPlaneMin </code>(<var>clip, float threshold, int offset</var>)<br>
+  <code>VPlaneMin </code>(<var>clip, float threshold, int offset</var>)<br>
+  <code>YPlaneMedian </code>(<var>clip, int offset</var>)<br>
+  <code>UPlaneMedian </code>(<var>clip, int offset</var>)<br>
+  <code>VPlaneMedian </code>(<var>clip, int offset</var>)<br>
+  <code>YPlaneMinMaxDifference </code>(<var>clip, float threshold, int offset</var>)<br>
+  <code>UPlaneMinMaxDifference </code>(<var>clip, float threshold, int offset</var>)<br>
+  <code>VPlaneMinMaxDifference </code>(<i><var>clip, float threshold, int offset</var></i>)
+<p>
+The optional <i>offset</i> parameter specifies the offset (which may be negative) from the current frame; default is zero.
+</p>
+<a name="hist"></a>
+<h2>Plugin Revision History</h2>
+<p>v1.0.1 (Gavino, 27th September 2008): fix for Avisynth 2.5.7 and earlier (have to use alternative names for filters, eg GScriptClip)</p>
+<p>v1.0.0 (Gavino, 9th July 2008): first full version</p>
+<p>v0.1 (Gavino, 18th June 2008): initial version to fix run-time system bug</p>
+</body>
+</html>

@@ -1,0 +1,36 @@
+IT.dll v0.1.03 Copyright(C) 2002 thejam79, 2003 minamina
+
+Avisynth Plugin - Inverse Telecine (YUY2 and YV12 Only, IT0051 base)
+
+
+- 説明
+
+ Avisynth 用逆テレシネプラグイン
+ YUY2 モードおよび YV12 モード用
+ Avisynth 2.5 専用
+
+ thejam79 氏作 IT 0.051 をベースに Avisynth 2.5 対応および YV12 モード追加
+ 主なオプションの使い方などは IT.txt を参照してください
+ thejam79 氏に感謝
+
+
+- 追加オプション
+
+ diMode インターレース解除の方法を指定する
+    0 : 解除しない
+    1 : IT v0.051 のインターレース解除を利用する (default)
+    2 : 簡易 2重化
+    3 : フィールド補完
+
+
+- 例
+
+ IT(fps = 30, ref = "TOP", diMode = 2)
+
+
+- 履歴
+
+ 2003/07/12 v0.1.03 diMode 2, 3 内部処理変更
+ 2003/05/05 v0.1.02 diMode オプション 3 追加
+ 2003/05/04 v0.1.01 diMode オプション 0, 1, 2 追加
+ 2003/05/01 v0.0.01 Avisynth 2.5 対応, YV12 モード追加

@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/HTML4.01/strict.dtd">
+<html>
+<head>
+<title>DumpPixelValues filter for AviSynth</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta http-equiv="Content-Language" content="en" />
+<meta name="author" content="McPoodle" />
+<!--                  Designed for an 80-character display                   -->
+<style type="text/css" media="screen">
+<!--
+  H2 {text-align: center;}
+  H3 {text-decoration: underline;}
+  CODE {font-weight: bold;}
+-->
+</style>
+</head>
+<body>
+<h2>DumpPixelValues filter (v.1.0) for AviSynth 2.5</h2>
+<h3>Description</h3>
+<p>This DLL allows you to sample the colors from selected pixels for every
+frame in a video source and output the data to a text or binary file.</p>
+<p><b>NOTES:</b> This software is covered under the terms of the GPL.  It can
+be downloaded <a
+href="http://www.geocities.com/McPoodle43/Tools/DumpPixelValues.zip">here</a>
+(complete with this documentation and source code), and the most-recent version 
+can be found <a
+href="http://www.geocities.com/McPoodle43/Tools/DumpPixelValues.html">here</a>.
+</p>
+<hr />
+<h3>Usage</h3>
+<p><b>DumpPixelValues(clip, string <i>colorList</i>,
+  string <i>coordinateList</i>[, string <i>filename</i>])</b></p>
+<p>The function name is <code>DumpPixelValues</code>.  Make sure the file
+  DumpPixelValues.dll is located somewhere where AviSynth can find it.</p>
+<p><b>ColorList</b> is one or more of the letters <code>R</code>,
+  <code>G</code>, <code>B</code>, <code>A</code> (for the Alpha channel), 
+  <code>Y</code>, <code>U</code> or <code>V</code>.  RGB colors cannot be mixed
+  with YUV colors.  Video must be in RGB32 format if you want RGBA colors, or
+  in YUY2 format if you want YUV colors.</p>
+<p><b>CoordinateList</b> is a comma-separated set of (x,y) coordinates, with
+  no spaces.</p>
+<p>The optional parameter <b>filename</b> is assumed to be
+  "C:\\DumpPixelValues.log" if it is not supplied.  You must use two backslash
+  characters for each backslash in the full path.  The file will <i>not</i> be
+  deleted if it already exists, instead appending the data onto the end of the
+  existing file.  <b>NOTE:</b> To use the special binary output mode,
+  <b>filename</b> must end with the extension <code>.bin</code> (see below for
+  details).</p>
+<hr />
+<h3>Text Output Mode</h3>
+<p>The default output of the filter is designed to be easily readable by both
+humans and programs.</p>
+<p>Here is a sample AviSynth .avs script with text output:</p>
+<p><table border="1">
+<caption>example1.avs</caption>
+<tr><td><pre>LoadPlugin("DumpPixelValues.dll")
+
+DirectShowSource("test.mpg")
+ConvertToYUY2()
+DumpPixelValues("YUV", "(100,100),(300,200),(600,50)", "D:\\test\colors.log")</pre>
+</td></tr>
+</table></p>
+<p>And here is what the corresponding output would look like if test.mpg was
+  a 1 second (30 frame) 720x480 still frame made up of three horizontal
+  stripes: deep red (Y=59, U=111, V=177), medium blue (Y=116, U=167, V=95) and
+  pale green (Y=219, U=126, V=125):</p>
+<table border="1">
+<caption>D:\test\colors.log</caption>
+<tr><td><pre>DumpPixelValues for YUV: (100,100),(300,200),(600,50)
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79
+3A/6F/B1 74/A7/5F D7/7A/79</pre>
+</td></tr>
+</table></p>
+<p>The first line of the output echoes the <b>colorList</b> and
+  <b>coordinatesList</b> parameters.  The rest of the file consists of one line
+  for each frame of the clip.  Data for each coordinate are separated by
+  spaces, while the color values for a single coordinate are separated by
+  slashes.  Values are in hexidecimal.</p>
+<hr />
+<h3>Binary Output Mode</h3>
+<p>Currently, binary output is designed for one specific scenario: extracting
+  closed caption information from visual VBI.  A number of video editing cards
+  on the market are capable of transmitting VBI information (including closed
+  captions) by including this data in the stream outputted from the card.  If
+  this stream is instead saved as a file, it takes the form of a
+  taller-than-usual image with the VBI visually encoded in the extra rows at
+  the top.  For example, here are the first 35 rows and 12 frames of a video
+  produced using one of these systems.  The VBI takes up the first 28 rows, and
+  closed captions (Line 21) reside on row 28:</p>
+<p><img src="VBI.gif" width="720" height="35"
+  alt="Animated GIF of visual VBI" /></p>
+<p>The captions are encoded as a series of 16 luminance (Y) bars.  These
+  correspond to 16 bits, or two bytes per frame.  Here is the AVS script to
+  extract the closed caption data from this video:</p>
+<p><table border="1">
+<caption>example2.avs</caption>
+<tr><td><pre>LoadPlugin("DumpPixelValues.dll")
+
+DirectShowSource("VBItest.mpg")
+ConvertToYUY2()
+DumpPixelValues("Y", "(475,28),(449,28),(422,28),(395,28),(368,28),(341,28),(314,28),(287,28),(691,28),(664,28),(637,28),(610,28),(583,28),(556,28),(529,28),(502,28)", "D:\\test\\VBItest.bin")</pre>
+</td></tr>
+</table></p>
+<p><b>ColorList</b> must be <code>Y</code>, <b>coordinatesList</b> must contain
+  a multiple of 8 coordinates (exactly 16 for closed captions), and
+  <b>filename</b> must have the extension <code>.bin</code>.  The x values in
+  the coordinates above will probably capture closed captions for any
+  VBI-capable video editing card, as long as the width is 720 pixels--only the
+  y values will have to be changed based on the card.</p>
+<p>Here is the output of the above video for the first 12 frames, as viewed by
+  a hex editor:</p>
+<p><table border="1">
+<caption>D:\test\VBItest.bin (hex editor)</caption>
+<tr><td><pre>000000</pre></td>
+<td><pre>FF FF FF FF CD D9 D3 45  4C 46 20 C1 CE C4 20 49</pre></td>
+<td><pre>ÿÿÿÿÍÙÓELF ÁÎÄ I</pre></td></tr>
+<tr><td><pre>000010</pre></td>
+<td><pre>20 80 91 37 91 37 94 2C  94 2C 94 2F</pre></td>
+<td><pre> €‘7‘7”,”,”/</pre></td></tr>
+</table></p>
+<p>The first four bytes are the broadcast raw caption header
+<code>ff ff ff ff</code>.  This is followed by two bytes for each frame.  The
+bytes are constructed by taking the Y values and converting them into 1 bits
+if they are greater than 64 (hex 40) or 0 bits if they are less.</p>
+<p>For example, the Y values for the first frame were 6b, 6e, 10, 10, 6e, 6d,
+10, 6c, 6c, 6d, 11, 70, 6e, 0f, 12 and 6a.  This was translated into
+11001101 11011001 binary, or CD D9 hex.</p>
+<p>The file output by this process can be converted into the SCC format used by
+high-end DVD authoring tools by use of the RAW2SCC program in the <a
+href="http://www.geocities.com/McPoodle43/SCC_TOOLS/DOCS/SCC_TOOLS.HTML">SCC_TOOLS</a>
+suite of tools (shameless self-plug).</p>
+<hr />
+<h3>Known Bugs</h3>
+<p>The program is currently very slow, taking six minutes to process a thirty
+second MPEG-2 file in binary output mode.  What will happen when you run your
+AVS script through Windows Media Player will be the sound playing at normal
+speed, with the video lagging far behind (I only saw three different frames
+with my 30 second MPEG).  After the sound has finished, the processing will not
+be complete (the progress bar will still read 100% instead of resetting to the
+first frame as it usually does).  You must be patient and wait until the
+program is completely finished--if you close WMP before the progress bar resets,
+you will only get the output for the beginning of the file instead of the whole
+thing.</p>
+<p>The only time you should be worried is if the frames appearing in WMP
+are garbage.  I had this in the case of my 720x512 MPEG-2 file (the normal
+codecs, as well as the MPEG2DEC and MPEGDecoder dll's, could not handle the
+abnormal frame size)--I found that installing the Elecard MPEG decoders and
+changing the AVS to use DirectShowSource() instead of of the MPEGSource()
+fixed this problem.</p>
+<p>The second "problem" is that the colors are not the same exact values I used
+to create them.  Considering how straightforward it is to extract colors from
+AviSynth, I can only assume that the discrepancy is the result of the
+compression used for each source file.</p>
+<hr />
+<h3>Version History</h3>
+<p><table border="1">
+<tr><th>Release</th><th>Date</th><th>Description</th></tr>
+<tr><td>1.0</td><td>February 23, 2004</td><td>Initial release.</td></tr>
+</table></p>
+<hr />
+<p><a href="mailto:mcpoodle43
+&lt;NO SPAM&gt;
+@yahoo.com">McPoodle</a></p>
+</body>
+</html>
+

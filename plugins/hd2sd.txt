@@ -1,0 +1,604 @@
+############################
+# hd2sd
+# 2010/01/15 00:50:00 EST
+# Dan Isaacs
+# http://3dvp.com
+############################
+
+=========================================================================================================================================================
+REQUIREMENTS
+=========================================================================================================================================================
+
+AviSynth 2.5.7 or higher
++ plugins:
+
+ConditionalSmoothBob	(ConditionalSmoothBob.avsi contains helper functions and is included in this package)
+
+ColorMatrix     	http://avisynth.org/warpenterprises/files/colormatrix_20070828.zip
+GrapeSmoother   	http://avisynth.org/warpenterprises/files/grapesmoother_25_dll_20030801.zip
+Videoscope      	http://avisynth.org/warpenterprises/files/vscope_25_dll_20040516.zip
+FFT3DFilter *	 	http://avisynth.org/warpenterprises/files/fft3dfilter_20070220.zip
+
+*  Don't forget to download the FFTW library and install the .dll in your \Windows\System32\ folder!!! ( ftp://ftp.fftw.org/pub/fftw/fftw3win32mingw.zip )
+
+Copy hd2sd.avsi and the .dll files for the plugins into your AviSynth plugins folder ( such as C:\Program Files\AviSynth 2.5\plugins\ )	
+
+=========================================================================================================================================================
+SCRIPT EXAMPLES
+
+IMPORTANT: Note that YV12 is the default output colorspace. Change the OutputColorSpace parameter as needed for your MPEG2 encoder.
+=========================================================================================================================================================
+
+# This will convert your interlaced HD source to interlaced (top field first) 16x9 SD -- automatically choosing NTSC or PAL based on input
+# output is YV12 (use this for HC Encoder or QueEnc)
+hd2sd("myfile.avi")
+
+
+# This will convert your interlaced HD source to interlaced (top field first) 16x9 SD -- automatically choosing NTSC or PAL based on input
+# output is YUY2 (use this for CCE or ProCoder)
+hd2sd("myfile.avi", OutputColorSpace="YUY2")
+
+
+# This will convert your interlaced HD source to interlaced (bottom field first) 16x9 SD -- automatically choosing NTSC or PAL based on input
+# output is YUY2 (use this for Adobe Premiere Pro and Encore)
+hd2sd("myfile.avi", OutputColorSpace="YUY2", OutputBFF=true)
+
+
+# My currently recommended workflow for converting files from Adobe Premiere Pro CS4 is to export HD MPEG2 I-frame .m2v + .wav files
+# The function will "find" the .wav audio and dub it automatically, so you need only supply the .m2v filename
+# NOTE: This is only recommend with I-frame only MPEG2 files… .ts files and other multiplexed format may not work well.
+# You can download the AME CS4 presets here: http://invertedhorn.axspace.com/ame_hd_mpeg2i_cs4.zip
+
+hd2sd("myfile.m2v", AutoIndex=true, OutputColorSpace="YUY2", OutputBFF=true)
+
+
+# This will convert your interlaced HD source to interlaced (bottom field first) 16x9 SD -- automatically choosing NTSC or PAL based on input
+# output is RGB24 (use this for TMPEG)
+hd2sd("myfile.avi", OutputColorSpace="RGB24", OutputBFF=true)
+
+
+# This will convert your interlaced HD source to 24p but discarding the "extra" field (instead of blending) for sharper time
+hd2sd("myfile.avi", OutputFieldRate=24, SmoothTime=false)
+
+
+# This will convert your interlaced HD source to PAL 16x9 (bottom field first)
+hd2sd("myfile.avi", OutputFieldRate=50, OutputBFF=true)
+
+
+# This will convert your interlaced HD source to PAL 16x9 progressive frame in YUY2 colorspace
+hd2sd("myfile.avi", OutputFieldRate=25, OutputColorSpace="YUY2")
+
+
+# This will convert your interlaced HD source to PAL 4x3 (top field first)
+hd2sd("myfile.avi", OutputWidescreen=false, OutputFieldRate=50)
+
+
+# This will convert your interlaced HD source to interlaced NTSC 16x9 (lower field first) with high-quality noise reduction and other filtering applied
+hd2sd("myfile.avi", OutputFieldRate=60, OutputBFF=true, NR=5, Sharpness=0.5, VerticalBlur=0.5)
+
+
+# Preserve the "super-whites" in your HDV footage by scaling them within broadcast range and set output as YUY2 using CCIR601 coefficents
+hd2sd("myfile.avi", LimitWhite=false, OutputColorSpace="YUY2", Output601=true)
+
+
+# A custom Levels setting for retaining some "super-whites" while compensating for the lost contrast and brightness
+hd2sd(LimitWhite=false, ScaleWhite=true, InputBlackLevel=8, InputGamma=1.05, InputWhiteLevel=245)
+
+
+# Allows you to see a histogram of your video levels
+hd2sd("myfile.avi", ShowHistogram = true)
+
+
+# This is a multi-line example showing all possible parameters at their defaults (assuming 60i input/output)
+hd2sd("myfile.avi", 
+\                    Interlaced          = true,
+\                    Interlaced_out      = true,
+\                    OutputFieldRate     = 60,
+\                    OutputHeight        = 480,
+\                    OutputColorSpace    = "YV12",
+\                    Output601           = true,
+\                    OutputBFF           = false,
+\                    WidescreenType      = 1,
+\                    CropCenter          = 0.5,
+\                    ResizeSharper       = true,
+\                    FixWrongRGB         = false,
+\                    Input601            = false,
+\                    InputBlackLevel     = 0,
+\                    InputWhiteLevel     = 255,
+\                    InputGamma          = 1.0,
+\                    ScaleBlack          = false,
+\                    ScaleWhite          = false,
+\                    LimitBlack          = true,
+\                    LimitWhite          = true,
+\                    LimitColor          = true,
+\                    ExpandRGB           = true,
+\                    Sharpness           = 0.0,
+\                    SharpenPost         = false,
+\                    VerticalBlur        = 0.0,
+\                    HQFiltering         = true,
+\                    SmoothTime          = true,
+\                    NR                  = 0,
+\                    GrapeSmootherAmount = 20,
+\                    FFT3DAmount         = 256,
+\                    lacethresh          = 10,
+\                    showlace            = false,
+\                    ShowHistogram       = false,
+\                    PreviewPAR          = false,
+\                    DeintMethod         = 3,
+\                    HybridProtect       = false
+\)
+
+# This example is for Premiere Pro CS3 HD sequences frameserved to HCEncoder using the DebugMode FrameServer.
+# FixWrongRGB=true is used to compensate for Adobe mishandling of YUV<->RGB conversions (this has no effect when frameserved via DebugMode as YUY2). 
+# It also basic noise reduction and sharpening (before resizing) and a moderate amount of flicker reduction.
+# The target output is standard NTSC DVD (Interlaced / Top Field First)
+
+hd2sd("fs.avi",
+\                    OutputFieldRate = 60,
+\                    OutputColorSpace = "YV12",
+\                    NR=2,
+\                    GrapeSmootherAmount=30,
+\                    Sharpness = 0.5,
+\                    VerticalBlur=0.25,
+\                    ScaleBlack=true,
+\                    ScaleWhite=true,
+\                    FixWrongRGB=true
+\)
+
+# This shows how an interlaced MPEG2 stream can be converted directly using a .d2v project from DGIndex for PAL progressive frame output as YUY2 for CCE or ProCoder.
+mpeg2source("hdfile.m2v")
+hd2sd(OutputFieldRate = 25, SmoothTime = false, OutputColorSpace = "YUY2")
+
+
+# This shows how a 1080/60p YUY2 .avi file can be cropped for 4x3 NTSC DV (29.97i fps) as full-range RGB
+AviSource("60p.avi", pixel_type="YUY2")
+hd2sd( 
+\                    Interlaced          = false,
+\                    OutputFieldRate     = 60,
+\                    OutputColorSpace    = "RGB24",
+\                    OutputBFF           = true,
+\                    WidescreenType      = -1,
+\                    CropCenter          = 0.5,
+\                    InputBlackLevel     = 16,
+\                    InputWhiteLevel     = 235,
+\                    ExpandRGB           = false
+\)
+
+
+# A multi-line example using a .d2v generated by DGIndex on an 60i MPEG2 (HDV 1080i) source
+# hd2sd() will output in YUY2 colorspace @ 60p
+# a "custom" noise reduction setting is used to provide fairly strong denoising while attempted to reduce and banding that may result
+# This example allows superwhites and saturation beyond broadcast-legal boundaries -- this is good when YUV color correction will be performed later in a video editing application
+
+mpeg2source("hdv60i.d2v", cpu=4)
+hd2sd(
+\                    NR=7, GrapeSmootherAmount=30, FFT3DAmount=192,
+\                    Interlaced=true, Interlaced_out=false, DeintMethod=2,
+\                    OutputFieldRate=60, SmoothTime=false,
+\                    ResizeSharper=true, Sharpness=0, VerticalBlur=0.25, HQFiltering=true,
+\                    LimitWhite=false, LimitColor=false, LimitBlack=true, OutputColorSpace="YUY2"
+\)
+
+
+=========================================================================================================================================================
+PARAMETERS
+=========================================================================================================================================================
+
+parameter:	Interlaced
+values:	 	true, false
+default:	true (when input framerate is approximately 25 or 30 fps), otherwise false
+
+This specifies whether the source video is interlaced (true) or progressive (false)
+Be sure to set this to false if your source is 30p or 25p.
+
+-----------------------------------------------------------------------------------
+
+parameter:	OutputFieldRate
+values:	 	integer 24,25,30,50,60
+default:	automatically set to be the same as the input format
+
+This sets the number of fields per second for the output. If you are simply converting 1080/60i -> 480i, then you do not need to enter this parameter.
+24 is NTSC Film progressive
+25 is PAL progressive
+50 is PAL interlaced
+30 is NTSC progressive
+60 is NTSC interlaced
+
+If interlaced_out=false and ForceSDFieldRate=false:
+50 is double-rate PAL
+60 is double-rate NTSC
+
+-----------------------------------------------------------------------------------
+
+parameter:	Interlaced_out
+values:	 	true, false
+default:	determined by the values of Interlaced and OutputFieldRate
+
+This specifies whether the output will be interlaced. A setting of true only makes sense when OutputFieldRate is 50 or 60.
+When OutputFieldRate is 50 or 60 and Interlaced_out is set to false, the function will not weave the output: resulting in 50p or 60p output.
+
+------------------------------------------------------------------------------------
+
+parameter:	InterlacedUV
+values:	 	true, false
+default:	automatic (set to same value as "Interlaced")
+
+Some progressive YV12 sources (like PAL film DVDs or HDV "30p over 60i" footage) have interlaced chroma sampling. This will cause the color channels to be deinterlaced, but not the luma.
+Set this to true if your progressive input is YV12 and contains combed chroma.
+
+------------------------------------------------------------------------------------
+
+parameter:	InterlacedUV_out
+values:	 	true, false
+default:	automatic (set to same value as "Interlaced_out")
+
+Setting this to true will force interlaced chroma sampling when OutputColorSpace="YV12" ... Even if interlaced_out=false or OutputFieldRate < 25
+
+------------------------------------------------------------------------------------
+
+
+parameter:	HybridProtect
+values:		boolean
+default:	false
+
+Setting this to true will avoid deinterlacing on progressive frames. This can be useful for converting finished 60i projects.
+Setting this to true can speed up deinterlacing of hybrid content when DeintMethod=0 or DeintMethod=1, but may slow down processing otherwise.
+This attempts to detect interlaced frames and avoid deinterlacing of progressive frames. It also assumes that repeated frames (such as static images) and frame holds are progressive.
+Keep in mind that combed frame detection is not perfect, and this may occasionally allow interlaced fraems to pass through -- or progressive frames to be deinterlaced regardless.
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+parameter:	OutputAudioRate
+values:	 	-1, 22050, 44100, 48000, etc.
+default:	-1
+
+Audio can be resampled, using fairly high-quality (but fast) resampling. This can be useful to force 48000Hz (48kHz) output for DV or DVD compliance.
+By default (-1), the original sample rate will be preserved.
+
+------------------------------------------------------------------------------------
+
+parameter:	AdjustFramerate
+values:	 	true, false
+default:	false
+
+By default, hd2sd() will drop fields as needed to comply with the intended OutputFieldRate.
+Setting AdjustFramerate to true will allow hd2sd() to adjust the framerate slightly -- and to modify / resample the audio pitch to maintain sync.
+
+When converting between fraaction framerates (NTSC) and PAL, you can get better results by "rounding" NTSC to 30 fps, or changing PAL to 24.975 (50000/1001).
+Likewise, outputting 24p from PAL sources can be nicely achieved by slowing down 25 -> 24000/1001 ... or, 24p -> 25p to get PAL from NTSC film sources.
+
+Some NTSC source framerates are not exactly 24000/1001, 30000/1001, etc. Setting AdjustFramerate=true will allow hd2sd() to correct this on input so frames do not get dropped.
+
+In any case, hd2sd() should maintain audio sync.
+
+However, you should be careful if you plan to use a different soundtrack (such as 5.1 AAC or AC3) than you have served to hd2sd(). In these cases, be sure AdjustFramerate=false.
+
+------------------------------------------------------------------------------------
+
+
+parameter:	OutputColorSpace
+values:	 	"RGB32", "RGB24", "YUY2", "YV12"
+default:	YV12
+
+This sets the output color space. This may need to be set for your encoder:
+
+use "YUY2" for CCE or ProCoder
+use "YV12" for HCEncoder or QuEnc
+use "RGB24" for TMPEG, Adobe Media Encoder, Encore or output to RGB .avi
+use "RGB32" for output to RGB .avi
+
+------------------------------------------------------------------------------------
+
+parameter:	Output601
+values:	 	true, false
+default:	true
+
+When true, this will convert the video output as needed to ITU-R BT.601 YUV coefficients (default). A value of false will output BT.709.
+
+------------------------------------------------------------------------------------
+
+parameter:	OutputBFF
+values:	 	true, false
+default:	false
+
+Top field first is the most common field order for commerical DVDs (default). Set this to true to force lower field first output.
+
+------------------------------------------------------------------------------------
+
+parameter:	OutputHeight
+default:	automatically set to 480 or 576 dependent on OutputFieldRate
+values: 	any even integer, but 576, 480, 486 are the only ones that make sense for DVD or editable video formats
+
+You can force OutputHeight=486 for D1 output.
+You can also use this in conjuncton with OutputWidth for odd-sized web output.
+
+------------------------------------------------------------------------------------
+
+parameter:	OutputWidth
+default:	720
+values: 	any integer, but 720 and 704 are the only ones that make sense for DVD or editable video formats
+
+You can force OutputWidth=704 for ATSC/DTV compliant output. Be aware that not all MPEG2 encoders / authoring programs support 704x480 (or 704x576).
+You can also use this in conjuncton with OutputWidth for odd-sized web output.
+
+OutputWidth will be rounded to mod4 (so that OutputWidth / 4 has a remainder of 0)
+
+When OutputWidth is neither 704 nor 720...
+1.) output PAR is set to 1.0 (square pixels)
+2.) interlaced output is disabled
+
+------------------------------------------------------------------------------------
+
+parameters:	OutputPAR, InputPAR
+default:	automatic
+values: 	Float ??
+
+By default, InputPAR (the assumed input pixel aspect ratio) will chosen automatically, based on the dimensions of the source.
+You can override the automatic settings by providing a value for InputPAR.
+
+By default, OutputPAR (the intended output pixel aspect ratio) will chosen automatically, based on whether output is for NYSC or PAL … and whether WidescreenType is greater than (16x9) or less than (4x3) zero.
+You can override the automatic settings by providing a value for OutputPAR.
+
+------------------------------------------------------------------------------------
+
+parameter:	WidescreenType
+values:		-2, -1, 0, 1, 2
+default:	1
+
+WidescreenType determines how the video is scaled, cropped, and padded to fit the intended output.
+
+ 2	[ 16x9 ] ... Adds black borders as needed (pillarboxing or letterboxing)
+		     On normal HD -> SD conversions, this will add 8-pixel borders to the sides of the output
+
+ 1	[ 16x9 ] ... Crops when needed for optimal apect ratio conversion while using all visible pixels.
+		     On normal HD -> SD conversions, this will crop 14 pixels from the top and bottom of a 1080 HD source [10 from a 720p source] prior to scaling
+
+ 0	[   ?  ] ... Simply resizes the original width and height without considering the PAR of the input or output
+		     On normal HD -> SD conversions, this will cause some horixintal stretching 
+
+-1	[  4x3 ] ... Crops when needed for optimal apect ratio conversion while using all visible pixels.
+		     On normal HD -> SD conversions, this will crop the sides of a 1080 HD source to fit the output frame
+
+-2	[  4x3 ] ... Adds black borders as needed (pillarboxing or letterboxing)
+		     On normal HD -> SD conversions, this will add borders (56 pixels for NTSC, 66 for PAL) to the top and bottom of the output
+
+So…,	WidescreenType =  1 will crop as needed to produce 16x9 output
+	WidescreenType = -1 will crop as needed to produce  4x3 output
+	WidescreenType =  2 will  pad as needed to produce 16x9 output
+	WidescreenType =  2 will  pad as needed to produce  4x3 output
+          
+	WidescreenType =  0 will always scale to fit the output frame, without consideration for aspect ratios.
+
+------------------------------------------------------------------------------------
+
+parameter:	CropCenter
+values:	 	float 0.0 -> 1.0
+default:	0
+
+This controls he horizontal or vertical cropping offset when WidescreenType = 1 or -1.
+0.0 will crop from the left (or top side), while at 1.0 cropping is anchored on the right (or bottom). Values between will move the crop area horizontally.
+0.5 (default) will crop to the centermost 4x3 or 16x9 area.
+
+------------------------------------------------------------------------------------
+
+parameter:	ScaleRGBInput
+values:	 	true, false
+default:	true
+
+Some HDV .AVI codecs (such as Matrox and Canopus) have options for "Standard" or "Expanded" conversion. Setting this parameter is dependent on your input source.
+If your video looks too contrasty on output, try setting this to true (that's the default anyway).
+If your video looks washed out, try setting this to false.
+
+------------------------------------------------------------------------------------
+
+parameter:	FixWrongRGB
+values:	 	true, false
+default:	false
+
+This should be false (default). Set this to true only if your input is RGB and was incorrectly converted using BT.601 instead of BT.709.
+This may be useful when frameserving RGB from Adobe Premiere Pro CS3, which often incorrectly converts HD -> RGB as 601 (this has been fixed in CS4)
+
+------------------------------------------------------------------------------------
+
+parameter:	Input601
+values:	 	true, false
+default:	false
+
+Most HD is Rec.709 so this should be false (default). St this to true if your input is YUV and uses the BT.601 coefficients. This parameter has no effect on RGB input.
+
+------------------------------------------------------------------------------------
+
+
+parameter:	InputBlackLevel
+values:	 	integer 0-255
+default:	0
+
+This is same as the input black level in Photoshop's "Levels" filter, but only affects the video's luminance. Set to 16 if you want to expand broadcast video to full-range. You can also use this to tweak your black level if your video looks a bit washed out.
+
+------------------------------------------------------------------------------------
+
+parameter:	InputWhiteLevel
+values:	 	integer 0-255
+default:	255
+
+This is same as the input white level in Photoshop's "Levels" filter, but only affects the video's luminance. Set to 235 if you want to expand broadcast video to full-range. You can also use this to tweak your white level if your video's highlights looks a bit too dark.
+
+------------------------------------------------------------------------------------
+
+parameter:	InputGamma
+values:	 	float 0.1 -> 2.0
+default:	1.0
+
+Use this to tweak the gamma of your video. This is useful if setting InputBlackLevel has caused your video to look "murky", or InputWhiteLevel has made things too bright. Use values ranging from 0.8 -> 1.3 for best results.
+
+------------------------------------------------------------------------------------
+
+parameter:	ScaleBlack
+values:	 	true, false
+default:	false
+
+When set to true, this will scale your blacks from 0 -> 16. Set this to true if have full-range input and would like to preserve dark areas in your image.
+Set this to true if you have used InputBlackLevel to expand your luma outside of broadcast range and want to preserve dark areas in your image.
+
+
+------------------------------------------------------------------------------------
+
+parameter:	ScaleWhite
+values:	 	true, false
+default:	false
+
+When set to true, this will scale your whites from 255 -> 235. Set this to true if have full-range input and would like to preserve bright areas in your image. Most HDV cameras allow "super-whites", so if you do not want these clipped, then set this to true.
+Also set this to true if you have full-range RGB input (such as graphics) or have used InputWhiteLevel to expand your grayscale outside of broadcast range and want to preserve bright areas in your image.
+
+
+------------------------------------------------------------------------------------
+
+parameter(s):   LimitWhite, LimitBlack, LimitColor
+values:	 	true, false
+default:	true
+
+By default, a Limiter filter will clip your video signal to broadcast-legal values after the Level adjustments. Set LimitWhite and/or LimitBlack to false to preserve super-whites and -blacks (not recommended for YUV output).
+
+------------------------------------------------------------------------------------
+
+parameter(s):   ExpandRGB
+values:	 	true, false
+default:	true
+
+When OutputColorSpace is RGB, you can set this to false to disable the 16-235 -> 0-255 luma mapping.
+
+------------------------------------------------------------------------------------
+
+parameter:	ResizeSharper
+values:	 	true, false
+default:	true
+
+When true, this will set Spline36 as the resize method (default). Otherwise, Gaussian resampling (p=50) is used.
+
+------------------------------------------------------------------------------------
+parameter(s):   Sharpness
+values:	 	float -1.0 -> 1.0
+default:	0
+
+This applies sharpening to the video. This can be useful, but don't set it too high ( > 0.75 ) -- especially if you are not using noise reduction and especially if the video is intended for interlaced displays.
+You should be especially careful if ResizeSharper=true and/or VerticalBlur=0
+Setting Sharpness < 0 will blur the video.
+
+hd2sd does not use any fancy, "masked" sharpening. It only uses AviSynth's native Sharpen() command.
+
+------------------------------------------------------------------------------------
+
+parameter(s):   SharpenPost
+values:	 	true, false
+default:	false
+
+By default, sharpening is performed prior to resizing the video. This helps greatly to hide sharpening artifacts and noise.
+Setting SharpenPost=false will apply the sharpening to the SD output. 
+
+It is best to stick to small Sharpness values ( < .5) when SharpenPost=false
+
+------------------------------------------------------------------------------------
+
+parameter(s):   VerticalBlur
+values:	 	float 0.0 -> 1.0
+default:	0
+
+This will blur the video vertically after deinterlacing and resizing (before weaving in interlaced formats). This can help hide lingering combing artifacts and overly sharp lines that can cause flickering.
+
+------------------------------------------------------------------------------------
+
+parameter(s):   HQFiltering
+values:	 	boolean
+default:	true
+
+When HQFiltering is true (default) this will disable MMX optimizations for blurring/sharpening filters. This is somewhat slower, but produces the best quality.
+When HQFiltering is false, MMX is enabled. This does not use full 8 bit precision on the filtering, which may result in slight banding. This is the faster setting.
+HQFiltering has no effect unless Sharpness and/or VerticalBlur are set to values other than 0.
+
+------------------------------------------------------------------------------------
+
+parameter:	SmoothTime
+values:	 	true, false
+default:	true
+
+This parameter works in several different ways, depending on the type of conversion. In general, it blends frames when the frame rate is converted. Set it to false for a "sharper" time conversion.
+This setting has no effect at all unless you are making progressive frames from an interlaced source or converting between 60i/30p <-> 50i/25p standards
+
+
+------------------------------------------------------------------------------------
+
+parameter:	NR
+values:	 	integer 0 -> 6
+default:	0
+
+This parameter set the type of noise reduction applied to the image.
+
+0 - no noise reduction
+1 - GrapeSmoother       	    applied to SD output  (luma + chroma)
+2 - GrapeSmoother       	    applied to HD source  (luma + chroma)
+3 - FFT3DFilter       	            applied to SD output  (luma)
+4 - FFT3DFilter + GrapeSmoother     applied to SD output  (luma + chroma)
+5 - FFT3DFilter                     applied to HD source  (luma)
+6 - FFT3DFilter + GrapeSmoother     applied to HD source  (luma + chroma)
+7 - FFT3DFilter + GrapeSmoother     GrapeSmoother applied to HD source  (luma + chroma), FFT3DFilter applied to SD output (luma)
+
+In general, higher values yield better (and more compressible) results, but take longer to process. However, NR=7 is faster than 5 or 6.
+
+------------------------------------------------------------------------------------
+
+parameter:	GrapeSmootherAmount
+values:	 	integer 0 -> 100
+default:	20
+
+This parameter sets the strength of the GrapeSmoother noise reduction. This only affects the video when NR=1, 2, 4, 6 or 7
+
+------------------------------------------------------------------------------------
+
+parameter:	FFT3DAmount
+values:	 	integer 0 -> 256
+default:	256
+
+This parameter sets the strength of the FFT3DFilter noise reduction. This only affects the video when NR > 2
+A setting of 256 is full strength, while a value of 0 will disable the filter. Other settings blend the original signal with the noise-reduced version. This can be helpful to limit banding on flat surfaces.
+
+------------------------------------------------------------------------------------
+
+
+parameter:	DeintMethod
+values:		integer 0, 1, 2, 3
+default:	3
+
+ 3 = Yadif                  (very fast and good)
+ 2 = Yadifmod + TomsMoComp  (very fast and good)
+ 1 = Yadifmod + EEDI2	    (slow and usually excellent)
+ 0 = Yadifmod + NNEDI2      (fairly slow but excellent)
+
+This allows you to choose the deinterlacing method used for conversions. It has no effect when interlaced=false (such as with 24p, 50p or 60p input).
+
+------------------------------------------------------------------------------------
+
+
+parameter:	ShowHistogram
+values:	 	true, false
+default:	false
+
+This shows a histogram on the right or bottom of your video, depending on how ToggleHistogramMode is set. This is for troubleshooting and to assist in tweaking input levels.
+This also forces a RGB32 conversion for better previewing on your PC monitor, and honors the ExpandRGB setting (true by default). 
+Be sure this is set to FALSE when you send the video to your converter!
+
+------------------------------------------------------------------------------------
+
+parameter:	ToggleHistogramMode
+values:	 	true, false
+default:	false
+
+The default histogram mode shows a "levels" histogram on the right of your video. The alternate (true) will show a waveform monitor along the bottom.
+
+------------------------------------------------------------------------------------
+
+parameter:	PreviewPAR
+values:	 	true, false
+default:	false
+
+This will adjust the horizontal scale of your video to compensate for the pixel aspect ratio (PAR) for preview purposes.
+Be sure this is set to FALSE when you send the video to your converter!

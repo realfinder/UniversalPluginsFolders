@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectSpotlight AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectSpotLight </h1></font>
+	 
+	  <P>EffectSpotLight function illuminates a specified circular disc area. 
+	  The illumination color can be specified and remains constant.
+	   The spot  center moves from the initial center coordinates in pixels to 
+	   the final coordinates. Dim controls the factor by which the scene is dimmed prior.
+		RGB32, RGB24, YUY2 and YV12 formats only are supported.
+ </p>  
+
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td>radius of illuminated disc</td>
+       <td>radius</td>
+       <td>integer</td>
+       <td>8 to 1/2 of frame lesser dimension</td>
+       <td>40</td>
+</tr>
+
+<tr>
+       <td>illuminating color</td>
+       <td>lumen</td>
+       <td>integer</td>
+       <td>bbggrr format</td>
+       <td>0x5f5f5f</td>
+</tr>
+
+<tr>
+       <td>initial x coordinate of the sparkler</td>
+       <td>initx</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>radius</td>
+</tr>
+
+<tr>
+       <td>initial y coordinate of the sparkler</td>
+       <td>inity</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>radius</td>
+</tr>
+
+<tr>
+       <td>final x coordinate of the sparkler</td>
+       <td>finalx</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>initx</td>
+</tr>
+
+<tr>
+       <td>final y coordinate of the sparkler</td>
+       <td>finaly</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>inity</td>
+</tr>
+<tr>
+       <td>dimming factor</td>
+       <td>dim</td>
+       <td>integer</td>
+       <td>1 to 16</td>
+       <td>4</td>
+</tr>
+
+</table>
+
+<BR>#Usage examples:- 
+
+<pre>
+EffectSpotLight(sf=51,ef=158,lumen=$7f007f, initx=40,inity=240,finalx=700,finaly=400, dim=6)
+For stationary spot position, no prior dimming 
+EffectSpotLight(dim=1)
+#All defaults spot remains stationary at left corner 
+EffectSpotLight()
+
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="spotlight.jpg" border="0">
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

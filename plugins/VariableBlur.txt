@@ -1,0 +1,164 @@
+
+VariableBlur version 0.7 - (May 24, 2012 - tritical)
+
+
+   The gaussian filter uses fftw version 3.3 available from http://www.fftw.org/install/windows.html - 32-bit version.
+   Specifically, libfftwf3-3.dll needs to be in the search path (C:\Windows\SysWOW64 64-bit OS or C:\windows\system32 32-bit OS)
+   and variableblur wont run or load without it.
+
+     ** As of version 0.6 the Visual Studio 2010 Service Pack 1 redistributable is required due to OpenMP multithreading.
+
+                 http://www.microsoft.com/en-us/download/details.aspx?id=8328
+
+
+   Modified from version 0.4 by Tonny Petersen(C)2005 (tsp@person.dk) 
+     (specifically http://forum.doom9.org/showthread.php?p=1177210#post1177210 which included some fixes from Neuron2)
+
+   Variableblur is a gaussian, binomial or average blur filter with a variable radius(variance).
+   The binomial filter part is based on a paper by Frederick M. Waltz and John W. V. Miller. 
+   An efficient algorithm for Gaussian blur using finite-state machines. 
+   SPIE Conf. on Machine Vision Systems for Inspection and Metrology VII page 3521-37
+
+   Also includes an unsharp mask filter based on the gaussian filter meaning it is fast for big variance.
+
+
+USAGE:
+
+ -------------------------------------------------------------------
+  binomialBlur(float varY,float varC,int Y,int U,int V,bool usemmx)
+
+       binomialBlur works by repeating a 5x5 or 3x3 kernel based on pascals triangle multiple times to blur the image. With a variance above 1 the result is
+       very close to a true gaussian blur and much faster (for variance below ~30). 
+
+
+     varY,varC: variance to use. Remember variance=sd^2. The variance is rounded down to the nearest half integer(0.5,1.0,1.5 etc). 
+                Radius 1 in version <=0.2 is equal to variance 0.5. Default 1.5
+
+     Y,U,V: Controls which planes the filter is applied to. If set to 3 the plane will be filtered, if 2 the plane will be copied from the source, if 1 the plane 
+            will be ignored and from 0 to -255 the plane will be assigned the absolute value. Default Y 3,U=2, V=2
+
+     useMMX: If true MMX instructions will be used. Default true for variance>1 else false.
+
+
+ -------------------------------------------------------------------
+  averageblur(int radY,int radC,int Y,int U,int V)
+
+        averageblur works by taken the average value of the pixels inside the radius.
+
+     radY,radC: radius of the kernel. default 3.
+
+     Y,U,V: same as binomialblur
+
+
+ -------------------------------------------------------------------
+  gaussianblur(float varY,float varC,int border,bool integrate,int Y,int U,int V, int gfunc, int gfuncc, int pcr, int pcrc, int nthreads)
+
+     ** As of version 0.6 requires SSE2 capable cpu
+
+        gaussianblur works by converting the image to the frequency domain using fftw and complex multiplying it with the gaussian kernel in the frequency domain
+        before converting the result back to the spatial domain giving the same result as doing a convolution in the spatial domain just faster for large kernelsizes.
+
+     varY,varC: Variance to use. This will not be rounded. default 1.5. For RGB input varC is ignored and varY is used for all planes.
+
+     border: Setup how the border of the image is threated. Posible values:
+	       -255 - 0: the area outside the image is filled with the absolute value
+		1: Wrap around. The right border will be blured with the left border and the top border with the bottom border. 
+                     This is the default behaivior when doing convolution in the frequency domain so this will be the fastest option.
+		2: Don't process borders.
+		3: fill the area outside the border by replication of border value.
+                4: fill the area outside the border by mirroring. (Default value)
+
+            3/4 are slightly slower but give much nicer results.
+
+     integrate: if true the coefficient used will be a mean value of the area the pixel covers. Use this if you consider each pixel to be made of an infinite number
+                of infinite small pixels or if you like the result :-). If integration is used the image will be softer. Default false.
+
+     Y,U,V: same as binomialblur
+
+         For RGB input the Y value is used for all planes (RGB for rgb24 and RGBA for rgb32) and U/V are ignored.
+
+     gfunc,gfuncc:  set the gamma function to use for Y and U/V planes. Default (-1,-1). Possible values:
+
+          -1 = do not correct gamma (same processing as version 0.4) - Default
+           0 = sRGB
+           1 = BT.709, SMPTE 170M
+           2 = SMPTE 240M
+           3 = BT.470-2 System M   (straight 2.2 gamma, no linear segment)
+           4 = BT.470-2 System B,G (straight 2.8 gamma, no linear segment)
+           5 = (straight 2.22222 gamma, no linear segment)
+           6 = (straight 1.8 gamma, no linear segment)
+           7 = linear, no gamma compensation
+
+         Gamma-correction will be undone (forward gamma transfer function) prior to filtering, and then reapplied (inverse gamma transfer function) after filtering.
+         For RGB input gfunc is used for all planes and gfuncc is ignored.
+
+     pcr/pcrc:  set the pixel value range for Y and U/V planes. Only used if gfunc or gfuncc >= 0. Default(0,0). Possible values:
+
+           0 = [0,255]
+           1 = [16,235]
+           2 = [16,240]
+
+         For RGB input pcr is used for all planes and pcrc is ignored.
+
+     nthreads:  set the number of threads for processing
+           
+
+ -------------------------------------------------------------------
+  unsharp(float varY,float varC,float strength,int border,bool integrate,int Y,int U,int V, int gfunc, int gfuncc, int pcr, int pcrc, int nthreads)
+
+        Sharpens the image using unsharp filtering (http://homepages.inf.ed.ac.uk/rbf/HIPR2/unsharp.htm for an explanation).
+
+     strength: Strength of the sharpener best values is between 0(no sharpen) to 1(more sharpen). Values outside this will produce strange results.
+
+     Rest of the options is the same as for gaussianblur
+
+
+
+EXAMPLE:
+
+         binomialBlur(radY=0.5,RadC=0.5)	#nearly the same as Blur(1)
+
+
+
+         #Unsharpen (it will sharpen the image)
+
+         function unsharpen(clip c,float variance,float k)
+         {
+            blr=gaussianblur(c,vary=variance,varc=2,Y=3,U=2,V=2,border=1)
+            return yv12lutxy(blr,c,"y x - "+string(k)+" * y +",y=3,u=2,v=2)
+         }
+
+
+
+CHANGELOG:
+
+  0.1 Initial release
+
+  0.2 optimization of the gaussian blur (now uses a 5x5 mask instead of 3x3) and the average blur 
+        (smarter algorithm resulting in a factor 20 to 100 speed increase)
+
+  0.3 GaussianBlur is included old gaussian is renamed to binomialblur.
+
+  0.4 Fixed bug with converting float to unsigned char without proper clamping. Also included an 
+         unsharp filter and optional integrated gaussian coefficients
+
+  0.5 Add gfunc/gfuncc/pcr/pcrc parameters to gaussianblur/unsharp  (tritical)
+
+  0.6 Fix border=3 bug for gfunc/gfuncc >= 0 (gamma processing was not done on border values)
+      Make radius for gaussianblur 4*std instead of 3*std
+      Add border=4 (mirroring) option to gaussianblur and make it the default
+      Dynamically load fftw (libfftwf3-3.dll) instead of statically linking to old .lib
+      Multithread gaussianblur using OpenMP and use FFTW multithreaded plans
+      SSE/SSE2 optimizations. Gaussianblur now requires SSE2 capable cpu.
+
+  0.7 Fix integrate=true giving incorrect results due to lack of precision in weight
+         calculation. Integrate=true now gives results much closer to integrate=false, as
+         would be expected.
+      Add support for YUY2, RGB24, and RGB32 input to gaussianblur/unsharp
+
+
+
+LICENSE:
+
+   This filter is released under GPL se copying.txt
+

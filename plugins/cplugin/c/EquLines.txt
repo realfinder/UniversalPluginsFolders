@@ -1,0 +1,46 @@
+EquLines (Equalize Lines) filter
+Version 0.2 plugin for Avisynth 2.5
+Copyright (c)2003 Alexander G. Balakhnin aka Fizick
+bag@hotmail.ru
+
+This filter equalize total luminosity in pairs of even and odd lines.
+The filter preserves all details (no smoothing or deinterlacing).
+
+    Apllication:
+    
+The simple filter is useful for removing of inter-line difference
+from captured (telecined) 8mm films (kino, movie).
+The well-known Antiflicker filter (by Donald Graft) make a good job
+in frames luminosity equalizing, but may to leave some inter-field differences,
+which are revealed after restoring of a progressive frames sequence
+(with Telecide and Decimate filters from Decomb plugin by Donald Graft).
+The EquLines filter must apllied after them all.
+But any denoising filters must be applied after Equlines.
+
+Works only with Avisynth C Interface (avithynth_c.dll) by Kevin Atkinson.
+Based on his example filter "invert_luma_in_place"
+
+   Using:
+
+Avisource("file.avi")
+Loadplugin("avisynth_c.dll")
+LoadCplugin("EquLines.dll")
+EquLines(deltamax=120)
+  
+Optional parameter Deltamax is the maximum of luminisity change (default=255)
+Filter needs YUY2 or YV12
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.   
+    

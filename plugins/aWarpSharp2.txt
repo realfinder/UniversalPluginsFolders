@@ -1,0 +1,78 @@
+aWarpSharp package 2015.12.30 - a WarpSharpening filter for Avisynth 2.5
+  Modified from the Firesledge's 2015.01.29 modification of 2012.03.28 version
+  and modified again.
+
+  This filter implements the same WarpSharpening algorithm as aWarpSharp by MarcFD,
+  but with several bugfixes and optimizations. In addition to complete algorithm
+  filter aWarpSharp2 parts of algorithm are also available as aSobel, aBlur, aWarp.
+
+  Requires planar YUV and at least MMXExt capable CPU, optimized for Nehalem, blur
+  will be more precise around frame borders if SSSE3 is available.
+
+Syntax:
+  aWarpSharp2(int "thresh", int "blur", int "type", int "depth", int "chroma", int "depthC", string "cplace")
+  aSobel(int "thresh", int "chroma")
+  aBlur(int "blur", int "type", int "chroma")
+  aWarp(edge_mask_clip, int "depth", int "chroma", int "depthC", string "cplace")
+  aWarp4(edge_mask_clip, int "depth", int "chroma", int "depthC", string "cplace")
+
+  aWarpSharp2() is the same as aWarp(aSobel().aBlur()) but a bit faster.
+
+  aWarp4 is special version of last step that uses 4x larger source clip than edge
+  mask. This is useful for improving subpixel interpolation quality of final step.
+  Upsampled clip should be top-left aligned, correct usage examples:
+    aWarp4(Spline36Resize(width*4, height*4, 0.375, 0.375), aSobel().aBlur(), depth=3)
+    aWarp4(nnedi3_rpow2(rfactor=2).nnedi3_rpow2(rfactor=2), aSobel().aBlur(), depth=2)
+
+  It's good idea to do anti-aliasing and temporal filtering over edge mask before
+  passing it to warp stage if you want more stable results.
+
+  thresh: 0..255, default 128
+    Saturation limit for edge detection. Reduce for less aggressive sharpening.
+
+  blur: 0..100, default 2 for type 0, 3 for type 1
+    Number of blur passes over edge mask. Less passes increase sharpening effect,
+    but can produce major artifacts with high depth and thresh. You can use values
+    higher than 100, but probably won't see any difference.
+    Chroma is processed with (blur+1)/2 passes.
+
+  type: 0..1, default 0 for aWarpSharp2, 1 for aBlur
+    Type of blur:
+      0 - radius 6 blur
+      1 - radius 2 blur, requires around 8x more passes than type 0 for the same
+          effect (will be just 2.5x slower), but produce better quality
+
+  depth: -128..127, default 16 for aWarpSharp2, 3 for aWarp and aWarp4
+    Strength of the final warping. Negative values result in warping in opposite
+    direction.
+
+  chroma: 0..6
+    Processing mode for chroma planes (U and V):
+      0 - fill with zeroes
+      1 - don't care, default for aSobel and aBlur
+      2 - copy
+      3 - process
+      4 - guide by luma - aWarpSharp, aWarp and aWarp4 only, default for them
+      5 - same as 3, but don't process luma
+      6 - same as 4, but don't process luma
+
+  depthC: -128..127, default depth/2 for non-4:4:4 colorspaces, depth for YV24.
+    Strength of the final warping of chroma planes. Negative values result in 
+    warping in opposite direction.
+
+  cplace: "MPEG1" (default) or "MPEG2". Indicates the chroma sample location
+    for chroma modes 4 and 6 in YV12 and YV16 colorspaces.
+
+
+Original aWarpSharp compatibility:
+  Mapping from original aWarpSharp parameters:
+    thresh = thresh*256
+    blur   = blurlevel
+    depth  = depth*blurlevel/2
+    chroma = 0->2, 1->4, 2->3
+
+  This version is able to do the conversion automatically when called as aWarpSharp,
+  but errors in case of out of bounds values will be displayed in new terms.
+
+
+Copyright (C) 2003 MarcFD, 2012 Skakov Pavel, 2015 _08, Firesledge

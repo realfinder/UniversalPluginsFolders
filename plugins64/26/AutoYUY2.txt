@@ -1,0 +1,19 @@
+AutoYUY2(clip,threshold,mode,output,threads)
+
+  threshold : int, default value : 4
+     Value for threshold between odd/even lines to consider pixel interlaced.
+
+  mode : int, default value -1.
+     Conversion mode YV12 to YUY2/YV16.
+	 -1 : Automatic detection.
+	 0 : Progressive.
+	 1 : Interlaced.
+	 2 : Test mode (put white/colored pixel on part detected interlaced).
+
+  output : int, default value 1
+     0 : Output YUY2
+     1 : Output YV16
+
+  threads : int, default value 0
+     0 : Automatic (number of CPUs detected).
+	 Other value specify the number of threads, max is 128

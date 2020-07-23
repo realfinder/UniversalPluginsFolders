@@ -1,0 +1,129 @@
+_2DCleanYUY2 - 2D Cleaner Noise Reduction V0.10 (YUY2 Only 要MMX2,SSE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+　　　　VirtualDub plugin - Jim Casaburi's 2D Cleaner 及び
+                            Jaan Kalda's Optimized 2D Cleaner
+        のロジックを参考にAvisynth用に1から作成したものです。
+        色空間 YUY2で使用可
+
+免責: 本ソフトを使用して不具合が発生したり損害が生じても、修正する義務や賠償責任は無いものとします
+　　　これを承諾された方のみ使用することができます。
+      また、本ソフトについて、いかなる事もJim Casaburi、Jaan Kalda、Avery Lee、Donald A. Graftに
+      問い合わせないで下さい。
+
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA,
+    or visit http://www.gnu.org/copyleft/gpl.html .
+
+
+[使用方法]
+１．Avisynthフォルダにdllを解凍する。
+        _2DCleanYUY2.dll        : for Legacy Avisynth (ver 1.0x or ver 2.0x)
+        _2DCleanYUY2_for_25.dll : for Avisynth2 (ver 2.5)
+
+２．スクリプトに追加
+        LoadPlugin("_2DCleanYUY2.dll")
+        _2DCleanYUY2( interlaced, thresholdY, radiusX, radiusY, dmode, thresholdU, thresholdV )
+
+        interlaced   = 0 ( Default ) ,= 1 (インターレース時、比較対象ラインを１ラインおきとする)  
+        thresholdY   輝度情報の閾値 ※default=9
+        thresholdU   色差情報(Cb,B-Y)の閾値 省略するとthresholdYと同じ
+                     128が原点なのであまり大きい値だと色が無くなっていくことに注意 
+        thresholdV   色差情報(Cr,R-Y)の閾値 省略するとthresholdYと同じ
+                     128が原点なのであまり大きい値だと色が無くなっていくことに注意 
+        radiusX      比較する点の範囲を指定 ※radiusX=0～3
+        radiusY      比較する点の範囲を指定 ※radiusY=0～9
+        dmode        = 0 (通常）
+                     = 1（エッジを黒で表示）
+                     = 2 (エッジを黒、他は白で表示）
+                     = 3 (エッジは、元の値と処理値との平均    new = (current + new + 1/2) / 2 )
+                     = 4 (エッジは、元の値。つまり処理しない  new = current)
+
+
+        VC5だとインラインアセンブラはMMXまでしか使えないみたいなので、MASM6.14をダウンロード
+        して使用。デバッグ方法が判らずに物凄く非効率的なので苦労している。
+        CPUのパイプラインを美味く使えていないのでプログラム的にはオリジナルにはとても及ばない。
+        まあMMX.MMX2,SSE(pshufw,prefetchとかしか使ってないけど)を使うのも初めてなんだけど。
+
+
+
+    指定例】
+          LoadPlugin("_2DCleanYUY2.dll")
+          AVISource("hogegoge.avi")
+          _2DCleanYUY2(0,6,2,2,0,4,4)
+          
+          _2DCleanYUY2(thresholdY=10,radiusX=2,radiusY=2),_2DCleanYUY2(0,10,2,2)とかでも結構です。
+          （Avisynthは大文字、小文字の区別をしないので、お好きな方を使って下さい）
+
+処理概要
+    フレームの各点について、radiusX,radiusYで指定された近傍の点と差分をとり、
+    その差が閾値以内の値だけを対象に平均化する。
+    conditional average とかいう方法みたい。
+    
+    現在フレームのpixel = current , 近傍の点pixel = around
+    (radiusX,Y=2の場合は縦横 5 * 5 の25点が対象）
+   （インターレース指定時は、Y方向は-4,-2,0,2,4のラインが対象となる)
+    if | current - around | < Threshold ( Y, U, V 全ての比較のand条件）
+    
+    sum(Y,U,V) += around , count++
+    
+    new(Y,U,V) = ( sum(Y,U,V) + ( count / 2 ) ) / count
+    
+    元の2DCleanは、各色単位に閾値判定しているが、2DCleanOptは全ての色が閾値以内か
+    どうかで判定している。
+    ここではOptと同じ方法を採用した。
+
+    newの格納方法ですが、YUY2では、2pixelが同じUVを使うわけですが、
+    左のpixelのUV値が有効としています。（左右の平均という考え方もあり、今後検討）
+
+
+作成・テスト環境
+    PIII-866MHz, 384MB, I815E(Gigabyte GA-6OXM7E) on-board video,sound
+    Windows2000SP2,NTFS
+    MSVC5.0 + MASM 6.14
+    Avisynth 1.0b7, 2.07, 2.5
+
+
+History:
+    29.04.2002 : テスト版公開(V0.2)
+    05.05.2002 : 更新 radiusXの指定を0～3までとした。(ver.0.3, ver0.4)
+                      parameter "interlace" を "interlaced"に変更。
+                      計算誤差による平均値が1だけ低くなることがあるのを修正。
+                      （除算自体の処理で、実際には除算前の四捨五入処理(1/2の足し込み）があるので
+                        この誤差が表面化することは無かった。）
+                      若干のスピードUP
+    02.06.2002 : 更新 ラインデータにパディングデータがある場合(ver 0.5)
+                        (Pitchが Width * 2 (sizeof(YUY2)) でない場合）
+                      画像が崩れたり、メモリアクセスエラーが発生していたバグを修正。
+                      (具体的には、横幅(width)が8の倍数でない場合、及びCropで縮小した場合）
+                      Widthは2の倍数であれば(YUY2の最小単位）正常に動作するようになった。
+                      作業領域として１画面分のバッファを余分に獲得していたのを削除。
+                      dllにプロパティ情報（バージョン情報）を追加。
+                 更新 widthが4の倍数でない場合、画像の端が異常になるのを修正(ver0.6)
+                      (多少スピードダウンかも）
+    04.06.2002 : 更新 色差精度の向上
+                      (NR結果の格納時、左のピクセルの色差を格納していたのを
+                       左右のピクセルの色差を平均[ ((Cn)+(Cn+1)+1)/2 ]したものを格納するようにした)
+    19.07.2002 : 更新 pitchがフレームによって変化する場合、画像が乱れたりアクセスエラーが発生した。
+
+    27.08.2002 : 更新 ソース及び説明ファイルのGPLの説明の追加・変更
+                      無駄なコードを削除。
+
+    25.12.2002 : 更新 Avisynth 2.5対応。
+                      デストラクタ追加（忘れていたアロケートしたメモリの明示的な開放）
+
+以上
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+Copyright(C) 2002 kiraru2002

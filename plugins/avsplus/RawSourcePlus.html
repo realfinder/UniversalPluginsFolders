@@ -1,0 +1,189 @@
+﻿<DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>RawSourcePlus</title>
+</head>
+<body bgcolor="#BED8CB" text="#000000">
+<h1>RawSourcePlus</h1>
+<h3>Loading raw video data from files</h3>
+<p>for Avisynth+ r2150 or greater<br>This filter is only for Avisynth+MT. Avisynth2.6 is not supported.</p>
+<h4>requirements</h4>
+<ul>
+    <li>Windows Vista sp2 or later</li>
+    <li>Avisynth+ r2150 or greater</li>
+    <li>Visual C++ Redistributable Packages for Visual Studio 2015</li>
+</ul>
+<h4>How to use</h4>
+<p><code>RawSourcePlus</code> (<var>string "file", int "width", int "height", string "pixel_type", int "fpsnum", int "fpsden", string "index", bool "show"</var>)</p>
+<p> RawSourcePlus opens a video file which contains 8bit, 9bit, 10bit, 16bit or float YUV444, YUV422, YUV411, YUV420, Gray, or RGB video data.<br>
+  There are three ways how the positions of the video frame data are calculated:</p>
+<ul>
+  <li>a YUV4MPEG2-header is found, width/height/framerate/pixeltype/fieldorder
+  is set according to the header data. Only fixed-length FRAME headers without 'm'tag are supported.</li>
+  <li>width, height and pixel_type is given as arguments. Then the positions are 
+    calculated assuming that only video data is in the file.</li>
+  <li>an "index" string (or file) is given together with width, height, 
+    pixel_type. The index string can contain all or partial positions of the frames.</li>
+</ul>
+<ul>Supported <var>pixel_type</var>s are:
+  <li>RGB, RGBA, BGR, BGRA, ARGB, ABGR (interleaved RGB without subsampling, resulting in AviSynth's RGB24 or RGB32)</li>
+  <li>YUY2(YUYV), YVYU, UYVY, VYUY (interleaved horizontally subsampled resulting in AviSynth's YUY2)</li>
+  <li>YV24, YUV444P8 (planar 8bit without subsampling, resulting in AviSynth's YV24)</li>
+  <li>YV16, YUV422P8 (planar 8bit horizontally subsampled, it is converted to AviSynth's YV16)</li>
+  <li>YV12, I420, IYUV, YUV420P8 (planar 8bit horizontally and vertically subsampled resulting in AviSynth's YV12)</li>
+  <li>YV411, YUV411P8, Y41B (planar horizontally subsampled, it is converted to AviSynth's YV411)</li>
+  <li>NV12, NV21 (chroma interleaved 8bit horizontally and vertically subsampled, those are converted to AviSynth's YV12)</li>
+  <li>Y8, GRAY8 (luma only resulting in AviSynth's Y8)</li><br>
+  <li>RGB48, RGBA64, BGR48, BGRA64, ARGB64, ABGR64 (interleaved RGB without subsampling, resulting in AviSynth+'s RGB48 or RGB64)</li>
+  <li>YUV444P9, YUV444P10, YUV444P12, YUV444P14, YUV444P16, YUV444PS (planar 9~16bit or float without subsampling, resulting in AviSynth+'s YUV444P10/12/14/16/S)</li>
+  <li>YUV422P9, YUV422P10, YUV422P12, YUV422P14, YUV422P16, YUV422PS (planar 9~16bit or float horizontally subsampled, resulting in AviSynth+'s YUV422P10/12/14/16/S)</li>
+  <li>YUV420P9, YUV420P10, YUV420P12, YUV420P14, YUV420P16, YUV420PS (planar 9~16bit or float horizontally and vertically subsampled resulting in AviSynth+'s YUV420P10/12/14/16/S)</li>
+  <li>P210, P216 (chroma interleaved 16bit horizontally subsampled, those are converted to AviSynth+'s YUV422P16)</li>
+  <li>P010, P016 (chroma interleaved 16bit horizontally and vertically subsampled, those are converted to AviSynth+'s YUV420P16)</li>
+  <li>Y10, Y12, Y14, Y16, Y32, GREY16, GREYS (luma only 10~16bit or float resulting in AviSynth+'s Y10/12/14/16/32)</li>
+  <li>GBRP, GBRP10, GBRP12, GBRP14, GBRP16, GBRPS (planar 8~16bit or float RGB without subsampling, resulting in Avisynth+'s RGBP/10/12/14/16/S)</li>
+  <li>GBRAP, GBRAP10, GBRAP12, GBRAP14, GBRAP16, GBRAPS (planar 8~16bit or float RGB with alpha, resulting in Avisynth+'s RGBAP/10/12/14/16/S)</li>
+  <li>YUVA444, YUVA444P10, YUVA444P12, YUVA444P14, YUVA444P16, YUVA444PS (planar 8~16bit or float YUV444 with alpha, resulting in AviSynth+'s YUVA444/P10/P12/P14/P16/PS)</li>
+  <li>YUVA422, YUVA422P10, YUVA422P12, YUVA422P14, YUVA422P16, YUVA422PS (planar 8~16bit or float YUV422 with alpha, resulting in AviSynth+'s YUVA422/P10/P12/P14/P16/PS)</li>
+  <li>YUVA420, YUVA420P10, YUVA420P12, YUVA420P14, YUVA420P16, YUVA420PS (planar 8~16bit or float YUV420 with alpha, resulting in AviSynth+'s YUVA420/P10/P12/P14/P16/PS)</li>
+</ul>
+<p>The default value of framerate is 25fps, you can change it with specified 'fpsnum' and 'fpsden' if you need (e.g. for NTSC-material).</p>
+<p>With <var>show</var>=true the actually used byteposition for that frame is displayed, 
+  followed by:<br>
+  &nbsp;K = position given in index is used<br>
+  &nbsp;D = position by adding current delta is used<br>
+  &nbsp;B = position by adding currend big_delta is used</p>
+<h4><b>Some simple examples:</b></h4>
+<table border="1">
+  <tr> 
+    <td> 
+      <pre>RawSourcePlus(&quot;d:\yuv4mpeg.y4m&quot;)  #this assumes there is a valid YUV4MPEG2-header inside.
+                              #If not, default values are used: width=720, height=576, pixel_type=&quot;YUY2&quot;</pre>
+    </td>
+  </tr>
+</table>
+<br>
+<table border="1">
+  <tr> 
+    <td> 
+      <pre>RawSourcePlus(&quot;d:\src6_625.raw&quot;,720,576,&quot;BGRA&quot;) # really a raw file
+      # if you are unsure about the pixel_type, simply try out all possible values.</pre>
+    </td>
+  </tr>
+</table>
+<h4><b>Using an index-string:</b></h4>
+<p>You can enter the byte positions of the video frames directly.</p>
+<table border="1">
+  <tr> 
+    <td> 
+      <pre>RawSourcePlus(&quot;d:\yuv.mov&quot;,720,576,&quot;UYVY&quot;, index=&quot;0:192512 1:1021952 25:21120512 50:42048512 75:62976512&quot;)</pre>
+    </td>
+  </tr>
+</table>
+<p>This is useful if it's not really raw video, but e.g. uncompressed MOV files 
+  or a file with some kind of header.<br>
+  It will work whenever the spacing of the frames is fixed or has at least two 
+  fixed intervalls (e.g. audio data interleaved with the video every 25th frame).<br>
+  You enter pairs of <tt>framenumber:byteposition</tt>.<br>
+  Internally there are two step values (for the byte positions): <var>delta</var> 
+  and <var>big_delta</var>.<br>
+  <var>delta</var> is stored everytime when <font color="#0033FF">two adjacent framenumbers</font> 
+  are given, the default value is width*height*bytes_per_pixel.<br>
+  <var>big_delta</var> is stored, when <font color="#0033FF">three framenumbers with 
+  the same two intervals</font> are given. The default value is 0 (meaning there 
+  is no useful <var>big_delta</var> present)..<br>
+  If those conditions are not met, the internal values of delta and big_delta 
+  is not updated, only the given bytepositions in the index are used.<br>
+  <var>big_delta</var> is reset to 0 if the resulting position would be behind the 
+  given one (see beyond).</p>
+<p>Here are some possible cases:</p>
+<table border="1">
+  <tr valign="top"> 
+    <td width="11%"> 
+      <pre>  0:    0</pre>
+    </td>
+    <td width="89%"> 
+      <pre>frame 0 starts at byte 0, step to frame 1 is default = width*height*bytes_per_pixel</pre>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td width="11%"> 
+      <pre>  0:10000</pre>
+    </td>
+    <td width="89%"> 
+      <pre>frame 0 starts at 10000</pre>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td width="11%"> 
+      <pre>  0: 5000
+  1:15000</pre>
+    </td>
+    <td width="89%"> 
+      <pre>frame 0 at 5000
+frame 1 at 15000 (delta is set to 10000)
+frame 2 at 25000 (using delta)
+frame 3 at 35000 (using delta)</pre>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td width="11%"> 
+      <pre>  0:  5000
+  1: 15000
+
+
+<br> 25:290000
+
+
+ 50:590000
+
+
+
+ 75:890000</pre>
+    </td>
+    <td width="89%"> 
+      <pre>frame 0 at 5000
+frame 1 at 15000 (delta=10000)
+frame 2 at 25000
+...
+frame 25 at 290000 (using entry instead of delta which would be at 255000)
+frame 26 at 300000 (still using delta)
+...
+frame 50 at 590000 (using entry instead of delta)
+&gt;&gt; because 25...50 = 50...75 now big_delta is set to 300000 (590000-290000)
+frame 51 at 600000 (still using delta)
+...
+frame 75 at 890000 (using entry which is the same as using big_delta)
+... 
+frame 100 at 1190000 (using big_delta)
+frame 101 at 1200000 (using delta)<br>...<br>frame 125 at 1490000 (using big_delta)</pre>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td width="11%"> 
+      <pre>  0:  5000
+  1: 15000
+ 25:290000
+ 50:590000
+ 75:890000<br>
+100:950000</pre>
+    </td>
+    <td width="89%"> 
+      <pre>the same as in the previous example<br><br><br><br>frame 75 at 890000<br>&gt;&gt; because 890000+300000 &gt; 950000 now big_delta is reset to 0.<br>frame 100 at 950000<br>frame 101 at 960000 (using delta)<br>...<br>frame 125 at 1200000 (there is NO big_delta)</pre>
+    </td>
+  </tr>
+</table>
+<p>The index string is treated as a filename, if there is an &quot;.&quot; inside. 
+  The data is then read from that file, line breaks don't matter.</p>
+
+<h4>note:</h4>
+<p>This filter is automatically registerd as MT_SERIALIZED.<br>
+You don't have to set it yourself.</p>
+<h4>original author:Ernst Pech&eacute;, 2005-10-13</h4>
+<h4>modified by Oka Motofumi, 2011-06-14</h4>
+<p>
+Version 2016-07-07 - Modified RawSource26 to Avisynth+ plugin.
+Version 2016-08-14 - Update for Avisynth+ r2150 or later.
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+<META NAME="description" CONTENT="Cnr2 ReadMe File">
+<META NAME="keywords" CONTENT="Cnr2">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso_8859_1">
+	<title>Cnr2 - Readme file</title>
+</head>
+<body BGCOLOR="#FFFFFF">
+<font face=verdana>
+<center><u><h2>Cnr2 : Chroma Noise Reducer for AviSynth<br></u>
+<small>(v2.6.1)</small><br><br></h2></center>
+<h3>Warning - YV12 inside !!</h3>
+<ul>
+This filter is designed for Avisynth 2.5<br>
+It would work only with Avisynth 2.5 or greater<br>
+Needs YUY2 or YV12 input.<br>
+</ul>
+<h3>What it does:</h3>
+<ul>
+this filter is a Chroma Stabilizer for analogic sources<br>
+It's a temporal filter and it's very effective against two chroma artifacts :<br>
+stationnary rainbows and huge analogic chroma activity.<br>
+</ul>
+<h3>Usage :</h3>
+<ul>
+	Add the following lines in your avisynth script :<br>
+	<code><br>
+	LoadPlugin("Cnr2.dll")<br>
+	#ex :<br>
+	Cnr2() # for TV/VHS caps<br>
+	Cnr2("xxx",4,5,255) # my suggestion to remove rainbows.<br>
+	</code><br>
+	Syntax :<br>
+	<code><br>
+	Cnr2([mode]("oxx"),[scdthr](10),[ln](35),[lm](192),[un](47),[um](255),[vn](47),[vm](255),[log](false),[sceneChroma](false))<br>
+	</code><br>
+	<u>mode</u><br>
+	<ul>
+	mode of each components, "YUV"<br>
+	two modes are possible : wide ('o') and narrow ('x')<br>
+	narrow mode is more sensible to variations, and less effective<br>
+        Default:  "oxx"  (String) <br>
+	</ul><br>
+	<u>scdthr</u>
+	<ul>
+	scene change detection threshold (as percentage <br>
+        of maximum possible change).  If sceneChroma is set <br>
+        to true, then it is the maximum possible change <br>
+        including both luma and chroma, if sceneChroma is <br>
+        set to false then it is the maximum possible change <br>
+        considering luma only (luma only is more reliable).<br>
+	lower it to make scene change detection more sensible.<br>
+	If a scene change is detected, cnr2 will<br> 
+	reset the filtering for the new scene.<br>
+        Default:  10.0  (float) <br>
+	</ul><br>
+	<u>ln,lm,un,um,vn,vm</u> : 0 to 255
+	<ul>
+	the n values are the movement sensibility :<br>
+	higher values will denoise more, but could produce ghosting artifacts<br>
+	the m values are the maximum effectiveness of the denoiser :<br>
+	lower them to reduce the denoising effect.<br>
+        Defaults:  ln=35 lm=192 un=47 um=255 vn=47 vm=255 
+	</ul><br>
+	<u>log</u> :
+	<ul>
+	to log the scene change stats (output them using OutputDebugString). <br> 
+        You can use <a href="http://www.sysinternals.com/ntw2k/utilities.shtml">DebugView</a> to see it.  It will simply list the detected change, <br>
+        the maximum allowable change for the current scdthr setting, and the <br>
+        ratio (at 1.0 or greater a scene change has occurred). <br>
+        Default:  false (bool) <br>
+	</ul><br>
+	<u>sceneChroma</u> :
+	<ul>
+	sets whether or not both chroma and luma are considered <br>
+        on scene change detection (true), or only luma (false). <br> 
+        Luma only detection tends to more reliable. <br>
+        Default:  false (bool)  <br>
+	</ul><br>
+	<br>
+	> Cnr2()<br>
+	> Cnr2("oxx",8,35,192,47,255,47,255,false)<br>
+	> Cnr2(mode="oxx",scdthr=8,ln=35,lm=192,un=47,um=255,vn=47,vm=255,false)<br>
+	are three aliases : they would produce the same filtering.<br>
+	</ul><br>
+</ul>
+
+<h3>History :</h3>
+<ul>
+This Filter is inspired by the Virtual Dub filter Chroma Noise Reduction 1.1 (by Gilles Mouchard)<br>
+cnr 1.1 was a good chroma filter but was using YUV conversion to do is job.<br>
+I used it for VHS encodes, because it was the better Chroma Noise filter i tested<br>
+But when i started to use AviSynth and Huffyuv, RGB convertion was an overhead<br>
+So i take a look on the code and wrote my own filter from scratch, but based of the same algo.<br>
+the output of cnr2 is 99,9% to 100% the same as cnr (due to YUV colorspace)<br>
+and it's 3x-5x faster (Cnr2 can do real-time denoising in 640x480x25fps with a 1,4 Ghz CPU)<br>
+</ul>
+<ul><u>version 2.1 (31.7.2002)</u><br>
+<ul>
+little review. corrections.
+</ul></ul>
+<ul><u>version 2.2 (01.8.2002)</u><br>
+<ul>
+First frame bug fixed. 
+</ul></ul>
+<ul><u>version 2.3 (17.11.2002)</u><br>
+<ul>
+YV12 Code and SCD (scene change detection)
+</ul></ul>
+<ul><u>version 2.4 (17.11.2002)</u><br>
+<ul>
+small changes/bug fixes
+</ul></ul>
+<ul><u>version 2.51 (13.11.2003)</u><br>
+<ul>
+Klaus Post: bug fixes.
+</ul></ul>
+<ul><u>version 2.6 (29.06.2004)</u><br>
+<ul>
+tritical: few bug fixes, scene change detection overhaul, code cleanup.
+</ul></ul>
+<ul><u>version 2.6.1 (30.06.2004)</u><br>
+<ul>
+tritical: made yuy2 processing fast again.
+</ul></ul>
+<br>
+<h3>Ditribution :</h3>
+<ul>
+This is a free sofware distribued under the terms of the GNU-GPL<br>
+The only restriction is to e-mail me if you want to do something with<br>
+the source because i don't want you to lose your time to decode my <br>
+cryptic C,C++,Delphi (or any other language) writing.<br>
+Thanks :)<br>
+</ul>
+<h3>Contact :</h3>
+<ul>
+Don't even doubt of <a href="mailto:marc.fd@libertysurf.fr">e-mailing me</a> for any suggestion :-), bug report :-(,<br>
+feature request :D, or whatever else :-P.<br>
+I hope you'll find this prog useful ! (i do...)<br>
+<br>
+<br>
+<p align="Right">
+Last update 06.30.04 by <a href="mailto:kes25c@mizzou.edu">tritical</a><br>
+</body>
+</html>

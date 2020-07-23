@@ -1,0 +1,56 @@
+Zoom plugin (Pan/Zoom/Rotate) 
+
+As there is often the need for moving a video around I made a plugin for this. (it should help shorten some of Wilbert's monster-Animate-scripts). 
+
+It has the following syntax: 
+
+Zoom(string "srcx", string "srcy", string "dstx", string "dsty", string "factorX", string "factorY", string "factor", string "angle", int "height", int "width", bool "show") 
+
+As you see there are no number arguments. You can insert every script function AviSynth knows of which returns a number. 
+
+srcx/srcy are the "center" coordinates in the original frame, 
+dstx/dsty are the center coordinates in the moved frame, 
+factorX, factorY are the magnification factors, 
+factor can be used to set both (factorX and factorY) to the same value at once,
+angle is the rotation angle in degrees. 
+height, width are the new image dimensions
+show prints the calculated values on the image
+
+Sounds complicated? 
+Not really, try this: 
+
+version().converttorgb32().zoom(dstx="n", angle="n") 
+
+Here you see that the variable "n" can be used to reference to the current frame number (and this is of course the most important thingie). 
+
+Or try: 
+
+version().converttorgb32() 
+zoom(factorx="n<41 ? pow((n+1)/41,0.5) : 1", factory="n<41 ? pow((n+1)/41,0.5) : 1", dstx="n<41 ? width/2 : width/2+5*(n-41)", angle="n<41 ? 18*n : 0") 
+
+Or do you want to shake:
+version().converttorgb32()
+zoom(dsty="rand(10)+height/2", dstx="rand(10)+width/2")
+
+
+And the new image gets a defined alpha layer (black=transparent, else opaque), so you can layer the result on top of another video. 
+
+
+Of course it can be used e.g. as plain rotate: 
+
+e.g. Zoom(angle="45") will do nothing but rotate your image by 45 degrees. 
+
+
+This was the good news. 
+
+The bad news: 
+
+-only RGB32 (I want to use alpha) 
+-quite slow (but it's only a trick filter for not so many frames) 
+-the down resizer is quite poor (something like a point resize)
+
+
+Get it here: http://www.avisynth.org/warpenterprises/index.html
+
+
+<2005-01-22> the alpha channel is no longer treated differently (previously it was set to opaque when not black)

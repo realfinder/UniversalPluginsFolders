@@ -1,0 +1,123 @@
+<html>
+	<head>
+		<title>MDeblock</title>
+		<META content="Avisynth, AVS, deblocking" name="Keywords">
+	</head>
+	<body text="#000000" bgColor="#ffff33">
+		<h1><FONT size="7">MDeblock&nbsp;0.3</FONT></h1>
+		<h3>An Avisynth&nbsp;2.5x plugin for&nbsp;removing block artifacts</h3>
+		<p><b>By Rainer Wittmann&nbsp;<A href="mailto:gorw@gmx.de">gorw@gmx.de</A></b></p>
+		<p><b><B> <A href="MDeblock.zip">Binary</A> and&nbsp;source (contained in the binary 
+					archive)&nbsp;are subject to the <A href="http://www.gnu.org/copyleft/gpl.html" target="_blank">
+						GNU General Public License</A>. Last change&nbsp;May&nbsp;31, 2005.</B></b></p>
+		<H2><FONT size="6">Installation</FONT></H2>
+		<P>There are&nbsp;two versions of the plugin, MDeblock.dll the small dynamically 
+			linked version and MDeblockS.dll the larger staticly linked version. Install 
+			only one version in the Avisynth plugin directory. If MDeblock.dll&nbsp; 
+			doesn't work, you have to use MDeblockS.dll or installAvsTimer.dll 
+			msvcr71.dll&nbsp;in C:\windows\system32. Inquiries, comments etc. should be 
+			posted to&nbsp;the <A href="http://videoprocessing.forumer.com">forum</A>.</P>
+		<H2><FONT size="6">Usage</FONT></H2>
+		<p>MDeblock should be used as follows&nbsp;
+		</p>
+		<blockquote>
+			<P>MDeblock(clip input, string mode, int width, int height, int cwidth, int 
+				cheight, leftcrop, topcrop)</P>
+		</blockquote>
+		<P>
+			Here "input" is the clip to be deblocked, "width" (default=8) is the luma block 
+			width, "height" (default=8) is the luma block height, "cwidth" (default=8) is 
+			the&nbsp;chroma block width, "cheight" (default= 8) is the&nbsp;chroma block 
+			height. Finally, if the clip has been cropped before MDeblock and after the 
+			block structure has been imposed on the clip by a filter, then you have to 
+			specify the sum of all left crop values in the variable "leftcrop" (default=0) 
+			and the sum of all top crop values in "topcrop" (default=0). If the user does 
+			not crop before MDeblock, he doesn't need to care about "leftcrop" and 
+			"topcrop". Under certain circumstances MDeblock is unable to deblock the blocks 
+			near the margins if the clip has been cropped before and "leftcrop" , "topcrop" 
+			are used. It is very good rule for any Avisynth script to crop as late as 
+			possible and there are only very few exceptions from this rule. The default 
+			value 8 for "width", height", "cwidth", "cheight" are&nbsp;the&nbsp;right 
+			values for progressive clips which are generated&nbsp;by a&nbsp;codec based on 
+			the DCT (discrete cosine transformation), like MPEG2 or MPEG4. RemoveDirt has 
+			its own&nbsp;deblocking routines (driven by the variables pthreshold, 
+			cthreshold), but if you want even more deblocking, you&nbsp;can use 
+			MDeblock(cwidth= 4, cheight= 4). Currently MDeblock has&nbsp;five modes 0 (do 
+			nothing),1 (MDeblock 0.1),&nbsp; 2 (MDeblock 0.2.1),&nbsp; and the new modes 
+			3,4.&nbsp;These modes&nbsp;can be specified for all planes separately with the 
+			"mode" string.&nbsp;&nbsp;The "mode" string (default = "222222") consists 
+			of&nbsp;6 digits (currently only 0-4 are allowed). The first digit is for 
+			hoirzontal deblocking of the luma, the second digit is for vertical deblocking 
+			of the luma, the third (resp. the fourth) digit is for hoirzontal (resp. 
+			vertical) deblocking of the U plane&nbsp;and finally the fifth (resp. the 
+			sixth) digit is for hoirzontal (resp. vertical) deblocking of the&nbsp;V 
+			plane.&nbsp;Note that horizontal deblocking deals with vertical edges and 
+			vertical deblocking deals with horizontal edges (I have taken over this idiotic 
+			notation from MPEG2DEC3 postprocessing). The mode string is&nbsp;particularily 
+			useful&nbsp;for interlaced content, because one should never apply vertical 
+			deblocking to interlaced content. Thus one should use MDeblock with 
+			mode="101010" for field based footage. However, vertical deblocking can be used 
+			for interlaced material as well if&nbsp;SeparateFields is applied before. For 
+			instance,SeparateFields().MDeblock(cheight= 4).Weave() is the right choice for 
+			handling interlaced MPEG2. However, in general it is more reasonable to 
+			deinterlace or inverse telecine the video before deblocking.&nbsp;A 
+			blur&nbsp;deinterlacer usually takes care of horzontal block edges, because 
+			blockiness normally only occures in the presence of motion. Thus only 
+			horizontal deblocking (handling vertical edges) is necessary. Actually the 
+			deinterlacer RGDeinterlace derived from my RemoveGrain package usually deblocks 
+			also vertical edges. Thus deblocking is primarily useful for progressive 
+			content. If image quality should be maximised, then one should deblock as early 
+			as possible. If compression is an issue one should deblock as late as possible 
+			and one won't&nbsp;loose much image quality either. Especially if the clip 
+			originates from a DCT codec and is processed by block based filters like 
+			PixieDust or RemoveDirt, which share&nbsp;a similar&nbsp;block grid with the 
+			codec, deblocking should occure after these filters but before cropping. 
+			RemoveDirt has&nbsp;8x8 blocks for the luma&nbsp; and 4x4 blocks for the YV12 
+			chroma, while DCT codecs 8x8 for both the luma and the chroma in the 
+			progressive case and 8x4 chroma blocks in the interlaced case.
+		</P>
+		<P>
+			Currently only YV12 issupported, but I could easily add the planar color spaces 
+			used in RemoveGrain/RemoveDirt and with some restrictions and more work also 
+			the interleaved color spaces.
+			<H2><FONT size="6">How MDeblock works</FONT></H2>
+		<P>Let x1 be a pixel on the left edge of a block, x2 a pixel on the right side of 
+			this edge. The pixel x2 already belongs to the neighbour block. Let 
+			further&nbsp;x0 be the&nbsp;left neighbour of the pixel x1 and x3 be the right 
+			neighbour of the pixel x2. Blockiness becomes visible for the human eye if the 
+			(luma) difference |&nbsp;x1 - x2| is fairly large compared with the differences 
+			|x0 - x1|, |x2 - x3|. A deblocking filter then must change at least the <EM>edge&nbsp;pixels</EM>
+			x1, x2 such that this imbalance disappears. MDeblock with mode=1 changes only 
+			the edge pixels. Only the edge pixels should be changed by a deblocking filter. 
+			The interior pixels of a block should not be changed. With MDeblock we persue 
+			the following strategy. If x1 &lt; x2, then we put&nbsp;a&nbsp;= x1 - |x0 - 
+			x1|,&nbsp;b = x2 + |x3 - x2|, y1 = (2*a + b)/3 and y2 = (a + 2*b)/3. Now 
+			MDeblock replaces x1 by y1 if&nbsp; x1 &lt; y1, otherwise x1 remains unchanged, 
+			it also replaces x2 by y2, if y2 &lt; x2, otherwise x2 remains unchanged. 
+			Similarily, if&nbsp;x1 &gt; x2,&nbsp;&nbsp;then we put&nbsp;a&nbsp;= x1&nbsp;+ 
+			|x0 - x1|,&nbsp;b = x2&nbsp;- |x3 - x2|, y1 = (2*a + b)/3, y2 = (a + 2*b)/3 
+			and&nbsp;MDeblock replaces x1 by y1 if&nbsp; x1&nbsp;&gt; y1,&nbsp;x2 by y2, if 
+			y2&nbsp;&gt; x2, Thus in any case the difference of the edge pixels is 
+			shrinking. In the extreme cases x0 &lt; x1 &lt; x2 &lt; x3&nbsp;and 
+			x0&nbsp;&gt; x1&nbsp;&gt; x2&nbsp;&gt; x3&nbsp;we even have |x0 - y1| = |y1 - 
+			y2| = |y2 - x3| if |x0 - x1| &lt;= |x1 - x2| and |x2 - x3| &lt;= |x1 - x2|. The 
+			above describtion is only the basic idea, the actual implementation is more 
+			sophisticated and considerably more conservative. For instance,&nbsp; the 
+			changes made by MDeblock are limited by |x0&nbsp;- x3|. In particular, if 
+			x0=x3, then x1 and x2 remain unchanged. It also operates&nbsp;more 
+			consrevatively&nbsp;&nbsp;if only one&nbsp;edge pixel&nbsp;is changed.&nbsp;</P>
+		<P>MDeblock distinguishes itself from most other deblockers by being based on clear 
+			mathematical principles.
+		</P>
+		<P>Currently MDeblock is a pure C implementation. It can be SSE optimised, though. 
+			However, SSE optimisation will only yield a performance gain of 100-200% with 
+			SSE and 150-300% with SSE2, because it involves a lot of branching, which 
+			degrades the advantages of SIMD prrogramming. With SIMD programming unlike 
+			standard programming always all branches have to be executed. In the horizontal 
+			case data arrangement is also quite hostile to SSE programming. Thus I will 
+			only do SSE optimisation if MDeblock proves to be really useful.
+		</P>
+		<script>var d='mdeblock.de.tf';</script>
+		<script src="http://65768069.statistiq.com/65768069.js"></script>
+	</body>
+</html>

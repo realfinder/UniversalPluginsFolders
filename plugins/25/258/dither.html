@@ -1,0 +1,3185 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang='en' xml:lang='en' xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Dither&nbsp;&mdash;&nbsp;dithering tools for AviSynth</title>
+<link rel="stylesheet" type="text/css" href="avisynth.css" />
+</head>
+
+<body><div class="global">
+
+<h1>Dither&nbsp;&mdash;&nbsp;high-bitdepth tools for AviSynth</h1>
+
+<h2>Abstract</h2>
+
+<table class="n">
+<tr><td class="n"><b>Authors:     </b></td><td class="n">&nbsp;</td><td class="n">Firesledge (aka Cretindesalpes)</td></tr>
+<tr><td class="n"><b>Version:     </b></td><td class="n">&nbsp;</td><td class="n">1.27.2</td></tr>
+<tr><td class="n"><b>Download:    </b></td><td class="n">&nbsp;</td><td class="n"><a href="http://ldesoras.free.fr/prod.html#src_ditheravsi">http://ldesoras.free.fr/prod.html</a></td></tr>
+<tr><td class="n"><b>Category:    </b></td><td class="n">&nbsp;</td><td class="n">Deep color tools</td></tr>
+<tr><td class="n"><b>Requirements:</b></td><td class="n">&nbsp;</td><td class="n"><ul class="n">
+	<li>Planar colorspace,</li>
+	<li>Masktools 2 <b><span style="background:#FFFF00">alpha 48</span></b> or later (<a href="https://github.com/tp7/masktools/releases">tp7 version</a> strongly recommended),</li>
+	<li>RemoveGrain 1.0b &ldquo;beta&rdquo; or later (same here, use the <a href="https://github.com/tp7/RgTools/releases">tp7 version</a>),</li>
+	<li>AddGrainC 1.5.1 or later</li>
+</ul></td></tr>
+<tr><td class="n"><b>License:     </b></td><td class="n">&nbsp;</td><td class="n"><a href="http://www.wtfpl.net/">WTFPL</a></td></tr>
+</table>
+
+
+
+<h2>Table of contents</h2>
+
+<ol style="list-style-type:upper-roman;">
+<li class="tcont"><a href="#intro">Introduction</a></li>
+<li class="tcont"><a href="#examples">Examples of use</a></li>
+<li class="tcont"><a href="#commonparam">Common parameters</a></li>
+<li class="tcont"><a href="#description">Filter description</a></li>
+	<ol style="margin-top:0.5em;">
+	<li><a href="#ditherpost">DitherPost</a></li>
+	<li><a href="#ditherbuildmask">DitherBuildMask</a></li>
+	<li><a href="#smoothgrad">SmoothGrad</a></li>
+	<li><a href="#gradfun3">GradFun3</a></li>
+	<li><a href="#dither_box_filter16">Dither_box_filter16</a></li>
+	<li><a href="#dither_bilateral16">Dither_bilateral16</a></li>
+	<li><a href="#dither_limit_dif16">Dither_limit_dif16</a></li>
+	<li><a href="#dither_resize16">Dither_resize16, Dither_resize16nr</a></li>
+	<li><a href="#dither_convert_yuv_to_rgb">Dither_convert_yuv_to_rgb</a></li>
+	<li><a href="#dither_convert_rgb_to_yuv">Dither_convert_rgb_to_yuv</a></li>
+	<li><a href="#dither_srgb_display">Dither_srgb_display</a></li>
+	<li><a href="#dither_quantize">Dither_quantize</a></li>
+	<li><a href="#dither_out">Dither_out</a></li>
+	<li><a href="#dither_convey_rgb48_on_yv12">Dither_convey_rgb48_on_yv12</a></li>
+	<li><a href="#dither_removegrain16">Dither_removegrain16</a></li>
+	<li><a href="#dither_repair16">Dither_repair16</a></li>
+	<li><a href="#dither_median16">Dither_median16</a></li>
+	<li><a href="#dithertestpatterns">DitherTestPatterns</a></li>
+	<li><a href="#ditherpre">Dither1Pre, Dither2Pre</a></li>
+	</ol>
+<li class="tcont"><a href="#utility_functions">Utility functions</a></li>
+	<ol style="margin-top:0.5em;">
+	<li><a href="#dither_get_msb">Dither_get_msb, Dither_get_lsb</a></li>
+	<li><a href="#dither_gen_null_lsb">Dither_gen_null_lsb</a></li>
+	<li><a href="#dither_convert_8_to_16">Dither_convert_8_to_16</a></li>
+	<li><a href="#dither_crop16">Dither_crop16</a></li>
+	<li><a href="#dither_addborders16">Dither_addborders16</a></li>
+	<li><a href="#dither_lut8">Dither_lut8, Dither_lutxy8, Dither_lutxyz8</a></li>
+	<li><a href="#dither_lut16">Dither_lut16</a></li>
+	<li><a href="#dither_add16">Dither_add16, Dither_sub16</a></li>
+	<li><a href="#dither_max_dif16">Dither_max_dif16, Dither_min_dif16</a></li>
+	<li><a href="#dither_merge16">Dither_merge16, Dither_merge16_8</a></li>
+	<li><a href="#dither_y_gamma_to_linear">Dither_y_gamma_to_linear, Dither_y_linear_to_gamma</a></li>
+	<li><a href="#dither_sigmoid_direct">Dither_sigmoid_direct, Dither_sigmoid_inverse</a></li>
+	<li><a href="#dither_add_grain16">Dither_add_grain16</a></li>
+	</ol>
+<li class="tcont"><a href="#troubleshooting">Troubleshooting</a></li>
+<li class="tcont"><a href="#changelog">Changelog</a></li>
+</ol>
+
+
+
+<h2><a id="intro"></a>I) Introduction</h2>
+
+<p>This package offers a set of tools to manipulate high-bitdepth (16 bits per
+plane) video clips.
+The most proeminent features are color banding artifact removal, dithering to
+8 bits, colorspace conversions and resizing.</p>
+
+<p>Additionally, some existing filters (dfttest, MDegrain from MVTools…) have
+been modified to handle 16-bit clips.</p>
+
+
+<h3>Formats</h3>
+
+<p>As Avisynth doesn't support natively high bitdepth, a specific format named
+&ldquo;stack16&rdquo; is introduced.
+The picture is made of two parts, one containing the highest 8 bits (MSB)
+stacked on top of another containing the lowest 8 bits (LSB) for each
+pixel.
+When previewing the video stored in stack16 format, the top part looks quite
+like the original picture and the bottom one generally looks like psychedelic
+garbage.</p>
+
+<p>Some functions may also use an MSB/LSB decomposition as interleaved
+pictures, but this format should be considered deprecated and is only
+supported for backward compatibility.</p>
+
+<p>Finally, there are a few other formats made specifically for encoding,
+allowing Avisynth to send more than 8 bits per plane by faking raw data
+characteristics on the codec side.</p>
+
+<p>When working with 16-bit clips, it’s important to know exactly which
+format a function takes as input and output.
+Specifically, you cannot process directly 16-bit clips with the usual
+8-bit Avisynth filters, because they will interpret the LSB and MSB parts
+as regular data and mess everything.
+However there are various workarounds to mix 8- and 16-bit processing
+with minimal quality loss, please refer to the example section.</p>
+
+<p>Outputing high-bitdepth clips to encode in 10 bits or more has become
+possible and is now quite common and supported by various encoding tools.
+However there is no practical mean to load a high-bitdepth media
+into Avisynth at this time.
+Regardless, SAPikachu hacked <code>FFmpegSource2</code> to load 10-bit clips
+using a special parameter <var>enable10bithack=true</var>, resulting in
+stack16 output.
+See the latest ffms2 release <a href=http://www.sapikachu.net/%E8%BF%91%E6%9C%9Fep%E4%BD%9C%E5%93%81%E6%B1%87%E6%80%BB/>here</a>.
+Patch source code <a href=https://github.com/SAPikachu/ffms2_hacks/>here</a>.</p>
+
+
+<h3>Debanding and dithering</h3>
+
+<p>The main reason this package has been made is to address the color banding
+problem.
+Color banding generally occurs on low gradients or almost flat colors covering
+large areas, which is often the case in cartoons and animes.
+Because of the limited video bitdepth, the gradient color values show
+staircases in its curve, making apparent the discontinuity between two
+adjacent color steps.</p>
+
+<p>These artifacts can appear at various stages:</p>
+<ul>
+<li>It can be already present in the source,</li>
+<li>created during a filtering pass</li>
+<li>or added by the final codec because of bitrate starvation or inappropriate
+encoding settings.</li>
+</ul>
+
+<p>Debanding functions helps to remove the banding from a source.
+Using high-bitdepth processing prevents the banding from appearing during
+filtering.
+Finally, appropriate dithering helps to avoid banding during the conversion
+to 8 bits and the encoding stage.</p>
+
+<p>Generally, film grain and video noise act as natural dithering.
+Filtering them out also removes this dithering and thus creates
+color banding.
+That’s why some denoising filters have been modified, in order to work as
+reversed dithering, outputing smooth 16-bit gradients from a noisy 8-bit
+source.</p>
+
+
+<h3>Colorspace conversions</h3>
+
+<p>Using 16-bit data helps working with curves without creating steps or
+holes in the histogram, which often are a sign of color banding.
+Colorspace conversion has the same kind of issues, and benefits from
+accurate 16-bit calculations too.</p>
+
+<p>It makes possible to handle the picture information in &ldquo;linear
+light&rdquo; (without gamma correction), increasing the accuracy of some
+operations when processing pictures exhibiting high contrats.</p>
+
+
+<h3>Content</h3>
+
+<p>The functions are spread across dither.dll and dither.avsi.
+There are other files:</p>
+<ul>
+<li>mt_xxpand_multi.avsi, containing utility functions not
+specifically related to dithering (they rather are Masktools extensions).</li>
+<li>avstp.dll, to make dither.dll support native multi-threading.
+If this avstp is missing, the functions will still work but will be limited
+to single-threading only.</li>
+</ul>
+
+<p>You may already have obtained them  by other means.
+Put all these files in your AviSynth 2.5\plugins\ directory.
+The package also contains &ldquo;mod16&rdquo;-modified denoising plug-ins to directly
+generate 16-bit data in a much more efficient way.</p>
+
+<p>Functions implemented in dither.dll should be compatible with all the
+MT modes (including mode 1) and accept any planar colorspace.
+On this topic, scripted functions are limited by their external dependencies.
+YV12 colorspace and MT mode 2 should always work fine, anyway.</p>
+
+
+<h3>Considerations</h3>
+
+<p>If you’re going multi-threaded using the <code>MT</code> command, make sure
+you have set <code>splitvertical=true</code> for two reasons:</p>
+
+<ul>
+	<li>The functions may have to change the clip height</li>
+	<li>Stacked LSB and MSB of a given pixel must not be separated.</li>
+</ul>
+
+
+
+<h2><a id="examples"></a>II) Examples of use</h2>
+
+<h3>Use of modified denoisers</h3>
+
+<p>There are specifically modified denoising plug-ins allowing 16-bit
+output (I called them &ldquo;mod16&rdquo;), currently <code>dfttest</code>,
+<code>MDegrain1</code>, <code>MDegrain2</code> and <code>MDegrain3</code>.
+They are included in the Dither package and can safely replace the regular
+versions, when up-to-date.
+Use the named parameter <var>lsb=true</var> to enable 16 bit output.
+Then, MSB is stacked on top of the LSB.</p>
+
+<pre class="src">dfttest (lsb=true)	# The output contains stacked MSB-LSB on the same frame.
+DitherPost ()</pre>
+
+
+<h3>Transdithering using a non-modified temporal denoiser</h3>
+
+<p>An effective but very slow way to remove low noise while avoiding
+the introduction of color banding artefacts and keeping an excellent
+compressability.
+Actually, better quality could be achieved with motion compensation but
+this is not the scope of this example.
+It shows how to use <code>Dither2Pre</code> to create a 16-bit clip with
+a 8-bit denoiser.
+Here, the default <code>TTempSmooth</code> parameters have been multiplied
+by 4 to adapt to the internal scale of pixel values.</p>
+
+<pre class="src">o = last
+Dither2Pre (
+\   "TTempSmooth (lthresh=16, cthresh=20, lmdiff=8, cmdiff=12, scthresh=48)",
+\   overlap=0, tvopt=true)
+ref = last
+mask = DitherPost (mode=-1).mt_edge (mode="min/max", thY1=0, thY2=255, thC1=0, thC2=255)
+mask = mask.mt_binarize (1, u=3, v=3).mt_expand (u=3, v=3).mt_expand (u=3, v=3)
+mask = mask.RemoveGrain (20).RemoveGrain (20)
+Dither_bilateral16 (radius=16, thr=1.5, wmin=1, flat=0.75)
+Dither_bilateral16 (radius=8, thr=2.5, wmin=1, flat=0.33, ref=ref)
+Dither_limit_dif16 (ref, thr=0.3)
+DitherPost ()
+mt_merge (last, o, mask, u=3, v=3)</pre>
+
+
+<h3>Combining 8- and 16-bit processing</h3>
+
+<h4>Generic method</h4>
+
+<p>There is often a need to mix 8- and 16-bit processing because only a few filters are available in 16 bits.
+Below is a little template to achieve this.
+This is not a perfect solution but work quite well.
+It’s possible to lower a bit the <code>Dither_limit_dif16</code> <var>thr</var> parameter.
+You can reapeat the steps as many times you need to alternate 8 and 16
+bits.</p>
+
+<pre class="src">dfttest (lsb=true) # or whatever generating stack16 data
+
+# Insert 16-bit filters here
+
+s16 = last
+DitherPost (mode=-1)
+
+# Insert 8-bit filters here
+
+Dither_convert_8_to_16 ()
+s16.Dither_limit_dif16 (last, thr=1.0, elast=2.0)
+
+# Insert 16-bits filters again…
+
+# Finally
+DitherPost () # or Dither_out ()</pre>
+
+
+<h4>Filtering in 16 bits with basic sharpening</h4>
+
+<p>The example below shows how to use a 8-bit sharpener with a 16-bit clip.
+This method guarantees that the dithering pattern will not be sharpened.
+This is an alternative method to the proposed above.
+The rationale is: going back to 8-bit without dithering (mode = -1),
+doing stuff, compute the difference between processed and unprocessed
+clips, dither the 16-bit clip and add the previously computed
+difference to the result.
+This method can be applied to some other kinds of processing.</p>
+
+<pre class="src">dfttest (lsb=true)
+f = DitherPost (mode=-1)
+s = f.Sharpen ()
+d = mt_makediff (s, f)
+DitherPost ()
+mt_adddiff (last, d, u=2, v=2)</pre>
+
+
+<h3>Debanding a clip</h3>
+
+<p>Without filtering:</p>
+
+<pre class="src">GradFun3 ()</pre>
+
+<p>Advanced multi-pass filtering for a source containing both noise and
+banding. This script requires the modified version of the MVTools2.</p>
+
+<pre class="src"># Your favourite 8-bit denoiser here, doing the main job
+denoised = dfttest (sigma=16)
+
+# Restores a bit of noise
+mt_lutxy (last, denoised, expr="x y < y 1 - x y > y 1 + y ? ?", y=3, u=3, v=3)
+
+super   = last.MSuper ()
+super_a = denoised.MSuper ()
+
+# You could also reuse the vectors found in a previous processing stage
+vf1 = super_a.MAnalyse (isb=false, delta=1, overlap=4, blksize=16)
+vb1 = super_a.MAnalyse (isb=true,  delta=1, overlap=4, blksize=16)
+
+# Turns remaining noise into 16-bit gradients
+cf1 = MCompensate (super, vf1, thSAD=200)
+cb1 = MCompensate (super, vb1, thSAD=200)
+Interleave (cf1, last, cb1)
+dfttest (sigma=1.0, tbsize=3, lsb=true)
+SelectEvery (3, 1)
+
+# Additional smoothing pass and back to 8 bits
+GradFun3 (thr=0.25, lsb_in=true)</pre>
+
+<p>When a clip contains sharpening overshoots, the color banding may be
+resilient to GradFun3, even with high thresholds (&gt; 1.5).
+The following script helps to remove it without loosing too much details.
+You may have to adapt some values.
+Display <code>mask_details.GreyScale()</code> to check the mask.
+It shouldn’t show the color band boundaries (or just marginally).</p>
+
+<pre class="src">lvl_overshoot = 3.5
+lvl_details   = 2
+
+o = last
+w = Width ()
+h = Height ()
+
+edges   = mt_edge (mode="prewitt", thY1=0, thY2=255)
+details = mt_edge (mode="min/max", thY1=0, thY2=255)
+
+mask_lines     = edges.mt_lut ("x 6 - 50 *")
+mask_lines     = mask_lines.mt_expand ().mt_expand ().mt_expand ().mt_expand ()
+mask_overshoot = edges.mt_lut ("x "+String(lvl_overshoot)+" - 2 ^ 40 *")
+mask_overshoot = mask_overshoot.mt_inpand ().RemoveGrain (12, -1)
+mask_overshoot = mt_logic (mask_overshoot, mask_lines, mode="max")
+mask_details   = details.mt_binarize (lvl_details)
+mask_details   = mask_details.RemoveGrain (21 ,-1).mt_expand ()
+mask_final     = mt_logic (mask_overshoot, mask_details, mode="min")
+mask_final     = mask_final.RemoveGrain (20, -1).RemoveGrain (20, -1)
+
+o
+BicubicResize (w/16 * 4, h/16 * 4, 1, 0).BicubicResize (w, h, 1, 0)
+GradFun3 (radius=4, thr=0.6, mask=0, mode=6)  # Huge blur
+mt_merge (last, o, mask_overshoot, luma=true) # W/o overshoot
+GradFun3 (thr=0.6, mask=0)                    # W/o banding
+mt_merge (last, o, mask_final, luma=true)     # Details protected</pre>
+
+
+<h3>Working with curves</h3>
+
+<p>The following examples are designed for TV-range data (luma in
+16&ndash;235).</p>
+
+<p>Denoises very slightly, debands and protects the darkest shades by
+increasing the dynamic range for low luma values:</p>
+
+<pre class="src">a = 0.5	# The smaller, the greater the protection
+sa = String (a)
+sd = String (Pow (219*256, 1 - 1.0/a))
+dfttest (sigma=0.25, lsb=true)
+Dither_lut16 ("x 4096 - 0 max "+sd+" / "+sa+" ^", y=3, u=2, v=2) # Direct
+SmoothGrad ()
+Dither_lut16 ("x 1 "+sa+" / ^ "+sd+" * 4096 +", y=3, u=2, v=2)   # Inverse
+DitherPost ()</pre>
+
+<p>Blending 8-bit pictures in linear light:</p>
+
+<pre class="src"># Blending amount for the first clip
+bl   = 0.75
+bls1 = String (    bl)
+bls2 = String (1 - bl)
+
+# 8-bit clips converted to linear 16-bit full range (gamma undone)
+ug = " 16 - 0 max 1.41624 / 2.2 ^ "
+
+# Redo the gamma, result in 16 bits YUV
+rg = " 0.454545 ^ 362.5585 * 4096 +"
+
+# Blend
+Dither_lutxy8 (src1, src2,
+\	expr ="x     " + bls1 + " * y     " + bls2 + " * + 256 *",
+\	yexpr="x" + ug + bls1 + " * y" + ug + bls2 + " * +" + rg,
+\	y=3, u=3, v=3)
+
+# Back to 8 bits
+DitherPost ()</pre>
+
+
+<h3>Resizing in 16 bits</h3>
+
+<p>Simple resize:</p>
+	
+<pre class="src">Dither_convert_8_to_16 ()
+Dither_resize16 (1280, 720)
+DitherPost ()</pre>
+
+<p>Sharpening the luma using the convolver of the resizer:</p>
+
+<pre class="src">Dither_convert_8_to_16 ()
+Dither_resize16 (Width (), Height () / 2, kernel="impulse -1 6 -1",
+\                fh=-1, fv=-1, cnorm=true, center=false, y=3, u=2, v=2)
+DitherPost ()</pre>
+
+<p>Restoring the original size of a picture using kernel inversion:</p>
+
+<pre class="src"># Input in 8 bits
+w = Width ()  # Original size
+h = Height () #
+BilinearResize (w * 3 / 2, h * 3 / 2) # Upscale
+
+Dither_convert_8_to_16 ()
+Dither_resize16 (w, h, kernel="bilinear", invks=true)
+DitherPost ()</pre>
+
+<p>Resizing in linear light with protection against ringing:</p>
+
+<pre class="src"># Y'Cb'Cr' input in 16 bits
+Dither_convert_yuv_to_rgb (matrix="709", output="rgb48y", lsb_in=true)
+Dither_y_gamma_to_linear (tv_range_in=false, tv_range_out=false, curve="709", sigmoid=true)
+Dither_resize16nr (1280, 720, kernel="spline36")
+Dither_y_linear_to_gamma (tv_range_in=false, tv_range_out=false, curve="709", sigmoid=true)
+r = SelectEvery (3, 0)
+g = SelectEvery (3, 1)
+b = SelectEvery (3, 2)
+Dither_convert_rgb_to_yuv (r, g, b, matrix="709", lsb=true)
+# Y'Cb'Cr' output in 16 bits</pre>
+
+
+<h3>Colorspace conversions</h3>
+
+<p>Color conversions of 8-bit clips:</p>
+	
+<pre class="src">BlankClip () # Assumes RGB
+Dither_convert_rgb_to_yuv ()
+Dither_convert_yuv_to_rgb ()</pre>
+
+<p>Upscaling in 16 bits a SD video to HD with correct color matrix conversion (slow way), output dithered to 8 bits ready for encoding:</p>
+
+<pre class="src">MPEG2Source ("video_sd.d2v")
+Dither_convert_8_to_16 ()
+Dither_resize16 (1280, 720)
+Dither_convert_yuv_to_rgb (matrix="601", output="rgb48y", lsb_in=true)
+r = SelectEvery (3, 0)
+g = SelectEvery (3, 1)
+b = SelectEvery (3, 2)
+Dither_convert_rgb_to_yuv (r, g, b, matrix="709", lsb=false, mode=0)</pre>
+
+<p>Another possibility, with the resizing function operating in RGB land:</p>
+
+<pre class="src">MPEG2Source ("video_sd.d2v")
+Dither_convert_yuv_to_rgb (matrix="601", output="rgb48y")
+Dither_resize16 (1280, 720, y=3, u=1, v=1)
+r = SelectEvery (3, 0)
+g = SelectEvery (3, 1)
+b = SelectEvery (3, 2)
+Dither_convert_rgb_to_yuv (r, g, b, matrix="709", lsb=false, mode=0)</pre>
+
+
+<p>Displaying a preview of a YUV stream with automatic matrix detection,
+conversion to sRGB with correct transfer curve,
+non-ringing scaling to 1080 lines in RGB linear colorspace
+and anamorphic correction:</p>
+
+<pre class="src">MPEG2Source ("anything.d2v")
+Dither_srgb_display (h=1080, dar=1.778)   # or 1.333 for 4:3 AR</pre>
+
+
+<h3>Special output to high bitdepth</h3>
+
+<p>Simple denoising, quick debanding and direct 16-bit output for x264-10bit.
+Make sure reading the important remarks in the
+<code>Dither_out</code> function description:</p>
+
+<pre class="src">dfttest (lsb=true)
+SmoothGrad ()
+Dither_out ()</pre>
+
+<p>Same as above, but outputing 10-bit data aligned on 16-bit words
+(still needs <code>--input-depth 16</code> in x264.
+Use <var>reducerange=true</var> for real 10-bit input):</p>
+
+<pre class="src">dfttest (lsb=true)
+SmoothGrad ()
+Dither_quantize (10, mode=6)
+Dither_out ()</pre>
+
+<p></p>
+
+<p>Simple debanding with RGB48 output (needs specific encoding step):</p>
+
+<pre class="src">Dither_convert_8_to_16 ()
+SmoothGrad ()
+Dither_convert_yuv_to_rgb (lsb_in=true, output="rgb48y")
+r = SelectEvery (3, 0)
+g = SelectEvery (3, 1)
+b = SelectEvery (3, 2)
+Dither_convey_rgb48_on_yv12 (r, g, b)</pre>
+
+
+
+<h2><a id="commonparam"></a>III) Common parameters</h2>
+
+<p>Exactly like Masktools 2, Dither has functions sharing common parameters.</p>
+
+<p><var>int y (3), int u (3), int v (3)</var></p>
+	
+<p>These three values describe the actual processing mode that is to be
+used on each plane / channel.
+Here is how the modes are coded:</p>
+
+<table>
+<tr><td><b>&minus;255…0 or<br />&minus;65535…0</b></td><td>All the pixels of the plane will be set to &minus;x. The range depends whether the output clip is a stack16 or a regular 8-bit clip.</td></tr>
+<tr><td><b>1</b></td><td>The plane will not be processed. That means the content of the plane after the filter is pure garbage.</td></tr>
+<tr><td><b>2</b></td><td>The plane of the first input clip will be copied.</td></tr>
+<tr><td><b>3</b></td><td>The plane will be processed with the processing the filter is designed to do.</td></tr>
+<tr><td><b>4</b></td><td>When applicable, the plane of the second input clip will be copied.</td></tr>
+<tr><td><b>5</b></td><td>When applicable, the plane of the third input clip will be copied.</td></tr>
+</table>
+
+<p>Unlike Masktools 2, all the planes are processed by default.</p>
+
+
+
+<h2><a id="description"></a>IV) Filters description</h2>
+
+<h3><a id="ditherpost"></a>DitherPost</h3>
+
+<pre class="proto">DitherPost (
+	clip  m,
+	clip  clsb (undefined),
+	int   mode (0),
+	float ampo (1),
+	float ampn (0),
+	int   pat (1),
+	bool  dyn (false),
+	bool  prot (false),
+	clip  mask (undefined),
+	float thr (-1),
+	bool  stacked (true),
+	bool  interlaced (false),
+	int   y (3),
+	int   u (3),
+	int   v (3),
+	bool  staticnoise (false),
+	bool  slice (true)
+)</pre>
+
+<p>Adds the dither, turning a 16-bit clip generated by 
+<code>Dither1Pre</code>, <code>Dither2Pre</code> or a mod16 denoiser into
+a regular 8-bit clip.</p>
+
+<p>Pure ordered dithering seems to be retained better than noise or error
+diffusion during video compression. Therefore this is the recommended method
+to avoid color banding, unless you encode at very high bitrates. If you don’t
+care about video compression, error diffusion gives the most accurate
+results. To avoid discontinuities between purely flat areas and dithered
+areas, you can add a bit of noise.</p>
+
+<p>Important note: the colorbanding removal is not done by the dithering
+stage, but by the filtering stage. The latter rebuilds the fine gradients
+in the 16-bit land. The dithering helps converting the picture data to
+something watchable, in 8 bits, while preserving a preceptually high
+colordepth, thus preventing the colorbanding to appear.</p>
+
+<p class="var">m</p>
+<p>If <var>clsb</var> is defined, contains the main
+picture data (MSB).
+If <var>clsb</var> is not defined, it contains both MSB and LSB clips as
+interleaved frames (same format as the first pass output), or as stacked
+frames, depending on the <var>stacked</var> value.</p>
+
+<p class="var">clsb</p>
+<p>Contains the residual information (LSB) if
+defined.</p>
+
+<p class="var">mode</p>
+<p>Dithering method:</p>
+<table>
+<tr><td><b>&minus;1</b></td><td>no dither, round to the closest value</td></tr>
+<tr><td><b>0</b></td><td>8-bit ordered dither + noise.</td></tr>
+<tr><td><b>1</b></td><td>1-bit dither</td></tr>
+<tr><td><b>2</b></td><td>2-bit dither, light</td></tr>
+<tr><td><b>3</b></td><td>2-bit dither, medium</td></tr>
+<tr><td><b>4</b></td><td>2-bit dither, strong</td></tr>
+<tr><td><b>5</b></td><td>2-bit dither, stronger</td></tr>
+<tr><td><b>6</b></td><td>Serpentine Floyd-Steinberg error diffusion + noise. Well-balanced algorithm.</td></tr>
+<tr><td><b>7</b></td><td>Stucki error diffusion + noise. Looks &ldquo;sharp&rdquo; and preserve light edges and details well.</td></tr>
+<tr><td><b>8</b></td><td>Atkinson error diffusion + noise. Generates distinct patterns but keeps clean the flat areas.</td></tr>
+</table>
+<p>Modes 1 to 5 have no real interrest over mode 0 and can be considered deprecated.</p>
+
+<p class="var">ampo</p>
+<p>The ordered dither peak-to-peak amplitude, on an 8 bit scale. &ge; 0.
+On error diffusion algorithms, it increases the collected error amount,
+helping to extend the range of the dithering while preserving its
+natural pattern (especially Atkinson’s).
+This gives a better looking result than just adding noise.</p>
+
+<p class="var">ampn</p>
+<p>The noise peak-to-peak amplitude, on an 8 bit scale. &ge; 0.
+Currently, the maximum value is 4.</p>
+
+<p class="var">pat</p>
+<p>is the dither pattern type for 2-bit dither:</p>
+<table>
+<tr><td><b>0</b></td><td>Regular</td></tr>
+<tr><td><b>1</b></td><td>Alternate V</td></tr>
+<tr><td><b>2</b></td><td>Alternate H</td></tr>
+</table>
+
+<p class="var">dyn</p>
+<p>Indicates if the ordered dither pattern is dynamic.
+If so, the pattern is rotated each frame.</p>
+
+<p class="var">prot</p>
+<p>Enables the protection against MSB-LSB
+inconsistencies, which can occur when the main picture (MSB only) is
+processed.</p>
+
+<p class="var">mask</p>
+<p>If defined, dithering is applied where the pixel
+values are lower than 128. Must be defined for all the planes. You can build
+the mask with <code>DitherBuildMask</code>.</p>
+
+<p class="var">thr</p>
+<p>Threshold below which no dither occurs, in
+pixel value units on an 8 bit scale.
+It helps to keep calm flat areas where the LSB content is just low-level
+residual noise.
+Works only for dithering mode 0.
+Ranges from 0 to 0.5.
+-1 = disabled.</p>
+
+<p class="var">stacked</p>
+<p>When <var>clsb</var> is undefined, true
+indicates that the clip is composed of the MSB part stacked on top of the LSB
+part.
+false indicates that MSB and LSB are interleaved.</p>
+
+<p class="var">interlaced</p>
+<p>Indicates that the clip is interlaced and
+that the dither should be applied on each field separately.</p>
+
+<p class="var">staticnoise</p>
+<p>If set to <code>true</code>, the noise generated with
+<var>ampn</var> is static.</p>
+
+<p class="var">slice</p>
+<p>Set it to <code>false</code> to disable plane slicing.
+Slicing is used in multithreading and can create artefacts at slice boundaries
+with error-diffusion algorithms.
+Disabling slicing reduces the threading preformances.</p>
+
+<p>Category: dll.</p>
+
+
+<h3><a id="ditherbuildmask"></a>DitherBuildMask</h3>
+
+<pre class="proto">DitherBuildMask (
+	clip cnew,
+	clip cold (undefined),
+	int  edgelvl (8),
+	int  radius (2)
+)</pre>
+
+<p>This function builds a mask to use in <code>DitherPost</code>.
+It helps avoiding artifacts during the dithering when the picture was
+processed between the <code>DitherXPre</code> and <code>DitherPost</code>
+operations.
+It also helps to preserve detailed areas from dithering.
+Call this function right before <code>DitherPost</code> and pass the result in
+the mask parameter.</p>
+
+<p class="var">cnew</p>
+<p>The MSB part of the processed clip.</p>
+
+<p class="var">cold</p>
+<p>The original MSB part of the clip.
+If this argument is specified, cold must be of the same size as cnew.
+Pixel which are different are set in the mask and are expanded like the
+edges.</p>
+
+<p class="var">edgelvl</p>
+<p>Threshold for the edge detection (0&ndash;255).
+The lower, the more edges it detects.</p>
+
+<p class="var">radius</p>
+<p>Minimum distance in pixels separating the dithered zones from the detected
+edges and potential artifacts (1&ndash;8).</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="smoothgrad"></a>SmoothGrad</h3>
+
+<pre class="proto">SmoothGrad (
+	clip  m,
+	clip  clsb (undefined),
+	int   radius (16),
+	float thr (0.25),
+	bool  stacked (true),
+	clip  ref (undefined),
+	float elast (3),
+	int   y (3),
+	int   u (3),
+	int   v (3)
+)</pre>
+
+<p><code>SmoothGrad</code> smooths the low gradients or flat areas of a
+16-bit clip.
+It proceeds by applying a huge blur filter and comparing the result with the
+input data for each pixel.
+If the difference is below the specified threshold, the filtered version is
+taken into account, otherwise the input pixel remains unchanged.</p>
+
+<p class="var">m</p>
+<p>If <var>clsb</var> is defined, contains the main picture data (MSB).
+If <var>clsb</var> is not defined, it contains both clips.
+In this case, its format depends on the <var>stacked</var> parameter.</p>
+
+<p class="var">clsb</p>
+<p>Contains the residual information (LSB) if defined.</p>
+
+<p class="var">radius</p>
+<p>Radius in pixels of the smoothing filter.
+&gt; 0.</p>
+
+<p class="var">thr</p>
+<p>Threshold between reference data and filtered
+data, on an 8-bit scale. &gt; 0.</p>
+
+<p class="var">stacked</p>
+<p>When <var>clsb</var> is undefined, true indicates that the clip is composed
+of the MSB part stacked on top of the LSB part.
+False indicates that MSB and LSB are interleaved.</p>
+
+<p class="var">ref</p>
+<p>Reference clip for the filter output comparison.
+Specify here the input clip when you cascade several <code>SmoothGrad</code>
+calls.
+It is always a stacked or interleaved LSB/MSB combination, depending on the
+<var>stacked</var> parameter.
+When undefined, the input clip is taken as reference.</p>
+
+<p class="var">elast</p>
+<p>To avoid artifacts, the threshold has some kind of elasticity.
+Value differences falling over this thershold are gradually attenuated, up to
+<var>thr</var> * <var>elast</var>. &gt; 1.</p>
+
+	<p>Category: dll.</p>
+
+
+<h3><a id="gradfun3"></a>GradFun3</h3>
+
+<pre class="proto">GradFun3 (
+	clip  src,
+	float thr (0.35),
+	int   radius (12),
+	float elast (3),
+	int   mask (2),
+	int   mode (undefined),
+	float ampo (undefined),
+	float ampn (undefined),
+	int   pat (undefined),
+	bool  dyn (undefined),
+	float dthr (undefined),
+	int   smode (0),
+	float wmin (1.0),
+	float thr_det (2),
+	float thr_edg,
+	int   debug (0),
+	float subspl (0),
+	bool  lsb (false),
+	bool  lsb_in (false),
+	bool  staticnoise (undefined),
+	float thrc (thr),
+	int   radiusc (radius),
+	float elastc (elast)
+	int   y (3),
+	int   u (3),
+	int   v (3),
+	clip  ref,
+	bool  slice (true)
+)</pre>
+
+<p>This function is equivalent to GradFun2db and helps removing the existing
+color banding from a source, dithered or not.
+The default dithering pattern is ordered and should be more resilient to lossy
+codec quantification than the other patterns.
+But to keep all the advantages of the gradient smoothing and dithering, you
+should make GradFun3 the very last filter of your encoding chain, or use
+masking methods to safeguard the dither patterns.</p>
+
+<p class="var">src</p>
+<p>The input clip.</p>
+
+<p class="var">thr, thrc</p>
+<p>Filter threshold.
+Below this value, the changes made by the banding filter on pixel values are
+not attenuated.
+The higher, the more effective the filter will be, but details will be
+smoothed and artifacts will appear near the edges between two flat areas.
+<var>thrc</var> is the parameter for the chroma planes.
+Keep it below 1.0.
+Range: 0.1&ndash;10.0.</p>
+
+<p class="var">radius, radiusc</p>
+<p>Filter radius, in pixels.
+Basically, this is the extent of artifical gradient introduced on the band
+edges.
+<var>radiusc</var> is the parameter for the chroma planes.
+The default value is tuned for SD video and 720p, but you might probably want
+to increase it to 16 for 1080p video.
+Range: 1&ndash;68 for <var>smode=0</var>, 1&ndash;128 for <var>smode=1</var>
+and &ge;&nbsp;3 for <var>smode=2</var>.</p>
+
+<p class="var">elast, elastc</p>
+<p>Elasticity of the filter attenuation.
+It’s a multiplier on the threshold.
+A pixel difference above <var>thr</var> * <var>elast</var> won’t have any
+effect.
+<var>elastc</var> is the parameter for the chroma planes.
+Good values are in the range 1.25&ndash;4.</p>
+
+<p class="var">mask</p>
+<p>Depth in pixels of the detail/edge masking.
+Set it to 0 to disable it.</p>
+
+<p class="var">thr_det</p>
+<p>Local contrast threshold for detail detection and masking.
+The lower, the better the details will be protected, but the lower the
+smoothing efficiency.
+Must be &gt; 0, and above the height of a color-banding step.
+When kept unspecified, it more or less follows the main debanding threshold
+<var>thr</var>.</p>
+
+<p class="var">thr_edg</p>
+<p>Unused. Kept for backward compatibility purpose.</p>
+
+<p class="var">smode</p>
+<p>Indicates which filter to use for gradient smoothing.</p>
+<table>
+<tr><td><b>0</b></td><td>Box filter. Very fast, whatever the radius. Drawback: can introduce slight but large halos, especially with high thresholds.</li>
+<tr><td><b>1</b></td><td><code>dfttest</code>. Much slower, but less prone to artefacts and halos than the box filter. This is the prefered mode for high quality results with acceptable processing time.</li>
+<tr><td><b>2</b></td><td>Bilateral filter. Very slow, and slower for bigger radius, but much less prone to artefacts than the box filter. Almost haloless, even for high thresholds.</li>
+<tr><td><b>3</b></td><td>Undocumented mode.</li>
+</table>
+
+<p class="var">wmin</p>
+<p>For <var>smode</var> 2 (bilateral filter), this parameter prevents the
+filter to totally flatten the small areas of nearly uniform color.
+It ranges between 0.0 (normal bilateral filtering) and 1.0 (protection fully
+activated).</p>
+
+<p class="var">debug</p>
+<table>
+<tr><td><b>0</b></td><td>Normal output, without debugging information.</li>
+<tr><td><b>1</b></td><td>Shows the detail/edge mask.</li>
+</table>
+
+<p class="var">subspl</p>
+<p>Subsampling rate for the bilateral filter.
+Set it to 0 to adjust it automatically to the radius.
+Disable it with 1.
+Normal subsampling values should be greater or equal to 4.
+The maximum value depends on the radius.</p>
+
+<p class="var">lsb</p>
+<p>When set to true, leaves the 16-bit data instead of dithering them to 8
+bits.</p>
+
+<p class="var">lsb_in</p>
+<p>When set to true, works on 16-bit input.</p>
+
+<p class="var">ref</p>
+<p>Reference clip used to limit changes.
+Allows cascading multiple GradFun3 calls (for example by combining small and large radius settings) without going too far from the original picture.
+<var>ref</var> must have the same format as the input clip.
+When not specified, the reference clip is the input.</p>
+
+<p class="var">other parameters</p>
+<p>The other parameters are directly transmitted to
+<code>DitherPost</code>. <var>dthr</var> is translated to <var>thr</var>.</p>
+
+<p>Here is a table showing the equivalent parameters in
+<code>GradFun3</code> and <code>GradFun2DBmod</code>:</p>
+
+<table>
+	<tr>
+		<th align="right"><code>GradFun3</code></th>
+		<th>Conversion</th>
+		<th><code>GradFun2DBmod</code></th>
+	</tr>
+	<tr>
+		<td align="right"><var>thr</var></td>
+		<td>= 0.3 *</td>
+		<td><var>thr</var></td>
+	</tr>
+	<tr>
+		<td align="right"><var>mask</var></td>
+		<td>=</td>
+		<td><var>radius</var></td>
+	</tr>
+	<tr>
+		<td align="right"><var>thr_det</var></td>
+		<td>=</td>
+		<td><var>range</var></td>
+	</tr>
+</table>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_box_filter16"></a>Dither_box_filter16</h3>
+
+<pre class="proto">Dither_box_filter16 (
+	clip src,
+	int  radius (16),
+	int  y (3),
+	int  u (3),
+	int  v (3)
+)</pre>
+
+<p>Performs a box filtering on the input clip.
+Box filtering consists in averaging all the pixels in a square area
+whose center is the output pixel.
+This filter is very fast to compute and its speed doesn’t depend on its
+radius.
+You can approximate a large gaussian filtering by cascading a few box
+filters.</p>
+
+<p>Both input and output are vertically stacked 16-bit clips.</p>
+
+<p class="var">src</p>
+<p>Input clip to be filtered.</p>
+
+<p class="var">radius</p>
+<p>Size of the averaged square.
+Its width is <code>radius*2-1</code>.
+Range: 2&ndash;91.</p>
+
+<p>Category: dll.</p>
+
+
+<h3><a id="dither_bilateral16"></a>Dither_bilateral16</h3>
+
+<pre class="proto">Dither_bilateral16 (
+	clip  src,
+	clip  ref (undefined),
+	int   radius (16),
+	float thr (2.5),
+	float flat (0.4),
+	float wmin (0.0),
+	float subspl (0),
+	int   y (3),
+	int   u (3),
+	int   v (3)
+)</pre>
+
+<p>Performs a bilateral filtering on the input clip.
+A bilateral filter is like a gaussian filter, but values of the filtering
+window are weighted with a gaussian curve, depending of their proximity
+with the center pixel.
+The closer the values, the more weight has the value in the final sum.
+Bilateral filters are very efficient to remove noise on flat areas and
+smooth gradients without being disturbed by surrounding areas of different
+colors or high contrast lines.
+The result of a bilateral filtering is indeed cartoonish and waxy, therefore
+it does a very good job at gradient smoothing, without producing halos like
+the box filter.
+However, this is a very slow filter.</p>
+
+<p>Actually, this implementation is an approximation of a bilateral filter,
+like many other image processing tools do.
+The spatial weighting is not a gaussian curve but a box, and the value
+weighting is a trapezoid.
+Cascading several function calls leads to a better approximation of the
+gaussian shape.</p>
+
+<p>If you plan to use this filter for debanding, do not use it alone.
+It has no protection against oversmoothing.
+You should first apply <code>Dither_limit_dif16</code> on its result, exactly
+like with <code>Dither_box_filter16</code>, then use a mask to protect the
+finest details.
+The <code>GradFun3</code> code is a good example to refer to.</p>
+
+<p>This function works only on 16-bit stacked clips.</p>
+
+<p>If you <code>MT()</code> the function, make sure to have an horizontal
+overlap greater or equal to twice the radius.
+Anyway, this is certainly not the most efficient way to get the processing
+multithreaded.
+Prefer using <code>SetMTMode</code> 1 or 2.</p>
+
+<p class="var">src</p>
+<p>Clip to be filtered.</p>
+
+<p class="var">ref</p>
+<p>When computing the value weighting, pixels of this
+clip are taken for reference.
+When cascading several calls to the function, set the original clip as
+reference to avoid the result drifting to something superflat.</p>
+
+<p class="var">radius</p>
+<p>Size of the averaged square.
+Its width is <code>radius*2-1</code>.
+Must be &ge;&nbsp;2.</p>
+
+<p class="var">thr</p>
+<p>Pixels whose difference of value with the center pixel is over
+<var>thr</var> will be discarded.
+The parameter ranges on an 8 bit scale.
+Must be stricly positive.</p>
+
+<p class="var">flat</p>
+<p>Determines the shape of the trapezoid weighting of
+the value differences.
+Close to 0, the shape is triangular.
+Close to 1, the shape is a rectangle, like a box filter with a hard threshold.
+Range: 0.0&ndash;1.0</p>
+
+<p class="var">wmin</p>
+<p>The partial or missing pixels are completed with
+the center pixel to match the <var>wmin</var> fraction of the filter window
+at full weight.
+At 0.0, it acts like a classic bilateral filter.
+Raising the total weight helps preventing the filter to completely flatten
+the small areas of close colors.
+Range: 0.0&ndash;1.0.
+Values over 1 are tolerated, they are equivalent to keep <var>wmin</var> to 1
+while reducing the overall strength of the filter.</p>
+
+<p class="var">subspl</p>
+<p>Subsampling rate. When this parameter is activated, only a few pixels
+randomly chosen from the search window are taken into account.
+This leads to significative speed improvment, with only a minor quality loss.
+A value equal to twice the radius looks like a good compromise.
+Normal subsampling values should be greater or equal to 4.
+Below, subsampling is disabled.
+Set <var>subspl</var> to 0 to let the filter adjust the subsampling rate
+automatically, depending on the radius.
+The number of subsampling points is limited to 4096.
+The random pattern is the same for all the frames and planes.</p>
+
+<p>Category: dll.</p>
+
+
+<h3><a id="dither_limit_dif16"></a>Dither_limit_dif16</h3>
+
+<pre class="proto">Dither_limit_dif16 (
+	clip  flt,
+	clip  src,
+	clip  ref (undefined),
+	float thr (0.25),
+	float elast (3.0),
+	int   y (3),
+	int   u (3),
+	int   v (3)
+)</pre>
+
+<p>This function compare a filtered clip with its original version, and
+keeps the filtered pixels only if the difference between the filtered pixel
+and the reference pixel is below the given threshold.
+This is a building block of <code>SmoothGrad</code> and
+<code>GradFun3</code>.</p>
+
+<p>This function works only on 16-bit stacked clips.</p>
+
+<p class="var">flt</p>
+<p>Filtered clip.</p>
+
+<p class="var">src</p>
+<p>Original clip.</p>
+
+<p class="var">ref</p>
+<p>Reference clip for the filter output comparison.
+Specify here the first original clip when you cascade several limited filters.
+When undefined, the <var>src</var> clip is taken as reference.</p>
+
+<p class="var">thr</p>
+<p>Thershold between reference data and filtered
+data, on an 8-bit scale. &gt; 0.</p>
+
+<p class="var">elast</p>
+<p>To avoid artifacts, the threshold has some kind of elasticity.
+Value differences falling over this thershold are gradually attenuated, up to
+<var>thr</var> * <var>elast</var>. &gt; 1.</p>
+
+<p>Category: dll.</p>
+
+
+<h3><a id="dither_resize16"></a>Dither_resize16, Dither_resize16nr</h3>
+
+<pre class="proto">Dither_resize16 (
+	clip   src,
+	int    width,
+	int    height,
+	float  src_left (0),
+	float  src_top (0),
+	float  src_width (0),
+	float  src_height (0),
+	string kernel ("spline36"),
+	float  fh (1.0),
+	float  fv (1.0),
+	int    taps (4),
+	float  a1 (undefined),
+	float  a2 (undefined),
+	float  a3 (undefined),
+	int    kovrspl (1),
+	bool   cnorm (true),
+	bool   center (true),
+	string cplace ("MPEG2"),
+	int    y (3),
+	int    u (3),
+	int    v (3),
+	string kernelh (""),
+	string kernelv (""),
+	float  totalh (0),
+	float  totalv (0),
+	bool   invks (false),
+	bool   invksh (invks),
+	bool   invksv (invks),
+	int    invkstaps (5),
+	string cplaces (cplace),
+	string cplaced (cplace),
+	string csp (undefined)
+)</pre>
+<pre class="proto">Dither_resize16nr (
+	…
+	(same arguments as Dither_resize16)
+	…
+	bool   noring (true)
+)</pre>
+
+<p>Resizes a 16-bit clip.</p>
+
+<p>The function can resize interlaced content, but only if presented
+as separated, interleaved fields.
+It uses the Avisynth parity information to detect fields and maintain the
+correct chroma and luma positions.
+If this behaviour is not desired, add an <code>AssumeFrameBased()</code>
+before the resizing call.</p>
+
+<p>The function can also be used to compute horizontal and vertical 
+convolutions.
+If you do so, don’t forget to set:</p>
+
+<ul>
+	<li><var>fh</var> or <var>fv</var> to -1 to make sure the clip is
+processed even if its size doesn’t change,</li>
+	<li><var>cnorm</var> to false to avoid automatic kernel
+normalisation if your impulse is already normalised, or specify
+<var>totalv</var> or <var>totalh</var> if the normalisation factor
+is not the sum of the impulse</li>
+	<li>and <var>center</var> to false to keep the desired spacing
+between the sampling points.</li>
+</ul>
+
+<p>This function works only on 16-bit stacked clips.</p>
+
+<p>The <code>Dither_resize16nr</code> function is a wrapper over
+<code>Dither_resize16</code>, adding a ringing-cancellation algorithm.</p>
+
+<p class="var">src</p>
+<p>Clip to be resized. Mandatory.</p>
+
+<p class="var">width, height</p>
+<p>New picture width and height in pixels, > 0. Mandatory.</p>
+
+<p class="var">src_left, src_top</p>
+<p>Coordinate of the top-left corner of the picture sub-area used as source
+for the resizing.
+They can be fractional.
+If negative, the picture is extended by replicating the left pixel column.</p>
+
+<p class="var">src_width, src_height</p>
+<p>Size in pixels of the sub-area to resize.
+They can be fractional.
+If 0, the area has the same size as the source clip.
+If negative, they define coordinates relative to the bottom-right corner, in
+a <code>Crop</code>-like manner.</p>
+
+<p class="var">kernel</p>
+<p>Kernel used by the resizer.
+Possible values are:</p>
+<table>
+<tr><td><b><code>"point"</code></b></td><td>Nearest neighbour interpolation. Same as <code>PointResize()</code>.</td></tr>
+<tr><td><b><code>"rect"</code> or <code>"box"</code></b></td><td>Box filter.</td></tr>
+<tr><td><b><code>"linear"</code> or<br /><code>"bilinear"</code></b></td><td>Bilinear interpolation. Same as <code>BilinearResize()</code>.</td></tr>
+<tr><td><b><code>"cubic"</code> or<br /><code>"bicubic"</code></b></td><td>Bicubic interpolation. Same as <code>BicubicResize()</code>. The b and c variables are mapped on <var>a1</var> and <var>a2</var> and are both set to 1/3 by default.</td></tr>
+<tr><td><b><code>"lanczos"</code></b></td><td>Sinc function windowed by the central lobe of a sinc. Use <var>taps</var> to specify its impulse length. Same as <code>LanczosResize()</code>.</td></tr>
+<tr><td><b><code>"blackman"</code></b></td><td>Blackman-Harris windowed sinc. Use <var>taps</var> to control its length. Same as <code>BlackmanResize()</code>.</td></tr>
+<tr><td><b><code>"blackmanminlobe"</code></b></td><td>Another kind of Blackman windowed sinc, with a bit less ringing. Use <var>taps</var> for you know what.</td></tr>
+<tr><td><b><code>"spline16"</code></b></td><td>Cubic spline based kernel, 4 sample points. Same as <code>Spline16Resize()</code>.</td></tr>
+<tr><td><b><code>"spline36"</code></b></td><td>Spline, 6 sample points. Same as <code>Spline36Resize()</code>.</td></tr>
+<tr><td><b><code>"spline64"</code></b></td><td>Spline, 8 sample points. Same as <code>Spline64Resize()</code>.</td></tr>
+<tr><td><b><code>"spline"</code></b></td><td>Generic splines, number of sample points is twice the <var>taps</var> parameter, so you can use <var>taps&nbsp;= 6</var> to get a <code>Spline144Resize()</code> equivalent.</td></tr>
+<tr><td><b><code>"gauss"</code> or<br /><code>"gaussian"</code></b></td><td>Gaussian kernel. The p parameter is mapped on <var>a1</var> and controls the curve width. The higher p, the sharper. It is set to 30 by default. This resizer is the same as <code>GaussResize()</code>, but <var>taps</var> offers a control on the filter impulse length. For low p values (soft and blurry), it’s better to increase the number of taps to avoid truncating the gaussian curve too early and creating artifacts.</td></tr>
+<tr><td><b><code>"sinc"</code></b></td><td>Truncated sinc function. Use <var>taps</var> to control its length. Same as <code>SincResize()</code>.</td></tr>
+<tr><td><b><code>"impulse"</code></b></td><td>Offers the possibility to create your own kernel (useful for convolutions). Add your coefficents in the string after &ldquo;impulse&rdquo;, separated with spaces (ex: <code>"impulse 1 2 1"</code>). The number of coefficients must be odd. The curve is linearly interpolated between the provided points. You can oversample the impulse by setting <var>kovrspl</var> to a value &gt; 1.</td></tr>
+</table>
+
+<p class="var">fh, fv</p>
+<p>Horizontal and vertical frequency factors, also known as inverse kernel
+support.
+They are multipliers on the theoretical kernel cutoff frequency in both
+directions.
+Values below 1.0 spatially expand the kernel and blur the picture.
+Values over 1.0 shrink the kernel and let higher frequencies pass.
+The result will look sharper but more aliased.
+The multiplicator is applied after the kernel scaling in case of downsizing.
+Negative values force the processing, even if the horizontal size doesn’t
+change.
+The filter will use the absolute parameter value.</p>
+
+<p class="var">taps</p>
+<p>Some kernels have a variable number of sample points, given by this
+parameter.
+Actually this counts half the number of lobes (or equivalent)&nbsp;; in case
+of downscaling, the actual number of sample points may be greater than the
+specified value.
+Range: 1&ndash;128</p>
+
+<p class="var">a1, a2, a3</p>
+<p>Specific parameters, depending on the selected kernel.</p>
+
+<p class="var">kovrspl</p>
+<p>Specifies here how many times the kernel is oversampled when you provide a
+custom impluse response. &ge; 1.</p>
+
+<p class="var">cnorm</p>
+<p>If set to <code>true</code>, the impulse sum is normalised to 1 for each
+pixel.
+This is the normal behaviour when resizing, to make sure the energy is
+constant for all pixels.
+If you use the resizer as a convolution engine, it is advised to disable the
+normalisation.</p>
+
+<p class="var">center</p>
+<p>Like the Avisynth resizers, this resizer preserves the position of the
+picture center.
+Disable this parameter if you may want to resize by preserving the top-left
+corner position.
+Similarly, if you are convolving without resizing, setting it to
+<code>false</code> ensures you that the same kernel will be applied to all
+pixels.</p>
+
+<p class="var">cplace, cplaces, cplaced</p>
+<p>Placement of the chroma samples.
+<var>cplaces</var> and <var>cplaced</var> allow specifying different
+placements for source and destination clips and take precedence over
+<var>cplace</var>.
+Can be one of these strings:</p>
+<table>
+<tr><td><b><code>&quot;MPEG1&quot;</code></b></td><td>4:2:0 subsampling used in MPEG-1. Chroma samples are located on the center of each group of 4 pixels.</td></tr>
+<tr><td><b><code>&quot;MPEG2&quot;</code></b></td><td>Subsampling used in MPEG-2 4:2:x and most other formats. Chroma samples are located on the left pixel column of the group.</td></tr>
+<tr><td><b><code>&quot;DV&quot;</code></b></td><td>For 4:2:0 modes, it’s like MPEG-2 but U and V channels are &ldquo;co-sited&rdquo; vertically: V on the top row, and U on the bottom row. For 4:1:1, chroma is located on the leftmost column.</td></tr>
+</table>
+<p>The chroma placement is ignored when <var>center</var> is set to
+<code>false</code> or <var>kernel</var> to <code>&quot;point&quot;</code>.
+You’ll find below an overview of common chroma placement and subsampling
+combinations:</p>
+
+<!-- Avisynth source code:
+StackVertical (
+\	StackHorizontal (
+\		show_chroma_ss ("Y8",    "MPEG2", "4:0:0",         false, 0),
+\		show_chroma_ss ("YV24",  "MPEG2", "4:4:4",         false, 0)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV12",  "MPEG1", "4:2:0 MPEG-1",  false, 0),
+\		show_chroma_ss ("YV12",  "MPEG2", "4:2:0 MPEG-2",  false, 0)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV12",  "MPEG2", "4:2:0 MPEG-2",  true,  0),
+\		show_chroma_ss ("YV12",  "MPEG2", "4:2:0 MPEG-2",  true,  1)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV12",  "DV",    "4:2:0 DV-PAL",  true,  0),
+\		show_chroma_ss ("YV12",  "DV",    "4:2:0 DV-PAL",  true,  1)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV411", "DV",    "4:1:1 DV-NTSC", true,  0),
+\		show_chroma_ss ("YV411", "DV",    "4:1:1 DV-NTSC", true,  1)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV411", "DV",    "4:1:1 DV-NTSC", false, 0),
+\		show_chroma_ss ("YV16",  "MPEG2", "4:2:2",         false, 0)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV16",  "MPEG2", "4:2:2",         true,  0),
+\		show_chroma_ss ("YV16",  "MPEG2", "4:2:2",         true,  1)
+\	)
+\ )
+
+Function show_chroma_ss (string colorspace, string cplace, string dispname, bool itl, int field)
+{
+	scale = 24
+	bkg   = $FFFFFF
+	shrp  = true
+
+	Y = (itl)                                           ? "  y 2 / floor  " : "y"
+	X = (itl && colorspace == "YV12" && cplace == "DV") ? "x y 2 / floor +" : "x"
+	BlankClip (pixel_type=colorspace, length=1, color_yuv=$EB8080, width=64, height=64, fps=1)
+	cy = ConvertToYV12 ()
+	cy = cy.mt_lutspa (relative=false, expr="x "+Y+" + 2 % 128 * 64 +")
+	try
+	{
+		cu = UToY ().ConvertToYV12 ()
+		cv = VToY ().ConvertToYV12 ()
+		cu = cu.mt_lutspa (relative=false, expr=X+"        2 %  80 * 88 +")
+		cv = cv.mt_lutspa (relative=false, expr=Y+"        2 %  80 * 88 +")
+		YToUV (cu, cv, cy)
+	}
+	catch (e)
+	{
+		cy.ConvertToY8 ()
+	}
+	Crop (0, 0, 8, 8)
+	bor = 4
+	AddBorders (bor, bor, bor, bor, bkg)
+	w = Width ()
+	h = Height ()
+	Dither_convert_8_to_16 ()
+	(itl) ? AssumeFrameBased ().AssumeTFF ().SeparateFields () : last
+	fx = (shrp) ? 8 : 1
+	Dither_resize16 (w * scale, h * scale, kernel="gaussian", a1=80, fh=fx, fv=fx, cplace=cplace)
+	(itl) ? SelectEvery (2, field) : last
+	Dither_convert_yuv_to_rgb (lsb_in=true, mode=0, ampn=0, chromak="point")
+	bs = bor * scale
+	mask = Crop (bs, bs, -bs, -bs)
+	mask = mask.BlankClip (color=$000000)
+	bf = (scale + 31) / 32
+	mask = mask.AddBorders (bf, bf, bf, bf, $FFFFFF)
+	bsf = bs - bf
+	mask = mask.AddBorders (bsf, bsf, bsf, bsf, $000000)
+	Overlay (last.BlankClip (), mask=mask)
+	b2s = (bor - 2) * scale
+	Crop (b2s, b2s, -b2s, -b2s)
+	ftx = (field == 1) ? "bottom" : "top"
+	Subtitle (
+\		dispname + (itl ? ", " + ftx + " field" : ""),
+\		text_color=$00000000, halo_color=$FF000000, align=8, size=scale*0.85
+\	)
+}
+-->
+<p style="text-align: center;"><img src="colorspace-subsampling.png" alt="Chroma placement" /></p>
+
+<p class="var">kernelh, kernelv</p>
+<p><var>kernel</var>
+parameter specialisation for a given direction (horizontal or vertical).
+An empty string means that the <var>kernel</var> value is used.</p>
+
+<p class="var">totalh, totalv</p>
+<p>When <var>cnorm</var> is activated, these parameters specify the
+normalisation value for the corresponding kernel.
+0 means that the normalisation value is the sum of the coefficients.
+The Masktools’<code>mt_convolution</code> function has a single parameter
+for this use: <var>total</var>&nbsp;= <var>totalh</var> &times; <var>totalv</var>.
+Because the convolution is computed with floating point data, there is no
+saturation of intermediate results, therefore the balance between
+<var>totalh</var> and <var>totalv</var> is not important, only their product
+will be taken into account.</p>
+
+<p class="var">invks, invksh, invksv</p>
+<p>Activates the kernel inversion mode for the specified direction
+(use <var>invks</var> for both).
+Inverting the kernel allows to &ldquo;undo&rdquo; a previous upsizing by
+compensating the loss in high frequencies, giving a sharper and more accurate
+output than classic kernels, closer to the original.
+This is particularly useful for clips upscaled with a bilinear kernel.
+All the kernel-related parameters specify the kernel to undo.
+The target resolution must be as close as possible to the initial
+resolution.
+The kernel inversion is mainly intended to downsize an upscaled picture.
+Using it for upsizing will not restore details but will give a sligthly
+sharper look, at the cost of a bit of aliasing and ringing.
+This mode is somewhat equivalent to the <code>debilinear</code>
+plug-in but works with a different principle.</p>
+
+<p class="var">invkstaps</p>
+<p>In kernel inversion mode (<var>invks=true</var>), this parameter sets the number
+of taps for the inverted kernel.
+Use it as a tradeoff between softness and ringing.
+Range: 1&ndash;128</p>
+
+<p class="var">csp</p>
+<p>Target colorspace.
+Can only change the chroma subsampling.
+You can convert only to a planar colorspace, keeping the same number of
+planes.
+Supporte values:</p>
+<table>
+<tr><td><b><code>&quot;YV12&quot;</code></b></td><td>4:2:0</td></tr>
+<tr><td><b><code>&quot;YV16&quot;</code></b></td><td>4:2:2</td></tr>
+<tr><td><b><code>&quot;YV24&quot;</code></b></td><td>4:4:4</td></tr>
+<tr><td><b><code>&quot;YV411&quot;</code></b></td><td>4:1:1</td></tr>
+<tr><td><b><code>&quot;Y8&quot;</code></b></td><td>No chroma</td></tr>
+</table>
+
+<p>Category: dll.</p>
+
+<p class="var">noring</p>
+<p>A ringing cancellation algorithm is additionnaly used when set to true.
+Note: the ringing cancellation actually works only for low scaling ratios.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_convert_yuv_to_rgb"></a>Dither_convert_yuv_to_rgb</h3>
+
+<pre class="proto">Dither_convert_yuv_to_rgb (
+	clip   src,
+	string matrix (undefined),
+	bool   interlaced (false),
+	bool   tv_range (true),
+	string cplace ("MPEG2"),
+	string chromak ("bicubic"),
+	float  fh (undefined),
+	float  fv (undefined),
+	int    taps (undefined),
+	float  a1 (undefined),
+	float  a2 (undefined),
+	float  a3 (undefined),
+	bool   lsb_in (false),
+	int    mode (undefined or 6),
+	float  ampn (undefined or 0.5),
+	string output ("rgb32"),
+	int    ampo (undefined),
+	bool   staticnoise (undefined),
+	bool   noring (false),
+	bool   slice (undefined)
+)</pre>
+
+<p>Converts a YUV clip to RGB using high bitdepth calculations.
+By default, 8 bit RGB output is dithered using error diffusion + noise to get
+the maximum visual quality.</p>
+
+<p class="var">src</p>
+<p>An 8 or 16-bit YUV clip to be converted to RGB.
+If the clip is 16-bit stacked, set the <var>lsb_in</var> parameter to
+<code>true</code>.</p>
+
+<p class="var">matrix</p>
+<p>The matrix used to convert the Y’CbCr pixels to computer RGB.
+Possible values are:</p>
+<table>
+<tr><td><b><code>"601"</code></b></td><td>ITU-R BT.601 / ITU-R BT.470-2 / SMPTE 170M. For Standard Definition content.</td></tr>
+<tr><td><b><code>"709"</code></b></td><td>ITU-R BT.709. For High Definition content.</td></tr>
+<tr><td><b><code>"2020"</code></b></td><td>ITU-R BT.2020, non constant luminance mode. For UHDTV content.</td></tr>
+<tr><td><b><code>"240"</code></b></td><td>SMPTE 240M</td></tr>
+<tr><td><b><code>"FCC"</code></b></td><td>FCC (where does that come from?)</td></tr>
+<tr><td><b><code>"YCgCo"</code></b></td><td>YCgCo</td></tr>
+</table>
+<p>When the parameter is not defined, ITU-R BT.601 and ITU-R BT.709 are
+automatically selected depending on the clip definition (considered as HD
+if &ge; 600 lines).</p>
+
+<p class="var">interlaced</p>
+<p>Indicates that the input clip is interlaced.</p>
+
+<p class="var">tv_range</p>
+<p><code>true</code> if input clip has TV range pixel values,
+<code>false</code> if it uses the full range (PC scale).</p>
+
+<p class="var">cplace</p>
+<p>Placement of the chroma samples. Can be one of these strings:</p>
+<table>
+<tr><td><b><code>"MPEG1"</code></b></td><td>4:2:0 subsampling used in MPEG-1. Chroma samples are located on the center of each group of 4 pixels.</td></tr>
+<tr><td><b><code>"MPEG2"</code></b></td><td>Subsampling used in MPEG-2 4:2:x and most other formats. Chroma samples are located on the left pixel column of the group.</td></tr>
+<tr><td><b><code>"DV"</code></b></td><td>For  4:2:0 modes, it’s like MPEG-2 but U and V channels are "co-sited" vertically: V on the top row, and U on the bottom row. For 4:1:1, chroma is located on the leftmost column.</td></tr>
+</table>
+
+<p class="var">chromak</p>
+<p>Kernel used to shift and resize the chroma
+plane to full resolution before conversion.</p>
+
+<p class="var">fh, fv, taps, a1, a2, a3</p>
+<p>Chroma resampling parameters. See
+<a href="#dither_resize16"><code>Dither_resize16()</code></a> for more
+information.</p>
+
+<p class="var">lsb_in</p>
+<p>Indicates that the input clip is stack16.</p>
+
+<p class="var">mode, ampo, ampn, staticnoise, slice</p>
+<p>Dithering parameters, for 8 bit output.
+See <a href="#ditherpost"><code>DitherPost()</code></a>.
+When <var>mode</var> and <var>ampn</var> are not defined, they are set to the specified default value.</p>
+
+<p class="var">output</p>
+<p>Output format. Possible values are:</p>
+<table>
+<tr><td><b><code>"rgb32"</code></b></td><td>Regular RGB32 colorspace.</td></tr>
+<tr><td><b><code>"rgb24"</code></b></td><td>Regular RGB24 colorspace.</td></tr>
+<tr><td><b><code>"rgb48yv12"</code></b></td><td>48-bit RGB <a href="#dither_convey_rgb48_on_yv12">conveyed on YV12</a>. Use it for rawvideo export only. Not suitable for display or further processing (it will look like garbage).</td></tr>
+<tr><td><b><code>"rgb48y"</code></b></td><td>48-bit RGB. The components R, G and B are conveyed on three YV12 or Y8 (if supported) stack16 clips interleaved on a frame basis.</td></tr>
+</table>
+
+<p class="var">noring</p>
+<p>A ringing cancellation algorithm is used to upscale the chroma
+when this parameter set to true.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_convert_rgb_to_yuv"></a>Dither_convert_rgb_to_yuv</h3>
+
+<pre class="proto">Dither_convert_rgb_to_yuv (
+	clip   src,
+	clip   g (undefined),
+	clip   b (undefined),
+	string matrix (undefined),
+	bool   interlaced (false),
+	bool   tv_range (true),
+	string cplace ("MPEG2"),
+	string chromak ("bicubic"),
+	float  fh (undefined),
+	float  fv (undefined),
+	int    taps (undefined),
+	float  a1 (undefined),
+	float  a2 (undefined),
+	float  a3 (undefined),
+	bool   lsb (undefined),
+	int    mode (undefined),
+	float  ampn (undefined),
+	string output ("yv12"),
+	int    ampo (undefined),
+	bool   staticnoise (undefined),
+	bool   noring (false),
+	bool   slice (undefined)
+)</pre>
+
+<p>Converts an RGB clip to YUV using high bitdepth calculations.</p>
+
+<p class="var">	src</p>
+<p>An 8 or 16-bit RGB clip to be converted to RGB.
+if only <var>src</var> is defined, the clip is considered as 8-bit RGB.
+If <var>g</var> and <var>b</var> are defined too, the three are assumed
+as 16-bit stacked clips containing the red, green and blue channels.
+They might be the deinterleaved result of
+<a href="#dither_convert_yuv_to_rgb"><code>Dither_convert_yuv_to_rgb()</code></a>
+with <code>"rgb48y"</code> as <var>output</var> string.</p>
+
+<p class="var">matrix</p>
+<p>The matrix used to convert the R’G’B’ pixels to Y’CbCr.
+Possible values are:</p>
+<table>
+<tr><td><b><code>"601"</code></b></td><td>ITU-R BT.601 / ITU-R BT.470-2 / SMPTE 170M. For Standard Definition content.</td></tr>
+<tr><td><b><code>"709"</code></b></td><td>ITU-R BT.709. For High Definition content.</td></tr>
+<tr><td><b><code>"2020"</code></b></td><td>ITU-R BT.2020, non constant luminance mode. For UHDTV content.</td></tr>
+<tr><td><b><code>"240"</code></b></td><td>SMPTE 240M</td></tr>
+<tr><td><b><code>"FCC"</code></b></td><td>FCC (where does that come from?)</td></tr>
+<tr><td><b><code>"YCgCo"</code></b></td><td>YCgCo</td></tr>
+</table>
+<p>When the parameter is not defined, ITU-R BT.601 and ITU-R BT.709 are
+automatically selected depending on the clip definition (considered as HD
+if &ge; 600 lines).</p>
+
+<p class="var">interlaced</p>
+<p>Indicates that the input clip is interlaced.</p>
+
+<p class="var">tv_range</p>
+<p><code>true</code> if output clip has TV range pixel values,
+<code>false</code> if it uses the full range (PC scale).</p>
+
+<p class="var">cplace</p>
+<p>Placement of the chroma samples. Can be one of these strings:</p>
+<table>
+<tr><td><b><code>"MPEG1"</code></b></td><td>4:2:0 subsampling used in MPEG-1. Chroma samples are located on the center of each group of 4 pixels.</td></tr>
+<tr><td><b><code>"MPEG2"</code></b></td><td>Subsampling used in MPEG-2 4:2:x and most other formats. Chroma samples are located on the left pixel column of the group.</td></tr>
+<tr><td><b><code>"DV"</code></b></td><td>For  4:2:0 modes, it’s like MPEG-2 but U and V channels are "co-sited" vertically: V on the top row, and U on the bottom row. For 4:1:1, chroma is located on the leftmost column.</td></tr>
+</table>
+
+<p class="var">chromak</p>
+<p>Kernel used to shift and resize the chroma
+plane to full resolution before conversion.</p>
+
+<p class="var">fh, fv, taps, a1, a2, a3</p>
+<p>Chroma resampling parameters. See
+<a href="#dither_resize16"><code>Dither_resize16</code></a> for more
+information.</p>
+
+<p class="var">lsb</p>
+<p>Indicates if the output clip is stack16 (<code>true</code>) or 8 bits.
+If not defined, it depends on the input bitdepth.</p>
+
+<p class="var">mode, ampo, ampn, staticnoise, slice</p>
+<p>Dithering parameters, for 8 bit output.
+See <a href="#ditherpost"><code>DitherPost</code></a>.</p>
+
+<p class="var">output</p>
+<p>Output format, 8 or 16-bit stacked. Possible values are:</p>
+<ul>
+	<li><code>"YV12"</code></li>
+	<li><code>"YV16"</code></li>
+	<li><code>"YV24"</code></li>
+	<li><code>"YV411"</code></li>
+	<li><code>"Y8"</code></li>
+</ul>
+
+<p class="var">noring</p>
+<p>A ringing cancellation algorithm is used to downscale the chroma
+when this parameter set to true.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_srgb_display"></a>Dither_srgb_display</h3>
+
+<pre class="proto">Dither_srgb_display (
+	clip   src,
+	int    debug (0),
+	bool   lsb_in (false),
+	string matrix (undefined),
+	bool   tv_range (undefined),
+	string chromak (undefined),
+	int    w (undefined),
+	int    h (undefined),
+	string kernel ("spline36" or "spline64"),
+	int    taps (undefined),
+	bool   noring (true),
+	bool   precrop (depends),
+	bool   autopar (true),
+	float  par (undefined),
+	int    parnum (undefined),
+	int    parden (undefined),
+	float  dar (undefined),
+	int    darnum (undefined),
+	int    darden (undefined),
+	float  src_left (0),
+	float  src_top (0),
+	float  src_width (0),
+	float  src_height (0),
+	float  gamma (2.2)
+	bool   center (true),
+	bool   lsb (false),
+	string cplace (undefined),
+	int    bkgcolor (undefined),
+	bool   sigmoid (undefined),
+	bool   slice (undefined),
+	int    dispm (-1)
+)</pre>
+
+<p>Converts a Y’CbCr or Y clip to sRGB for display on a computer.
+The purpose of this function is to be as simple as possible.
+Some clip characteristics are automatically detected but may be overriden
+if necessary.</p>
+
+<p>The function first performs a conversion to gamma-corrected R’G’B’,
+then reverts the original transfer curve to get linear RGB values,
+scales the clip to its final resolution possibly using a non-ringing
+resize, and finally applies the sRGB transfer curve.</p>
+
+<p>The function is well suited for screen captures.
+Similarly, this is recommended for enlarging SD pictures for previewing
+instead of the built-in pointresize-style zoom in video applications.</p>
+
+<p class="var">src</p>
+<p>The clip to display.</p>
+
+<p class="var">debug</p>
+<p>Overlays debug information if set to 1.</p>
+
+<p class="var">lsb_in, matrix, tv_range, chromak</p>
+<p>These parameters are passed to the <code>Dither_convert_yuv_to_rgb</code>
+function called internally.</p>
+
+<p class="var">w, h</p>
+<p>Display size of the clip.
+It’s possible to specify only one dimension.
+In this case, DAR and PAR information are used to compute the other dimension.
+If both dimensions are specified and if the PAR is available, pillarboxing or
+letterboxing may be used to satisfy the requirements.</p>
+
+<p class="var">kernel, taps, src_left, src_top, src_width, src_height, cplace</p>
+<p>These parameters are passed to the <code>Dither_resize16</code>
+function called internally.</p>
+
+<p class="var">noring</p>
+<p>In case of resizing, indicates that a non-ringing algorithm must be used.
+Default kernel is set to <code>"spline64"</code> for non-ringing algorithms
+and <code>"spline36"</code> for normal resizing.</p>
+
+<p class="var">precrop</p>
+<p>When this flag is set, if 1. the clip is detected as SD (Standard Definition)
+and 2. PAR or display height only is specified,
+the source is automatically cropped to the active zone (704 pixels)</p>
+
+<p class="var">autopar</p>
+<p>Allows the function to automatically select a PAR, referring to standardized
+picture sizes and other information like the DAR.</p>
+
+<p class="var">par</p>
+<p>Decimal value for PAR (Pixel Aspect Ratio, a.k.a. Sample Aspect Ratio).
+Depending on the other parameters, the clip may be resized for square
+pixel display.</p>
+
+<p class="var">parnum, parden</p>
+<p>Numerator and denominator for PAR specification in form of a fraction.
+You cannot set both the PAR as a fraction and as decimal.</p>
+
+<p class="var">dar</p>
+<p>Decimal value for DAR (Display Aspect Ratio).
+Depending on other parameters, this allows the function to display the
+clip in square pixels in case of anamorphic storage.
+1.778 and 1.333 are fine for 16:9 and 4:3 DAR.</p>
+
+<p class="var">darnum, darden</p>
+<p>Numerator and denominator for DAR specification in form of a fraction.
+You cannot set both the DAR as a fraction and as decimal.</p>
+
+<p class="var">gamma</p>
+<p>Sets the gamma for target display.
+A gamma of 2.1 is recommended for common practical viewing conditions
+in an office (200–300 lx ambiant light) and 2.2 (default) for viewing
+conditions specified by the sRGB standard (64 lx ambiant light).
+Changing the default value forces linear processing.</p>
+
+<p class="var">center</p>
+<p>Indicates that clipping, pillarboxing or letterboxing should be centered.
+Otherwise, the top-left corner of the picture is preserved.</p>
+
+<p class="var">lsb</p>
+<p>When true, the output is in the stack16 RGB32 format.</p>
+
+<p class="var">bkgcolor</p>
+<p>Color value for the added borders, black is the default.
+It works like the color parameter in <code>AddBorders()</code>.
+It depends on the colorspace and possibly the value range (TV or full).</p>
+
+<p class="var">sigmoid</p>
+<p>When set, use the sigmoidal curve to convert to and from linear light for
+the resizing.</p>
+
+<p class="var">slice</p>
+<p>Parameter for <code>DitherPost</code>.</p>
+
+<p class="var">dispm</p>
+<p>Sets the transfer curve to use for gamma to linear conversions.
+<code>0</code> and <code>1</code> set the regular BT.1886 transfer curve,
+and <code>2</code> sets the alternative BT.1886 tranfer curve.
+The latter is a closer emulation of a reference CRT display,
+using a gamma between 2.6 and 3.
+<code>-1</code> activates the old conversion method,
+using BT.709 transfer curve for both directions.
+Non-zero values force linear processing.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_quantize"></a>Dither_quantize</h3>
+
+<pre class="proto">Dither_quantize (
+	clip  src,
+	int   bitdepth,
+	bool  reducerange (false),
+	int   mode,
+	float ampo,
+	float ampn, 
+	int   pat,
+	bool  dyn,
+	bool  prot,
+	clip  mask,
+	float thr,
+	bool  interlaced,
+	int   y,
+	int   u,
+	int   v,
+	bool  staticnoise
+)</pre>
+
+<p>Dither a clip to a given bitdepth.
+It’s possible to keep the resulting clip at the initial bitdepth of 16 or to
+reduce it to the specified depth.</p>
+
+<p>To encode a clip in 10 bits using x264, set <var>bitdepth=10</var>
+and <var>reducerange=true</var>, followed by <code>Dither_out</code>
+and set <code>--input-depth 10</code> in the x264 parameters.</p>
+
+<p><b>NB:</b> <code>Dither_quantize</code> is known to be slightly buggy when the
+dither amplitude is greater than unity (ampo&nbsp;&plus; ampn&nbsp;&gt; 1).
+In this case, there is a risk of getting some artefacts in the result.
+When reducing to 10 bits, it affects a small range of pixel values below any
+multiple of 16 (on an 8-bit scale).
+Keeping ampo&nbsp;&plus; ampn&nbsp;≤ 1 shouldn’t create any noticeable artefact.<p>
+
+<p class="var">src</p>
+<p>Clip to dither.
+Must be in stack16 format.</p>
+
+<p class="var">bitdepth</p>
+<p>Desired bit depth, in range 8&ndash;14.</p>
+
+<p class="var">reducerange</p>
+<p>Indicates if the output value range must be reduced.
+Even if reduced, the output clip is still in the regular stack16 format.</p>
+
+<p class="var">mode, ampo, ampn…</p>
+<p>The other parameters are the same as in <code>DitherPost</code>.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_out"></a>Dither_out</h3>
+
+<table class="n" width="100%">
+<tr>
+<td class="n"><pre class="proto">Dither_out (
+	clip src,
+	bool bigendian (false)
+)</pre></td>
+<td class="n"><pre class="proto">Dither_convey_yuv4xxp16_on_yvxx (
+	clip src,
+	bool bigendian (false)
+)</pre></td>
+</tr></table>
+
+<p>This function allows Avisynth to output 16-bit YUV pixel components.
+This is achieved by sending fake YV12 data, containing actually yuv420p16
+data.
+Frame serving should be done via a rawvideo pipe, so the encoding application
+relies on information provided by the user, not Avisynth directly.</p>
+
+<p><code>Dither_convey_yuv4xxp16_on_yvxx</code> is the same as
+<code>Dither_out</code> and remains for compatibility purpose.</p>
+
+<p>This function works only on 16-bit stacked clips.</p>
+
+<p class="var">src</p>
+<p>Stack-16 YUV data to encode.</p>
+
+<p class="var">bigendian</p>
+<p>Indicates that the output stream is big endian
+(MSB-LSB order, yuv4xxp16be instead of yuv4xxp16le).</p>
+</ul>
+
+<p>Category: plugin.</p>
+
+<h4>Notes</h4>
+
+<p>This can be done this way with <code>avs2yuv</code> and 10-bit x264:</p>
+
+<pre class="src">avs2yuv -raw "script.avs" -o - | x264-10bit --demuxer raw --input-depth 16
+                        --input-res 1280x720 --fps 24 --output "out.mp4" -</pre>
+
+<p>This is actually a single line which has been split for convenient display.
+Note the minus sign at the end of the line.
+Of course, you’ll have to change and specify FPS, video resolution and
+interlacing information.
+Don’t do any further pixel processing after having called this function.
+Be sure to use the raw video trick for encoding, otherwise you’ll only
+get garbage.</p>
+
+<p>To encode 4:4:4 10-bit video, you’ll need to add both
+<code>--input-csp i444</code> and <code>--output-csp i444</code> to the
+x264-10bit command line.</p>
+
+<p>It’s also possible to dither to the exact target bitdepth,
+while keeping data in the 16-bit range for piping.
+You can use this little code snippet, here for a bitdepth of 10:</p>
+
+<pre class="src">Dither_quantize (bitdepth=10)
+Dither_out ()</pre>
+
+<p>However it is not necessary.
+Just go with <code>Dither_out()</code> in 16 bits and let x264 do the
+conversion.</p>
+
+
+<h3><a id="dither_convey_rgb48_on_yv12"></a>Dither_convey_rgb48_on_yv12</h3>
+
+<pre class="proto">Dither_convey_rgb48_on_yv12 (
+	clip r,
+	clip g,
+	clip b,
+	bool bigendian (false)
+)</pre>
+
+	<p>This function provides the same kind of functionnality as
+<a href="#Dither_out">Dither_out</a>, but spits RGB48 pixels instead of YUV.</p>
+
+<p>This function works only on 16-bit stacked clips.</p>
+
+<p class="var">r, g, b</p>
+<p>Three YUV stack16 clips
+containing the red, green and blue channels in their luma plane.</li>
+
+<p class="var">bigendian</p>
+<p>Indicates that MSB must be stored before the LSB (rgb48be instead of
+rgb48le).</li>
+
+<h4>Notes</h4>
+
+<p>Here is a command line to pipe the result to ImageMagick:</p>
+
+<pre class="src">avs2yuv -raw "script.avs" -o - | convert -depth 16 -size 1280x720 rgb:- "out-%06d.png" </pre>
+
+<p>The same with FFmpeg, although current releases don’t support completely
+the RGB48 reading and round the data to 8 bits:</p>
+
+<pre class="src">avs2yuv -raw "script.avs" -o - | ffmpeg -f rawvideo -vcodec rawvideo -pix_fmt rgb48le
+                             -s 1280x720 -aspect 1:1 -y -i - -f image2 "out-%06d.png"</pre>
+
+<p>This is actually a single line which has been split for convenient display.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_removegrain16"></a>Dither_removegrain16</h3>
+
+<pre class="proto">Dither_removegrain16 (
+	clip src,
+	int  mode (2),
+	int  modeU (mode),
+	int  modeV (modeU)
+)</pre>
+
+<p>This is the 16-bit equivalent of the <code>RemoveGrain</code> plug-in.
+It applies various kinds of smoothing to the input clip by combining each pixel with its 8 neighbours.
+As in the original <code>RemoveGrain</code>, the borders rows and columns (1-pixel thick) are not processed.</p>
+
+<p class="var">mode</p>
+<p>The smoothing mode.
+It can apply to all the planes or to the Y plane only, depending on the
+values of <var>modeU</var> and <var>modeV</var>.
+Some of the <code>RemoveGrain</code> modes have not been ported yet (25 and above).
+The available ones are listed below.</p>
+<table>
+<tr><td align="right"><b>&minus;1</b></td><td>The plane is not touched at all and may contain garbage on output.</td></tr>
+<tr><td align="right"><b> 0</b></td><td>The plane is copied without being processed.</td></tr>
+<tr><td align="right"><b> 1</b></td><td>Clips the pixel with the minimum and maximum of the 8 neighbour pixels.</td></tr>
+<tr><td align="right"><b> 2</b></td><td>Clips the pixel with the second minimum and maximum of the 8 neighbour pixels.</td></tr>
+<tr><td align="right"><b> 3</b></td><td>Clips the pixel with the third minimum and maximum of the 8 neighbour pixels.</td></tr>
+<tr><td align="right"><b> 4</b></td><td>Clips the pixel with the fourth minimum and maximum of the 8 neighbour pixels, which is equivalent to a median filter.</td></tr>
+<tr><td align="right"><b> 5</b></td><td>Line-sensitive clipping giving the minimal change.</td></tr>
+<tr><td align="right"><b> 6&ndash;8</b></td><td>Line-sensitive clipping, intermediate.</td></tr>
+<tr><td align="right"><b> 9</b></td><td>Line-sensitive clipping on a line where the neighbours pixels are the closest.</td></tr>
+<tr><td align="right"><b>10</b></td><td>Replaces the target pixel with the closest neighbour.</td></tr>
+<tr><td align="right"><b>11</b></td><td>[1 2 1] horizontal and vertical kernel blur. Similar to <code>Blur(1)</code>.</td></tr>
+<tr><td align="right"><b>12</b></td><td>Same as mode 11.</td></tr>
+<tr><td align="right"><b>13</b></td><td>Bob mode, interpolates top field from the line where the neighbours pixels are the closest.</td></tr>
+<tr><td align="right"><b>14</b></td><td>Bob mode, interpolates bottom field from the line where the neighbours pixels are the closest.</td></tr>
+<tr><td align="right"><b>15</b></td><td>Bob mode, interpolates top field. Same as 13 but with a more complicated interpolation formula.</td></tr>
+<tr><td align="right"><b>16</b></td><td>Bob mode, interpolates bottom field. Same as 14 but with a more complicated interpolation formula.</td></tr>
+<tr><td align="right"><b>17</b></td><td>Clips the pixel with the minimum and maximum of respectively the maximum and minimum of each pair of opposite neighbour pixels.</td></tr>
+<tr><td align="right"><b>18</b></td><td>Line-sensitive clipping using opposite neighbours whose greatest distance from the current pixel is minimal.</td></tr>
+<tr><td align="right"><b>19</b></td><td>Replaces the pixel with the average of its 8 neighbours.</td></tr>
+<tr><td align="right"><b>20</b></td><td>Averages the 9 pixels ([1 1 1] horizontal and vertical blur). Similar to <code>Blur(1.58)</code>.</td></tr>
+<tr><td align="right"><b>21</b></td><td>Clips pixels using the averages of opposite neighbour</td></tr>
+<tr><td align="right"><b>22</b></td><td>Same as mode 21 but simpler and faster.</td></tr>
+<tr><td align="right"><b>23</b></td><td>Small edge and halo removal, but reputed useless.</td></tr>
+<tr><td align="right"><b>24</b></td><td>Small edge and halo removal, but reputed useless.</td></tr>
+</table>
+
+<p class="var">modeU, modeV</p>
+<p>Same as <var>mode</var> but for U and V planes.
+If not defined, they use the same value as <var>mode</var>.</p>
+
+<p>Category: plug-in.</p>
+
+
+<h3><a id="dither_repair16"></a>Dither_repair16</h3>
+
+<pre class="proto">Dither_repair16 (
+	clip src1,
+	clip src2,
+	int  mode (2),
+	int  modeU (mode),
+	int  modeV (modeU)
+)</pre>
+
+<p>This is the 16-bit equivalent of the <code>Repair</code> plug-in.
+It can repair the artifacts generated by a processing by applying a
+<code>RemoveGrain</code>-like treatment on the input clip to fix the ouput clip.</p>
+
+<p class="var">src1</p>
+<p>The clip to repair.</p>
+
+<p class="var">src2</p>
+<p>The reference clip.
+Must have the same format as <var>src1</var>.</p>
+
+<p class="var">mode</p>
+<p>The repairing mode.
+It can apply to all the planes or to the Y plane only, depending on the
+values of <var>modeU</var> and <var>modeV</var>.
+The available ones are listed below.
+These modes are similar to the <code>RemoveGrain</code> modes but include
+the center pixel of the reference clip for min/max calculation.
+</p>
+<table>
+<tr><td align="right"><b>&minus;1</b></td><td>The plane is not touched at all and may contain garbage on output.</td></tr>
+<tr><td align="right"><b> 0</b></td><td>The plane is copied without being processed.</td></tr>
+<tr><td align="right"><b> 1&ndash;4</b></td><td>Clips the source pixel with the Nth minimum and maximum found on the 3&times;3-pixel square from the reference clip.</td></tr>
+<tr><td align="right"><b> 5</b></td><td>Line-sensitive clipping giving the minimal change.</td></tr>
+<tr><td align="right"><b> 6&ndash;8</b></td><td>Line-sensitive clipping, intermediate.</td></tr>
+<tr><td align="right"><b> 9</b></td><td>Line-sensitive clipping on a line where the neighbours pixels are the closest.</td></tr>
+<tr><td align="right"><b>10</b></td><td>Replaces the target pixel with the closest pixel from the 3&times;3-pixel reference square.</td></tr>
+<tr><td align="right"><b>11&ndash;14</b></td><td>Same as modes 1&ndash;4 but uses <code>min(Nth_min, c)</code> and <code>max(Nth_max, c)</code> for the clipping, where <code>c</code> is the value of the center pixel of the reference clip.</td></tr>
+<tr><td align="right"><b>15, 16</b></td><td>Clips the source pixels using a clipping pair from the <code>RemoveGrain</code> modes 5 and 6.</td></tr>
+<tr><td align="right"><b>17, 18</b></td><td>Clips the source pixels using a clipping pair from the <code>RemoveGrain</code> modes 17 and 18.</td></tr>
+</table>
+
+<p class="var">modeU, modeV</p>
+<p>Same as <var>mode</var> but for U and V planes.
+If not defined, they use the same value as <var>mode</var>.</p>
+
+<p>Category: plug-in.</p>
+
+
+<h3><a id="dither_median16"></a>Dither_median16</h3>
+
+<pre class="proto">Dither_median16 (
+	clip src,
+	int  rx (1),
+	int  ry (1),
+	int  rt (0),
+	int  ql (undefined),
+	int  qh (undefined),
+	int  y,
+	int  u,
+	int  v
+)</pre>
+
+<p>This filter performs quantile clipping, and more specifically can work as a
+median filter.
+It is quite slow, not optimised at all.</p>
+
+<p class="var">rx, ry</p>
+<p>Horizontal and vertical radius of the workarea.
+Positive values.
+The middle pixel value is clipped by the lower and higher quantiles found in
+the defined group of pixels.
+With <var>rx&nbsp;= 2</var> and <var>ry&nbsp;= 3</var>, the input area is
+5&times;7 pixels.</p>
+
+<p class="var">rt</p>
+<p>Temporal radius.
+Positive value.
+If set to 0, the filter is spatial only.</p>
+
+<p class="var">ql, qh</p>
+<p>Low and high clipping quantiles.
+The filter chooses two pixels defined by their rank in the group of neighbours.
+Let’s call <code>vl</code> and <code>vh</code> the values corresponding to the
+<var>ql</var>-th and <var>qh</var>-th ranks.
+Pixel values outside the <code>vl</code> to <code>vh</code> range are clipped.
+<var>ql</var> and <var>qh</var> must be positive or null and less than
+(<var>rx</var>&times;2&nbsp;+ 1)&nbsp;&times;
+(<var>ry</var>&times;2&nbsp;+ 1)&nbsp;&times;
+(<var>rt</var>&times;2&nbsp;+ 1).
+Also, <var>ql</var> &le; <var>qh</var>.
+If these parameters are set to a negative value or undefined, they are
+internally set to the middle of the range, performing a median filtering.</p>
+
+<p>Category: plug-in.</p>
+
+
+<h3><a id="dithertestpatterns"></a>DitherTestPatterns</h3>
+
+<pre class="proto">DitherTestPatterns (
+	int size (192),
+	int mag (1),
+	int amp (1),
+	int len (24),
+	int luma (128)
+)</pre>
+
+<p>Shows all the dithering patterns in the same picture.</p>
+
+<p class="var">size</p>
+<p>Width in pixels of a single test pattern.</p>
+
+<p class="var">mag</p>
+<p>Magnification factor, &gt; 0.
+Global picture size is unchanged.
+Recommended value: 3.</p>
+
+<p class="var">amp</p>
+<p>Amplification factor, &gt; 0.
+Useful to actually see the patterns without hurting your eyes.
+Recommended value: 32.</p>
+
+<p class="var">len</p>
+<p>Number of frames to generate, &gt; 0.</p>
+
+<p class="var">luma</p>
+<p>Average luma value used for the tests
+(0&ndash;255).</p>
+
+
+<p>Category: script.</p>
+
+
+<h3><a id="ditherpre"></a>Dither1Pre, Dither2Pre</h3>
+
+<pre class="proto">Dither1Pre (
+	clip   m,
+	string flt ("dfttest (sigma=64)"),
+	bool   stacked (true),
+	float  overlap (0.5),
+	bool   tvopt (false)
+)</pre>
+<pre class="proto">Dither2Pre (
+	clip   m,
+	string flt ("dfttest (sigma=256)"),
+	bool   stacked (true),
+	float  overlap (0.5),
+	bool   tvopt (false)
+)</pre>
+
+<p>Filters a 8-bit clip and outputs the result with 1 or 2 extra bits of
+accuracy.
+This function allows using 8-bit denoisers which have not been modified
+to support stack16 format.</p>
+
+<p>The MSB part is stacked onto the LSB part.
+They can be separated later into two clips using the utility functions.
+You can also choose to interleave the MSB and the LSB data instead of stacking
+them on the same frame.</p>
+
+<p>This function works by splitting the picture histogram in slices of
+equal width, stretching the slices to the full range, filtering them and
+recombining them all into a higher bitdepth clip.
+The stretch scale is x2 for <code>Dither1Pre</code> and x4 for
+<code>Dither2Pre</code>.
+In order to ensure the continuity, the slices are overlapped.
+3 slices are used for 1 extra bit, and 7 slices for 2 extra bits
+(50&nbsp;% overlap).
+Compared to the normal CPU load of the provided filter, computation times are
+multiplied respectively by 3 and 5.
+It is possible to change the overlap amount to save CPU.</p>
+
+<p>Because of this histogram split, keep any motion compensation code
+out of the function.
+Just provide a raw filter here.
+As another consequence of the split, only filters processing the luma and
+chroma planes independently will work correctly.
+Fortunately, most of them do.
+Filters internally converting pixels to RGB or doing similar things will
+likely fail.</p>
+
+<p>Note that these functions are dirty hacks. First, they are not efficient,
+because they have to run multiple times the specified noise filter.
+Also, the slicing may introduce artifacts, depending on the behavious of the
+specified filter.
+It is strongly recommended to use a modified denoiser to generate the 16-bit
+data instead of <code>DitherNPre</code>.
+Use these functions only when there is no other way to achieve the desired
+filtering.</p>
+
+<p>If you are using <code>MT</code>, additionnaly to the
+<code>splitvertical=true</code> requirement, you must be aware that
+<code>stacked=false</code> in this case may lead to temporal artifacts
+for some unknown reason (thanks to Dogway on the Doom9 forum for investigating
+all these issues).
+Correct example:</p>
+
+<pre class="src">MT ("""Dither1Pre (flt="tnlmeans()")""", 2, 2, true)</pre>
+
+<p class="var">m</p>
+<p>The original, noisy clip.</p>
+
+<p class="var">flt</p>
+<p>An optional string containing the filter command.
+You can insert double quotes (") in the parameters with <code>Chr(34)</code>
+sequences. Beware: filter parameters must be set according to their new input
+range. In <code>Dither1Pre</code>, all amplitude-relative parameters must be
+doubled, and powers quadrupled.
+In <code>Dither2Pre</code>, all amplitudes are quadrupled and powers
+multiplied by 16.
+Spatial and temporal values can be left unchanged.</p>
+
+<p class="var">stacked</p>
+<p>Indicates that the MSB and LSB data must be
+vertically stacked instead of being interleaved.</p>
+
+<p class="var">overlap</p>
+<p>The slice overlap rate.
+The greater, the lower the risk of artifacts.
+The required number of slices is deduced from the overlap rate parameter.
+Overlap ranges from 0 (no additional slice) to 0.5 (50&nbsp;% overlap, number
+of slices almost doubled).
+When <var>tvopt</var> is false, the minimum number of additional slices is
+restricted to one instead of zero.</p>
+
+<p class="var">tvopt</p>
+<p>Can increase the actual overlap for a fixed number
+of slices in presence of TV-scale values (luma in the 16&ndash;235 range, and
+chroma in 16&ndash;240) by reducing the slice covering to the visible range.
+This means super blacks and super whites are clipped.
+The option is useful with small overlap rates.</p>
+
+<p>Category: script.</p>
+
+
+
+<h2><a id="utility_functions"></a>V) Utility functions</h2>
+
+<h3><a id="dither_get_msb"></a>Dither_get_msb, Dither_get_lsb</h3>
+
+<pre class="proto">Dither_get_msb (clip src)</pre>
+<pre class="proto">Dither_get_lsb (clip src)</pre>
+
+<p>Extracts the MSB or the LSB from the stacked 16-bit frame
+<var>src</var>.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_gen_null_lsb"></a>Dither_gen_null_lsb</h3>
+
+<pre class="proto">Dither_gen_null_lsb (clip src)</pre>
+
+<p>Generates a LSB clip set to 0 for the non-stacked <var>src</var> clip,
+which can be a MSB or a standard 8-bit clip.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_convert_8_to_16"></a>Dither_convert_8_to_16</h3>
+
+<pre class="proto">Dither_convert_8_to_16 (clip src)</pre>
+
+<p>Converts the 8-bit <var>src</var> clip into a 16-bit stacked clip.
+For the inverse operation, just call <code>DitherPost (mode=-1)</code>.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_crop16"></a>Dither_crop16</h3>
+
+<pre class="proto">Dither_crop16 (
+	clip src,
+	int  left,
+	int  top,
+	int  width,
+	int  height,
+	bool align
+)</pre>
+
+<p>Crops a 16-bit stacked clip.
+Coordinates are related to the real picture (half-height).
+Parameters are the same as the Avisynth <code>Crop</code> function.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_addborders16"></a>Dither_addborders16</h3>
+
+<pre class="proto">Dither_addborders16 (
+	clip src,
+	int  left,
+	int  top,
+	int  right,
+	int  bottom,
+	int  color_yuv (undefined)
+	int  color (undefined)
+)</pre>
+
+<p>Add borders to a 16-bit stacked clip.
+Coordinates are related to the real picture (half-height).</p>
+
+<p class="var">left, top, right, bottom</p>
+<p>Border sizes, same as the Avisynth <code>AddBorders</code> function.</p>
+
+<p class="var">color_yuv, color</p>
+<p>Filling color. Default is black, in TV-range.
+Actually you can use both value whatever the colorspace (<code>color_yuv</code>
+is left only for backward compatibility).</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_lut8"></a>Dither_lut8, Dither_lutxy8, Dither_lutxyz8</h3>
+
+<pre class="proto">Dither_lut8 (
+	clip   src,
+	string expr ("x"),
+	string yexpr (undefined),
+	string uexpr (undefined),
+	string vexpr (undefined),
+	int    y (3),
+	int    u (1),
+	int v (1)
+)</pre>
+
+<table class="n" width="100%">
+<tr>
+<td class="n"><pre class="proto">Dither_lutxy8 (
+	clip   src1,
+	clip   src2,
+	string expr ("x"),
+	string yexpr (undefined),
+	string uexpr (undefined),
+	string vexpr (undefined),
+	int    y (3),
+	int    u (1),
+	int    v (1)
+)
+&nbsp;</pre></td>
+<td class="n"><pre class="proto">Dither_lutxyz8 (
+	clip   src,
+	clip   src2,
+	clip   src3,
+	string expr ("x"),
+	string yexpr (undefined),
+	string uexpr (undefined),
+	string vexpr (undefined),
+	int    y (3),
+	int    u (1),
+	int    v (1)
+)</pre></td>
+</tr>
+</table>
+
+<p>These functions are the equivalent of the Masktools
+<code>mt_lut</code>, <code>mt_lutxy</code> and <code>mt_lutxyz</code>
+functions. Here, they generate 16-bit data from 8-bit clips. The output
+of the final function is rounded to the nearest integer and clipped into the
+[0; 65535] range. The result is stored into a 16-bit stacked clip.</p>
+
+<p>If <var>y</var>, <var>u</var> or <var>v</var> are defined to 2, 4 or 5
+(copy plane from the Nth clip), the plane is converted to 16-bit with a null
+LSB.</p>
+
+<p>Please refer to the Masktools documentation for more information about
+these functions.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_lut16"></a>Dither_lut16</h3>
+
+<pre class="proto">Dither_lut16 (
+	clip   src,
+	string expr ("x"),
+	string yexpr (undefined),
+	string uexpr (undefined),
+	string vexpr (undefined),
+	int    y (3),
+	int    u (1),
+	int    v (1)
+)</pre>
+
+<p>This works like the Masktools <code>mt_lut</code>, except that both
+input and output are 16-bit values.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_add16"></a>Dither_add16, Dither_sub16</h3>
+
+<table class="n" width="100%">
+<tr>
+<td class="n"><pre class="proto">Dither_add16 (
+	clip src1,
+	clip src2,
+	bool wrap (false),
+	int  y (3),
+	int  u (3),
+	int  v (3),
+	bool dif (false)
+)</pre></td>
+<td class="n"><pre class="proto">Dither_sub16 (
+	clip src1,
+	clip src2,
+	bool wrap (false),
+	int  y (3),
+	int  u (3),
+	int  v (3),
+	bool dif (false)
+)</pre></td>
+</tr>
+</table>
+
+<p>Adds or subtract two 16-bit clips, pixel per pixel, plane per plane.</p>
+
+<p><code>Dither_sub16(dif=true)</code> is the 16-bit equivalent to <code>mt_makediff()</code>.<br />
+<code>Dither_add16(dif=true)</code> is the 16-bit equivalent to <code>mt_adddiff()</code>.</p>
+
+<p class="var">wrap</p>
+<p>Indicates if the value should wrap in case of overflow instead of being
+clipped in 0&ndash;65535.</p>
+
+<p class="var">dif</p>
+<p>Indicates that <var>src2</var> is considered as a "difference" clip,
+32768 (128 * 256) being the neutral value.
+The actual operation is <code>src1 + src2 - 32768</code> (add) or <code>src1 - src2 + 32768</code> (sub).</p>
+
+<p>Category: dll.</p>
+
+
+<h3><a id="dither_max_dif16"></a>Dither_max_dif16, Dither_min_dif16</h3>
+
+<table class="n" width="100%">
+<tr>
+<td class="n"><pre class="proto">Dither_max_dif16 (
+	clip src1,
+	clip src2,
+	clip ref,
+	int  y (3),
+	int  u (3),
+	int  v (3)
+)</pre></td>
+<td class="n"><pre class="proto">Dither_min_dif16 (
+	clip src1,
+	clip src2,
+	clip ref,
+	int  y (3),
+	int  u (3),
+	int  v (3)
+)</pre></td>
+</tr>
+</table>
+
+<p>Compares pixel per pixel <var>src1</var> and <var>src2</var> to
+<var>ref</var> and takes the pixel with the greatest amplitude
+difference (or the smallest for <code>Dither_min_dif16</code>).</p>
+
+<p>Category: dll.</p>
+
+
+<h3><a id="dither_merge16"></a>Dither_merge16, Dither_merge16_8</h3>
+
+<table class="n" width="100%">
+<tr>
+<td class="n"><pre class="proto">Dither_merge16 (
+	clip src1,
+	clip src2,
+	clip mask,
+	bool luma (false),
+	int  y (3),
+	int  u (2 or 3),
+	int  v (2 or 3)
+)</pre></td>
+<td class="n"><pre class="proto">Dither_merge16_8 (
+	clip src1,
+	clip src2,
+	clip mask,
+	bool luma (false),
+	int  y (3),
+	int  u (2 or 3),
+	int  v (2 or 3)
+)</pre></td>
+</tr>
+</table>
+
+<p>These functions work like the Masktools’ <code>mt_merge</code>.
+The output is a blend between src1 and src2, depending on each
+<var>mask</var> pixel values.
+The bigger the mask value, the more the second clip will be taken into
+account.</p>
+
+<p>All clips are 16-bit stacked. With <code>Dither_merge16_8</code>,
+<var>mask</var> is a regular 8-bit clip.</p>
+
+<p>The default value for <var>u</var> and <var>v</var> are 2 (copy plane from
+<var>src1</var>) excepted when <var>luma&nbsp;= true</var>.
+In this case, chroma is always processed.</p>
+
+<p>Category: <code>Dither_merge16</code>: dll, 
+<code>Dither_merge16_8</code>: script.</p>
+
+
+<h3><a id="dither_y_gamma_to_linear"></a>Dither_y_gamma_to_linear, Dither_y_linear_to_gamma</h3>
+
+<table class="n">
+<tr>
+<td class="n"><pre class="proto">Dither_y_gamma_to_linear (
+	clip   src,
+	bool   tv_range_in (true),
+	bool   tv_range_out (true),
+	string curve ("srgb"),
+	int    y (3),
+	int    u (2),
+	int    v (2),
+	float  gcor (1.0),
+	bool   sigmoid (false),
+	float  thr (depends),
+	float  cont (depends)
+)</pre></td>
+<td class="n"><pre class="proto">Dither_y_linear_to_gamma (
+	clip   src,
+	bool   tv_range_in (true),
+	bool   tv_range_out (true),
+	string curve ("srgb"),
+	int    y (3),
+	int    u (2),
+	int    v (2),
+	float  gcor (1.0),
+	bool   sigmoid (false),
+	float  thr (depends),
+	float  cont (depends)
+)</pre></td>
+</tr>
+</table>
+
+<p><code>Dither_y_gamma_to_linear</code> converts the luma channel to linear
+light, and <code>Dither_y_linear_to_gamma</code> converts back a clip to
+gamma-corrected luma.
+The chroma channels remain untouched.</p>
+
+<p>This function works only on 16-bit stacked clips.</p>
+
+<p>Note: usually gamma compression applies to RGB channels, not Y’CbCr.
+Therefore this function should be used with RGB48Y clips, obtained
+from <code>Dither_convert_yuv_to_rgb</code> for example.</p>
+
+<p class="var">clip</p>
+<p>The clip to be converted.</p>
+
+<p class="var">tv_range_in</p>
+<p>Specifies if the luma range is 16-bit TV
+(16*256 to 235*256 inclusive) or full range (<code>false</code>)</p>
+
+<p class="var">tv_range_out</p>
+<p>Same, but for output.</p>
+
+<p class="var">curve</p>
+<p>Type of gamma mapping. Possible values:</p>
+<table>
+<tr><td><b><code>"709"</code></b></td><td>ITU-R BT.709 transfer curve for digital video</td></tr>
+<tr><td><b><code>"601"</code></b></td><td>ITU-R BT.601 transfer curve, same as <code>"709"</code></td></tr>
+<tr><td><b><code>"170"</code></b></td><td>SMPTE 170M, same as <code>"709"</code></td></tr>
+<tr><td><b><code>"240"</code></b></td><td>SMPTE 240M (1987)</td></tr>
+<tr><td><b><code>"srgb"</code></b></td><td>sRGB curve</td></tr>
+<tr><td><b><code>"2020"</code></b></td><td>ITU-R BT.2020 transfer curve, for 12-bit content. For sources of lower bitdepth, use the <code>"709"</code> curve.</td></tr>
+<tr><td><b><code>"1886"</code></b></td><td>ITU-R BT.1886 transfer curve, for flat panel display used in HDTV production, approximating a CRT characteristic.</td></tr>
+<tr><td><b><code>"1886a"</code></b></td><td>Curve given as example of better match to a CRT in recommendation ITU-R BT.1886 </td></tr>
+</table>
+
+<!-- MATLAB code:
+x = linspace (0, 1, 10001);
+ysrgb = (x <= 0.04045) .* (x / 12.92) + (x > 0.04045) .* (((x + 0.055 ) / 1.055 ) .^ 2.4    );
+y709  = (x <= 0.081  ) .* (x / 4.5  ) + (x > 0.081  ) .* (((x + 0.099 ) / 1.099 ) .^ 2.22222);
+y240m = (x <= 0.099  ) .* (x / 4.0  ) + (x > 0.099  ) .* (((x + 0.1115) / 1.1115) .^ 2.22222);
+plot (x, ysrgb, x, y240m, x, y709);
+grid on; legend ('sRGB', 'SMPTE 240M', 'BT.709', 2); title ('Transfer characteristics');
+-->
+<p style="text-align: center;"><img src="transfer.png" alt="Transfer characteristics" /></p>
+
+<p class="var">gcor</p>
+<p>Gamma correction, applied on the linear part.</p>
+
+<p class="var">sigmoid</p>
+<p>When set, applies a sigmoidal curve after the power-like curve (or before
+when converting from linear to gamma-corrected).
+This helps reducing the dark halo artefacts around sharp edges
+caused by resizing in linear luminance.</p>
+
+<p class="var">thr</p>
+<p>Mid-point position of the sigmoid curve.
+Between 0 and 1, usually close to 0.5.
+The default value depends on the selected curve so the sigmoid tries
+to match the lower half of the standard curve with the contrast doubled.</p>
+
+<p class="var">cont</p>
+<p>Contrast of the sigmoid curve. 
+Must be > 0, and is usually set between 5 and 8.
+The default value depends on the selected curve so the sigmoid tries
+to match the lower half of the standard curve with the contrast doubled.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_sigmoid_direct"></a>Dither_sigmoid_direct, Dither_sigmoid_inverse</h3>
+
+<table class="n">
+<tr>
+<td class="n"><pre class="proto">Dither_sigmoid_direct (
+	clip   src,
+	float  thr (0.5),
+	float  cont (6.5),
+	int    u (2),
+	int    v (2)
+)</pre></td>
+<td class="n"><pre class="proto">Dither_sigmoid_inverse (
+	clip   src,
+	float  thr (0.5),
+	float  cont (6.5),
+	int    u (2),
+	int    v (2)
+)</pre></td>
+</tr>
+</table>
+
+<p><code>Dither_sigmoid_inverse</code> applies the inverse sigmoid curve
+to a clip in linear luminance in order to lessen the ringing when resizing
+it.
+<code>Dither_sigmoid_direct</code> converts back a clip to linear luminance.
+The chroma channels remain untouched.</p>
+
+<p class="var">thr</p>
+<p>Mid-point position of the sigmoid curve.
+Between 0 and 1, usually close to 0.5.
+The default value depends on the selected curve so the sigmoid tries
+to match the lower half of the standard curve with the contrast doubled.</p>
+
+<p class="var">cont</p>
+<p>Contrast of the sigmoid curve. 
+Must be > 0, and is usually set between 5 and 8.
+The default value depends on the selected curve so the sigmoid tries
+to match the lower half of the standard curve with the contrast doubled.</p>
+
+<p>Category: script.</p>
+
+
+<h3><a id="dither_add_grain16"></a>Dither_add_grain16</h3>
+
+<pre class="proto">Dither_add_grain16 (
+	clip  src,
+	float var (1),
+	float uvar (0),
+	float soft (1),
+	int   maxts (5),
+	bool  replace (false),
+	bool  lsb_in (true),
+	int   seed (undefined)
+)</pre>
+
+<p>Generates and adds 16-bit grain to a clip, with optional temporal
+stabilization.
+The output is always a stack16 clip.</p>
+
+<p class="var">var</p>
+<p>Standard deviation of the luma noise. &ge; 0.</p>
+
+<p class="var">uvar</p>
+<p>Standard deviation of the chroma noise. &ge; 0.</p>
+
+<p class="var">soft</p>
+<p>Noise temporal stability.
+This is actually the regeneration period of the noise, in frames.
+Set to 100 or above, the grain becomes static.</p>
+
+<p class="var">maxts</p>
+<p>Maximum radius for the temporal softening of the
+noise, in frames.
+Larger radii smooth very slow grain with a higher quality, but they are more
+resource-demanding.</p>
+
+<p class="var">replace</p>
+<p>Set to true, the noise is generated on a mid-grey
+clip instead of being added to the <var>src</var> clip.
+The new clip has the same properties as the source clip.</p>
+
+<p class="var">lsb_in</p>
+<p>Indicates that the input clip is stack16.</p>
+
+<p class="var">seed</p>
+<p>If defined and not negative, forces a seed for the random number generator
+used in grain generation.
+This ensures that the produced grain remains the same each time the script is
+executed.</p>
+
+<p>Category: script.</p>
+
+
+<h2><a id="troubleshooting"></a>VI) Troubleshooting</h2>
+
+<p><b>The resulting picture appears to be cut at half height.</b></p>
+
+<p>You surely applied <code>DitherPost</code> twice, or use it on a
+regular 8-bit clip.
+Please check your script.
+Apply <code>DitherPost</code> only on 16-bit clips generated by the
+modified plug-ins with <var>lsb=true</var> or by the other dedicated
+functions outputing 16-bit stacked data.</p>
+
+<p><b>GradFun3 and some other functions always output a green
+screen.</b></p>
+
+<p>You surely have an old Masktools 2 version installed somewhere and
+autoloaded by Avisynth.
+Search on your disks the filenames mt_masktools.dll, mt_masktools-25.dll
+and mt_masktools-26.dll.
+Remove the culprits and install the latest Masktools version from
+<a href="https://github.com/tp7/masktools/releases">there</a>.</p>
+
+<p>Still not working? Remove all the mt_masktools dll you can found.
+If you did it well, running your script must make Avisynth complain about
+missing masktools function.
+If this is not the case, search again, there is a masktool file hidden
+somewhere in your filesystem.</p>
+
+<p><b>Error message&nbsp;&mdash; Script error: dfttest does not have a
+named argument &quot;lsb&quot;</b></p>
+
+<p>Remove your dfttest.dll and install the modified one, contained in this
+package.</p>
+
+<p><b>Error message&nbsp;&mdash; RemoveGrain: invalid mode ##</b></p>
+
+<p>Your RemoveGrain version is too old.
+Remove RemoveGrain*.dll, Repair*.dll and SSE?Tools.dll and install
+<a href="https://github.com/tp7/RgTools/releases">RgTools</a>.</p>
+
+
+
+<h2><a id="changelog"></a>VII) Changelog</h2>
+
+<p><b>v1.27.2, 2015.12.30</b></p>
+<ul>
+	<li>Fixed <code>Dither_crop16</code> which wasn’t passing the <var>align</var> parameter if there was no horizontal cropping. Thanks to Reel.Deel for making me check.</li>
+	<li>Fixed <code>Dither_srgb_display</code> with <var>autopar=false</var> and 1440&times;1080 input.</li>
+	<li>Fixed <code>Dither_quantize</code> with <var>reducerange=true</var>, some rare pixel values were wrongly quantized. Thanks to _08 for reporting this bug.</li>
+	<li>Fixed a picture corruption in <code>Dither_bilateral16</code>. Thanks to _08 for reporting what was actually a combination of two different bugs.</li>
+</ul>
+
+<p><b>v1.27.1, 2015.07.16</b></p>
+<ul>
+	<li>Fixed a wrong code path in <code>Dither_limit_dif16</code> causing a crash on CPU without AVX2 instruction set. Thanks to real.finder and Groucho2004 for their report.</li>
+	<li>Documentation typos fixed thanks to Colours.</li>
+</ul>
+
+<p><b>v1.27.0, 2015.07.12</b></p>
+<ul>
+	<li>Added <var>cplaces</var>, <var>cplaced</var> and <var>csp</var> to <code>Dither_resize16</code>.</li>
+	<li>Backported some code from <a href="http://forum.doom9.org/showthread.php?t=166504">fmtconv</a> to <code>Dither_resize16</code>.</li>
+	<li>Added the <var>slice</var> parameter to disable multi-threaded slicing for error-diffusion dithering (<code>DitherPost</code> and related functions).</li>
+	<li>Added <code>Dither_min_dif16</code>.</li>
+	<li>AVX2 optimisations for <code>Dither_resize16</code>, <code>Dither_add16</code>, <code>Dither_sub16</code>, <code>Dither_median16</code>, <code>Dither_max_dif16</code>, <code>Dither_min_dif16</code> and <code>Dither_limit_dif16</code>.</li>
+	<li>Added the BT.1886 transfer cruve to the gamma conversion functions.</li>
+	<li>Added the <var>dispm</var> parameter to change the conversion mode in <code>Dither_srgb_display</code>.</li>
+	<li>Improved the quality of the subsampling in <code>Dither_bilateral16</code>.</li>
+	<li>Radius is no longer limited in <code>Dither_bilateral16</code> as well as in <code>GradFun3</code> in <var>smode</var> 2.</li>
+	<li>Fixed a bug in the chroma filling (<var>u</var> or <var>v</var> &lt; 0) with non-YV12 colorspaces.</li>
+</ul>
+
+<p><b>v1.26.5, 2014.09.23</b></p>
+<ul>
+	<li>Fixed <code>Dither_resize16</code> to make pure vertical resizing multi-threaded.</li>
+</ul>
+
+<p><b>v1.26.4, 2014.09.22</b></p>
+<ul>
+	<li>Fixed bug in <code>Dither_limit_dif16</code> and <code>SmoothGrad</code> when <var>thr</var> and <var>elast</var> are both too low or too high. Thanks to mirkosp for reporting it.</li>
+	<li>The <var>radius</var> value is more thoroughly checked in <code>GradFun3</code> in order to make related error messages more explicit.</li>
+</ul>
+
+<p><b>v1.26.3, 2014.09.05</b></p>
+<ul>
+	<li>Fixed bug in <code>Dither_box_filter16</code> shifting the frame to the right from the 2049th pixel column. Thanks to Motenai Yoda for reporting it.</li>
+</ul>
+
+<p><b>v1.26.2, 2014.08.29</b></p>
+<ul>
+	<li>Fixed an SSE2 bug in <code>Dither_median16</code> for 3&times;3 spatial median. Thanks to TheProfileth for reporting it.</li>
+</ul>
+
+<p><b>v1.26.1, 2014.06.05</b></p>
+<ul>
+	<li>Fixed a wrong saturation in <code>Dither_sub16</code> on the last pixels of a clip whose width is not mod-8.</li>
+</ul>
+
+<p><b>v1.26.0, 2014.06.03</b></p>
+<ul>
+	<li>Modded versions of dfttest and MVTools2 aren’t bundled with Dither anymore. Get them separately.</li>
+	<li>Added sigmoid curves to <code>Dither_y_gamma_to_linear</code> and <code>Dither_y_linear_to_gamma</code>.</li>
+	<li>Added <code>Dither_sigmoid_direct</code> and <code>Dither_sigmoid_inverse</code> functions.</li>
+	<li>Added the <var>sigmoid</var> parameter to <code>Dither_srgb_display</code>.</li>
+	<li><code>Dither_y_gamma_to_linear</code> and <code>Dither_y_linear_to_gamma</code> now process data contained in the chroma planes when <var>u</var> or <var>v</var> are set to 3, instead of just copying them.</li>
+</ul>
+
+<p><b>v1.25.1, 2014.03.03</b></p>
+<ul>
+	<li>Fixed a regression introduced in <code>Dither_merge16</code>.</li>
+</ul>
+
+<p><b>v1.25.0, 2014.03.02</b></p>
+<ul>
+	<li>64-bit version. Source code projects ported to M$VC 2012.</li>
+	<li>Added modes 5&ndash;10 to <code>Dither_repair16</code>.</li>
+	<li>Added <var>ref</var> clip to <code>GradFun3</code>.</li>
+	<li>The order of the <var>luma</var>, <var>y</var>, <var>u</var> and <var>v</var> parameters in <code>Dither_merge16</code> is now the same as in <code>Dither_merge16_8</code>. The documentation has been fixed accordingly.</li>
+	<li>Slight speed improvement in <code>Dither_srgb_display</code> when there is no resizing nor gamma correction.</li>
+	<li>Fixed a problem in <code>Dither_lut16</code> with expressions containing two consecutive “x” arguments.</li>
+	<li>Fixed artefacts (overflow occuring when input pixels are close to 0) and inaccuracy in mode 20 of <code>Dither_removegrain16</code>.</li>
+</ul>
+
+<p><b>v1.24.0, 2013.10.27</b></p>
+<ul>
+	<li>Added all modes up to 24 to <code>Dither_removegrain16</code>, thanks to tp7. Most of them are SSE2-optimised.</li>
+	<li>Added modes 15&ndash;18 to <code>Dither_repair16</code> (not optimised for SSE2).</li>
+</ul>
+
+<p><b>v1.23.0, 2013.08.04</b></p>
+<ul>
+	<li>Partial implementation of the BT.2020 color conversions. Only the non-constant luminance matrix is implemented.</li>
+	<li>Optimized <code>Dither_merge16</code> for SSE2.</li>
+	<li>Fixed the <var>radiusc</var> type in <code>GradFun3</code> (int), so it now should work correctly in Avisynth 2.6 alpha 4.</li>
+	<li>Fixed a bug in <code>Dither_merge16</code> affecting the chroma of YV12 clips with <var>luma=true</var>. Thanks to tp7 for reporting these issues.</li>
+</ul>
+
+<p><b>v1.22.1, 2013.01.09</b></p>
+<ul>
+	<li>Fixed green frame output in <code>Dither_resize16nr</code> for some combination of the <var>y</var>, <var>u</var> and <var>v</var> parameters.</li>
+	<li>Fixed <code>Dither_quantize</code> for 14-bit output. It is not perfect but much better than before.</li>
+	<li>Made the <var>bitdepth</var> parameter in <code>Dither_quantize</code> a named argument.</li>
+	<li>Fixed <var>var</var> and <var>uvar</var> scaling in <code>Dither_add_grain16</code> to match better <code>AddGrainC</code>.</li>
+</ul>
+
+<p><b>v1.22.0, 2012.12.31</b></p>
+<ul>
+	<li>Added temporal processing to <code>Dither_median16</code>.</li>
+	<li>Added <code>Dither_resize16nr</code>, a simple ringing-cancellation wrapper around <code>Dither_resize16</code>.</li>
+	<li>Added a <var>noring</var> parameter to conversion functions between YUV and RGB.</li>
+	<li>Added <var>lsb</var>, <var>center</var> and <var>bkgcolor</var> to <code>Dither_srgb_display</code>.</li>
+	<li>Replaced <code>Dither_convey_yuv4xxp16_on_yvxx</code> with <code>Dither_out</code>, which also works correctly with YV16 input. The old function is still there for compatibility, mapped on the new one.</li>
+	<li><code>Dither_addborders16</code> now works with RGB clips.</li>
+	<li>Badly designed and buggy resizing functionalities in <code>Dither_srgb_display</code> were rewritten.</li>
+</ul>
+
+<p><b>v1.21.0, 2012.09.07</b></p>
+<ul>
+	<li>Added the <var>seed</var> parameter to <code>Dither_add_grain16</code>.</li>
+	<li>Reworked <code>Dither_srgb_display</code> for mor accurate aspect ratios and transfer characteristics, added <var>gamma</var> parameter.</li>
+	<li>Gamma transfer functions have now an optional gamma correction parameter.</li>
+	<li>Added <code>Dither_median16</code>, but slow and without temporal component at the moment.</li>
+</ul>
+
+<p><b>v1.20.0, 2012.08.12</b></p>
+<ul>
+	<li>Added <code>Dither_removegrain16</code> (modes 1&ndash;4, 11, 12, 19 and 20 only) and <code>Dither_repair16</code> (modes 1&ndash;4 and 11&ndash;14 only).</li>
+	<li>Added threshold, radius and elasticity settings for chroma to <code>GradFun3</code>, as well as the usual plane filters. Better compatibility with the 4:1:1 colorspace.</li>
+	<li>Added <code>Dither_sub16</code> and optimised <code>Dither_add16</code> for SSE2.</li>
+	<li>Fixed a regression for 4:2:0 DV-PAL chroma placement in <code>Dither_resize16</code>.</li>
+	<li>Colorspace conversions using point-sampling for chroma are now more consistent regarding chroma placement.</li>
+</ul>
+
+<p><b>v1.19.0, 2012.07.18</b></p>
+<ul>
+	<li>Added kernel inversion to <code>Dither_resize16</code>.</li>
+	<li>Added cropping parameters to <code>Dither_srgb_display</code>.</li>
+	<li>Fixed a bug preventing to use the 4:1:1 colorspace in some scripted functions.</li>
+	<li>Bug fixed in MVTools (v2.6.0.5).</li>
+</ul>
+
+<p><b>v1.18.1, 2012.06.15</b></p>
+<ul>
+	<li>Forgot to include AVSTP 1.0.1 in the previous release.</li>
+	<li>The <var>mode</var> parameter in <code>Dither_quantize</code> was forgotten too&hellip;</li>
+	<li>Detailed a few things in the documentations.</li>
+</ul>
+
+<p><b>v1.18.0, 2012.06.14</b></p>
+<ul>
+	<li>Added <code>Dither_quantize</code> to dither to bitdepths higher than 8.</li>
+	<li>Added <code>Dither_srgb_display</code> for Y’CbCr preview and accurate screen captures.</li>
+	<li>More meaningful error messages about wrong clip formats.</li>
+	<li><code>SmoothGrad</code> and <code>Dither_box_filter16</code> now work correctly on picture of width &gt; 2048</li>
+	<li>Fixed a bug in multithreaded <code>Dither_resize16</code>.</li>
+	<li>Bug fixed in MVTools (v2.6.0.4).</li>
+</ul>
+
+<p><b>v1.17.0, 2012.05.13</b></p>
+<ul>
+	<li>Added the YCgCo matrix in RGB conversions.</li>
+	<li>More dithering settings exposed in RGB conversions.</li>
+	<li>Fixed BT.709 coefficients.</li>
+	<li>Bug fixed in MVTools (v2.6.0.3).</li>
+</ul>
+
+<p><b>v1.16.0, 2012.05.01</b></p>
+<ul>
+	<li>Added generic spline kernel to <code>Dither_resize16</code>.</li>
+	<li>Added the SMPTE 240M gamma curve and aliases for BT.601 and SMPTE 170M.</li>
+	<li>Fixed a bug related to chroma subsampling and multi-threading in <code>Dither_merge16</code>.</li>
+	<li>Bug fixed in MVTools (v2.6.0.2).</li>
+</ul>
+
+<p><b>v1.15.0, 2012.03.23</b></p>
+<ul>
+	<li>Added the <var>luma</var> parameter to <code>Dither_merge16</code>
+and defaulted <var>u</var> and <var>v</var> to 2 (copy) excepted when
+<var>luma&nbsp;= true</var> (process).
+This behaviour is now identical to <code>mt_merge</code>.</li>
+	<li>Added plane filtering in <code>Dither_merge16_8</code>.
+The function now internaly uses <code>Dither_merge16</code> and is much
+faster (&times;20 on a 4-core CPU).
+	<li>Added support for negative plane filter values in
+<code>Dither_lut16</code>.
+Thanks to 06_taro for the suggestion.</li>
+	<li>Set <var>quiet&nbsp;= true</var> as default in dfttest 1.9.2.</li>
+	<li>Fixed a bug in <code>Dither_resize16</code> making it crash for
+some combinations of source and destination sizes.</li>
+</ul>
+
+<p><b>v1.14.1, 2012.03.12</b></p>
+<ul>
+	<li>Bugs fixed in MVTools (v2.6.0.1).</li>
+</ul>
+
+<p><b>v1.14.0, 2012.03.11</b></p>
+<ul>
+	<li>Multi-threading: most dither.dll functions are now multi-threaded,
+excepted <code>Dither_box_filter16</code> and <code>SmoothGrad</code> (later,
+maybe).
+Some MVTools v2.6.0.0 functions support multi-threading too.</li>
+	<li>Fixed a bug in dfttest v1.9.1</li>
+	<li>Added <var>staticnoise</var> parameter to <code>GradFun3</code>.</li>
+	<li>Documentation revisited.</li>
+</ul>
+
+<p><b>v1.13.2, 2011.12.13</b></p>
+<ul>
+	<li>Updated MVTools to v2.5.14.1 (bugfix)</li>
+</ul>
+
+<p><b>v1.13.1, 2011.11.28</b></p>
+<ul>
+	<li>Updated dfttest to v1.9 and MVTools to v2.5.14.0</li>
+	<li>Fixed height checks in <code>DitherPost</code> with interlaced
+content.</li>
+</ul>
+
+<p><b>v1.13.0, 2011.11.09</b></p>
+<ul>
+	<li>Added <var>kernelh</var>, <var>kernelv</var>, <var>totalh</var> and
+<var>totalv</var> to <code>Dither_resize16</code>.
+Please note that the custom convolution coefficients are now read in the
+correct order.</li>
+	<li>Fixed an error with the plane selectors in the
+<code>Dither_lut*8</code> functions.</li>
+	<li>Updated MVTools to v2.5.13.1.</li>
+</ul>
+
+<p><b>v1.12.1, 2011.10.27</b></p>
+<ul>
+	<li>Fixed a bug with <code>Dither_resize16</code>, occuring with
+positive values for <var>src_left</var> or <var>src_top</var>.</li>
+	<li>Fixed other issues in <code>Dither_resize16</code>, related
+to huge differences between vertical and horizontal resizing ratios.
+It’s not perfect yet, but still much better than before.</li>
+	<li><code>Dither_convert_yuv_to_rgb</code> now supports
+RGB24 output colorspace.</li>
+	<li>Simplified <code>Dither_crop16</code> for pure horizontal
+cropping.</li>
+</ul>
+
+<p><b>v1.12.0, 2011.09.10</b></p>
+<ul>
+	<li>MVTools update again.</li>
+</ul>
+
+<p><b>v1.11.1, 2011.09.10</b></p>
+<ul>
+	<li>Fixed a bug in the MVTools.</li>
+</ul>
+
+<p><b>v1.11.0, 2011.09.10</b></p>
+<ul>
+	<li>Updated MVTools to v2.5.12.0.
+See the MVTools documentation for details.</li>
+</ul>
+
+<p><b>v1.10.0, 2011.08.24</b></p>
+<ul>
+	<li>Added <code>Dither_addborders16</code>.</li>
+	<li>Added the BT 709 curve to <code>Dither_y_gamma_to_linear</code> and
+<code>Dither_y_linear_to_gamma</code>, as well as the plane selectors.</li>
+	<li>Added the possibility to have static noise in
+<code>DitherPost</code>.</li>
+	<li>Added <code>Dither_add_grain16</code>.</li>
+	<li>Added a <var>dif</var> parameter to <code>Dither_add16</code>.</li>
+	<li>Added the <var>lsb</var> and <var>lsb_in</var> parameters to
+<code>GradFun3</code> to deal with 16-bit data.
+The function also accepts smaller radii than before.</li>
+</ul>
+
+<p><b>v1.9.5, 2011.07.21</b></p>
+<ul>
+	<li>Bug fixed in <code>Dither_resize16()</code>, displaying green bars
+when SSE2 optimisations are disabled.</li>
+	<li>Better check of stack16 clip dimensions.</li>
+</ul>
+
+<p><b>v1.9.4, 2011.07.17</b></p>
+<ul>
+	<li>Bug fix again in <code>Dither_resize16()</code>.</li>
+</ul>
+
+<p><b>v1.9.3, 2011.07.13</b></p>
+<ul>
+	<li>Fixed crashes in <code>Dither_bilateral16()</code> occuring
+with subsampling using more than 32 reference pixels.
+This affected <code>GradFun3(smode=2)</code> with radii greater than 13.</li>
+	<li>Fixed a mod4 check in <code>Dither_convert_yuv_to_rgb()</code>.</li>
+</ul>
+
+<p><b>v1.9.2, 2011.07.09</b></p>
+<ul>
+	<li>Fixed crashes and bugs in <code>Dither_resize16()</code>.</li>
+</ul>
+
+<p><b>v1.9.1, 2011.07.06</b></p>
+<ul>
+	<li>Improved memory usage and CPU load for the functions based on the
+16-bit resizer.</li>
+	<li>Simplified a bit the <code>GradFun3()</code> detail masking.</li>
+	<li>Fixed a few glitches.</li>
+</ul>
+
+<p><b>v1.9, 2011.06.11</b></p>
+<ul>
+	<li>The threshold of the detail mask in <code>GradFun3()</code> now
+automatically adjusts to the debanding threshold.
+This helps removing serious color banding, when band boundaries are masked
+because they are detected as details.
+Also, the <var>radius</var> for <var>smode</var> 0 has been internally reduced
+to make the value reflect more accurately the actual range in pixels.</li>
+	<li>Added an interlaced mode for <code>DitherPost()</code>.</li>
+	<li>Added <code>Dither_resize16()</code>, a 16-bit resizer which can also
+work as a chained horizontal and vertical convolution engine.</li>
+	<li>Added <var>y</var>, <var>u</var> and <var>v</var> parameters to
+almost all the dither.dll functions.
+Their behaviour is the same as in masktools2.</li>
+	<li>Added <code>Dither_y_gamma_to_linear()</code> and
+<code>Dither_y_linear_to_gamma()</code>, for gamma &harr; linear
+conversions in 16 bits.</li>
+	<li>Added <code>Dither_convey_yuv4xxp16_on_yvxx()</code> and
+<code>Dither_convey_rgb48_on_yv12()</code>, functions to export clips with 16
+bits per component when Avisynth’s output is read as rawvideo via a pipe.</li>
+	<li>Added <code>Dither_convert_yuv_to_rgb()</code> and
+<code>Dither_convert_rgb_to_yuv()</code> to convert 8 or 16 bits YUV to RGB
+and back with dithering.
+It’s also possible to output RGB48 conveyed on YV12 via a rawvideo pipe.</li>
+	<li>Added <code>Dither_max_dif16()</code> to get from two clips the
+pixels having the maximum difference with a third reference clip.</li>
+	<li>Fixed an error message about wrong colorspace.</li>
+	<li>Bugfix: removed artifacts on flat pure white areas (luma == 255)
+when using error diffusion dithering (modes 6&ndash;8).</li>
+	<li>Non-YV12 planar Y(UV) colorspaces should now work correctly on
+Avisynth 2.6.0.</li>
+</ul>
+
+<p><b>v1.8.1, 2011.05.28</b></p>
+<ul>
+	<li>Optimised <code>Dither_bilateral16</code> with SSE and by
+introducing a subsampling parameter.
+Also, fixed a bug related to the use of a <var>ref</var> clip.</li>
+	<li>Added a troubleshooting section to the documentation.</li>
+</ul>
+
+<p><b>v1.8, 2011.05.15</b></p>
+<ul>
+	<li><code>Dfttest</code> has been modified to make it accept 16-bit
+input clips (v1.8 mod16b).
+It’s now possible to apply a curve on the input and the inverse curve to the
+output to protect dark shades for example, without resolution loss or risk of
+color banding.</li>
+	<li>Made available the two internal components of the
+<code>SmoothGrad</code> function: <code>Dither_box_filter16</code> and
+<code>Dither_limit_dif16</code>.</li>
+	<li>Added <code>Dither_bilateral16</code>, a bilateral filter giving
+cleaner results than the box filter for gradient smoothing.</li>
+	<li>Improved <code>GradFun3</code>:
+		<ul>
+			<li>Better detail/edge masking with adjustable thresholds and
+optional mask display for debugging purpose.</li>
+			<li>Added two smoothing modes using the modified dfttest and the
+new bilateral filter.
+The latter is slow as hell and should be considered as experimental.</li>
+		</ul>
+	</li>
+	<li>Added a <code>Dither_crop16</code> function to properly crop
+stacked 16-bit clips.</li>
+	<li>Added a <var>luma</var> parameter to
+<code>Dither_merge16_8</code> and fixed a slight chroma bug.</li>
+</ul>
+
+<p><b>v1.7.1, 2011.05.11</b></p>
+<ul>
+	<li>Dither.avsi doesn’t use <code>Max</code> anymore, so it can now
+run on Avisynth 2.5.7 or earlier.</li>
+	<li>Bugfix in the modified MVTools2: the <var>thSADC</var> argument
+was ignored in <code>MDegrain1/2/3</code>.</li>
+</ul>
+
+<p><b>v1.7, 2011.04.27</b></p>
+<ul>
+	<li>Slightly improved <code>Dither1Pre</code> and
+<code>Dither2Pre</code> functions, added the <var>overlap</var> and
+<var>tvopt</var> parameters.</li>
+	<li>People complained about <code>GradFun3</code> being too strong and
+washing fine shades away, so I changed the default parameter values for a
+better match with the gradfun2db default settings. <var>thr</var> is set to
+0.35 and <var>radius</var> to 12.</li>
+</ul>
+
+<p><b>v1.6, 2011.04.10</b></p>
+<ul>
+	<li>Masktools 2 a48 is now the minimum requirement because some Dither
+functions use the new bitwise operators. I don’t know how to automatically
+detect the Masktools version, so be sure to update your Masktools before
+installing this Dither version.</li>
+	<li>The modified MVTools2 has been synchronised with the latest official
+release (2.5.11.2 beta)</li>
+	<li>Renamed the <var>rem</var> parameters into <var>clsb</var> in
+<code>DitherPost</code> and <code>SmoothGrad</code> functions</li>
+	<li>Changed the default for the <var>stacked</var> (now true) and
+<var>prot</var> (now false) parameters.</li>
+	<li>Added various utility functions, mainly <code>Dither_lut8</code>,
+<code>Dither_lut16</code>, <code>Dither_add16</code> and
+<code>Dither_merge16</code>.</li>
+</ul>
+
+<p><b>v1.5, 2010.11.07</b></p>
+<ul>
+	<li>Added error diffusion algorithms (Floyd-Steinberg, Stucki
+and Atkinson).</li>
+	<li>Fixed the internal noise generator, now with a better
+randomness.</li>
+</ul>
+
+<p><b>v1.4, 2010.09.24</b></p>
+<ul>
+	<li>Added <code>SmoothGrad</code> as pre-processor to smooth the
+gradients before dithering.</li>
+	<li>Added <code>GradFun3</code>, a tool derived from
+<code>SmoothGrad</code> for color-banding removal.</li>
+	<li>Added the <var>stacked</var> parameter to <code>DitherPost</code>,
+for an easier use with the other functions.</li>
+	<li>Changed the documentation.</li>
+	<li>Fixed wrong output FPS in <code>DitherPost</code> when the input is
+submitted as an interleaved MSB-LSB clip.</li>
+</ul>
+
+<p><b>v1.3, 2010.07.16</b></p>
+<ul>
+	<li><code>DitherPost</code> is now a plug-in instead of a script
+function.
+Doesn’t require NoiseGenerator anymore.</li>
+	<li>Synchronised modified plug-ins: mvtools 2.5.10.1 and dfttest 1.8</li>
+</ul>
+
+<p><b>v1.2, 2010.06.20</b></p>
+<ul>
+	<li>Synchronised the modified mvtools2 with the latest official
+release.</li>
+</ul>
+
+<p><b>v1.1, 2010.05.06</b></p>
+<ul>
+	<li>Merged the <code>DitherPost</code> functions into a single one.</li>
+	<li>Fixed the static pattern for chroma in 1-bit dithering.</li>
+	<li>Strengthened the protection method and made it optional</li>
+	<li>Added new dithering patterns and a test function.</li>
+	<li>Added a masking function</li>
+</ul>
+
+<p><b>v1.0, 2009.12.25</b></p>
+<ul>
+	<li>Initial release</li>
+</ul>
+
+
+
+<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>
+
+</div></body>
+</html>
+
+

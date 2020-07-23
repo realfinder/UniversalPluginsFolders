@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Morph AviSynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1><center>Morph </center></h1></font>
+	 
+	  <BR><b>Author <a href="../vcmohan.html">V. C. Mohan</a></b>
+	  <BR>Date   3 Apr 2017
+	  <BR>All my plugins are available for free download from <a href="http://www.avisynth.nl/users/vcmohan/" >"here"</a>.
+	  
+	  <p>Using morphology princeples the image is modified by "dilate" or "erode" or "close" or "open" procedures. This function can also do a median filtering.A 3x3 structural element is used. erode or dilate procedures can be repeated several times to get the effect of a larger structural element.  .</P>
+   <P> The input color formats are YUY2, YUV  8 to 32 bit depths. This function operates on Luma plane and so RGB formats are not accepted. </P>
+	<P>	It will be preferable to remove impulsive noise ( salt and pepper) prior to input for all options except median. Median filter it self removes impulsive noise, so it can be used as a preprocessor..</P>
+	  
+	  <P> It is thread safe MT_NICE_FILTER
+	  
+	
+<BR> 
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip</td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Type of process opted</td>
+       <td>opt</td>
+       <td>string</td>
+       <td>"dilate", "erode", "open", "close", "median"</td>
+       <td>"dilate"</td>
+</tr>
+
+<tr>
+       <td>number of iterations </td>
+       <td>iter</td>
+       <td>integer</td>
+       <td>1 to 6. Applicable for dilate and erode options only</td>
+       <td>1</td>
+</tr>
+
+
+</table>
+
+<BR>
+Usage examples
+<PRE>
+# pre process to filter impulsive noise
+Morph(opt = "median")
+# dilate repeated 2 times
+Morph(opt = "dilate", iter = 2)
+
+
+<table>
+
+<tr>
+       <td><a href="../index.html">To my index page</a></td>
+	   <td>down load<a href="modPlus.7z">modPlus </a>plugin</td
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>		
+		
+</body>
+</html>

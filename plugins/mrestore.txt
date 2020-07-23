@@ -1,0 +1,130 @@
+mrestore v2.3e by MOmonster
+
+
+---------------
+basic
+---------------
+	Use import("mrestore.avs") in your script to load the function. Depending on the settings you will need mt_masktools and TIVTC to run mrestore.
+	
+	Mrestore is an AviSynth script function that use the conditional frame evaluation for the output calculation.
+	Generally it was written to undo norm-conversions with blends, but the last version can be useful for all decimation ratios between 1.5 and 2.5 (denm/numr).
+	
+	  needed plugins:	- mt_masktools v2.0
+	  	 				- TIVTC v1.04 or higher
+
+
+----------------
+mrestore
+----------------
+	
+	--------
+	Usage
+	--------
+	code:	bobbed (or progressive) source
+
+		mrestore()
+
+
+		------
+		or:
+
+		ord = last.getparity() ? 1 : 0
+
+		leakkernelbob(ord,4,true,true)
+
+		mrestore(dclip=last.crop(8,8,-16,-8))
+
+
+		------
+		or:
+
+		d = last.bob(-0.2,0.6).reduceflicker(strength=1)	#Didee use this in restore24
+
+		tdeint(mode=1)						#or for example yadif(mode=1)
+
+		mrestore(mode=-4,dup=1,dclip=d)
+
+
+	parameters:
+
+	function mrestore(clip clp, int "numr", int "denm", int "mode", float "bf", bool "chroma", int "dup", int "cache", float "rx", float "ry", int "mthr", clip "dclip")
+
+		numr/denm
+			You don't need to set the decimation parameters for the norm conversions restoring Pal_to_NTSC (50->23.976 or 25->11.988)
+			and NTSC_to_Pal (59.94->25 or 29.97->12.5), but for some seldom other blend conversion restoring
+			(for example 29.97 back to 23.976 or 50 to 25 - DEFT).
+			Mrestore use the numerator and denominator instead of an output framerate parameter, because this is more accurate.
+			If you know the output framerate you can use these three conditions to calculate the best values for numr and denm:
+				1) numr and denm are integers
+				2) input framerate * numr = output framerate * denm
+				3) (output framerate * x) / (input framerate * x) = numr / denm 	= smallest possible proper fraction
+				
+			=> a good starting point for NTSC and Pal sources is the factor 2002 for 'x'. 
+			- Example:  59.94fps -> 25fps
+				numr = output framerate * 2002 = 25 * 2002 = 50050
+				denm = input framerate * 2002 = 59.94 * 2002 = (60000 / 1001) * 2002 = 120000
+				numr / denm = 50050 / 120000 = 1001 / 2400
+				=> numr = 1001, denm = 2400
+
+		mode
+			After finding the right decimation values, mode is the most important parameter of mrestore.
+			      0		- the slowest and most precise mode, needs mt_masktools and TIVTC, can also detect particular blends
+			      1/2	- like mode 0, but lower block size, useful for higher rx/ry values used for high resolution sources (hd)
+			      3		- good blenddetection, but not for particular blends, extra detection for low motion scenes, faster than mode 0-2
+			      4		- like mode 3, but without extra detection for low motion scenes, a bit faster
+			      >=5		- decimation only, no blenddetection but faster
+			      
+   			Default - 3
+   			
+		bf
+		  	The blend factor is just for weighting the blenddetection against the decimation. With negativ values mrestore tries to output all
+		  	blends :-).
+		  	Default - 0.6	(recommed: 0.1-10.0)
+			
+		chroma
+ 		      	With chroma=true you enable the processing of the chroma. This cost some speed, but depending on the source it can improve
+			the blend and motion detection.
+  			Default - false
+  	
+		dup
+		  	The parameter 'dup' has three states:
+		  	      <0	- the source is a real film or an animation with full framerate, there are no dups in the source
+			      0		- there are dups and/or many scenes without motion
+			      >0	- the source has animated scenes with dups, the quality of the duplicates is not the same
+			Dup has no influence on the speed. It is a useful parameter for all animated sources. Dup>=0 enables a motion detection.
+			Mrestore use these information to improve the decimation of animated (or drawn/tooned) sources. With dup>0 mrestore
+			will output the duplicate with the better quality if a dup is detected. Generally dup=0 has no bad effects, also if the 
+			source is not animated. But don´t use dup>0 on not-animated source
+			Default - 0
+
+  		cache
+  		     	With cache>=0 mrestore use the RequestLinear function to be more compatible with non-linear requesting (codec or other functions).
+  		     	You can set the number of frames you want to have cached. If cache is negative mrestore doesn´t use RequestLinear (can be useful
+    			if you have problems with the memory usage).
+    			Default - 5
+    			
+		rx/ry
+			The reduction radius scales the internal detection clip down. The speed differences between the different modes of mrestore
+			are small compared to the speed difference you can realize with these two parameters.
+			They reduce the resolution of the internal clip used for the detection. They have a blurring effect. Small artefacts will
+			have less influence on the detection, but on the other side, small details will be removed and cannot be used for the detection 
+			any more. A higher radius result in a stronger blurring. It´s a precision against speed parameter.
+			Note: Lower values for rx and ry increase the precision and decrease a lot more the speed, but this doesn´t mean that you automatically
+			      increase the detection quality.
+			      Lower values are only useful for high quality sources and sources with very low resolutions.
+   			If you are not sure what radius is suited for your example, you can set rx/ry smaller 0.5 and mrestore will use a fixed size that works
+			well with the internal detection      
+			Default - 3.0	(recommed: 2.0 - 4.0)
+			
+		mthr
+		    	The motion threshold is a normalized parameter. You can only set integers between -8 and 8. If you don´t fit the range, mrestore will
+		    	use the default. The motion detection is much more stable in the last release, but you can use this parameter for tweaking.
+		    	With lower values mrestore will detect motion only on lower pixel differences, with higher values more frames will be detected as
+		    	duplicates.
+		    	Default - 0
+
+		dclip
+			The (d)etection(clip) you can set to improve the blenddetection (cleaning the clip before). 
+			This clip is only used for the blenddetection and not for output	=> only effects the detection but not the output quality
+			It`s recommed to crop the bobbed (Deinterlace BEFORE cropping!) to avoid the detection influence of the bobbing borders.
+

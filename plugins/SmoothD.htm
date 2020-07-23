@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+	<meta http-equiv="CONTENT-TYPE" content="text/html; charset=windows-1252">
+	<title>SmoothD</title>
+	<meta name="GENERATOR" content="OpenOffice.org 1.1.2  (Win32)">
+	<meta name="CREATED" content="20041023;3192448">
+	<meta name="CHANGED" content="20041108;23593134">
+	<style><!--
+/* Effective stylesheet produced by snapshot save */
+@page {  }
+--></style>
+</head>
+<body dir="LTR" lang="de-DE">
+<h2>SmoothD</h2>
+<p><code>SmoothD </code>(clip <i>clip,</i> int <var>quant, int
+</var><i>num_shift,</i> int <i>adaptive_shift,</i> int <i>zero_weight</i>)</p>
+<p>default: SmoothD(3, 4, 0, 1) <i>or</i> SmoothD()</p>
+<p>Version 0.0.9pre2 November 8th, 2004<br>Copyright (C) 2004 Tobias
+Bergmann.<br>contact: tobias.bergmann at bergdichter.de</p>
+<p>Look here for the <a href="http://forum.doom9.org/showthread.php?s=&amp;postid=566064#post566064"><span style="text-decoration: none">SmoothD
+announcement thread</span></a> on doom9.</p>
+<h2>Files</h2>
+<p style="margin-bottom: 0cm">Look here for <a href="http://www.funknmary.de/bergdichter/projekte/video/SmoothD/releases">releases<span style="text-decoration: none">.</span></a></p>
+<h2>Description of filter and parameters</h2>
+<p><code>Look here for the SmoothD announcement thread on doom9.</code></p>
+<p><code>SmoothD</code> filters the input stream by repeated
+application of a DCT-quant-iDCT on shifted copies of each frame. By
+doing so it reduces blocks while keeping high frequency detail
+intact.<br>Ideally it should be used with exactly the same quant
+matrix as the stream was produced with. In order to keep the list of
+parameters small and usage simple Didée's 6-of-9 matrix is
+used. This matrix offers very light filtering at low quants.</p>
+<p>Parameters (range in brackets; default in <b>bold</b>):</p>
+<ul>
+	<li><p><i>quant (1..<b>3</b>..31)</i>: This parameter specifies the
+	quantizer value used. A higher value means stronger filtering. It
+	should be set according to the quality of the stream. The value
+	should be chosen to match the stream quality with an (imaginary)
+	Didée's 6-of-9 constant quant encode.</p>
+</li></ul>
+<ul>
+	<li><p align="LEFT"><i>num_shift (1..<b>4</b>..8)</i>: Specifies the
+	number of shifted versions used for filtering. A higher value is
+	both more accurate and time consuming.</p>
+</li></ul>
+<ul>
+	<li><p><i>adaptive_shift (<b>0</b>, 1)</i>: Selects if adaptive
+	shifting is used. Zero means off. Adaptive shifting varies num_shift
+	depending on quant.</p>
+</li></ul>
+<ul>
+	<li><p><i>zero_weight (<b>1</b>..8)</i>: Defines relative weight of
+	non-shifted original. A higher value counteracts filtering but keeps
+	more detail.</p>
+</li></ul>
+<p>Default values are used if omitted in function call.</p>
+<h2>Background information</h2>
+<p>The original idea stems from a 2001 master thesis at University of
+Dallas. It was later published as a paper by <a href="http://www.utdallas.edu/%7Earia/mcl/post/">A.
+Nosratinia</a>. 
+</p>
+<h2>References</h2>
+<ol>
+	<li><p style="margin-bottom: 0cm">A. Nosratinia, Enhancement of
+	JPEG-Compressed images by re-application of JPEG, Journal of VLSI
+	Signal Processing, vol. 27, pp. 69-79, 2001. 
+	</p>
+	</li><li><p><a href="http://www.utdallas.edu/%7Earia/mcl/post/"><u>Homepage
+	of Aria Nosratinia</u></a></p>
+</li></ol>
+<h2>Versions</h2>
+<p>V0.0.9pre2 , November 8th, 2004</p>
+<ul>
+	<li><p>Preview release; sources compile but output is empty</p>
+</li></ul>
+<p>V0.0.9pre , November 5th, 2004</p>
+<ul>
+	<li><p>Preview release; very close to V0.1; sources don't compile</p>
+</li></ul>
+<p>V0.0.8 , October 27th, 2004</p>
+<ul>
+	<li><p>Preview release; most code for V0.1; binary release plus
+	sources fixed</p>
+</li></ul>
+<p>V0.0.8pre , October 27th, 2004</p>
+<ul>
+	<li><p>Preview release; most code for V0.1 included but doesn't
+	compile</p>
+</li></ul>
+<p>V0.0.7 , October 24th, 2004</p>
+<ul>
+	<li><p>Preview release</p>
+</li></ul>
+<h2>Known issues</h2>
+<ul>
+	<li><p style="margin-bottom: 0cm">U und V are not processed</p>
+</li></ul>
+<h2>Limitations</h2>
+<ul>
+	<li><p style="margin-bottom: 0cm">requires YV12 (maybe YUY2 support
+	will be added at a later stage)</p>
+	</li><li><p style="margin-bottom: 0cm">requires MMX (will support PlainC,
+	SSE and SSE2 in the future)</p>
+</li></ul>
+<h2>Keywords</h2>
+<ul>
+	<li><p style="margin-bottom: 0cm">deblock, filter, deblocker,
+	avisynth plugin, enhance, enhancement, smooth, SmoothD, pre
+	processing, post processing, video encoding, adaptive filtering, 
+	</p>
+</li></ul>
+
+</body></html>

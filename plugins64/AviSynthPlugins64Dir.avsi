@@ -1,0 +1,1 @@
+global AviSynthPlugins64Dir = VersionNumber() < 2.60 ? RT_GetWorkingDir() : ScriptDir()

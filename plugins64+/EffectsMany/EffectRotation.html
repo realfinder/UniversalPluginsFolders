@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectRotation AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectRotation </h1></font>
+	 
+	  <P> EffectRotation  rotates the image part with given radius through given
+	   angle (-ve clock wise direction) Can be used to rotate scanned images or 
+	   as an effect. The unaffected space of the frame can be painted with fill 
+	   color or original image retained. The angle, coordinates of center, radius
+	    can be varied linearly during effect.
+RGB32, RGB24  and YV12 color formats only are supported at this time.
+ </p>  
+
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+<tr>
+       <td>Initial radius of image to be rotated</td>
+       <td>ir</td>
+       <td>integer</td>
+       <td>1 or more </td>
+       <td>half of frame diagonal</td>
+</tr>
+
+<tr>
+       <td>initial angle of rotation in degrees</td>
+       <td>id</td>
+       <td>float</td>
+       <td>-360 to 360</td>
+       <td>90</td>
+</tr>
+
+<tr>
+       <td>initial center x coordinate</td>
+       <td>ix</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>mid width</td>
+</tr>
+
+<tr>
+       <td>initial center y coordinate</td>
+       <td>iy</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>mid height</td>
+</tr>
+<tr>
+       <td>Fill color</td>
+       <td>cc</td>
+       <td>integer</td>
+       <td>rrggbb format. If -1 then original image retained</td>
+       <td>-1</td>
+</tr>
+
+<tr>
+       <td>final radius of image to be rotated</td>
+       <td>fr</td>
+       <td>integer</td>
+       <td>1 or more </td>
+       <td>ir</td>
+</tr>
+
+<tr>
+       <td>final angle of rotation in degrees</td>
+       <td>fd</td>
+       <td>float</td>
+       <td>-360 to 360</td>
+       <td>id</td>
+</tr>
+
+<tr>
+       <td>final center x coordinate</td>
+       <td>fx</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>ix</td>
+</tr>
+
+<tr>
+       <td>final center y coordinate</td>
+       <td>fy</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>iy</td>
+</tr>
+ 
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>EffectRotation(last,51,150,120, 20,300,200,$7f5e48,100,-50,0,100)
+For frame centered full frame using defaults :
+EffectRotation((last,51,150)
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="rotation.jpg" border="0">
+
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

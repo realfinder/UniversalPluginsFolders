@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>TransSwirl AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>TransSwirl </h1></font>
+	 
+	  <P>A gradually increasing swirl that covers fully the Left Clip by 1/3 overlap
+	   length is created.Thereafter the Right Clip emerges in the center as a 
+	   growing Swirl fully covering frame by 2/3 length. This Swirl then subsides
+	    (withdraws) over the Right Clip thus revealing it.
+
+		The swirling can be clockwise or anticlockwise. The swirl will be finer 
+		at lower values of step and becomes very coarse for a value of 64. The 
+		finer it is the slower the processing.
+ 
+
+ 	  All avisynth supported formats can be input.
+ 	  RGB32, RGB24 YV12 and YUY2 colorspaces  are supported by 2.5+ version.2.6 version supports all other planar formats as well. </p>  
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Left clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Right clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Overlapping frames or seconds time</td>
+       <td>overlap</td>
+       <td>integer</td>
+       <td>not more than clip length , >2 frames. If -ve taken as time in seconds</td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Direction of swirl</td>
+       <td>dir</td>
+       <td>string</td>
+       <td> "clock" "anti"</td>
+       <td>"clock"</td>
+</tr>
+
+<tr>
+       <td>coarse ness of swirl step</td>
+       <td>step</td>
+       <td>integer</td>
+       <td> between 4 and 64</td>
+       <td>10</td>
+</tr>
+
+
+</table>
+
+
+<BR>#Usage examples:- 
+<pre>TransSwirl(Left,Right,100,"clock",16)
+TransSwirl(Left,Right,100,step= 16)
+</pre>
+<BR>Images during transition :
+
+<table>
+<tr><td><img src="Swirl1.JPG" width="256" height="256" border="0"></td>
+<td><img src="Swirl2.JPG" width="256" height="256" border="0"></td>
+<td><img src="Swirl3.JPG" width="256" height="256" border="0"></td>
+</tr>
+</table>
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="index.html#synopsys">Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="../../index.html">Back to my  page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+</body>
+</html>
+
+

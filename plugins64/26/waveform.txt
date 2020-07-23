@@ -1,0 +1,18 @@
+waveform
+========
+
+An Avisynth plugin to display audio waveforms superimposed on video clips.
+
+Usage
+=====
+
+waveform(clip, int "window", float "height", bool "under", float "zoom")
+
+Parameters:
+-----------
+
+window: the number of frames either side to display a waveform for (default: 1)
+height: >=1 : height in pixels of each audio channel displayed
+        <1 : total height of waveform display as a fraction of video height (default: 0.333)
+under: if true, display the waveform underneath the video instead of superimposed on it (default: false)
+zoom: scale up the waveform (default: 1)

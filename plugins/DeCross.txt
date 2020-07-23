@@ -1,0 +1,38 @@
+DeCross.dll v0.0.02 Copyright(C) 2003, 2004 minamina
+
+Avisynth Plugin - Cross Color Reduction (YUY2 and YV12 Only)
+
+
+- 説明
+
+ Avisynth 用クロスカラー低減プラグイン
+ YUY2 モードおよび YV12 モード用
+ Avisynth 2.5 専用
+ MMX 必須
+
+ 将のページにある AviUtl 用クロスカラー除去フィルタを参考にしています
+ 将氏に感謝
+
+
+- 使い方
+
+ LoadPlugin("DeCross.dll")
+ DeCross(clip, ThresholdY, Noise, Margin, Debug)
+
+ ThresholdY : エッジ検出閾値 (0 から 255, default 30)
+ Noise      : この値以上はノイズとする (0 から 255, default 60)
+ Margin     : エッジ検出部分を左右に広げる (0 から 4, default 1)
+ Debug      : 適用範囲を表示 (default false)
+
+
+- 例
+
+ DeCross()
+ DeCross(28, 80, 2, false)
+ DeCross(ThresholdY = 40, Margin = 1)
+
+
+- 履歴
+
+ 2004/02/01 v0.0.02 LoadPluginEx + AviSynth 2.0.x で読み込めない問題修正
+ 2003/12/26 v0.0.01 誕生

@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>TransFlipTurn AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>TransFlipTurn </h1></font>
+	 
+	  <P> Right Clip (the second Clip) emerges flipping vertically, horizontally 
+	  and rotating while gradually replacing the Left Clip. If the flips are 
+	  specified as -ve numbers  the apparent vertical or horizontal rotations 
+	  are reversed. (not very noticeable unless closely examined). In case nturns 
+	  is not zero then the rotation effect due to flip will not be seen. The 
+	  vertical flip is a rotation about horizontal axis while horizontal flip is 
+	  rotation about vertical axis. Thus this produces a 3 dimensional rotation 
+	  effect.
+ 	  All avisynth supported formats can be input.
+ 	  RGB32, RGB24 YV12 and YUY2 colorspaces  are supported by 2.5+ version.2.6 version supports all other planar formats as well. </p>  
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Left clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Right clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Overlapping frames or seconds time</td>
+       <td>overlap</td>
+       <td>integer</td>
+       <td>not more than clip length , >2 frames. If -ve taken as time in seconds</td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>number of vertical flips</td>
+       <td>vflips</td>
+       <td>integer</td>
+       <td>0 for no flip. any even number less than overlapping frmes/4</td>
+       <td>0</td>
+</tr>
+
+<tr>
+       <td>number of horizontalal flips</td>
+       <td>hflips</td>
+       <td>integer</td>
+       <td>0 for no flip. any even number less than overlapping frmes/4</td>
+       <td>0</td>
+</tr>
+
+<tr>
+       <td>number of rotations</td>
+       <td>nturns</td>
+       <td>integer</td>
+       <td>0 for no turn. </td>
+       <td>4</td>
+</tr>
+
+
+</table>
+
+
+<BR>#Usage examples:- 
+<pre>TransFlipTurn(Left,Right,100,4,2,2)
+TransFlipTurn(left, right,-3, nturns=-2)
+TransFlipTurn(Left,Right,100,vflips=4)
+TransFlipTurn(left, right,-3, hflips=-2, nturns=0)
+TransFlipTurn(Left,Right,100)
+TransFlipTurn(left, right,-3)</pre>
+<BR>Images during transition with horizontal, vertical flips and turns:
+
+
+
+<table>
+<tr><td><img src="FlipTurn1.JPG" width="256" height="256" border="0"></td>
+<td><img src="FlipTurn2.JPG" width="256" height="256" border="0"></td>
+<td><img src="FlipTurn3.JPG" width="256" height="256" border="0"></td>
+</tr>
+<tr><td><img src="FlipTurn4.JPG" width="256" height="256" border="0"></td>
+<td><img src="FlipTurn5.JPG" width="256" height="256" border="0"></td>
+<td><img src="FlipTurn6.JPG" width="256" height="256" border="0"></td>
+</tr>
+</table>
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="index.html#synopsys">Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="../../index.html">Back to my  page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+</body>
+</html>
+
+

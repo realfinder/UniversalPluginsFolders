@@ -1,0 +1,175 @@
+{\rtf1\fbidis\ansi\ansicpg1252\deff0\deflang1031{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil\fcharset178 Arial;}{\f2\fnil\fcharset0 Arial;}{\f3\fnil\fcharset0 Consolas;}{\f4\fnil\fcharset2 Symbol;}}
+{\colortbl ;\red0\green0\blue0;\red255\green255\blue255;}
+{\*\generator Msftedit 5.41.21.2510;}\viewkind4\uc1\pard\ltrpar\sa200\sl276\slmult1\qc\lang7\ul\f0\fs22\~\tab\tab\tab\tab\tab\tab\tab\tab\tab\tab\tab\tab\tab\tab\~\ulnone\par
+\pard\ltrpar\sa200\sl240\slmult1\qc\b xNLMeans for AviSynth 2.6\par
+\pard\ltrpar\sa200\sl276\slmult1\qc\b0 DOCUMENTATION\par
+\ul\~\tab\tab\tab\tab\tab\tab\tab\tab\tab\tab\tab\tab\tab\tab\ulnone\par
+\pard\ltrpar\sa200\sl276\slmult1\qr v 0.03\par
+\pard\ltrpar\sa200\sl276\slmult1\b ABSTRACT\par
+\b0 XNLMeans is an AviSynth plugin implementation of the Non Local Means denoising algorithm, as described by Buades et al. This implementation provides several optimizations and extensions over the original publication and other implementations.\par
+\par
+\b FUNCTIONS SYNTAX\par
+\pard\ltrpar\li720\sa200\sl276\slmult1\b0 clip \b xNLMeans(\b0 clip, int "a", int "s", int "d", float|clip "h", float "sdev", int "planes", bool "lsb", clip "mask", clip "rclip", float "digits", float "diffout", float "lcomp", float "vcomp", float "wmin", float "dw", int "threads"\b )\b0\par
+float \b xNLMeans_VersionNumber()\par
+\pard\ltrpar\sa200\sl276\slmult1\b0\par
+\b PIXEL FORMATS\par
+\b0 XNLMeans supports all 8 bit AviSynth 2.6 frame formats and planar stacked 16 bit frame formats (see dither package for description). 8 bit YUY2 and RGB frames are internally converted, as the algorithm natively works on planar frames. See remarks below.\par
+\pard\ltrpar\sa200\lang1031 This plugin makes all computations on single component greyscale planes of image frames, i.e. R,G,B or Y,U,V separately. In the 'rclip' section, a method to use R+G+B together is shown.\par
+\pard\ltrpar\sa200\sl276\slmult1\lang7\par
+\b METHOD OF OPERATION\par
+\b0 The Non Local Means algorithm proposes, for every single pixel in an image, to take the special pattern of its surrounding pixels as a fingerprint (or patch) for this pixel, and then to derive the filtered result from the weighted mean value of all other pixels in the image with similar surrounding fingerprints, where the weights match the similarities.\par
+\pard\ltrpar\sa200 When this is implemented as an algorithm, the comparison is restricted to a seek \lang1031 square of (2\b a\b0 +1)\'b7(2\b a\b0 +1) possibly similar pixels. Otherwise it would take too much time to complete the calculation, and the pixels in the area should provide sufficient data for practical use.\par
+Also, only a square of (2\b s\b0 +1)\'b7(2\b s\b0 +1) pixels is defined as the region of surrounding pixels to determine the fingerprint. More central positions in the fingerprint area may or may not be given a higher weight than the more distant ones. In any case, the differences between corresponding pixels in the two fingerprints are averaged, resulting in a scalar 'similarity' between them.\par
+The paper introduces the term \i method noise\i0 . This is the specific noise image which is extracted from a noisy image with a denoising method, i.e. the difference between the noisy and the denoised image. If the noise of a noisy image is of random nature without relations between the noise part of neighbor pixels, then the ideal method noise is also uncorrelated between pixels, with fine structure and without any original image content.\par
+\par
+\b Optimized Computation Order for Geometrical Convolution\par
+\b0 XNLMeans uses an unusual computation order to calculate the convolutions: It is obvious that there are many repeated calculations in the algorithm. More specifically, with a pixel to be filtered (x,y) p\sub xy\nosupersub  and a possibly similar test pixel (x+a,y+b), the ranges (x-s,y-s)...(x+s,y+s) and (x+a-s,y+b-s)...(x+a+s,y+b+s) are the two fingerprints. With the center pixel (x,y\b\i +1\b0\i0 ) and the test pixel (x+a,y+b\b\i +1\b0\i0 ), the new fingerprints just lack the top rows and have additional bottom rows (and for non-flat weighting, all pixel weights are different). Instead of keeping pixels to be filtered fixed and compare all possibly similar pixels around them in a sequence, xNLMeans fixes one offset after another and walks through the whole image with it. This allows to calculate intermediate results for each row and then just add up the appropriate intermediate results.\par
+For the 1st pixel in each sequence, and when a mask is used, this benefit does not (fully) apply, but it is valid for the majority of pixels.\line Roughly said, for the addition of (2s+1)\'b7(2s+1) weighted differences, only (2s+1) differences plus (2s+1) intermediate results must be added, so this part of the algorithm is (2s+1)/2 times faster \lang1025\f1\rtlch\rtlmark\lang1031\f2\ltrch\u8210?\f0  with s=3 factor 3.5, with s=4 factor 4.5 and so on.\par
+\par
+\b Fingerprint Similarity and the Geometrical Weight Function\par
+\b0 The original paper makes no statement about position (distance from the center) weights \b w\sub xy\nosupersub\b0  of pixels in the fingerprints. The differences of all corresponding pixels just might be added up to obtain the dissimilarity - called a 'flat' geometrical weight.\par
+Alternatively, a decreasing weight e.g. associated with an euclidean distance r\~=\~\fs24\u8730?\fs22 (x\'b2+y\'b2) from the center may be assigned to the regions. This can be 1/r, 1/r\'b2 e\super -r\nosupersub  or something else. \par
+For speed reasons, xNLMeans works with intermediate results for fingerprint rows. To keep independency from the pixel's angle, it needs a 'separable' weight function that applies the total weight in a first step to the pixels of the rows and then in a 2nd step to the rows of the area.\par
+The gaussian function f(x)\~=\~exp(-x\'b2/2s\'b2) meets the resulting requirement f(x)\'b7f(y) = f(\fs24\u8730?\f2\fs22 (\f0 x\'b2+y\'b2)).\par
+\pard\ltrpar\sa200\tx2556 Consequently, xNLMeans uses\par
+\pard\ltrpar\sa200\tx1420\tx6248\tab\b w\sub x\nosupersub\b0  = \b exp(-x\'b2/2\i sdev\i0\'b2)\b0\tab w\sub y\nosupersub  = exp(-y\'b2/2\i sdev\i0\'b2)\b\line\tab w\sub xy\nosupersub\b0  =  \b w\sub x\nosupersub\b0\'b7\b w\sub y\nosupersub\b0\tab\par
+\pard\ltrpar for the geometrical weight function, if the parameter \i sdev\i0  \u8800? 0.\par
+\pard\ltrpar\sa200 The averaged differences between corresponding pixels\par
+\pard\ltrpar\sa200\tx1420\tx6248\tab\b 1/Z \'b7\b0\f2\u8721?\b\f0 w\sub xy\nosupersub\b0\'b7\b (q\sub xy\nosupersub  - p\sub xy\nosupersub )\'b2\tab\b0\fs16 where \sub xy\nosupersub  run over (2s+1)\'b7(2s+1) and 1/Z is the normalizer \f2\u8721?\f0 w\sub xy\nosupersub\fs22\par
+\pard\ltrpar\sa200 form the scalar 'dissimilarity' \b D\b0  between the fingerprints.\par
+\par
+\b The Fingerprint Size Dilemma, XNLMeans Multiscale Fingerprints\par
+\b0 It is obvious that very big fingerprints are nonsense, because the Non Local Means denoising idea is based on keeping non-related other content out of the fingerprint. On the other hand, too small fingerprints do not produce a sufficiently averaged (i.e. reliable) similarity value. \par
+The best choice depends on the image content: E.g. for sky, a big window is best; while for rich detail this prevents finding similar fingerprints.\par
+\pard\ltrpar For that reason, xNLMeans calculates two \fs24 or three\fs22  fingerprints for each pixel: a flat one with diameter 2\'b7s+1, a gaussian weighted one with diameter 2\'b7min(s,3)+1 - and if s>3, a third flat one with diameter 7.\par
+The fingerprint with the best similarity wins. This makes for very good averaging for unstructured content and better comparison performance for structured content. This mode of operation can be deactivated by setting sdev = 0.\par
+\pard\ltrpar\sa200\par
+\b Intensity Difference Weight Function\par
+\b0 When the dissimilarity \b D\b0  between two pixels has been calculated as the result of the convolution, it must be transformed into the weight of contribution of q\sub xy\nosupersub  to the filtered p\sub xy\nosupersub . The decision for this function is arbitrary, as with the geometrical weight function. However, exp(-D/h\'b2) has originally been propsed for this. Since D is the mean \ul squared\ulnone  difference of the region convolution, exp(-D/h\'b2) is effectively exp(-mean(diff\'b2)/h\'b2), i.e. again the Gauss function. Compared with other possible intensity weight functions like h/D, h\super -D\nosupersub , exp(-D/h\'b2) did a superior job in experiments recovering test images with superimposed white noise.\par
+\b\par
+Pixel Difference Calculation, Luma Offset Compensation\par
+\b0 The above term D is still a simplification. As said, the mean value of the difference squares is used to calculate the difference value.\par
+The calculation of differences can be refined by determining the averaged \i offset\i0  between two fingerprints:\par
+\pard\ltrpar\sa200\tx1420\tab\b ofs =\b0  E(X) = \b 1/Z \'b7\b0\f2\u8721?\b\f0 w\sub xy\nosupersub\b0\'b7\b (q\sub xy\nosupersub  - p\sub xy\nosupersub )\b0\par
+\pard\ltrpar\sa200 which can be used to calculate the averaged difference of variances according to Var(X) = E(X\'b2) - [E(X)]\'b2 = E(X\'b2) - ofs\'b2\line (known as K\'f6nig-Huygens formula or Steiner translation theorem).\par
+However, using D - ofs\'b2 does not improve the visual result, but amplifies pale image details in the method noise, and blurs the output. In reverse, D + k\'b7ofs\'b2 recovers such details better, therefore xNLMeans allows to set k as the parameter \b\i lcomp\b0\i0  with a weird input scale: [-1...inf) is k according to the formula, (-inf...-1) is an automatic mode with \cf1\highlight2 -(\i lcomp\i0  + 1) as user settable control factor.\cf0\highlight0\par
+\par
+\b Original Pixel Output Weight\par
+\b0 E\lang7 ach pixel has a perfect fingerprint compared to itself, and would theoretically add its own value to the output value with weight 1. In real world, this often yields almost unfiltered input, so the pixel itself is excluded from the neighbor search. This output without further 'postprocessing only produces good results for pixels with several and similar neighbors, while inaccurracies for pixels with only one or two still rather unsimilar neighbors create ugly artifacts.\par
+The original paper proposes to observe all weights similar pixels contribute, and to assign the maximum weight from any similar pixel to the original pixel. This doubtlessly makes the filter robust: for pixels that find only one similar pixel, it produces a 50% blend effect, while reducing the blend where many similar pixels are found. But the paper lacks further justification of the method.\par
+As another effect, numerical accuracy of the implementation is relevant. A numerical accurracy of e.g. 6 decimal digits might provide 'crispier' output than 20 digits, just because it finds no suitable neighbors at all in craggy image parts, so noisy input pixels are passed through, while a more accurate filter removes more pixel contrast.\par
+In xNLMeans, the attempt is made to provide a smoother transition between fully filtered pixels and input pixels, yet also provide the original algorithm. The weight to add the input pixel to the filter output is (with 'wmax' being the maximum weight of the suitable neighbors):\par
+\pard\ltrpar\sa200\tx1420\lang1031\b\tab weight = \i wmin\i0\'b7wmax\tab\tab\tab\tab\tab\tab\tab\tab\b0 if \i wmin\i0  > 0\lang7\par
+\lang1031\b\tab weight = \i -wmin\i0\'b7wmax\'b7correction_factor\tab\tab\tab\tab\tab\b0 if \i wmin\i0  < 0\lang7\par
+\pard\ltrpar\sa200 So, with \b\i wmin\b0\i0  = 1 \lang1031\u8594? \lang7 weight \lang1031\fs24 = \lang7\fs22 1, which is consistent with the paper. With wmin = -1, a blending which also depends on a correction factor is used. The factor uses the relation between the found neighbor weight and the \i digits\i0  parameter to make the input blend small when good neighbors were found and make it high when the weight of the best found neigbor was still small.\par
+\i Wmin\i0  < 0 is intended as an automatic mode with -1 being the neutral setting.\par
+\b\i Digits\b0\i0  sets the soft weight transition point with \i wmin\i0  < 0. The default setting is chosen to balance good visual reproduction of small details, grass, foliage, pebble, water ripples and other rough surfaces and leveling of smooth image parts even with higher \i h\i0  settings. Lower \i digits\i0  setting keeps more details and stains. Internally, xNLMeans provides 3 more decimal digits accurracy headroom. Neighbors with even less weight are discarded to save a bit processing time.\par
+\lang1031\b\par
+Variance Compensation\par
+\b0 Dealing with absolute differences has a strong effect when the values inside the fingerprint vary little. In image parts with edges\lang7  and sharp objects, there is less chance to find equally 'similar' neighbor pixels. This may be undesirable depending on the noise source. Mosquito noise can cause very distinct noise pixels which are hard to fight with the absolute approach. XNLMeans can calculate the mean variance of the pixel fingerprints, and rate fingerprint dissimilarities relative to this variance:\par
+\pard\ltrpar\sa200\tx1420\lang1031\b\tab D_factor(p\sub xy\nosupersub ) = [Var(p\sub xy \nosupersub fingerprint)]\super -vcomp\nosupersub\tab\tab\tab\tab\b0\fs16 vcomp = [0...1], see above for Var() calculation\cf1\highlight2\lang7\f3\fs19\par
+\pard\ltrpar\sa200\cf0\highlight0\f0\fs22 With \b\i vcomp\b0\i0  = 0, all pixels' fingerprint D values weigh '1' regardless of the variance inside the fingerprints, which is the original behaviour. In typical applications, variance compensation does not level smooth image parts as well as the absolute approach, and kills crispness. So it's here for experiments e.g. on mosquito noise.\par
+\lang1031\b\par
+\pard\ltrpar\sa200\sl276\slmult1\lang7 Mask\par
+\pard\ltrpar\sl276\slmult1\lang1031\b0 Since the algorithm consumes much computing power, it can be desirable to restrict the filtering to certain image parts, e.g. edges with artefacts. For this purpose, XNLMeans supports a \b\i mask\b0\i0  clip. \lang7 If a mask clip is defined, it must have the same dimensions and length as the input clip and either 'planes' must be 1 or the input clip must have pixel_format YV24, Y8, or RGB. Only luma from the mask clip is used for all filtered planes. Mask pixels with intensity 0 are left unfiltered to speed up the filter. Values 1..254 cause a blend between input and filter output and 255 outputs the filter result unblended.\par
+\fs6\par
+\fs22 (!) The mask must not be 'cored' to YUV conformant values [16...235], but the complete range [0...255] is used.\par
+\fs6\par
+\pard\ltrpar\sa200\sl276\slmult1\fs22 (!) Even for RGB32 clips, the contained alpha channel is not used as a mask (because that would have made filtering harder for RGB32 clips with transparency), but it must be provided separately, if desired.\line\pard\ltrpar\sl276\slmult1 The mask does only restrict which output pixels are to be filtered. Around these pixels, the full seek area will be processed.\par
+\fs6\par
+\pard\ltrpar\sa200\sl276\slmult1\fs22 (!) The mask is always of 8 bits type. With 16 bit clips, the mask's height must match the high byte part of the clip.\lang1031\par
+\lang7\b\par
+Rclip\par
+\b0 Another clip than the source clip (e.g. a preprocessed copy of the source clip) may be used as the weighting source. If it is known that the three parts of an RGB or YUV image together provide a sharp and less noisy source for filtering these components, they may be combined in a ConvertToY8() or similar prefiltering and fed to xNLMeans as \b\i rclip\b0\i0 . With the rclip parameter set, xNLMeans uses rclip to determine the neighbor weights and the source clip as input image of the filter.\b\par
+\par
+Method Noise Preview & Output for External Processing\par
+\b0 For preview of the filter effect, the 'method noise image' is a useful helper. When the \b\i diffout\b0\i0  parameter is > 0, xNLMeans displays the inverted method noise, multiplied with the parameter, instead of the filtered output. This can also be used to feed it to external post processing before applying it to the source.\b\par
+\par
+Sequence of Global Shift and Content Based Stop\par
+\b0 XNLMeans allows to balance the filtering effort based on the image content. The parameter \b\i dw\b0\i0  is a weight delta. In every frame plane run, xNLMeans adds up the weight of all processed pixels. If the following formula is true, then the filtering of the plane stops.\par
+\pard\ltrpar\sa200\sl276\slmult1\tx1420\tab\b last_pass_overall_weight < dw \lang1031\'b7\lang7  previously_accumulated_overall_weight\b0\par
+\pard\ltrpar\sa200\sl276\slmult1 I.e. when the last plane run was not able to add at least a given threshold to the already achieved overall weight, further processing is assumed to be waste of time. This is done per thread and might not be true for certain image parts, however. If xNLMeans produces incomplete filtering, set dw to very small values, or even zero, which provides the original, slower behaviour.\par
+Because with this content based stop, it is not known in advance how much of the seek range will be completed, it is not a good idea to start the seek at the typical corner (x-a,y-a,current_frame-d). Instead, xNLMeans starts with direct neighbors of (x,y,current_frame) and enlarges the radius step by step. Non-motion-compensated temporal filtering tends to introduce ghost structures, so current_frame is evaluated completely first. To fetch other frames, xNLMeans uses Avisynth's frame cache.\par
+\par
+\b YUY2, RGB24, RGB32, 16 Bits\par
+\b0 XNLMeans natively processes the planar memory layouts Y8, YV411, YV12, YV16, YV24 as 8 bit or stacked 16 bit planes for the source clip. It converts YUY2 to YV16 via an Avisynth 'ConvertToYV16()' call. It converts the R, G and B components of RGB24 or RGB32 via Avisynth 'ShowRed()', 'ShowGreen()', 'ShowBlue()' to three Y8 planes and processes these separately. The \b\i planes\b0\i0  parameter is ignored in this case. After processing, RGB24 is reconstructed via 'MergeRGB()', RGB32 via 'MergeARGB()'. \ul The alpha channel is transferred 1:1 to the output clip\ulnone . The alpha channel is not used as mask, because otherwise it would be impossible to process RGB32 clips without the mask specifics of xNLMeans. If the alpha channel is to be filtered, use 'xNLMeans(ShowAlpha(c)...)'. To  use it as the mask, use 'xNLMeans(...\i mask\i0 =ShowAlpha(c))'.\line\i H\i0 , \i mask\i0  and \i rclip\i0  must be provided as planar frametype clips. For more restrictions on these clips see the resp. sections.\par
+\par
+\b More Features\par
+\b0 XNLMeans provides automatic settings for most parameters and the ability to provide \i h\i0  as a clip instead of a float value in order to adapt filtering to varying clip content. Automatic settings were found by statistical 'training' with a set of reference images. They are activated by setting the parameter to a negative value, which serves as a factor for the automatic operation.\par
+\b\par
+Speed\par
+\pard\ltrpar\sl276\slmult1\b0 XNLMeans is a MT_NICE_FILTER for Avisynth_MT or Avisynth+, but without SIMD instructions or GPU acceleration. However, it contains its own multithread logic for use in a single threaded script. Compared to a straightforward implementation, it provides these acceleration features:\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sl276\slmult1 Multi threading\par
+{\pntext\f4\'B7\tab}Neighbor weight re-use for both compared pixels in many modes\par
+{\pntext\f4\'B7\tab}Separated row- and column- convolution, with typical speedup 3.5 or more for the convolution if no mask is used\line (horizontal mask structures degrade this benefit)\par
+{\pntext\f4\'B7\tab}Content based stop depends on image content, but allows large \b\i a \b0\i0 setting, while it often works with about \b\i a\b0\i0 =1...2 speed without visible degradation (dw>0)\par
+{\pntext\f4\'B7\tab}A mask is profitable if it fills < 20% of the frame. Otherwise if forces a lot of row convolutions to be done for only few pixels and dual use of the similarity is wasted with masked compare pixels. Even if the mask fills much of the frame, it costs only the additional mask processing. Convolution separation and dual use are still active and generate the more benefit, the more pixels the mask 'activates'.\par
+{\pntext\f4\'B7\tab}Conditional processing is reduced to the minimum in the worker threads, especially in the convolution loops. Instead, the plugin uses a set of slightly different variations of the worker function, containing just the neccessary operations.\par
+{\pntext\f4\'B7\tab}Compiled with MS Visual Studio 2015, all compiler switches set to "fast". The plugin needs the VS 2015 runtime library (CRT).\par
+\pard\ltrpar\sa200\sl276\slmult1\par
+\par
+\b PARAMETERS\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1\b0 a\tab (default: 6)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 Radius of the environment where to find suitable replacement pixels\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 s\tab (default: 4)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 Radius of the similarity region forming the pixel fingerprints\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 d\tab (default: 0, maximum: 2)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 Temporal radius of the pixel compare environment\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 h\tab (default: 1.)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 A) \b float value\b0 : normalizer for the intensity difference weight function, filter strength. \lang1031\line\pard\ltrpar\li720\sl276\slmult1 Hint: h is too high if you notice object details besides noise in the 'diff' output. Set h just below that limit.\par
+\pard\ltrpar\fi-984\li1704\sl276\slmult1\tx1704 0...\tab : manual setting\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 B) \b clip\b0 : must be of same length as source clip. First pixel of first plane is fetched and divided by 25 as the frame filter strength. Note: to have separate h for the source clip \i planes\i0 , too, the filter must be called three times with only one source clip plane to process each, and different h clips.\lang7\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 sdev\tab (default: -1.)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 Gaussian standard deviation for the fingerprint geometrical weight \cf1\highlight2\lang1031 exp(-r\'b2/2sdev\'b2), r being the distance of a pixel from the fingerprint center. With the default value, a pixel with 1.5 pixel sizes distance from the center pixel has a geometrical weight of exp(-1). Larger values give more weight to more distant pixels and make the output more blurry.\line Negative values activate an automatic setting according to the h setting for the frame. sdev = 0 deactivates multiscale fingerprints and activates single flat fingerprint operation.\cf0\highlight0\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1\lang7 planes\tab (default: 1)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 1= Y plane, 2= U plane, 4 = V plane. Add the plane values to be processed. Default only processes luma.\line Note that for RGB24, RGB32 'planes' is not used, but all components are processed.\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 lsb\tab (default: false)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 Activates 16 bit processing of stacked frames from the 'dither' package\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 mask\tab (no default)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 If a mask clip is defined, it must have the same dimensions and length as the input clip and either 'planes' must be 1 or the input clip must have pixel_format YV24, RGB24 or RGB32. Only luma from the mask clip is used for all filtered planes. Mask pixels with intensity 0 are left unfiltered which can speed up the filter. Values 1..254 cause a blend between input and filter output and 255 outputs the filter result unblended. Please note that the mask must not be 'cored' to YUV conformant values 16...235, but the complete range 0...255 is used. Always 8 bits, also when lsb is used for input/reference/output clips.\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 rclip\tab (no default)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 If a reference clip is defined, it must have the same dimensions and pixel type \tab as the input clip. Note that RGB24 and RGB32 sources are processed as Y8, so they need the same Y8 as rclip for all three components. To determine the neighbor weights, the filter uses rclip and for the filter output, it replaces the rclip pixel intensity by the source intensity.\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 digits\tab (default: -1.)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 Controls the smallest neighbor weight that is still filtered. See the 'Original Pixel Output Weight' section.\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 diffout\tab (default: 0.)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 Returns the inverted difference between the filter output and the input clip (the inverted method noise), to help finding the best parameters, or for external post processing\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 lcomp\tab (default: -2.)\par
+\pard\ltrpar\li720\sl276\slmult1 Neigborhood offset compensation, see the filter description above. Original behavior with lcomp=0. To provide the full range of possible settings, it uses a weird range scheme:\lang1031\par
+\pard\ltrpar\fi-984\li1704\sl276\slmult1\tx1704 ...-1)\tab : automatic setting with \cf1\highlight2 -(lcomp+1) factor\cf0\highlight0\par
+[-1...0)\tab : mean differences E(X\'b2) is reduced to E(X\'b2)+lcomp\'b7[E(X)]\'b2\par
+0\tab : off and original behaviour like the paper proposal, faster loop\par
+\pard\ltrpar\fi-984\li1704\sa200\sl276\slmult1 (0...\tab : mean differences E(X\'b2) is increased to E(X\'b2)+lcomp\'b7[E(X)]\'b2\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1\lang7 vcomp\tab (default: 0.)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 Variance compensation. D\sub 0\nosupersub  is the variance of the fingerprint itself. The difference weighting function then uses a (D\sub 0\nosupersub /h)\super vcomp\nosupersub  factor.\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 wmin\tab (default: -1.)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 Amount of original pixel to contribute to the filter output, relative to wmax, which is the weight of the most similar pixel found. wmin < 0 is an automatic mode, see the 'Original Pixel Output Weight' section.\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 dw\tab (default: -1.)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 Delta weight of last pass to allow content based stop. When a pass produces less than dw percent of the previously achieved overall weight sum, the filter stops. Smaller values make the output more precise and the filter slower. dw < 0 is an automatic mode. Can be tuned to e.g. -0.1 to increase output precision but make filter slower.\par
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\ltrpar\fi-360\li720\sa200\sl276\slmult1 threads\tab  (default: 0)\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 The number of threads for the filter algorithm. 0 chooses the number by the CPU cores.\par
+\pard\ltrpar\sa200\sl276\slmult1\par
+\b REMARKS and TODOs\par
+\b0 Multiscale processing speedup should be be achieved outside of the filter with AviSynth means.\par
+The filter is designed for progressive video. Deinterlace first.\par
+Bugs are probable.\par
+\tab\par
+\b CHANGE LIST\par
+\pard\ltrpar\sl276\slmult1\b0 03/24/2016  v0.03\par
+\pard\ltrpar\li720\sl276\slmult1 all automatic modes trained from scratch\par
+automatic h estimator removed, too unreliable\par
+multiscale fingerprints\par
+fixed: fastmode calculation not correct near strip edge in multithread operation\par
+vcomp possible with fast mode, modified default values and automatic control formulas\par
+fixed: possibly 16bit LSB partially incorrect (missing explicit typecasts to float with divisions)\par
+fixed: refclip minweight incorrect\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 fixed: diffout mode minweight incorrect\par
+\pard\ltrpar\sl276\slmult1 02/15/2016  v0.02\par
+\pard\ltrpar\li720\sl276\slmult1 center parameter removed, no filter improvement noticeable\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 MT version, added new parameters, removed center parameter, bugfixes\par
+\pard\ltrpar\sl276\slmult1 12/12/2015  v0.01\par
+\pard\ltrpar\li720\sa200\sl276\slmult1 initial release\par
+\pard\ltrpar\sa200\sl276\slmult1\par
+\b CONTACT\b0\par
+doom9.org forum martin53\par
+}
+ 

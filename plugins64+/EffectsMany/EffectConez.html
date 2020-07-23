@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectConez AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectConez </h1></font>
+	 
+	  <P>EffectConez function wraps the image over a cone of given base and top 
+	  diameters.. The cone can be either vertical  or horizontal. Unaffected 
+	  image is blackend out if background is false. Otherwise original image is 
+	  retained.  Wrapping can be gradual or constantly full. If equal values of 
+	  base and top are used then it will be a cylinder.  In case of Horizontal  
+	  the base will be diameter of the cone at left end. The cone edges or 
+	  central axis can shaded.
+	  RGB32, RGB24 and  YUY2 and YV12 formats only are supported. Currently YUY2 
+	  is a little blocky.
+
+ </p>  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>clip </td>
+       <td></td>
+       <td></td>
+       <td>valid clip</td>
+       <td></td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+<tr>
+       <td>Direction of cone axis</td>
+       <td>dir</td>
+       <td>string</td>
+       <td>"hor" "ver"</td>
+       <td>"ver"</td>
+</tr>
+
+<tr>
+       <td>Is wrapping progressive or constant</td>
+       <td>prog</td>
+       <td>boolean</td>
+       <td>true for progressive</td>
+       <td>true</td>
+</tr>
+
+<tr>
+       <td>Base diameter</td>
+       <td>base</td>
+       <td>integer</td>
+       <td>4 to width or height</td>
+       <td> half of width or height</td>
+</tr>
+
+<tr>
+       <td>Top diameter</td>
+       <td>top</td>
+       <td>integer</td>
+       <td>4 to width or height</td>
+       <td>base</td>
+</tr>
+<tr>
+       <td>Shading</td>
+       <td>shade</td>
+       <td>integer</td>
+       <td>-255 to 255. If -ve edges are shaded more.</td>
+       <td>0 (no shading)</td>
+</tr>
+
+<tr>
+       <td>Whether original image to be retained as background?</td>
+       <td>bkgrnd</td>
+       <td>boolean</td>
+       <td>true for yes, false for black background</td>
+       <td>true</td>
+</tr>
+
+
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>EffectConez(last,50,90, "hor",true,120,20, 50,true)
+		EffectConez (last,59,90, "ver", true, shade=-50, bkgrnd=false)
+EffectConez (last,59,90, "hor", base=100, top=200)
+EffectConez (last,59,90)
+
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="conez.jpg" border="0">
+
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

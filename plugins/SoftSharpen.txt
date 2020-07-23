@@ -1,0 +1,129 @@
+http://leon1789.perso.sfr.fr/avisynth/SoftSharpen/SoftSharpen.html
+
+SoftSharpen(Video, "Blur", "Sharp", "DeNois", "DeNoisT", "Move", "Gain",
+            "DeBan", "DeRin", "DeBl", "DeInt", "Blend", "FPS", "AA", "Line", 
+            "DCT", "Overlap", "Preset", "Fast", "Width", "Height", 
+            "Verbose", "Show")
+
+version 8.8
+
+Filters required: MSharpen, ASharp, BlindPP (exported from DGDecode or
+mpeg2dec3 for example), Deen, GradFun2db, MaskTools (v1 or better v2),
+DCTFilter, TDeint, MVTools2 and RemoveGrain.
+
+Thanks a lot to Subbat, BigDid and SG1, also Manao, Jabali, Gavino, and indirectly Lato, FuPP. 
+
+The first parameter is binding because it indicates the video to process ! :-)
+
+The following parameters are all optional. 
+
+-- Blur (integer between 0 and 30) indicates the level of blur for 
+objects moving: 0 for no blur, 15 for a medium process, 30 for the
+strongest one. The compressibility of the video increases when the
+value of Blur increases. 
+By default, Blur=15
+
+-- Sharp (float between 0 and 70) indicates the level of sharpness
+for static objects: 0 for no sharp, 10 for a weak process, 
+20 for a medium one, 40 for the strongest one. The compressibility of 
+the video decreases when the value of Sharp increases. 
+The fractional part (between 0.00 and 0.99) of Sharp indicates the
+threshold of the process: the smaller this value is, the more the
+process is selective (and so limits the loss of compressibility).
+By default, Sharp=21.0
+
+RQ: a value of Sharp adapted to Video is obtained by the function 
+EstimSoftSharpen, in an EstimSoftSharpen.txt file created after its 
+execution on the video. In fact, EstimSoftSharpen measures the motion
+of the video.
+
+-- Gain (float between 0 and 255) indicates a level of adaptative gain.
+By default, Gain=0 (no process)
+
+-- DeNois (integer between 0 and 35) indicates the level of spatial
+denoising: 0 for no denoising, 4 for a weak one, 10 for a strong one. 
+The compressibility of the video increases when the value of Debr increases. 
+By default, DeNois=8 
+
+-- DeNoisT (float between 0 and 255):
+the floor of DeNoisT indicates the level of temporal denoising: 
+0 for no denoising, 4 for a weak one, 10 for a strong one. 
+The compressibility of the video increases when the value of DeNoisT increases.
+The fractional part (between 1 and 3) of DeNoisT indicates the used process: 
+1 for MDegrain1, 2 for MDegrain2, 3 for MDegrain3.
+The quality increases when this fractional part increases.
+By default, DeNoisT=DeNois with MDegrain1
+
+-- Move (integer between 1 and 255) indicates the level of movement 
+detection. The lower the value of Move, the more sensitive is the
+detection and the more important the blur part of the video will be.
+The compressibility of the video decreases when the value of Move increases.
+Put Move=0 to disable analysis of movement. 
+By default, Move=35
+
+-- DeBan (positive float) indicates the level for debanding: 
+0 for no correction, 1.2 for an average one, 2.4 for a strong one. 
+By default, DeBan=0 
+
+-- DeRin (integer between 0 and 255) indicates the level for deringing
+(ringing may appear after a strong sharpness): 0 for no correction, 
+6 for an average one, 16 for a strong one. 
+By default, DeRin=Sharp/5 
+
+-- DeBl (integer between 0 and 255) indicates the level for deblocking
+(for example, blocking might appear after a strong temporel denoising): 
+0 for no correction, 6 for an average one, 16 for a strong one. 
+By default, DeBl=0 (no process)
+
+-- Blend (integer between 0 and 20) indicates the level against blend:
+0 for no correction, 20 for an weak one, 2 for a strong one. 
+By default, Blend=0 (no process)
+
+-- DeInt (boolean) for desinterlacing.
+By default, DeInt=false (no process)
+
+-- AA (boolean) allows an experimantal anti-aliasing.
+By default, AA=false (no process)
+
+-- Line (float) increases dark in lines.
+The floor of line indicates the level of darkness for line.
+The fraction part of Line indicates the thinness for line. 
+Especialy useful for anim.
+By default, Line=0.0 (no process)
+
+-- DCT (integer between 0 et 14) zeroes several diagonals in the quantization
+matrix, in order to increase the compressibility of the video :
+0 for no process, 14 for the process max.
+By default, DVT=5
+
+-- Fast (true/false) indicates the speed of the process.
+For SoftSharpen, Fast=false by default (slow, but better process)
+For EstimSoftSharpen, Fast=true by default (just for analysis) 
+
+-- Preset (which can be "film" , "static video"="low motion", 
+"fast video"="high motion", "anim", "vhs", "maxi" , "light") indicates
+a typical configuration: the script consequently fixes the values of
+Blur, Sharp, Move, DeNois, DeNoisT, DeBan and Debl. 
+Usually, the video compressibility is preserved by the corresponding preset.
+By default, any preset is active.
+
+RQ: a value of Blur, Sharp, Move, DeNois, DeNoisT, DeBan, Debl
+overrides the Preset. That allows the adjustment of one or more
+parameters without changing the remaining of the preset. 
+
+-- Width and Height (positive integers) are to be specified only in
+the case of video resizing. 
+
+-- FPS (positive float) indicates the number of Frame Per Second.
+
+-- Overlap (integer) is an option for compatibility with avisynth MT.
+In this case, use the values 2, or 4, or 8.
+By defaut, Overlap=0 
+
+-- Verbose (true/false) displays some constants of the function SoftSharpen. 
+By default, Verbose=false of course. 
+
+-- Show (true/false) allows colouring of the zones processed by
+SoftSharpen: sharpness is in green, blur in blue, and denoising in
+red. This idea is borrowed from HybriFuPP.avsi written by FuPP. 
+By default, Show=false of course. 

@@ -1,0 +1,30 @@
+DePulse 2005/04/10,  2005/04/11 update
+
+Author Unknown
+
+Function:
+ Dropout remover, removes white/black noise horizontal streaking in
+ analogue captures. Spatio-Temporal.
+
+Usage instructions.
+
+Assumes TFF (top field first) field order interlacing.
+
+YUY2 only.
+
+Syntax is: DePulse(clip, h=180[0-255], l=60[0-255], d=30[0-255], debug=false[true/false])
+
+
+Pixel brightness values greater than h (high) are targeted as white noise.
+	If a pixel (t) is target'ed as white noise then surrounding pixels
+	(above, below, before and after [temporal], Not left and right) are tested
+	and if ALL of them are less than (t - d) the target pixel t is
+	depulsed.
+
+Pixel brightness values less than l (low) are targeted as black noise.
+	If a pixel (t) is target'ed as black noise then surrounding pixels
+	(above, below, before and after [temporal], Not left and right) are tested and
+	if ALL of them are greater than (t + d) the target pixel t is
+	depulsed.
+
+In debug mode, pixels judged to be black or white noise are coloured pink or green.

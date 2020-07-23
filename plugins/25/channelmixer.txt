@@ -1,0 +1,28 @@
+=====================================================
+=               ChannelMixer v1.0                   =
+=              Gustaf Ullberg 2007                  =
+=====================================================
+
+An AviSynth filter similar (identical) to the
+Channel Mixer in Adobe Photoshop.
+
+Computes:
+
+|Rout|             |RR RG RB| |Rin|
+|    |             |        | |   |
+|Gout| = (1/100) * |GR GG GB| |Gin|
+|    |             |        | |   |
+|Bout|             |BR BG BB| |Bin|
+
+
+Executed like this (input values are floats):
+ChannelMixer(RR, RG, RB, GR, GG, GB, BR, BG, BB)
+
+Examples
+
+Do nothing:
+ChannelMixer(100, 0, 0,    0, 100, 0,    0, 0, 100)
+
+Do something:
+ChannelMixer(100, -26, 40, -4, 100, 10, 0, -12, 110)
+

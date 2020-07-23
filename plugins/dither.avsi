@@ -1,0 +1,1 @@
+(VersionNumber() < 2.58) ? NOP() : Import(AviSynthPluginsDir + "25/258/dither.avsi")

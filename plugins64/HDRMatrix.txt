@@ -1,0 +1,41 @@
+	HDRMatrix
+	=========
+
+HDRMatrix is a color matrix conversion filter library to working with HDR frames in AviSynth.
+It is fully compatible and optimized for AviSynth MT.
+
+It is licensed under the MIT License.
+Copyright (c) 2016 Andrew Revvo (andrew.revvo~gmail~com)
+Project homepage: http://www.snovidenie.com/plugins/hdr/
+
+
+	Matrix
+	------
+
+This filters converts a color matrix.
+
+Parameters:
+	from: int - input matrix: 601,709.
+	to: int - output matrix: 601,709.
+	rg,gg,bg: float - RGB gain.
+	a,b: float - source values range of input clip.
+	ao, bo: float - result values range of output clip.
+	bitdepth: int - filter bitdepth: 8,88,16,32.
+
+Example:
+	Matrix(from=601, to=709, rg=1.0, gg=1.0, bg=1.0, a=16, b=235, ao=16, bo=235, bitdepth=8)
+
+
+	HDR Plugin Set
+	--------------
+
+This filter pack is a part of the HDR Plugin Set.
+You can download another HDR plugins from this page:
+http://www.snovidenie.com/plugins/hdr/
+
+If you want to maintain my interest in development and technical support, please purchase
+the full plugin set. You can get high quality color correction filters, including
+3D LUT 32-bit filter that reads *.cube or *.3dl files.
+
+Thanks,
+Andrew Revvo, the HDRMatrix author.

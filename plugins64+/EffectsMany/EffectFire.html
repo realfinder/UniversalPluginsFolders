@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectFire AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectFire </h1></font>
+	 
+	  <P> EffectFire function creates a raging fire on the image. The x and y 
+	  coordinates, width and height of fire area can be specified and varied 
+	  linearly during effect duration.(possibly useful if a fire was to be 
+	  introduced in a fireplace.). 
+	  RGB32, RGB24, YUY2 and YV12 formats only are supported
+
+
+
+ </p>  
+
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td></td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Is style of fire steady?</td>
+       <td>style</td>
+       <td>boolean</td>
+       <td>true for steady and false for stoked</td>
+       <td>true</td>
+</tr>
+
+<tr>
+       <td>start x coordinate of source center</td>
+       <td>xcoord</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>mid frame width</td>
+</tr>
+<tr>
+       <td>start y coordinate of bottom of source</td>
+       <td>ycoord</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>bottom of frame</td>
+</tr>
+
+<tr>
+       <td>start width of fire </td>
+       <td>width</td>
+       <td>integer</td>
+       <td>fire must be in frame</td>
+       <td>frame width</td>
+</tr>
+<tr>
+       <td>start height of fire area</td>
+       <td>height</td>
+       <td>integer</td>
+       <td>fire to be in frame</td>
+       <td>mid frame</td>
+</tr>
+<tr>
+       <td>end x coordinate of source center</td>
+       <td>ex</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>xcoord</td>
+</tr>
+<tr>
+       <td>end y coordinate of bottom of source</td>
+       <td>ey</td>
+       <td>integer</td>
+       <td>in frame</td>
+       <td>ycoord</td>
+</tr>
+
+<tr>
+       <td>end width of fire </td>
+       <td>ewidth</td>
+       <td>integer</td>
+       <td>fire must be in frame</td>
+       <td>width</td>
+</tr>
+<tr>
+       <td>end height of fire area</td>
+       <td>eheight</td>
+       <td>integer</td>
+       <td>fire to be in frame</td>
+       <td>height</td>
+</tr>
+
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>EffectFire(last,51,158, false,360,225,80, 60,600,340,60,40)
+EffectFire(last,51,158)
+
+</pre>
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

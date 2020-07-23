@@ -1,0 +1,5 @@
+function FFT3DFilter(clip clip, float "sigma", float "beta", int "plane", int "bw", int "bh", int "bt", int "ow", int "oh", float "kratio", float "sharpen", float "scutoff", float "svr", float "smin", float "smax", bool "measure", bool "interlaced", int "wintype", int "pframe", int "px", int "py", bool "pshow", float "pcutoff", float "pfactor", float "sigma2", float "sigma3", float "sigma4", float "degrid", float "dehalo", float "hr", float "ht", int "ncpu")
+{
+VersionNumber() < 2.60 ? LoadPlugin(AviSynthPluginsDir + "25/FFT3DFilter.dll") : LoadPlugin(AviSynthPluginsDir + "26/fft3dfilter.dll")
+        FFT3DFilter(clip, sigma, beta, plane, bw, bh, bt, ow, oh, kratio, sharpen, scutoff, svr, smin, smax, measure, interlaced, wintype, pframe, px, py, pshow, pcutoff, pfactor, sigma2, sigma3, sigma4, degrid, dehalo, hr, ht, ncpu)
+}

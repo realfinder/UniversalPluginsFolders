@@ -1,0 +1,219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectDistorter AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectDistorter </h1></font>
+	 
+	  <P>The image is distorted. This is differently formulated than 
+	  <a href="EffectDistort.html">EffectDistort</a>.
+	   and has a more pleasing effect.Some artifacts mentioned to occur in EffectDistort
+	   are not present in this function.  The frequency, speed of variation,
+	   amplitude, distortion area center and its dimensions can be selected and 
+	   also varied linearly. The freq, amplitude and speed parameters though 
+	   operate differently, the final effect may overlap.The area of distortion
+	   can be thought of as a pool of water, the surface of which is agitated.
+	   RGB32, RGB24, YUY2 and YV12 formats are supported.
+
+
+
+ </p>  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td>frequency at start</td>
+       <td>freq</td>
+       <td>integer</td>
+       <td>1 to 250</td>
+       <td>40</td>
+</tr>
+
+<tr>
+       <td>speed of movement at start</td>
+       <td>speed</td>
+       <td>float</td>
+       <td>between 0 and 100</td>
+       <td>5</td>
+</tr>
+
+<tr>
+       <td>x coordinate of distorted area at start</td>
+       <td>xcoord</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>mid frame</td>
+</tr>
+
+<tr>
+       <td>y coordinate of distorted area at start</td>
+       <td>ycoord</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>mid frame</td>
+</tr>
+<tr>
+       <td>width along x axis of distorted area at start</td>
+       <td>width</td>
+       <td>integer</td>
+       <td>distorted area must be in frame</td>
+       <td>frame width</td>
+</tr>
+
+<tr>
+       <td>height along y axis of distorted area at start</td>
+       <td>height</td>
+       <td>integer</td>
+       <td>distorted area must be in frame</td>
+       <td>frame height</td>
+</tr>
+
+<tr>
+       <td>x coordinate of distorted area at end</td>
+       <td>ex</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>xcoord</td>
+</tr>
+
+<tr>
+       <td>y coordinate of distorted area at end</td>
+       <td>ey</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>ycoord</td>
+</tr>
+<tr>
+       <td>width along x axis of distorted area at end</td>
+       <td>ewidth</td>
+       <td>integer</td>
+       <td>distorted area must be in frame</td>
+       <td>width</td>
+</tr>
+
+<tr>
+       <td>height along y axis of distorted area at end</td>
+       <td>eheight</td>
+       <td>integer</td>
+       <td>distorted area must be in frame</td>
+       <td>height</td>
+</tr>
+<tr>
+       <td>frequency at end</td>
+       <td>efreq</td>
+       <td>integer</td>
+       <td>1 to 250</td>
+       <td>freq</td>
+</tr>
+
+<tr>
+       <td>speed at end</td>
+       <td>espeed</td>
+       <td>float</td>
+       <td>between 0 and 100</td>
+       <td>speed</td>
+</tr>
+<tr>
+       <td>amplitude at start</td>
+       <td>amp</td>
+       <td>integer</td>
+       <td>1 to 8</td>
+       <td>4</td>
+</tr>
+
+<tr>
+       <td>amplitude at end</td>
+       <td>eamp</td>
+       <td>integer</td>
+       <td>1 to 8</td>
+       <td>amp</td>
+</tr>
+
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>EffectDistorter(last,50, 150)
+EffectDistorter (last,50, 150, freq=20)
+EffectDistorter (last,50, 150,espeed=10)
+EffectDistorter (last,50, 150,amp=1, eamp=8)
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="distorter.jpg" border="0">
+
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

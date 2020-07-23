@@ -1,0 +1,65 @@
+History
+=======
+v1.3 (2/21/05)
+Fixed using the wrong metric when having the '-' override
+Added YUY2 support
+Moved most of the VFR functions to a separate file and removed some dead code in the process
+
+v1.2 (1/13/05)
+With mincycles, it kept the same cycle decision for the following cycles (up to mincycles) on a change failure, but this was only supposed to happen on a change success.
+Added support for an overrides file with
+  '-' = ignore frame metric
+  'c' = force cycle decimation
+
+v1.1c (11/1/04)
+Added an extra comment to the timecodes file with parameter settings
+Merged the txt file with the reference manual
+
+v1.1b (10/17/04)
+Minor fix to error checking
+Added more free() calls
+
+v1.1 (9/26/04)
+Minor fix to 1st pass VFR time
+Minor addition to DrawShowVFR
+
+v1.02 (9/22/04 not publicly released):
+Major cycle decision corrections
+Added mincycles parameter
+Adjusted show=true information for mincycles
+Readded 1st pass VFR time to timecodes file
+
+v1.01 (8/3/04):
+Removed all hardcoded references to framerate
+
+v1.0 (8/2/04):
+More detailed information shown for show=true (thanks Guyver)
+Switched telecide hints default to false, it tended to force bad decisions a lot
+Better handling of last cycle
+
+v0.9 (7/20/04):
+Re-coded VFR 1st pass calculations for more efficiency
+Fixed dropping of frame 0 bug
+Added vfrpriority option to set priority for the VFR 1st pass
+
+v0.6 (7/5/04):
+Added vfrstats parameter for fast reloading.
+
+v0.5 (7/4/04):
+Slight changes to progress GUI
+
+v0.4 (7/4/04):
+Integrated code for a progress bar
+Fixed more bugs with frame ranges
+
+v0.3 (7/3/04):
+Fixed "-" to "," with frame ranges in the timecodes file
+Fixed a critical bug with frame ranges
+
+v0.2 (7/2/04):
+The 1-pass version might have been buggy along with those limitations, so it was removed
+Optimized and fixed bugs in the 2-pass version
+
+v0.1 (6/30/04):
+Initial release of both 1-pass and 2-pass versions
+The 1-pass version doesn't support seeking and doesn't output the correct number of frames

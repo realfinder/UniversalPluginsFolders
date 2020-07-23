@@ -1,0 +1,186 @@
+4th update 
+2004-jan-08
+
+1) added the description of the smartdecimate-bug to the readme
+
+2) knocked out matchbob(), because it sometimes produced combing.
+updated some plugins.
+
+3rd update of restore24
+2004-oct-01
+
+1) no major changes on the restore24-core itself.
+I only changed a small little weird behaviour:
+r24 sometimes returns a black frame as the very first frame.
+it now returns the very first field of the input stream 
+instead of this black frame.
+
+
+2) heavily changed the deinterlacing routines.
+intellibob() is dead now.
+matchbob() is the current state of art.
+matchbob() is based on tricticals tdeint(), which implements the idea of intellibob()
+into a plugin, and on telecide(). 
+matchbob() has a progressive frame detection, 
+which usually produces up to 16 progressive (non-deinterlaced; weaved) 
+frames per 50 frames on standard FILM -> telecine -> NTSC -> PAL video.
+this means, in the final output, there will be up to 7 of 24 frames, 
+that have maximum quality (they are weaved)
+
+when dealing with FILM -> SPeedup -> PAL -> NTSC clips, most frames of the final output will be weaved.
+This is nice, isn't it?
+
+The deinterlacing functions are now included into the file restore24.avs
+So there is no need for loading a separate *.avs for the deinterlacers.
+
+3) if you experience problems with YV12 chroma, please apply the 
+conversion to yuy2 after the deinterlacers like this:
+
+b2=matchbob().converttoyuy2(interlaced=false)
+
+please do not convert to yuy2 before calling the deinterlacers.
+it will destroy the chroma detail.
+
+4) several plugin changes and updates due to the above mentioned changes
+
+  avisynth_c.dll
+  IBob.dll
+  kerneldeint.dll -> modified by Leak
+  MaskTools.dll
+  SmartDecimate.dll
+  TCombMask.dll
+  Decomb.dll
+
+
+_______________________________________________________________________________________
+
+
+
+this is the 2nd release of restore24.
+2004-07-14
+
+it contains some minor & major updates.
+
+
+------------------------------------------------
+1)framerate decimtation ratio is now arbitary:
+
+restore24(analysis_clip, render_clip, int numerator, int denominator)
+
+following ratios are practicable:
+
+24fps blended into PAL
+2997, 6250 (default, if no ratio is given)
+improvement: output is no longer 24fps. 
+It is perfect 23.976fps
+
+25fps blended into NTSC:
+1250, 2997
+this is similar to rePAL, exept that it has better blend recognition
+and matches the 25fps perfect (rePAL puts out 24.975 fps)
+
+24fps blended into NTSC:
+24, 60
+
+----------------------------------------------
+2) it is possible to process everything in YV12 without converting to YUY2
+(please test, before using it widely!)
+
+----------------------------------------------
+3) decimation-output is improved 
+there are no longer remaining combs due to decimation by smartdecimte
+
+----------------------------------------------
+4) improved blend detection using other method to build an edgemask
+Didée calls it double sobel (Doppelter Sobel)
+It now should be much more resistant against noise.
+
+
+
+
+
+
+_______________________________________________________________________________________
+
+
+Be careful, the information given below is outdate, do not trust in it anymore
+(especially the 'whocares-part', I must have been blind that time!)
+
+
+
+
+
+Restore24 Package by scharfis_brain (2004-04-01)
+
+requirements:
+
+  - min. AVISynth 2.55, build Mar 18 2004
+  - Virtualdub(Mod) for previewing. Please do not use a mediaplayer for previewing.
+  - Basic AVISynth knowledge 
+
+
+required AVISynth Plugins (included in the Package) :
+(can be found at www.avisynth.org/warpenterprises and forum.doom9.org)
+
+  avisynth_c.dll
+  IBob.dll
+  kerneldeint140.dll
+  MaskTools.dll
+  SmartDecimate.dll
+  TCombMask.dll
+  TomsMoComp.dll
+
+
+required external AVISynth functions (no doubt, they are in the package, too ;-) ) :
+
+  restore24.avs
+  intellibob.avs
+
+
+Example script, which explains basic restore24 usage:
+
+  example.avs
+
+
+why better using intellibob instead of simple kernelbob:
+
+  kernelbob-intellibob-difference.jpg
+    left : kernelbob()
+    mid  : intellibob()
+    right: difference between both ones
+
+  Intellibob automatically fits the kernel of kerneldeint to the Source. 
+  Kerneldeint always uses a kernel that interpolates using the  previous Field.
+
+
+Possible Postprocessing after Restore24:
+
+  hiding remaining Combing:
+
+    whocares=last
+    #reduces resolution to 75%. This doesn't hurt image quality much
+    lanczos4resize(whocares.width, whocares.height*3/4)  
+    #If wished, the resolution may be raised up to original (or whatever) resolution again.
+    bicubicresize(whocares.width, whocares.height)
+
+
+  Fit the 24fps Video to the PAL-Standard
+    (not nesessary for XViD, DivX or other PC formats)
+
+    simple solution
+
+      Assumefps(25,true)
+      SSRC(48000)  #or 44100 ,depends on your needs
+
+    using timestrecht, for eliminating people getting bad voices
+
+      Assumefps(25)
+      Timestretch(tempo=(100*25.0)/24.0)
+      SSRC(48000) #or 44100
+
+    or without PAL-Speedup (needs interlaced encoding, but not audio conversion needed)
+
+      changefps(50)
+      separatefields()
+      selectevery(4,0,3)  #fuer BFF oder (4,1,2) fuer TFF
+      weave()

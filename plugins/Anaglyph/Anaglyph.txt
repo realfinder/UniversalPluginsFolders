@@ -1,0 +1,105 @@
+
+
+============================================
+Anaglyph conversion plugin for AviSynth 2.5+
+============================================
+
+Composites left / right eye views into a single stereoscopic 3D anaglyph.
+
+
+
+Version Info
+------------
+
+This is version 1.0 released on September 17, 2011.
+
+
+
+End User License Agreement
+--------------------------
+
+By using the Anaglyph plugin for AviSynth you agree to the terms and
+conditions set forth in this End User License Agreement ("EULA").
+
+The Anaglyph plugin for AviSynth ("Plugin") is freeware. You may use it
+without time or legal restrictions for either commercial or non-commercial
+purposes.
+
+The plugin was developed and tested by Gábor Kertai ("Author") to his best
+knowledge, however Author takes absolutely no responsibility that the
+Plugin works as expected.
+
+You can use the Plugin at your own risk. This Plugin is provided to you
+"AS IS", and Author expressly disclaims all warranties of any kind, either
+implied or express, including but not limited to warranties of merchantability,
+fitness for a particular purpose, and non-infringement. Author makes no
+warranty, either implied or express, that any part of the Plugin will be
+error-free, virus-free, secure, accurate, reliable, or of any quality.
+
+Some of the code in this Plugin is experimental, and may work incorrectly or
+crash your operating system / computer. In no event will Author be liable to
+you for any damages, claims or costs whatsoever arising from your use of the
+Plugin of any component thereof.
+
+The Plugin and any authorized copies that you make are intellectual property
+of Author. You agree that all copies of the Plugin reproduced for any reason
+by you will contain the same copyright and trademark notices as this EULA.
+
+
+
+Intallation and Usage
+---------------------
+
+Copy the Anaglyph.dll file into the plugins folder of your AviSynth
+installation. Alternatively copy it into any folder of your choice and
+include a LoadPlugin("PATH_TO_PLUGIN\Anaglyph.dll") call in your scripts.
+
+Syntax:
+
+Anaglyph(clip left_eye, clip right_eye,
+         string "matrix", string "type"
+         float "convergence") 
+   matrix = "color", "halfcolor", "grey", "optimized", "dubois" or "cc3d"
+   type = "red-cyan", "blue-amber" or "green-magenta"
+   convergence = convergence plane adjustment
+
+See the AnaglyphTest.avs file for a quick example and comparison. See
+http://arenafilm.hu/alsog/anaglyph/ for a more detailed documentation
+of features.
+
+
+
+Uninstallation
+--------------
+
+Close all running AviSynth applications and delete the Anaglyph.dll file.
+
+
+
+Change Log
+----------
+
+V1.0 (2011-09-17)
+- added AnaglyphMatrix function to define custom matrices
+- added "ColorCode 3D" matrix
+- fix: "Color", "HalfColor" and "Dubois" matrices in blue-amber were mixed up
+
+V0.85 (2010-08-29)
+- added support for convergence adjustment
+
+V0.8 (2010-08-28)
+- first public release
+
+
+
+Contact Information
+--------------------
+
+See website at
+     http://arenafilm.hu/alsog
+
+Or send email to
+     gabor (at) arenafilm (dot) hu
+
+
+

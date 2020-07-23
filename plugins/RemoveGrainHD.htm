@@ -1,0 +1,1295 @@
+<html>
+	<head>
+		<title>RemoveGrainHD</title>
+		<META content="RemoveGrainHD, Avisynth Filter" name="Keywords">
+	
+
+</head>
+	<body text="#000000" bgColor="#ffcc99">
+		<h1><FONT size="7">RemoveGrainHD&nbsp;</FONT><FONT size="7">0.5</FONT></h1>
+		<h3>A collection of &nbsp;Avisynth 2.5x denoising filters</h3>
+		<p><b>By Rainer Wittmann</b></p>
+		<p><b>The most recent version of this document is always available at <A href="http://www.RemoveGrainHD.de.tf">
+            www.RemoveGrainHD.de.tf </A></b>
+		</p>
+		<p><b>The <A href="RemoveGrainHD.zip">binary</A> and the <A href="RemoveGrainHD-src.zip">source code</A>
+				are subject to the <A href="http://www.gnu.org/copyleft/gpl.html" target="_blank">GNU 
+					General Public License</A>.&nbsp;&nbsp;Last change 27.01. 2008.</b></p>
+        <h2>
+            <b></b>
+        </h2>
+		<H2><FONT size="6">Introduction</FONT></H2>
+        <p>
+            <font size="6"><span style="font-size: 12pt"><strong>HD</strong> stands for <strong>
+                High Definition</strong>, i.e. for high resolution input. For this kind of video
+                <A href="http://www.RemoveGrain.de.tf"><strong>RemoveGrain</strong></a>, which changes
+                a pixel in terms of its eight direct neighbours, may be too narrow, because due
+                to the high resolution noise often consists of pixel clusters rather than isolated
+                pixels. Thus instead of RemoveGrain's 3x3 neighbourhood the filter <strong>RemoveGrainHD</strong>
+                uses a rather arbitrary symmetric rectangle&nbsp; (preferably but not neccessarily
+                a square) around
+                a pixel to process it. Of course not all the many RemoveGrain modes
+                can be extended to this setting. In fact, the current version of RemoveGrainHD
+                only contains the 4 original modes, with which RemoveGrain was started once. Nevertheless
+                a useful <strong>Repair</strong> variant, which serves the same purpose as the Repair
+                plugin of the RemoveGrain package, &nbsp;is included as well. There is even a spatio-temporal
+                version called <strong>TemporalRemoveGrainHD</strong>, which has no counterpart
+                in&nbsp; RemoveGrain at all. While RemoveGrain uses a very high level of parallelism -
+                the SSE2/SSE3 version processes 16 pixels simultaneously - this is unfortunately
+                no more possible for RemoveGrainHD. It is a rather ordinary C/C++ program without any
+                inline assembler code. Nevertheless performance is not that bad thanks to some ideas,
+                which I have taken from Tonny Petersen's (called tsp on the Doom9 forum) <a href="http://forum.doom9.org/showthread.php?t=84636">
+                    medianblur filter</a>. However, there are some subtle changes, which should
+                also improve Medianblur. Thus I have reimplemented&nbsp; Medianblur in this plugin.
+                This filter&nbsp; is called <strong>Quantile</strong>, because it not only can calculate
+                the median of an arbitrary surrounding rectangle but also arbitrary <a href="http://en.wikipedia.org/wiki/Quantile">
+                    quantiles</a> of these rectangels. The median then is just a special quantile.
+                RemoveGrainHD can be emulated with an Avisynth script, which involves two instances
+                of the filter Quantile and two Lutxy instances. However, such a script is substantially
+                slower. In version 0.2 of this filter package we have added the filter <strong>SmartMedian,
+                </strong>which is somehow in the middle between Quantile and RemoveGrainHD. While
+                there is no repair version of this filter, there is also a temporal variant of this
+                filter, called <strong>TemporalSmartMedian</strong>. In version 0.2 we have
+                also have changed the names of various variables and the inheritance rules 
+                to stay compatible with the forthcoming application <strong>RemoveGrainImg</strong>
+                for still pictures. In version 0.4 the we have added the filter SamrtMedian2.</span></font></p>
+        <h2>
+            <font size="6">Installation</font></h2>
+		<P>
+			The binary package contains&nbsp;two versions of&nbsp; RemoveGrainHD, one small 
+			dynamically linked version RemoveGrainHD.dll and a larger staticly linked RemoveGrainHDS.dll.&nbsp;Please
+            put only one of these two
+			plugins into the Avisynth plugin directory.&nbsp; The
+            plugin was compiled with Visual Studio 2005. Unfortunately Microsoft has changed
+            the handling of runtime dlls, which are necessary for the dynamically linked version
+            of RemoveGrainHD. It is no more sufficient to put MSVCP80.dll into your sytem directory.
+            Rather you have to install <a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=32BC1BEE-A3F9-4C13-9C99-220B62A191EE&displaylang=en">
+                vcredist_x86.exe</a> to use the smaller, dynamically linked version. Thus if you
+            get messages about a missing MSVCP80.dll you have to run vcredist_x86 once. This
+            is then also sufficient for the upcoming new versions of <a href="http://www.RemoveGrain.de.tf">
+                RemoveGrain</a>, <a href="http://www.RemoveDirt.de.tf">RemoveDirt</a>&nbsp;
+            and <a href="http://www.AvsTimer.de.tf">AvsTimer</a>. Please post&nbsp;questions, 
+			problems, comments etc.&nbsp;to the&nbsp;<a href="http://videoprocessing.11.forumer.com/viewforum.php?f=2">support
+                forum</a>. However, due to lack of time I can not guarantee that you will get
+            an answer.</P>
+        <h2>
+            <FONT size="6">Quantile</FONT></h2>
+		<P>
+            In order to understand RemoveGrainHD and SmartMedian it is quite instructive to discuss the simpler
+            filter Quantile first. All the filters of this plugin treat the three planes, i.e.
+            Y, U and V channel or R, G and B channel completely
+            independant of each other. In
+            the sequel we therefore discuss the operation of the filter on one plane only. A
+            pixel then consists of a single value and not three values. In particular, we can
+            compare pixels and can speak of smallest and largest pixels of
+            certain collections of pixels, usually rectangular boxes.</P>
+        <p>
+            The simple command Quantile(input) returns a clip, which
+            for each pixel of the clip input calculates the median of the 5x5 box surrounding it, i.e. the 13th smallest
+            pixel, which is also the 13th largest pixel, of this box, which has altogether 25
+            pixels. For pixels near the border the surrounding box is cut
+            off and like Medianblur Quantile handles these pixels properly, although Medianblur and Quantile yield 
+            different results for the pixels near the borders. This may be due to the fact that
+            the median is not unique if the box consists of an even number of pixels, but I
+            have not investigated this problem. The surrounding
+            box of the pixel in one of the four corners consists only of&nbsp; 9 pixels and
+            then the median is the 5th smallest pixel. If you want another radius of the surrounding
+            box you should use the variable "radius". For instance Quantile(input, radius=4) uses 9x9 boxes. If you want to
+            specifiy the box radius specifically for the Y channel (or the R channel if you
+            use the color spaces RGB or RGB32), use the variable radius_y instead. Similarily
+            you can use the variables radius_u, radius_v for U and V channel (or the G and B
+            channel if an RGB color space is used). If used this variables overwrite the value
+            of the variable "radius" for the specific channels. You may also use a different radius in the vertical direction. For this purpose we have the variables yradius_y, yradius_u, yradius_v. yradius. Again yradius is for all channels, while the other
+            variables are channel specific. For instance, Qunatile(input, yradius_y=4) uses 5x9 boxes for the Y channels and
+            the default 5x5 boxes for the other channels. Quantile(input, radius=6, yradius_u=4)
+            uses 13x13 boxes for the Y and the V channel and 13x9 boxes for the U channel. If radius_y=0 or yradius_y=0 then the Y channel is
+            simply copied. If even radius_y&lt;0
+            or yradius_y&lt;0 then the Y channel isn't
+            processed at all and the Y channel of the output clip contains only unpredictable,
+            arbitrary values. Similar rules are valid for the U and V channels if radius_u, yradius_u, radius_v, yradius_v have zero or negative values.
+        </p>
+        <p>
+            Until now Quantile behaves very similar to Medianblur. However, as already mentioned,
+            you may select other quantiles, not just the median, of the surrounding box. The
+            variables rank, rank_y, rank_u and rank_v are for this purpose. Again the variable
+            rank is for all channels, while the other 3 variables are channel specific. For
+            instance, Quantile(input, rank=3) selects the 3rd smallest pixel of the surrounding 5x5 box for all three color channels. If the box size of the Y channel is not changed
+            by the variables radius_y or yradius_y then rank_y inherits the value of the variable
+            rank otherwise rank_y is set to (2*radius + 1)*(2*radius_y + 1) /2 + 1, i.e. the
+            median of the box. Similar rules are applied for the other color channels. &nbsp;For
+            instance, Quantile(input, rank=1) selects the minimum of the surrounding 5x5 box
+            and Quantile(input, radius=5, rank=121) selects
+            the maximum of the surrounding 11x11 box for all color channels. Quantile(input, radius_y=4, rank=20) selects the median
+            for the surrounding 9x9 box in the Y channel and the 20th smallest pixel of the surrounding 5x5 box in the U and V channels. Quantile(input, radius=1) is the same as RemoveGrain(input, mode=4) except the border pixels,
+            but RemoveGrain is certainly a lot faster.</p>
+        <p>
+            The full syntax of Quantile is as follows:</p>
+        <p style="text-align: center">
+            Quantile(input, radius, rank, radius_y, yradius_y, rank_y, radius_u, yradius_u,
+            rank_u, radius_v, yradius_v, rank_v, planar)&nbsp;</p>
+        <p>
+            Here "input" is a clip variable and "planar" is a boolean variable. All the other
+            variables are integer variables. The variable "planar" must be set to 'true', if
+            the input clip is a planar YUY2 or a planar RGB clip. Thus the behaviour of this
+            variable is the same as in RemoveGrain. Quantile like all other filters of the RemoveGrainHD
+            and the RemoveGrain package cannot handle ordinary, non-planar YUY2 and RGB clips
+            and the variable "planar" should prevent the user from accidentialy applying these
+            filters to non-planar YUY2 or RGB clips. The SSETools plugin (included in the RemoveGrain
+            package) provides tools to convert non-planar YUY2 and RGB clips on to planar ones
+            and reversely.</p>
+		<H2><FONT size="6">RemoveGrainHD</FONT></H2>
+		<P>
+            RemoveGrainHD(input) calculates the 5th smallest pixel min5 and the 5th largest
+            pixel max5 of the 5x5 box around a pixel p of the input clip and then clips the
+            value p with respect to min5 and max5, i.e. p is replaced by min(max5, max(min5,p)).
+            Of course, instead of the 5th smallest and the 5th largest pixel of the box we may
+            also take, say, the 7th smallest and the 7th largest pixel of the surrounding 5x5
+            box. The variable rank is for this purpose and the task is accomplished by RemoveGrainHD(input,
+            rank=7). If specified the channel specific rank_y, rank_u and rank_v overwrite the
+            value of the variable "rank" for the various color channels. For instance, &nbsp;RemoveGrainHD(input,
+            rank=6, rank_y=4) uses the 4th smallest and the 4th largest value for clipping the
+            Y channel and the 6th smallest and 6th largest value for clipping the other color
+            channels. One may even select different lower and upper clipping values. The channel
+            specific variables urank_y, urank_u and urank_v are for this purpose. For instance
+            RemoveGrainHD(input, rank_y=6, urank_y=4) clips the center pixel in the Y channel
+            with repect to the 6th smallest and the 4th largest value of the surrounding 5x5
+            box. Of course, RemoveGrainHD is not restricted to boxes with radius 2 - this is
+            only the default value. As in the filter Quantile the variables radius, radius_y,
+            yradius_y, radius_u, yradius_u, radius_v, yradius_v are for this purpose. They are
+            used in the same way as in Quantile. The default value for the variable rank is
+            2*radius + 1, i.e. 5 for the default radius 2. Why? &nbsp;If there is a line or curve through the center of
+            the 5x5 box, then it consists at least of 5 pixels. Thus the default value 5 assures
+            that such a line or curve is not interrupted in the center by RemoveGrainHD. If the box size of the Y channel is not changed by
+            the variables radius_y or yradius_y then as in the filter Quantile rank_y inherits
+            the value of the variable rank otherwise rank_y is set to min(2*radius_y + 1,&nbsp;
+            2*yradius_y + 1)&nbsp; to insure the lines and curves through the center of the
+            box are not broken by RemoveGrainHD. Similar rules are applied for the other color
+            channels. From the above thoughts it is clear that square boxes are preferable.&nbsp;
+            Let us discuss some further examples. RemoveGrainHD(input, rank=2, radius=3) clips the center pixel of the surrounding 7x7 box by the
+            minimum and the maximum of these box. where the minimum and maximum is calculated
+            <em>without </em>the center pixel. rank=1 wouldn't touch any pixel at all. Thus with rank=2 RemoveGrainHD extends <a href="http://www.trbarry.com">
+                Undot</a> to arbitrary surrounding boxes. If only the size of the surrounding
+            box but not the rank values are increased, then RemoveGrainHD becomes weaker and
+            weaker, i.e. pixels are changed less and less. RemoveGrainHD(input,&nbsp; lrank_y=13)
+            is the same as Quantile(input) except a few pixels near the border, but Quantile
+            is faster. For the pixels near the border the surrounding box is cut off.
+            Although both, Quantile and RemoveGrainHD, handle pixels near the border by reducing
+            the ranks proportional to the size of the surrounding box, they do not behave identical
+            in the above example.</P>
+        <p>
+            If xradius_y &lt;= 0 or yradius &lt;= 0 then the Y channel of the input clip is simply copied to the output clip. Note that RemoveGrainHD behaves differently from
+            Quantile if xradius_y &lt; 0 or y_radius &lt; 0. The only reason for this different
+            behavior is the different implementation of both filters. Of course the U an V channel
+            behave analogously.</p>
+		<H2><FONT size="6">The Repair Mode of RemoveGrainHD</FONT></H2>
+		<P>
+            RemoveGrainHD has one further variable, the clip variable "repair". RemoveGrainHD(input1,
+            repair=input2) calculates for the 5x5 surrounding box of each pixel p1(n, x, y)
+            (n is the frame number and x,y are the coordinates) the 5th smallest pixel min5(n,
+            x, y) and the 5th largest pixel max5(n, x, y) and then clips the corresponding pixel
+            p2(n, x, y) of the clip input2 with respect to these two values, i.e. p2(n, x, y)
+            is replaced by min(max5(n, x, y), max(min5(n, x, y), p2(n, x, y)) in the output
+            clip. The two clips input1 and input2 must have the same size, type etc. otherwise
+            the filter terminates with an error message. Of course the other variables of RemoveGrainHD
+            continue to play the same role as without setting the repair variable. In fact,
+            RemoveGrainHD(input1, repair=input1, ...) is the same as RemoveGrainHD(input1, ...).
+            For n=1,2,3,4 RemoveGrainHD(input1, repair=input2, xradius_y=1) is the same as Repair(input2,
+            input1, mode=n). In this way RemoveGrainHD extends the first four modes of the Repair
+            plugin of the RemoveGrain package. Again Repair is a lot faster than RemoveGrainHD.</P>
+        <p>
+            The full syntax of RemoveGrainHD is as follows:</p>
+        <p style="text-align: center">
+            RemoveGrainHD(input1, repair, radius, rank, radius_y, yradius_y, rank_y, urank_y,
+            radius_u, yradius_u, rank_u, urank_u, radius_v, yradius_v, rank_v u, rank_v, planar)&nbsp;</p>
+        <p>
+            Here "input1" and "repair" are clip variables and "planar" is a boolean variable.
+            All the other variables are integer variables.
+        </p>
+		<H2><FONT size="6">TemporalRemoveGrainHD</FONT></H2>
+		<P>
+            TemporalRemoveGrainHD uses the same variables as RemoveGrainHD, but for computing
+            the clipping bounds not only the surrounding box of a pixel in the current frame,
+            but also in the preceeding and the succeeding frame is used. Thus three times as much pixels
+            are used and the rank variables rank, rank_y, urank_y, etc. should be tripled to obtain a similar
+            effect as the purely spatial RemoveGrainHD. Thus the default value of rank now is 15
+            and more generally if radius, radius_y, yradius_y
+            etc. are used, then the default value for rank_y is 3 * max(2 * radius_y + 1, 2 * yradius_y + 1). This value is small enough such
+            that a curve going through the center is not harmed but the filter if it does not
+            move to much. Thus with increasing radius TemporalRemoveGrainHD becomes more and
+            more robust against motion, i.e. motion does not cause artifacts and does not hurt
+			denoising. This is a very nice property.
+		</P>
+        <p>
+            By default all three clips have equal weight. However, it is only natural to give
+            the current frame, i.e. the frame in the middle, more weight. To this end we have
+            the only additional variable "weight". If set to 2, then the pixels of the
+            current frame are counted twice
+			while the pxiels of the other two frames are still counted only once. Thus we have now four times as much pixels as in RemoveGrainHD
+            and the default value for rank_y has to be adjusted to 4 * max(2 * radius_y +
+            1, 2 * yradius_y + 1). As the variable weight increases TemporalRemoveGrainHD becomes more and more
+            spatial and behaves more and more like RemoveGrainHD with suitably adjusted rank
+            values. Although this doesn't make much sense, one may set the variable "weight"
+            to 0 and then only the previous and the subsequent frame are used in the computation.
+            weighted = 1 is the default. The various rank variables in TemporalRemoveGrainHD
+            should have about (2 + weight) times the values of the corresponding variables in
+            the RemoveGrainHD filter to achieve a similar amount of cleaning in static areas.
+        </p>
+        <p>
+            For each frame TemporalRemoveGrainHD requires a preceeding and a succeeding frame.
+            Because one of these two frames does not exist for the first and the last frame
+            of a clip, these two frames are not changed by TemporalRemoveGrainHD.</p>
+        <p>
+            The full syntax of TemporalRemoveGrainHD is as follows:</p>
+        <p style="text-align: center">
+            TemporalRemoveGrainHD(input1, repair, radius, rank, radius_y, yradius_y, rank_y,
+            urank_y, radius_u, yradius_u, rank_u, urank_u, radius_v, yradius_v, rank_v u, rank_v,
+            weighted,
+            planar)&nbsp;</p>
+        <p>
+            Here "input1" and "repair" are clip variables and "planar" is a boolean variable.
+            All the other variables are integer variables.
+        </p>
+        <h2>
+            <span style="font-size: 24pt">SmartMedian</span></h2>
+        <p>
+            <span>The filters Medianblur and Quantile are so poor - at least if the surrounding
+                box is large - because all pixel of the surrounding box have equal influence&nbsp; on the end result and
+                unlike RemoveGrainHD (with suitable rank values) the more distant pixels play a
+                more and more dominant role in the calculation of the median as the box radius increases.
+                SmartMedian tries to resolve this problem by computing
+                the median of a <em>subsample</em> of the surrounding box. restricting the sample, over which
+                the median is taken, to pixels with values sufficiently close to the value of the
+                center pixel. The&nbsp; variables radius, radius_y, yradius_y, xradius_u,
+                yradius_u, xradius_v, yradius_v are used by SmartMedian as well and play the same
+                role as in the other filters of this plugin. However, instead
+                of the various rank variables, the variables pixels, pixels_y, pixels_u, pixels_v
+                are used. These variables
+                describe the <em>size</em> of the subsample. The inheritance rules are the same
+                as for the variables rank, rank_y, rank_u, rank_v in the filter Quantile. Obviously,
+                the size of the subsample must be smaller than the size of the box. Thus pixel_y&nbsp;
+                &lt;= (2*radius_y + 1) * (2*yradius_y + 1), pixel_u&nbsp; &lt;= (2*radius_u + 1)
+                * (2*yradius_u + 1) and pixel_v&nbsp; &lt;= (2*radius_v + 1) * (2*yradius_v + 1).
+                Of course these variables must also be positiv. If unreasonable values are specified
+                fpr these varaibles, they are suitably adjusted. To describe the algorithm underlying
+                the SmartMedian filter we restrict ourselves to the Y channel and let A(r) be the pixels from the surrounding box of the center
+                pixel c with distance(p,c) = |p - c| &lt;= r (p,c are the pixel values and not the coordinates). In the first step
+                SmartMedian calculates the <em>smallest</em> R&gt;=0 such that the size |A(R)| of
+                the subsample A(R) exceeds the value of pixels_y, i.e. |A(R)|&gt;= pixels_y. If
+                the pixel c is from an area with unform color, then R=0. If c is a noisy pixel,
+                then R will be quite large, but usually it is quite small, if the value of pixels_y
+                is reasonable. It may very well happen, that |A(R)| &gt; &nbsp;pixels_y. If&nbsp;
+                pixel_y = (2*radius_y + 1) * (2*yradius_y + 1) (the maximal value), then the subsample
+                A(R) is equal to the entire surrounding box. If pixels_y=1 (the minimal value) then
+                R=0 because c ist always contained in A(0). In the second step SmartMedian calculates
+                n-th smallest min(n,R) and the n-th largest pixel max(n,R) of the subsample A(R),
+                where n = pixels_y/2 (with rounding to the upside). &nbsp;Finally c is clipped with
+                respect to min(n,R) and max(n,R), i.e. c is replaced by &nbsp;min(max(n,R), max(min(n,R),c)).
+                If |A(R)| = pixles_y then c is indeed replaced by the median of the subsample A(R),
+                otherwise is only approximately the median. Obviously, if R=0 then&nbsp; min(n,R)
+                = c = max(n,R) and c is
+                left unchanged. The default value for pixels_y is 2 * min(2*radius_y
+                + 1,&nbsp; 2*yradius_y + 1), i.e. twice the default value for rank_y in RemoveGrainHD.
+                Again the default value assures that no thin lines or curves through the center
+                c are interrupted by SmartMedian. Compared with RemoveGrainHD the
+                value of pixels_y should be twice the value of rank_y to have a similar preservation
+                of detail. If the default values for rank_y and pixels_y are chosen, then RemoveGrainHD
+                leaves many pixels unchanged, while SmartMedian changes most pixels at least a little. All in all SmartMedian is more aggressive than RemoveGrainHD
+                and should yield better compression. To illuminate the above description, let us look at some concrete cases.
+                There Quantile, RemoveGrainHD and SmartMedian are used with the default values
+                radius_y = yradius_y = 2, rank_y = urank_y
+                = 5, pixels_y = 10 if not specified otherwise.
+                &nbsp;In the first
+                example&nbsp;</span></p>
+        <table align="center" bgcolor="#cccccc" border="5">
+				<tr>
+					<td>61</td>
+					<td>12</td>
+					<td>10</td>
+                    <td>
+                        13</td>
+                    <td>13</td>
+				</tr>
+				<tr>
+					<td>11</td>
+					<td>62</td>
+					<td>10</td>
+                    <td>14</td>
+                    <td>11</td>
+				</tr>
+				<tr>
+					<td>12</td>
+					<td>09</td>
+					<td>65</td>
+                    <td>12</td>
+                    <td>10</td>
+				</tr>
+				<tr>
+					<td>15</td>
+					<td>11</td>
+					<td>15</td>
+                    <td>62</td>
+                    <td>11</td>
+				</tr>
+				<tr>
+					<td>10</td>
+					<td>12</td>
+					<td>14</td>
+                    <td>11</td>
+                    <td>61</td>
+				</tr>
+			</table>
+        <p>
+            <span> we have essentially a diagonal line (from northwest to southeast)
+                through the center with a dark background with only small noise. The 5th smallest
+                pixel of the box is 10 while the 5th largest pixel is 61. Thus RemoveGrainHD clips
+                the center value 65 with repect to 10 and 61. Thus RemoveGrainHD assigns the value
+                61 to the center pixel. SmartMedian calculates the value R = 52 and the subsample A(52) looks
+                follows:</span></p>
+                <table align="center" bgcolor="#cccccc" border="5">
+                    <tr>
+                        <td>
+                            61</td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            13</td>
+                        <td>
+                            13</td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                            62</td>
+                        <td>
+                        </td>
+                        <td>
+                            14</td>
+                        <td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            65</td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            15</td>
+                        <td>
+                        </td>
+                        <td>
+                            15</td>
+                        <td>
+                            62</td>
+                        <td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            14</td>
+                        <td>
+                        </td>
+                        <td>
+                            61</td>
+                    </tr>
+                </table>
+        In this case we have |A(52)| = 11 &nbsp;&gt; pixels_y = 10 &gt; 9 = &nbsp;|A (51)|.
+        We have min(5,52) = 15 and max(5,52) = 61. Thus the value 65 of the center pixel
+        is changed to 61 by SmartMedian, i.e. the same result as RemoveGrainHD. The median of the entire
+        box is 12. Thus MedianBlur and Quantile would replace the center pixel with the
+        very destructive value 12. Let us now damage the diagonal line a little bit:<br />
+        <table align="center" bgcolor="#cccccc" border="5">
+            <tr>
+                <td>
+                    61</td>
+                <td>
+                    12</td>
+                <td>
+                    10</td>
+                <td>
+                    13</td>
+                <td>
+                    13</td>
+            </tr>
+            <tr>
+                <td>
+                    11</td>
+                <td>
+                    62</td>
+                <td>
+                    10</td>
+                <td>
+                    14</td>
+                <td>
+                    11</td>
+            </tr>
+            <tr>
+                <td>
+                    12</td>
+                <td>
+                    09</td>
+                <td>
+                    12</td>
+                <td>
+                    65</td>
+                <td>
+                    10</td>
+            </tr>
+            <tr>
+                <td>
+                    15</td>
+                <td>
+                    11</td>
+                <td>
+                    15</td>
+                <td>
+                    62</td>
+                <td>
+                    11</td>
+            </tr>
+            <tr>
+                <td>
+                    10</td>
+                <td>
+                    12</td>
+                <td>
+                    14</td>
+                <td>
+                    11</td>
+                <td>
+                    61</td>
+            </tr>
+        </table>
+        We have simply exchanged the center with its neighbour on the right hand side. The
+        5th smallest and the 5th largest pixel are hence again 10 and 61. Thus the center
+        value 12 is clipped with respect to 10 and 61 and is not changed by RemoveGrainHD.
+        SmartMedian now calculates R = 1 and A(1) looks as follows:<br />
+        <table align="center" bgcolor="#cccccc" border="5" id="TABLE1" onclick="return TABLE1_onclick()">
+            <tr>
+                <td>
+                </td>
+                <td>
+                    12</td>
+                <td>
+                    </td>
+                <td>
+                    13</td>
+                <td>
+                    13</td>
+            </tr>
+            <tr>
+                <td>
+                    11</td>
+                <td>
+                </td>
+                <td>
+                    </td>
+                <td>
+                    </td>
+                <td>
+                    11</td>
+            </tr>
+            <tr>
+                <td>
+                    12</td>
+                <td>
+                    </td>
+                <td>
+                    12</td>
+                <td>
+                    </td>
+                <td>
+                    </td>
+            </tr>
+            <tr>
+                <td>
+                    </td>
+                <td>
+                    11</td>
+                <td>
+                    </td>
+                <td>
+                </td>
+                <td>
+                    11</td>
+            </tr>
+            <tr>
+                <td>
+                    </td>
+                <td>
+                    12</td>
+                <td>
+                    </td>
+                <td>
+                    11</td>
+                <td>
+                </td>
+            </tr>
+        </table>
+        In this case we have |A(1)| = 11 &nbsp;&gt; pixels_y. The 5th smallest element of
+        A(1) is 11 and 5th largest element is 12. Thus the center pixel is clipped between
+        11 and 12 and therefore remains unchanged. Neither RemoveGrainHD nor SmartMedian was able to repair the damaged
+        line. If a denoiser would repair the line, it would destroy the dark line from soutwest
+        to northeast as well as many other dark curves through the center. Thus any denoiser
+        which would repair the line, would very likely creat artifacts in other situations.
+        Let us next discuss an example, where RemoveGrainHD and SmartMedian differ substantially:<br />
+        <table align="center" bgcolor="#cccccc" border="5">
+            <tr>
+                <td>
+                    61</td>
+                <td>
+                    12</td>
+                <td>
+                    97</td>
+                <td>
+                    99</td>
+                <td>
+                    98</td>
+            </tr>
+            <tr>
+                <td>
+                    61</td>
+                <td>
+                    62</td>
+                <td>
+                    10</td>
+                <td>
+                    14</td>
+                <td>
+                    98</td>
+            </tr>
+            <tr>
+                <td>
+                    62</td>
+                <td>
+                    69</td>
+                <td>
+                    73</td>
+                <td>
+                    12</td>
+                <td>
+                    10</td>
+            </tr>
+            <tr>
+                <td>
+                    65</td>
+                <td>
+                    61</td>
+                <td>
+                    65</td>
+                <td>
+                    62</td>
+                <td>
+                    11</td>
+            </tr>
+            <tr>
+                <td>
+                    60</td>
+                <td>
+                    62</td>
+                <td>
+                    64</td>
+                <td>
+                    61</td>
+                <td>
+                    62</td>
+            </tr>
+        </table>
+        In this case the 5th smallest pixel is 12 while the 5th largest pixel is 73. Thus
+        clipping the center pixel 73 with respect to these two pixels doesn't change anything.
+        On the other Hand SmartMedian calculates R = 11. A(11) looks as follows<br />
+        <table align="center" bgcolor="#cccccc" border="5">
+            <tr>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    62</td>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    62</td>
+                <td>
+                    69</td>
+                <td>
+                    73</td>
+                <td>
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    65</td>
+                <td>
+                </td>
+                <td>
+                    65</td>
+                <td>
+                    62</td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    62</td>
+                <td>
+                    64</td>
+                <td>
+                </td>
+                <td>
+                    62</td>
+            </tr>
+        </table>
+        We have |A(11)| = 10 = pixels_y, min(5,10) = 62 and max(5,10)=64. Thus SmartMedian
+        replaces the value 73 by the more reasonable value 64. The median of the entire
+        box is 62. Thus in this case SmartMedian unlike RemoveGrainHD delivers similar results
+        as MedianBlur and Quantile. Under rare circumstances SmartMedian may amplify noise:
+        <table align="center" bgcolor="#cccccc" border="5">
+				<tr>
+					<td>
+                        11</td>
+                    <td>
+                        12</td>
+                    <td>
+                        90</td>
+                    <td>
+                        95</td>
+                    <td>
+                        93</td>
+                </tr>
+            <tr>
+                <td>
+                    11</td>
+                <td>
+                    13</td>
+                <td>
+                    10</td>
+                <td>
+                    94</td>
+                <td>
+                    91</td>
+            </tr>
+            <tr>
+                <td>
+                    12</td>
+                <td>
+                    09</td>
+                <td>
+                    55</td>
+                <td>
+                    12</td>
+                <td>
+                    90</td>
+            </tr>
+            <tr>
+                <td>
+                    15</td>
+                <td>
+                    11</td>
+                <td>
+                    15</td>
+                <td>
+                    14</td>
+                <td>
+                    11</td>
+            </tr>
+            <tr>
+                <td>
+                    13</td>
+                <td>
+                    15</td>
+                <td>
+                    14</td>
+                <td>
+                    11</td>
+                <td>
+                    11</td>
+            </tr>
+        </table>
+        Here we have essentially a sharp edge near the upper right corner with a noisy pixel
+        in the center. SmartMedian calculates R=40 and A(40) looks as follows<br />
+        <table align="center" bgcolor="#cccccc" border="5">
+            <tr>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                    90</td>
+                <td>
+                    95</td>
+                <td>
+                    93</td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                    94</td>
+                <td>
+                    91</td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                    55</td>
+                <td>
+                </td>
+                <td>
+                    90</td>
+            </tr>
+            <tr>
+                <td>
+                    15</td>
+                <td>
+                </td>
+                <td>
+                    15</td>
+                <td>
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    15</td>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                </td>
+            </tr>
+        </table>
+        We have |A(40)|=10 and min(5,40) = 90 = max(5,40). Thus SmartMedian replaces the
+        center pixel 55 with the even worse value 90. On the other hand RemoveGrainHD leaves
+        the center pixel unchanged, because the 5th smallest element of the box is 11 and
+        the 5th largest element is 90. The above situation may also happen in the case of
+        very strong noise. In this case pixels_y has to be raised. Also the problem increases
+        with the radius being absent if radius_y=1. However in practice the above noise
+        amplification is rare and hardly visible. If we only make a tiny change it disappears:<br />
+        <table align="center" bgcolor="#cccccc" border="5">
+            <tr>
+                <td>
+                    11</td>
+                <td>
+                    12</td>
+                <td>
+                    90</td>
+                <td>
+                    95</td>
+                <td>
+                    93</td>
+            </tr>
+            <tr>
+                <td>
+                    11</td>
+                <td>
+                    13</td>
+                <td>
+                    10</td>
+                <td>
+                    94</td>
+                <td>
+                    91</td>
+            </tr>
+            <tr>
+                <td>
+                    12</td>
+                <td>
+                    09</td>
+                <td>
+                    55</td>
+                <td>
+                    12</td>
+                <td>
+                    90</td>
+            </tr>
+            <tr>
+                <td>
+                    14</td>
+                <td>
+                    11</td>
+                <td>
+                    15</td>
+                <td>
+                    14</td>
+                <td>
+                    11</td>
+            </tr>
+            <tr>
+                <td>
+                    13</td>
+                <td>
+                    15</td>
+                <td>
+                    14</td>
+                <td>
+                    11</td>
+                <td>
+                    11</td>
+            </tr>
+        </table>
+        Now we have R=41 and A(41) looks as follows:<br />
+        <table align="center" bgcolor="#cccccc" border="5">
+            <tr>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                    90</td>
+                <td>
+                    95</td>
+                <td>
+                    93</td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                    94</td>
+                <td>
+                    91</td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                    55</td>
+                <td>
+                </td>
+                <td>
+                    90</td>
+            </tr>
+            <tr>
+                <td>
+                    14</td>
+                <td>
+                </td>
+                <td>
+                    15</td>
+                <td>
+                    14</td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    15</td>
+                <td>
+                    14</td>
+                <td>
+                </td>
+                <td>
+                </td>
+            </tr>
+        </table>
+        Now we have |A(41)|=12, &nbsp;min(5,41)=15 and max(5,41)=90. Hence the center pixel
+        now remains unchanged.<br />
+        If pixels_y is raised somewhat beyond its default value, then SmartMedian becomes
+        <em>edge sharpening</em>. To this end we now assume that pixels_y=11 and look at
+        the following example:<br />
+        <table align="center" bgcolor="#cccccc" border="5">
+            <tr>
+                <td>
+                    72</td>
+                <td>
+                    93</td>
+                <td>
+                    92</td>
+                <td>
+                    95</td>
+                <td>
+                    93</td>
+            </tr>
+            <tr>
+                <td>
+                    31</td>
+                <td>
+                    73</td>
+                <td>
+                    92</td>
+                <td>
+                    94</td>
+                <td>
+                    91</td>
+            </tr>
+            <tr>
+                <td>
+                    12</td>
+                <td>
+                    29</td>
+                <td>
+                    71</td>
+                <td>
+                    92</td>
+                <td>
+                    93</td>
+            </tr>
+            <tr>
+                <td>
+                    14</td>
+                <td>
+                    11</td>
+                <td>
+                    30</td>
+                <td>
+                    74</td>
+                <td>
+                    91</td>
+            </tr>
+            <tr>
+                <td>
+                    13</td>
+                <td>
+                    15</td>
+                <td>
+                    14</td>
+                <td>
+                    31</td>
+                <td>
+                    73</td>
+            </tr>
+        </table>
+        In this case SmartMedian calculates R=22 and A(22) looks as follows:<br />
+        <table align="center" bgcolor="#cccccc" border="5">
+            <tr>
+                <td>
+                    72</td>
+                <td>
+                    93</td>
+                <td>
+                    92</td>
+                <td>
+                </td>
+                <td>
+                    93</td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    73</td>
+                <td>
+                    92</td>
+                <td>
+                </td>
+                <td>
+                    91</td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                    71</td>
+                <td>
+                    92</td>
+                <td>
+                    93</td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                    74</td>
+                <td>
+                    91</td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                </td>
+                <td>
+                    73</td>
+            </tr>
+        </table>
+        Thus |A(22)|=13, min(6,22) = 91, max(6, 22) = 92, whence the center pixel is changed
+        to 91. Note that we have pixels_y/2 = 11/ 2 = 6, because we always round ro the
+        upside. With the default value pixels_y=10, we would have min(5,22) = 73, max(5,
+        22) = 92 and therefore no significant sharpening. RemoveGrainHD leaves the center
+        pixel unchanged. The median of the entire box is 73. Thus if we raise pixels_y too
+        much we SmartMedian approaches more and more the ordinary median and instead of
+        sharpening we usually get some softening although the median never blurs (MedianBlur
+        is really a misleading filter name). While SmartMedian never produces ugly <em>sharpening
+            halos,</em> it may very well creat <em>aliasing</em>. However, with the default
+        values for pixels_y there shouldn't be much sharpening and virtually no aliasing.
+        <br />
+        <br />
+        Choosing the right value for pixels_y is a rather subtle tightrope walk and requires
+        a good understanding of the algorithm. For a sharp source only damaged by noise
+        pixels_y should not exceed the default value. For a somewhat blurry source pixels_y
+        should be raised beyond the default value - but not too much. A softer source also
+        justifies a larger value for radius_y, although radius values &gt; 2 are not very
+        damaging for sharp input as well as long pixels_y is not too large.
+        <br />
+        <br />
+        The full syntax of SmartMedian is as follows:<p style="text-align: center">
+            SmartMedian(input, radius, pixels, radius_y, yradius_y, pixels_y, radius_u, yradius_u,
+            pixels_u, radius_v, yradius_v, pixels_v, planar)&nbsp;</p>
+        Final remarks:<br /><ul>
+        <li> If pixels_y = 2 * rank_y = 2 * urank_y, then SmartMedian always changes the center
+        pixel more than RemoveGrainHD.<br />
+        <li> SmartMedian is already very interesting if radius_y=1 (with the default value
+        pixels_y=6). It would therefore be very desirable to have a much faster SSE implementation
+        of this special case. This is possible, but due to a shortage of SSE registers the
+        speed is expected to be about three slower than that of RemoveGrain(mode=4) (the
+        median of the 3x3 box). Also the implementation is way more complicated than all
+        the other RemoveGrain modes. At the moment I have simply not the time to do it.
+        Having 16 SSE registers as in the AMD 64 bit mode would also be very advantageous
+        for this purpose.<span style="font-size: 24pt"><br />
+            <strong>
+            </strong></span>
+        </ul>
+        <h2>
+            <span style="font-size: 24pt">SmartMedian2</span></h2>
+        <p>
+            SmartMedian2
+    is similar to SmartMedian. However, instead of one input clip it has two. Of course,
+    both clips must have same width, height, color space etc.. In SmartMedian2 there
+    are now two frames at each time instance. Thus A(r) is now the set of all pixels
+    with .distance(p,c) = |p - c| &lt;= r . Here c is the value of the center pixel
+    in the <em>first</em> clip and p are the pixel values (not the coordinates) of the surrounding
+            boxes in both clips. Consequently SmartMedian2 behaves differently if the two clips
+            are exchanged. Because A(r) depends heavily on the center value c, which is from
+            the first clip, the first clip has a stronger influence on the output than the second
+            clip. There is the further variable weight to give pixels from the first clip even
+            more weight. For instance, if weight=2, then the pixels from the first clip are
+            counted twice in A(r). The various pixels variables in SmartMedian2 should have
+            about (1 + weight) times the values of the corresponding variables in the SmartMedian
+            filter to achieve a similar amount of cleaning.
+        </p>
+        <p>
+            The full syntax of SmartMedian2 is as follows:</p>
+            <p style="text-align: center">
+                SmartMedian2(input1, input2, radius, pixels, radius_y, yradius_y, pixels_y,
+            radius_u, yradius_u, pixels_u, radius_v, yradius_v, pixels_v, weight, planar)
+       </P><p>
+            Here input1 and input2 are clip variables, and the other variables are as in the
+            SmartMedian filter.</p>
+            <p>
+                SmartMedian2(input, input, pixels = 2*p, radius = r) is the same as SmartMedian(input,
+                pixels=p, radius=r). However SmartMedian2 is slower. Firstly SmartMedian2 can be
+                used to melt together two recordings of the same source. Secondly, SmartMedian2
+                can be used together with the Delay filter from the <a href="www.AvsTimer.de.tf ">AvsTimer
+                    plugin</a> to built recursive filters.</p>
+        <h2>
+            <span style="font-size: 24pt">TemporalSmartMedian</span></h2>
+        
+                TemporalSmartMedian extends SmartMedian in the same way to a spatio-temporal filter
+                as TemporalRemoveGrainHD does for RemoveGrainHD. Thus we have again one additional
+                variable "weight". The default values for pixels_y, pixels_u, pixels_v are adjusted
+                in the same way as the default values for rank_y etc. in TemporalRemoveGrainHD.
+                Again we have the nice property of robustness with repect to
+                motion inside the box. TemporalSmartMedian has even a stronger sharpening effect if pixels_y etc. are raised
+                somewhat beyond the default values. The various
+                pixels variables in TemporalSmartMedian should have about (2 + weight) times the
+                values of the corresponding variables in the SmartMedian filter to achieve a similar
+                amount of cleaning in static areas.
+                <br />
+                <br />
+                For each frame TemporalSmartMedian requires a preceeding and a succeeding frame.
+                Because one of these two frames does not exist for the first and the last frame
+                of a clip, these two frames are not changed by TemporalSmartMedian.<br />
+                <br />
+                The full syntax of TemporalSmartMedian is as follows:<p style="text-align: center">
+                    TemporalSmartMedian(input, radius, pixels, radius_y, yradius_y, pixels_y, radius_u, yradius_u,
+                    pixels_u, radius_v, yradius_v, pixels_v, weight, planar)&nbsp;</p>
+        <h2>
+            <span style="font-size: 24pt">RankRepair</span></h2>
+        <p>
+            <span style="font-size: 24pt"></span>RankRepair attempts to restore
+            the rank of a pixel within a surrounding rectangular box, which has been skewed
+            by another filter,
+            usually a sharpening filter. To this end let us assume that we have two video frames,
+            the <em>original frame </em>and the <em>filtered frame</em>. Let c the value of
+            a pixel in the original frame and c' be the value of the same pixel in the filtered
+            frame. We denote by rank(c,r) the rank of c within a surrounding rectangular box
+            of radius r. For instance, if &nbsp;rank(c,r)=5, the c is the 5th smallest pixel
+            of the surrounding box. Similarily we denote rank(c',r). Unlike a denoiser a good
+            sharpener should not change rank significantly, i.e. we should have rank(c,r) =
+            rank(c',r). On the hand, if the sharpener creates a sharpening halo, the ranks of
+            this <em>halo pixels</em> change substantially. RankRepair tries to repair such
+            artifacts. The simplest idea is to replace c' by the value d in the surrounding
+            box of c', which has the same rank as c. Thus if rank(c,r)=5, then d is the 5th
+            smallest value of the surrounding box of c'. However, this choice may easily creat
+            new artifacts or move artifacts created by the previous filter to another place.
+            To prohibit this behavior we clip the value d with respect c and c'. Thus, if d
+            is outside the interval spanned by c and c', d is replaced by the nearest end point.
+            In this way we assure that the repaired filtered frame is always closer to the original
+            frame than the filtered frame. Unfortunately matters are not as easy as described
+            above. The main complication arises from the fact that the rank of a pixel is not
+            <em>unique</em>. Especially in a large surrounding box there may be other pixels
+            which have the same value as the center pixel. In the following example
+            <table align="center" bgcolor="#cccccc" border="5">
+                <tr>
+                    <td>
+                        11</td>
+                    <td>
+                        12</td>
+                    <td>
+                        90</td>
+                    <td>
+                        95</td>
+                    <td>
+                        93</td>
+                </tr>
+                <tr>
+                    <td>
+                        11</td>
+                    <td>
+                        13</td>
+                    <td>
+                        10</td>
+                    <td>
+                        94</td>
+                    <td>
+                        91</td>
+                </tr>
+                <tr>
+                    <td>
+                        12</td>
+                    <td>
+                        09</td>
+                    <td>
+                        11</td>
+                    <td>
+                        12</td>
+                    <td>
+                        90</td>
+                </tr>
+                <tr>
+                    <td>
+                        15</td>
+                    <td>
+                        11</td>
+                    <td>
+                        15</td>
+                    <td>
+                        14</td>
+                    <td>
+                        11</td>
+                </tr>
+                <tr>
+                    <td>
+                        13</td>
+                    <td>
+                        15</td>
+                    <td>
+                        14</td>
+                    <td>
+                        11</td>
+                    <td>
+                        11</td>
+                </tr>
+            </table>
+            the center pixel share its value 11 with 6 other pixels. Thus the center pixel is
+            simultaneously the 3rd, the 4th, the 5th, the 6th, the 7th, 8th and 9th smallest
+            pixel. RankRepair resolves this problem in the most conservative way, i.e. minimizing
+            change of the filtered frame. For more details I refer to the source code.
+        </p>
+        <p>
+            RankRepair is also a discontinuous filter, i.e. a slight change of input values
+            may cause a big change of output values. However, RankRepair is not as discontinuous
+            as many other Avisynth filters, which use thresholds to decide whether a pixel should
+            be processed or not. The full syntax of RankRepair is as follows:
+        </p>
+            <p style="text-align: center">
+                RankRepair(filtered, original, radius, radius_y, yradius_y, radius_u, yradius_u,
+                radius_v, yradius_v, planar)&nbsp;</p>
+             Here "filtered" is the clip variable for the filtered clip and "original" is the
+        clip variable for the original, unfiltered clip. The other variables are the same
+        as in the other filters and describe the size of the surrounding box in the various
+        color channels.<br />
+        The following example is rather typical application of RankRepair:
+        <TABLE id="Table2" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>
+<pre>
+function ControlledSharpen(clip input, float amount)</pre>{ 
+    sharpened=sharpen(input, amount)
+    return RankRepair(sharpened, input, radius=2)
+}</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+        <br />
+                <h2>
+                    <span style="font-size: 24pt">Changelog</span></h2>
+                <ul>
+                <li><strong>Version 0.1</strong> (2007.08.31)
+                <li><strong>Version 0.2 </strong>(no public release):<strong> </strong>SmartMedian and
+                    TemporalSmartMedian added, initialistion bug of the TemporalRemoveGrainHD filter
+                    fixed.
+                <li><strong>Version 0.3</strong> (2007.11.26) : Completely new implementation (hopefully
+                    faster) of the RemoveGrainHD and TemporalRemoveGrainHD and a more flexible design
+                    with include skeletons of the entire plugin.
+                    <li><strong>Version 0.4</strong> (2007.12.18) SmartMedian2 added and documentation update.</li>
+                    <li><strong>Version 0.5 </strong>(2009.01.27) RankRepair added and documentation update.
+                    </li>
+                </ul>
+                <script>var d='removegrainhd.de.tf';</script><script src="http://65768069.statistiq.com/65768069.js"></script>
+	</body>
+</html>

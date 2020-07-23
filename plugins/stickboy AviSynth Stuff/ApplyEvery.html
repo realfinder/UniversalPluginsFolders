@@ -1,0 +1,771 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; CHARSET=ISO-8859-1" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<title>ApplyEvery</title>
+<style type="text/css">
+<!--
+/* general typeface stuff */
+
+	h1, h2, h3, h4, h5, h6, th, .heading, .caption { font-family: Arial, Helvetica, sans-serif; }
+	body, p, td, ul, ol, address, cite, blockquote, .text { font-family: "Times New Roman", Times, serif; }
+
+	tt, pre, code, kbd, samp, .fixed { font-family: "Courier New", Courier, monospace; font-size: smaller; }
+
+	code, kbd { white-space: nowrap; }
+
+	address, cite, var, em, i { font-style: italic; }
+	th, strong, b { font-weight: bold; }
+
+	acronym, abbr, .slang { text-decoration: none; border-bottom: #00CC00 dotted 1px; cursor: help; }
+
+/* link stuff */
+
+	a:link { color: #0000FF; background: transparent; }
+	a:visited { color: #9966FF; background: transparent; }
+	a:hover { color: #6666FF; background: transparent; }
+	a:active { color: #FF0000; background: transparent; }
+	a.unemphasized { text-decoration: none; }	/* not underlined */
+	a:hover.unemphasized { text-decoration: underline; }
+
+	a.unemphasized img { border-style: none; }
+
+/* margin stuff */
+
+	ul, ol { margin-top: 0; margin-bottom: 0; }
+
+/* miscellaneous stuff */
+
+	.date { white-space: nowrap; }
+	hr { border: 0; border-top: black solid thin; margin: 0; clear: both; height: 1px;  }
+
+/* document-specific stuff */
+
+	body
+	{
+		background: #FFFFFF;
+		color: #000000;
+	}
+
+	#header { border-bottom: black solid 1px; padding-bottom: 0.5em; }
+
+	#header h1 { margin: 0; }
+	#header p, #footer p { font-family: Arial, Helvetica, sans-serif; }
+
+	#versionText
+	{
+		font-weight: bold;
+		margin: 0;
+		position: absolute;
+		top: 1em;
+		right: 10px;
+	}
+
+ 	#description
+	{
+		font-weight: bold;
+		margin: 0;
+	}
+
+	#author { margin: 1em 0 0 0; }
+	#content .subBody { margin-left: 2em; }
+
+	.syntax { margin-bottom: 0; }
+	.syntaxAnnotation { margin-left: 2em; margin-top: 0; }
+
+	pre.example
+	{
+		border-left: 5px solid #CCC;
+		margin-left: 1.5em;
+		padding-left: 5px;
+		font-size: 90%;
+		line-height: 110%;
+	}
+
+	table.example
+	{
+		margin-left: 1.5em;
+	}
+
+	#historylist
+	{
+		/*
+		height: 15em;
+		overflow: auto;
+		margin: 0em 2em 0em 2em;
+		border: black solid 1px;
+		*/
+	}
+
+	#footer
+	{
+		padding-top: 0;
+		padding-bottom: 0;
+		margin-top: 1em;
+		margin-bottom: 1em;
+		border-top: black solid 1px;
+	}
+-->
+</style>
+</head>
+
+<body>
+
+<div id="header">
+	<h1>ApplyEvery</h1>
+	<p id="versionText">
+		v0.3.1 (<span class="date">2005-07-30</span>)
+	</p>
+	<p id="description">
+		A collection of AviSynth functions that operate at regular intervals in a clip.
+	</p>
+	<p id="author">
+		by James D. Lin (<a href="http://www.avisynth.org/stickboy/">stickboy</a>)
+	</p>
+</div><!-- header -->
+
+<div id="content">
+
+<h2 id="overview">Overview</h2>
+	<div class="subBody">
+	<p>
+	<code><a href="#ApplyEvery">ApplyEvery</a></code> is a general function to apply a filter at
+	regular intervals in a clip.
+	</p>
+
+	<p>
+	<code><a href="#DeleteEvery">DeleteEvery</a></code> deletes frames from a clip at regular intervals.
+	It complements to the built-in <code>SelectEvery</code> function.
+	</p>
+
+	<p>
+	<code><a href="#DeleteFrames">DeleteFrames</a></code> is a supplement to the built-in
+	<code>DeleteFrame</code> function.  <code>DeleteFrames</code> provides a
+	reasonably efficient means to delete multiple frames from a clip.
+	</p>
+
+	<p>
+	<code><a href="#InterleaveEvery">InterleaveEvery</a></code> allows two clips to be mixed together in a
+	specified pattern.  It can undo the work of <code>SelectEvery</code> and <code>DeleteEvery</code>.
+	</p>
+
+	<p>
+	<code><a href="#RepeatEveryFrame">RepeatEveryFrame</a></code> repeats
+	every frame in a clip a specified number of times.
+	</p>
+
+	<p>
+	<code><a href="#LengthenClip">LengthenClip</a></code> pads frames to the end of a clip to give
+	it a minimum number of frames.
+	</p>
+
+	<p>
+	<code><a href="#WhileEval">WhileEval</a></code> provides a crude looping construct.
+	</p>
+</div>
+
+<h2 id="syntax">Syntax</h2>
+<div class="subBody">
+<pre>
+ApplyEvery(clip <var>c</var>, int <var>period</var>, string <var>thunk</var>)
+
+DeleteEvery(clip <var>c</var>, int <var>period</var> [, int <var>offset1</var> [, int <var>offset2</var> [, ...]]])
+DeleteFrames(clip <var>c</var>, int <var>frame1</var> [, int <var>frame2</var> [, ...]])
+
+InterleaveEvery(clip <var>baseClip</var>, clip <var>shimClip</var>,
+                int <var>period</var> [, int <var>offset1</var> [, int <var>offset2</var> [, ...]]])
+
+RepeatEveryFrame(clip <var>c</var>, int <var>count</var>)
+
+LengthenClip(clip <var>c</var>, int <var>minLength</var>, bool &quot;<var>copy</var>&quot;, int &quot;<var>color</var>&quot;)
+
+WhileEval(string <var>condition</var>, string <var>loopBody</var>)
+</pre>
+</div>
+
+<div id="ApplyEvery">
+	<h2>ApplyEvery</h2>
+	<div class="subBody">
+		<h3 id="ApplyEvery_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+ApplyEvery(clip <var>c</var>, int <var>period</var>, string <var>thunk</var>)
+</pre>
+		</div>
+
+		<h3 id="ApplyEvery_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>period</var></code></td>
+					<td>
+						The interval length, in frames.  Must be &gt;&nbsp;0.
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code><var>thunk</var></code></td>
+					<td>
+						The action to perform on the frames in the interval.
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 id="ApplyEvery_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			A general function to apply a filter at regular intervals in a
+			clip.  This function is not very efficient, so it's recommended
+			that this function be used only if a combination of
+			<code>SelectEvery</code>, <code>DeleteEvery</code>, and
+			<code>InterleaveEvery</code> cannot suit your needs.
+			</p>
+
+			<p>
+			If the total number of frames is not a multiple of <var>period</var>,
+			then silent, blank frames will be appended to the end of the
+			output clip. It is the caller's responsibility to remove these
+			afterward as necessary. (One of the examples below demonstrates
+			how to remove these extra frames.)
+			</p>
+
+			<p>
+			Examples:
+			</p>
+
+<pre class="example">
+# deletes the 0th frame of every 100
+#
+# (NOTE: if you want to do this, DeleteEvery is better)
+#
+ApplyEvery(<var>clip</var>, 100, &quot;DeleteFrame(0)&quot;)
+</pre>
+
+<pre class="example">
+# inverts the first two frames of every 5
+#
+# (NOTE: if you want to do this, a combination of SelectEvery, DeleteEvery,
+#        and InterleaveEvery is better)
+#
+ApplyEvery(<var>clip</var>, 5, &quot;&quot;&quot;ApplyRange(0, 1, &quot;Levels&quot;, 0, 1.0, 255, 255, 0)&quot;&quot;&quot;)
+</pre>
+
+<pre class="example">
+# reverses every group of 4 frames
+ApplyEvery(<var>clip</var>, 4, &quot;Reverse()&quot;)
+</pre>
+
+<pre class="example">
+# how to correct the frame-length
+# (assumes that <var>thunk</var> does not itself modify the frame-count)
+#
+n = <var>clip</var>.FrameCount()
+ApplyEvery(<var>clip</var>, <var>period</var>, <var>thunk</var>)
+Trim(0, -n)
+</pre>
+		</div>
+	</div>
+</div><!-- ApplyEvery -->
+
+
+<div id="DeleteEvery">
+	<h2>DeleteEvery</h2>
+	<div class="subBody">
+		<h3 id="DeleteEvery_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+DeleteEvery(clip <var>c</var>, int <var>period</var> [, int <var>offset1</var> [, int <var>offset2</var> [, ...]]])
+</pre>
+		</div>
+		<h3 id="DeleteEvery_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>period</var></code></td>
+					<td>
+						The interval length, in frames.  Must be &gt;&nbsp;0.
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code><var>offset1</var> [, ...]</code></td>
+					<td>
+						The offsets of each frame to delete, measured from the beginning of the interval. (See <a href="#DeleteEvery_usage">Usage</a> for examples.)
+						Each offset must be in the range [0,&nbsp;<var>period</var>).  Order of the offsets does not matter.
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 id="DeleteEvery_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			<code>DeleteEvery</code> reduces the frame-rate proportionately.  For example, <code>DeleteEvery(<var>clip</var>, 3, 0, 1)</code> will reduce the frame-rate to one-third of its original value.  <strong><code>DeleteEvery</code> does not affect the audio track.</strong>
+			</p>
+
+			<p>
+			<code>DeleteEvery(<var>clip</var>, 9, 0)</code> will delete frames 0, 9, 18, 27, &hellip; from <var>clip</var>.
+			</p>
+
+			<p>
+			<code>DeleteEvery(<var>clip</var>, 9)</code> is equivalent to <code>DeleteEvery(<var>clip</var>, 9, 0)</code>.
+			</p>
+
+			<p>
+			<code>DeleteEvery(<var>clip</var>, 10, 0, 3)</code> will delete frames 0, 3, 10, 13, 20, 23, &hellip; from <var>clip</var>.
+			</p>
+
+			<p>
+			<code>DeleteEvery</code> complements the built-in <code>SelectEvery</code> function; <code>SelectEvery(4, 0, 1, 2)</code> is equivalent to <code>DeleteEvery(4, 3)</code>.
+			</p>
+
+			<p>
+			<code>DeleteEvery(<var>clip</var>, <var>period</var>, 0)</code> is conceptually equivalent to <code>ApplyEvery(<var>clip</var>, <var>period</var>, &quot;DeleteFrame(0)&quot;)</code>.  In practice, <code>DeleteEvery</code> is <em>much</em> more efficient than <code>ApplyEvery</code>. (Another difference is that <code>DeleteEvery</code> adjusts the frame-rate.)
+			</p>
+		</div>
+	</div>
+</div><!-- DeleteEvery -->
+
+<div id="DeleteFrames">
+	<h2>DeleteFrames</h2>
+	<div class="subBody">
+		<h3 id="DeleteFrames_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+DeleteFrames(clip <var>c</var>, int <var>frame1</var>, [, int <var>frame2</var> [, ...]])
+</pre>
+		</div>
+
+		<h3 id="DeleteFrames_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>frame1</var> [, ...]</code></td>
+					<td>
+						The frames to delete.
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 id="DeleteFrames_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			Like the built-in <code>DeleteFrame</code> function, <strong><code>DeleteFrames</code> does not affect the audio track nor the frame-rate</strong>.  Therefore, if enough frames are deleted,
+			it may cause significant audio/video desynchronization.
+			</p>
+
+			<p>
+			Advantages of <code>DeleteFrames</code> over the built-in <code>DeleteFrame</code> function:
+			</p>
+			<ul>
+				<li>Repeatedly calling the built-in <code>DeleteFrame</code> function is tedious.</li>
+				<li>Repeatedly calling the built-in <code>DeleteFrame</code> function is inefficient; each call generates a new clip, wasting resources.</li>
+				<li>Repeated calls to the built-in <code>DeleteFrame</code> function must be performed in reverse order to prevent each call from affecting the frame numbers in subsequent calls.  In contrast, the frame numbers passed to <code>DeleteFrames</code> may be in any order.</li>
+			</ul>
+
+			<p>
+			<code>DeleteFrames(<var>clip</var>, ...)</code> essentially is shorthand for <code>DeleteEvery(<var>clip</var>, <var>clip</var>.FrameCount(), ...)</code>. (They are not exactly the same, however;
+			<code>DeleteFrames</code> does not affect the frame-rate.)
+			</p>
+		</div>
+	</div>
+</div><!-- DeleteFrames -->
+
+
+<div id="InterleaveEvery">
+	<h2>InterleaveEvery</h2>
+	<div class="subBody">
+		<h3 id="InterleaveEvery_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+InterleaveEvery(clip <var>baseClip</var>, clip <var>shimClip</var>,
+                int <var>period</var> [, int <var>offset1</var> [, int <var>offset2</var> [, ...]]])
+</pre>
+		</div>
+
+		<h3 id="InterleaveEvery_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td>
+						<code><var>baseClip</var></code><br />
+						<code><var>shimClip</var></code>
+					</td>
+					<td>
+						Frames from <var>shimClip</var> are inserted into <var>baseClip</var>.  Both clips must have the same width, height, and colorspace properties.
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code><var>period</var></code></td>
+					<td>
+						The <em>output</em> interval length, in frames.  Must be &gt;&nbsp;0.
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code><var>offset1</var> [, ...]</code></td>
+					<td>
+						The <em>destination</em> offsets to place frames from <var>shimClip</var>. (See <a href="#InterleaveEvery_usage">Usage</a>.) Each offset must be in the range [0,&nbsp;<var>period</var>).
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 id="InterleaveEvery_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			<code>InterleaveEvery</code> inserts frames at regular intervals from <var>shimClip</var> into <var>baseClip</var> at the specified offsets.
+			For example:
+			</p>
+
+			<table border="1" cellpadding="5" cellspacing="0" class="example">
+				<tr>
+					<th>clip</th>
+					<th>frames</th>
+				</tr>
+				<tr>
+					<td><var>baseClip</var></td>
+					<td>0 1 2 3 &hellip;</td>
+				</tr>
+				<tr>
+					<td><var>shimClip</var></td>
+					<td><strong>a b c d</strong> &hellip;</td>
+				</tr>
+				<tr>
+					<td><code>InterleaveEvery(<var>baseClip</var>, <var>shimClip</var>, 5, 0)</code></td>
+					<td><strong>a</strong> 0 1 2 3 <strong>b</strong> 4 5 6 7 <strong>c</strong> 8 9 10 11 <strong>d</strong> &hellip;</td>
+				</tr>
+				<tr>
+					<td><code>InterleaveEvery(<var>baseClip</var>, <var>shimClip</var>, 5, 0, 1)</code></td>
+					<td><strong>a b</strong> 0 1 2 <strong>c d</strong> 3 4 5 <strong>e f</strong> 6 7 8 <strong>g h</strong> &hellip;</td>
+				</tr>
+			</table>
+
+			<p>
+			<code>InterleaveEvery</code> continues until there are no more frames in <var>baseClip</var>:
+			</p>
+
+			<table border="1" cellpadding="5" cellspacing="0" class="example">
+				<tr>
+					<th>clip</th>
+					<th>frames</th>
+				</tr>
+				<tr>
+					<td><var>baseClip</var></td>
+					<td>0 1 2 3 4 5 6</td>
+				</tr>
+				<tr>
+					<td><var>shimClip</var></td>
+					<td><strong>a b c d</strong> &hellip;</td>
+				</tr>
+				<tr>
+					<td><code>InterleaveEvery(<var>baseClip</var>, <var>shimClip</var>, 5, 0)</code></td>
+					<td><strong>a</strong> 0 1 2 3 <strong>b</strong> 4 5 6</td>
+				</tr>
+			</table>
+
+			<p>
+			If <var>shimClip</var> does not have enough frames to insert into <var>baseClip</var>, the
+			last frame of <var>shimClip</var> will be repeated:
+			</p>
+
+			<table border="1" cellpadding="5" cellspacing="0" class="example">
+				<tr>
+					<th>clip</th>
+					<th>frames</th>
+				</tr>
+				<tr>
+					<td><var>baseClip</var></td>
+					<td>0 1 2 3 &hellip;</td>
+				</tr>
+				<tr>
+					<td><var>shimClip</var></td>
+					<td><strong>a b</strong></td>
+				</tr>
+				<tr>
+					<td><code>InterleaveEvery(<var>baseClip</var>, <var>shimClip</var>, 5, 0)</code></td>
+					<td><strong>a</strong> 0 1 2 3 <strong>b</strong> 4 5 6 7 <strong>b</strong> 8 9 10 11 <strong>b</strong> &hellip;</td>
+				</tr>
+			</table>
+
+			<p>
+			Offset order determines where particular frames from <var>shimClip</var> are inserted:
+			</p>
+
+			<table border="1" cellpadding="5" cellspacing="0" class="example">
+				<tr>
+					<th>clip</th>
+					<th>frames</th>
+				</tr>
+				<tr>
+					<td><var>baseClip</var></td>
+					<td>0 1 2 3 &hellip;</td>
+				</tr>
+				<tr>
+					<td><var>shimClip</var></td>
+					<td><strong>a b c d</strong> &hellip;</td>
+				</tr>
+				<tr>
+					<td><code>InterleaveEvery(<var>baseClip</var>, <var>shimClip</var>, 5, 1, 0)</code></td>
+					<td><strong>b a</strong> 0 1 2 <strong>d c</strong> 3 4 5 <strong>f e</strong> 6 7 8 <strong>h g</strong> &hellip;</td>
+				</tr>
+			</table>
+
+			<p>
+			<code>InterleaveEvery</code> increases the frame-rate proportionately to preserve the total duration of <var>baseClip</var>. For example, <code>InterleaveEvery(<var>baseClip</var>, <var>shimClip</var>, 5, 0, 1)</code> will return a clip with a frame-rate that is five-thirds of <var>baseClip</var>'s.
+			</p>
+
+			<p>
+			<strong>The output clip uses the unaltered audio track of <var>baseClip</var>.</strong>
+			</p>
+
+			<p>
+			Note that the <var>period</var> and <var>offset</var> parameters specify the desired periodicity of the <em>output</em> clip, not of the base clip.
+			This syntax is designed to ease interoperability with <code>SelectEvery</code> and <code>DeleteEvery</code>.
+			The same arguments used to extract frames with <code>SelectEvery</code>/<code>DeleteEvery</code> can be used to put them back with <code>InterleaveEvery</code>.
+			</p>
+			<p>
+			For example, to invert the first two frames of every group of five, we could use:
+			</p>
+<pre class="example">
+src = AVISource( ... )
+
+# pull out the frames we want
+subClip = src.SelectEvery(5, 0, 1)
+src = src.DeleteEvery(5, 0, 1)
+
+# invert subClip
+subClip = subClip.Levels(0, 1.0, 255, 255, 0)
+
+# inject the frames back in
+src.InterleaveEvery(subClip, 5, 0, 1)
+</pre>
+			<p>
+			My <code>JDL_SimpleApplyEvery</code> function (part of <kbd><a href="http://www.avisynth.org/stickboy/jdl-range.avsi">jdl-range.avsi</a></kbd>) automates the above.
+			</p>
+		</div>
+	</div>
+</div><!-- InterleaveEvery -->
+
+
+<div id="RepeatEveryFrame">
+	<h2>RepeatEveryFrame</h2>
+	<div class="subBody">
+		<h3 id="RepeatEveryFrame_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+RepeatEveryFrame(clip <var>c</var>, int <var>count</var>)
+</pre>
+		</div>
+
+		<h3 id="RepeatEveryFrame_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>count</var></code></td>
+					<td>
+						The number of times to repeat each frame.
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</div><!-- RepeatEveryFrame -->
+
+
+<div id="LengthenClip">
+	<h2>LengthenClip</h2>
+	<div class="subBody">
+		<h3 id="LengthenClip_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+LengthenClip(clip <var>c</var>, int <var>minLength</var>, bool &quot;<var>copy</var>&quot;, int &quot;<var>color</var>&quot;)
+</pre>
+		</div>
+
+		<h3 id="LengthenClip_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>minLength</var></code></td>
+					<td>
+						The minimum length desired for the clip.
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code>&quot;<var>copy</var>&quot;</code></td>
+					<td>
+						Pass true to lengthen the clip by duplicating its last frame.<br />
+						Pass false to lengthen the clip  by appending blank frames to the end.<br />
+						(Default: false)
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code>&quot;<var>color</var>&quot;</code></td>
+					<td>
+						The RGB color to use for appended, blank frames.<br />
+						(Default: $000000 (black))
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 id="LengthenClip_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			If the input clip already meets the minimum length, <code>LengthenClip</code> has no effect.
+			</p>
+
+			<p>
+			(This function doesn't belong with the rest, but it's provided because it's used by <code>ApplyEvery</code>.)
+			</p>
+		</div>
+	</div>
+</div><!-- LengthenClip -->
+
+
+<div id="WhileEval">
+	<h2>WhileEval</h2>
+	<div class="subBody">
+		<h3 id="WhileEval_syntax">Syntax</h3>
+		<div class="subBody">
+<pre>
+WhileEval(string <var>condition</var>, string <var>loopBody</var>)
+</pre>
+		</div>
+
+		<h3 id="WhileEval_params">Parameters</h3>
+		<div class="subBody">
+			<table cellspacing="10">
+				<tr valign="top">
+					<td><code><var>condition</var></code></td>
+					<td>
+						A string representing the looping condition.  The
+						loop continues as long as the string evaluates to
+						true.
+					</td>
+				</tr>
+				<tr valign="top">
+					<td><code><var>loopBody</var></code></td>
+					<td>
+						The body of the loop.  May consist of multiple
+						lines. (See <a href="#WhileEval_usage">Usage</a>.)
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<h3 id="WhileEval_usage">Usage</h3>
+		<div class="subBody">
+			<p>
+			<code>WhileEval</code> provides a very crude, <em>static</em> looping construct.  That is, the loop is processed when the script is initially loaded.
+			</p>
+
+			<p>
+			<code>WhileEval</code> is not very efficient.  A large number of iterations may cause a script to be slow to load; too many iterations may prevent AviSynth from loading the script at all.
+			Although <code>WhileEval</code> should consume fewer resources than recursive looping constructs (AviSynth currently does not optimize tail-recursive calls), <code>ApplyEvery</code>, <code>SelectEvery</code>/<code>DeleteEvery</code>/<code>InterleaveEvery</code>, <code>Animate</code>, or <code>ScriptClip</code>/<code>FrameEvaluate</code> should be considered first when possible.
+			</p>
+
+			<p>
+			The example below is yet another way to delete the 0th frame of every 100. (Again, for this specific task, using <code>DeleteEvery</code> would be better.)
+			</p>
+
+<pre class="example">
+c = AVISource( ... )
+
+i = c.FrameCount() - 1
+
+# this is NOT a no-op; this rounds i down to the next highest multiple
+# of 100
+i = i / 100 * 100
+WhileEval(&quot;i &gt;= 0&quot;,
+\         &quot;c = c.DeleteFrame(i)
+           i = i - 100&quot;)
+c
+</pre>
+		</div>
+	</div>
+</div><!-- WhileEval -->
+
+
+<h2>Revision History</h2>
+<div id="historylist">
+<ul>
+	<li>
+		0.3.1
+		<ul>
+			<li>
+				 Fixed(?) some off-by-one errors in InterleaveEvery.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.3.0
+		<ul>
+			<li>
+				 Added <code>RepeatEveryFrame</code>.
+			</li>
+			<li>
+				 Fixed some integer overflow cases.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.2.3
+		<ul>
+			<li>
+				 Oops, 0.2.2 accidentally undid the changes from 0.2.1.  Fixed.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.2.2
+		<ul>
+			<li>
+				 Added <code>WhileEval</code>.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.2.1
+		<ul>
+			<li>
+				 Minor adjustments to handling of 0-frame clip inputs.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.2.0
+		<ul>
+			<li>
+				Merged with my DeleteEvery/DeleteFrames plug-in.
+			</li>
+			<li>
+				Added <code>InterleaveEvery</code>.
+			</li>
+			<li>
+				Added documentation for <code>LengthenClip</code>.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.1.0
+		<ul>
+			<li>
+				Initial release.
+			</li>
+		</ul>
+	</li>
+</ul>
+</div><!-- historylist -->
+
+</div><!-- content -->
+
+<div id="footer">
+<p>
+Copyright &copy; 2004 James D. Lin
+</p>
+</div>
+
+</body>
+</html>

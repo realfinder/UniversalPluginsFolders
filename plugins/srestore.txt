@@ -1,0 +1,134 @@
+sestore v2.7e   - modified version by Gavino to fix memory leak problem  (Thanks)
+                - derived from srestore 2.7c by MOmonster
+
+
+---------------
+basic
+---------------
+    Use import("srestore.avs") in your script to load the function and use it like in the following examples.
+    You need to load mt_masktools and depending on the settings also some other functions to run srestore.
+
+    Srestore is an AviSynth script function that use the conditional frame evaluation for the output calculation.
+    Generally it was written to undo norm-conversions with blends, but the last version can be used for all
+    decimation ratios between 1 and 5 (input-framerate/output-framerate).
+	
+        needed plugins: - mt_masktools v2.0     (allways)
+                        - TIVTC v1.04 or higher     (only for cache>0, not default)
+                        - RemoveGrain   (only for double-blend-removal, not default)
+                        - Average       (only for double-blend-removal, not default)
+
+
+----------------
+srestore
+----------------
+	
+    --------
+    Usage
+    --------
+    code examples:
+
+        bobbed (or progressive) source
+
+        srestore()
+
+
+        ------
+        or:
+
+        ord = last.getparity() ? 1 : 0
+
+        leakkernelbob(ord,4,true,true)
+
+        srestore(dclip=last.crop(8,16,-8,-24))
+
+
+        ------
+        or:
+
+        d = last.bob(-0.2,0.6).reduceflicker(strength=1)
+
+        tdeint(mode=1)				                		#or for example yadif(mode=1)
+
+        srestore(mode=4,dclip=d)
+
+
+    parameters:
+
+        srestore(clip source, float "frate", "omode", float "speed", int "mode", float "thresh", int "cache", clip "dclip")
+        
+		frate
+            You don't need to set the decimation parameters for the norm conversions restoring Pal_to_NTSC
+            (50->23.976 or 25->11.988) and NTSC_to_Pal (59.94->25 or 29.97->12.5), but for some seldom other
+            blend conversion (for example 29.97 back to 23.976 or 50 to 25 - DEFT).
+            Use frate to set the wanted output-framerate. If source-framerate/frate >5 or <1 the output-framerate
+            will be the same as the input-framerate. This can be useful if you want to have only the dup functionality
+            of srestore.
+
+        omode
+            Srestore can be used as blend-decimation-function, as simple deblend-function and for double-blend-removal
+                1   - deblend-mode 1        -> detected blends will be replaced with the previous frame
+                2   - deblend-mode 2        -> next frame is used instead of the detected blend
+                3   - deblend-mode 3        -> detected blends will be replaced with the neighbour that has the smaller difference
+                4   - deblend-mode 4        -> use the neighbour with the smaller blend-possibility
+                5   - deblend-special       -> outputs the one of four frames with the smallest blend-possibility
+                >5  - blend-decimation      -> for all decimation operations
+            The output-modes 1-5 are simple deblending modes, so the framerate will not change.
+            
+            To enable the double-blend-removal you have to set a string for omode. This string decides about the
+            postprocessing mode that is used on the restored frames:
+                pp0 ->  the fastest mode, no postprocessing
+                pp1 ->  use difference masking, higher quality and still good speed
+                pp2 ->  use a special blurring mask on luma and chroma that reduces artefacts
+                pp3 ->  combines postprocessing 1 and 2   -> slowest
+            You can add also your own postprocessing to these modes. Just add your function like this:
+                omode="pp3.blur(1)"		   -> pp3 + blurring
+            If you want to add a function with its own inputstrings use three quotation marks:
+                omode="""pp2.deen("a2d")"""
+
+            Important Note: Also the double-blend-removal does no decimation. It's created only for double-blends
+                            caused by blenddeinterlacing of telecined sources. You have to add an decimation
+                            function for full restoring:
+                                source                          #progressive
+                                srestore(dmode=-4,omode="pp0")
+                                decimate(cycle=5,quality=0)     #recommed decimating
+            Default - 6
+
+        speed
+            With the speed parameter you can set a speed-vs-detail-detection value. If you set speed=25, only one of 25
+            Pixels (5*5) is used for the detection. Higher values result in a lower possibility of low-detail detection.
+            Set a negative speed value for high quality and hd sources. This can improve the detection of small details.
+            Default - 9   (recommed range:  1-25, same for the negative values)
+
+		mode
+            With the mode parameter you can decide if chroma should be used for detection and if srestore have to
+            merge neighboured frames or look for dups to improve output quality:
+                1   - simple output mode, decimation is not touched
+                2   - duping feature, if a frame has a dup-neighbour, that seems to have a higher quality, this one will be outputed
+                3   - like 2 but the duplicates will be merged
+                >3  - mode 2 and 3 combined
+            By setting the compatible negative values, the chroma values will be also used for the detection.
+            Note: The double-blend-removal does not use this parameter (-> only mode 1 or -1).
+            Default - 2
+
+        thresh
+            The detection of srestore is pretty stable, but the threshold is still important to weight the detection influence.
+            Use small values for sources with little temporal artefacts (bobbing effect, aliasing, blocks, noise, ...)
+            and higher values for the opposite case.
+            Default - 22    (recommed:  12-44)
+
+        cache
+            With cache>=0 srestore use the RequestLinear function (TIVTC) to be more compatible with non-linear
+            requesting (codec or other functions). Best way to use srestore is to do a lossless first pass right
+            after calling srestore and do all other filtering and the final encoding in a second pass.
+            If you do not have enough space to do a lossless pass and you cannot avoid non-linear frame requesting
+            and the pattern of the source is pretty unstable set cache around 5-10, but keep in mind that this
+            can increase memory usage.
+            Default - -1
+    			
+        dclip
+            The (d)etection(clip) can be used to improve (deblock, smooth, ...) and speed-up blend and motion detection.
+            The setted clip is only used for the detection and not for output       => do not effect the output quality
+            If you use a high quality deinterlacing on the source you can speed up the detection by using a faster
+            deinterlacing function (third code example) for the detection clip.
+			It`s recommed to crop the bobbed source (deinterlace BEFORE cropping!) to avoid the detection influence of the
+            bobbing borders (second code example).

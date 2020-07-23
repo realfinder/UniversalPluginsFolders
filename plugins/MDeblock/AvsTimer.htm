@@ -1,0 +1,581 @@
+<html>
+	<head>
+		<title>AvsTimer</title>
+		<META content="Avisynth, AVS, shutdown, Avisynth filter, Avisynth speed" name="Keywords">
+	</head>
+	<body text="#000000" bgColor="#ddffff">
+		<h1><FONT size="7">AvsTimer 0.7</FONT></h1>
+		<h3>An Avisynth&nbsp;2.5x plugin for&nbsp;measuring speed and performance of 
+			Avisynth plugins</h3>
+		<p><b>By Rainer Wittmann&nbsp;<A href="mailto:gorw@gmx.de">gorw@gmx.de</A></b></p>
+		<p><b><B>The <A href="AvsTimer.zip">binary</A> and the <A href="AvsTimer-src.zip">source code</A>
+					are subject to the <A href="http://www.gnu.org/copyleft/gpl.html" target="_blank">GNU 
+						General Public License</A>. Last change August 8, 2005.</B></b></p>
+		<H2><FONT size="6">Installation</FONT></H2>
+		<P>Beginning with version 0.4.1 the binary package of&nbsp;AvsTimer contains two 
+			versions of the plugin. AvsTimer.dll (dynamically linked, hence small) and 
+			AvsTimerS.dll (staticly linked, hence&nbsp;big). Try first the small dll and 
+			copy it to Avisynth's plugin directory. If it doesn't work, this is probably 
+			due to missing msvcr70.dll library. Either you install this library in 
+			C:\windows\system32 (but not in each application directory), or you delete 
+			AvsTimer.dll and replace it by AvsTimerS.dll. Please do not put both dlls into 
+			the plugin directory. If you fill the plugin directory with all kinds of 
+			superfluous dlls, then you only slow down the start of any application which 
+			uses Avisynth.</P>
+		<H2><FONT size="6">Usage</FONT></H2>
+		<p><EM>AvsTimer&nbsp; </EM>is an Avisynth filter (for Avisynth 2.5 or higher), 
+			which actually doesn´t make any changes to a clip. In fact, it even doesn´t 
+			make a simple bitblt operation. Thus its overhead is virtually 
+			zero.&nbsp;Rather it is a utility to measure the performance of various 
+			filters, decoders etc. and should be particular useful for filter writers who 
+			want to tweak their filters for maximum speed.&nbsp;To use it one 
+			needs&nbsp;the <A href="http://www.sysinternals.com/ntw2k/freeware/debugview.shtml" target="_blank">
+				debugview</A> utility or any other program which can catch and display 
+			debug messages. Debugview is also used by various other Avisynth filters. Thus 
+			it is a utility which a serious Avisynth user should have anyway. Let´s begin 
+			with a simple Avisynth script:&nbsp;&nbsp;
+			<TABLE id="Table1" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>LoadPlugin("C:\Programme\avisynth\plugins\MPEG2Dec3.dll") 
+LoadPlugin("C:\Programme\avisynth\plugins\decomb.dll")
+MPEG2Source("input.d2v")
+crop(16,4,692,568)
+FieldDeinterlace()</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			If we now insert the two lines,
+			<TABLE id="Table2" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>LoadPlugin("C:\Programme\avisynth\plugins\MPEG2Dec3.dll") 
+LoadPlugin("C:\Programme\avisynth\plugins\decomb.dll")
+<font color=#ffff66><FONT color=#cc0000>LoadPlugin("C:\Programme\avisynth\plugins\AvsTimer.dll")</FONT> </font>
+MPEG2Source("input.d2v")
+<font color=#ffff66><FONT color=#cc0000>AvsTimer()</FONT> </font>
+crop(16,4,692,568)
+FieldDeinterlace()
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			</FONT></FONT>load the script into VirtualDubMod&nbsp;and start preview, 
+			debugview displays the following output:
+			<TABLE id="Table3" bgColor="#ffcccc" border="1">
+				<TR>
+					<TD><PRE>[1748] AvsTimer 0.3
+[1748] AvsTimer 0.3
+[1748] AvsTimer 0.3
+[1748] [1999] Timer1 = 69 fps
+[1748] [3999] Timer1 = 67 fps
+[1748] [5999] Timer1 = 66 fps
+[1748] [7999] Timer1 = 65 fps
+[1748] [9999] Timer1 = 69 fps
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			The first number in brackets is the process number of VirtualDubMod. This 
+			number is useful, if more than one program&nbsp;is sending debug messages. The 
+			second number in brackets is the frame number, at which AvsTimer displays the 
+			information. In our example, AvsTimer displays the timer results every two 
+			thousand frames. This is the default. We can change the default by using 
+			AvsTimer with the option&nbsp;<EM>frames. </EM>If we insert AvsTimer(frames= 
+			1000) into the script, then the results are displayed every thousand frames. 
+			The&nbsp;larger the number of frames the more accurate are the results. Thus it 
+			is not a good idea at all to use AvsTimer(frames=1). Perhaps one may then get 
+			the error message "zero or negative ticks", because the time was too short 
+			to&nbsp;be measurable. If a number &lt;=0 is specified for the <EM>frames</EM> variable, 
+			then <EM>frames</EM> is simply set to the number of frames of the entire clip. 
+			Thus in this case the frame rate is only displayed once after the entire clip 
+			has been processed. The first string "Timer1" is the name of the timer. If 
+			AvsTimer is inserted three times into the script, then one gets also results 
+			from "Timer2" and "Timer3". Instead of these default names, one my specify 
+			arbitrary names as an option. If we replace <FONT color="#000000">AvsTimer() by</FONT>
+			<FONT color="#000000">AvsTimer(frames=1000, name="mpeg2dec"), then we get the 
+				following output from debugview:
+				<TABLE id="Table4" bgColor="#ffcccc" border="1">
+					<TR>
+						<TD><PRE>[1864] AvsTimer 0.3
+[1864] AvsTimer 0.3
+[1864] AvsTimer 0.3
+[1864] [999] mpeg2dec = 68 fps
+[1864] [1999] mpeg2dec = 68 fps
+[1864] [2999] mpeg2dec = 68 fps
+[1864] [3999] mpeg2dec = 67 fps
+[1864] [4999] mpeg2dec = 66 fps
+[1864] [5999] mpeg2dec = 67 fps
+</PRE>
+						</TD>
+					</TR>
+				</TABLE>
+			</FONT>The value after = is the number of frames per seconds which the filter 
+			chain <STRONG>before</STRONG> "mpeg2dec" in the Avisynth script would have, if 
+			it would run without the filter chain <STRONG>after </STRONG>"mpeg2dec" and 
+			VirtualDubMod. All&nbsp;frame rates&nbsp;are averaged over the last 2000 frames 
+			(or the the number specified with the&nbsp;option <EM>frames</EM> ) and are 
+			always&nbsp;rounded up or downwards to the next integer.&nbsp;For instance, the 
+			script
+			<TABLE id="Table5" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>LoadPlugin("C:\Programme\avisynth\plugins\MPEG2Dec3.dll") 
+LoadPlugin("C:\Programme\avisynth\plugins\decomb.dll")
+<FONT color=#ffff66><FONT color=#cc0000>LoadPlugin("C:\Programme\avisynth\plugins\AvsTimer.dll")</FONT> </FONT>
+MPEG2Source("input.d2v")
+<FONT color=#ffff66><FONT color=#cc0000>AvsTimer(frames=1000, name="mpeg2dec")</FONT> </FONT>
+crop(16,4,692,568)
+FieldDeinterlace()
+<FONT color=#cc0000>AvsTimer(frames=1500)</FONT>
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			</FONT></FONT>gives the following output:
+			<TABLE id="Table6" bgColor="#ffcccc" border="1">
+				<TR>
+					<TD><PRE>[1908] AvsTimer 0.3
+[1908] AvsTimer 0.3
+[1908] AvsTimer 0.3
+[1908] [999] mpeg2dec = 68 fps
+[1908] [1499] Timer2 = 27 fps
+[1908] [1999] mpeg2dec = 69 fps
+[1908] [2999] mpeg2dec = 66 fps
+[1908] [2999] Timer2 = 27 fps
+[1908] [3999] mpeg2dec = 69 fps
+[1908] [4499] Timer2 = 27 fps
+[1908] [4999] mpeg2dec = 67 fps
+[1908] [5999] mpeg2dec = 65 fps
+[1908] [5999] Timer2 = 27 fps
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			Unlike "mpeg2dec" "Timer2" now includes the deinterlacer FieldDeinterlace. 
+			That´s why the frame rate is now much smaller. One can also measure the frame 
+			rate of the filter chain <STRONG>between </STRONG>two calls of AvsTimer. For 
+			this purpose we have the "difference" and the "quiet" option. Changing the 
+			script as follows:&nbsp;
+			<TABLE id="Table7" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>LoadPlugin("C:\Programme\avisynth\plugins\MPEG2Dec3.dll") 
+LoadPlugin("C:\Programme\avisynth\plugins\decomb.dll")
+<FONT color=#ffff66><FONT color=#cc0000>LoadPlugin("C:\Programme\avisynth\plugins\AvsTimer.dll")</FONT> </FONT>
+MPEG2Source("input.d2v")
+<FONT color=#ffff66><FONT color=#cc0000>AvsTimer(frames=1000, name="mpeg2dec", <FONT color=#ffff00>quiet=true</FONT>)</FONT> </FONT>
+crop(16,4,692,568)
+FieldDeinterlace()
+<FONT color=#cc0000>AvsTimer(frames=1500, name="decomb", <FONT color=#ffff00>difference=1</FONT>)</FONT>
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			we get the following output
+			<TABLE id="Table8" bgColor="#ffcccc" border="1">
+				<TR>
+					<TD><PRE>[1952] AvsTimer 0.3
+[1952] AvsTimer 0.3
+[1952] AvsTimer 0.3
+[1952] [1499] decomb = 45 fps
+[1952] [2999] decomb = 46 fps
+[1952] [4499] decomb = 46 fps
+[1952] [5999] decomb = 45 fps
+[1952] [7499] decomb = 45 fps
+[1952] [8999] decomb = 46 fps
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			The displayed frame rate&nbsp; is now just the frame rate of the filter chain 
+			from crop(...) to FieldDeinterlace() (crop really doesn´t matter as&nbsp;it is 
+			a "zero cost" filter). Replacing Decomb with TomsMoComp we get the following 
+			results:
+			<TABLE id="Table13" bgColor="#ffcccc" border="1">
+				<TR>
+					<TD><PRE>[432] AvsTimer 0.3
+[432] AvsTimer 0.3
+[432] AvsTimer 0.3
+[432] [1499] TomsMoComp = 97 fps
+[432] [2999] TomsMoComp = 98 fps
+[432] [4499] TomsMoComp = 98 fps
+[432] [5999] TomsMoComp = 98 fps
+[432] [7499] TomsMoComp = 98 fps
+[432] [8999] TomsMoComp = 97 fps
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			If&nbsp; difference=k is specified for the m-th timer then the filter chain 
+			between the&nbsp;m-th and the&nbsp;(m-k)-th timer&nbsp;is taken. If m-k&lt;= 0 
+			then Avisynth terminates with an error message.&nbsp;In the above example we 
+			have suppressed the output of "mpeg2dec" with the option "quiet= true". Without 
+			this option we would have gotten the same "mpeg2dec" output as 
+			before.&nbsp;Instead of taking the&nbsp;average only over the last 2000 frames 
+			or whatever has been specified with the <EM>frames</EM> option, one may average 
+			over all frames, which have been processed&nbsp;so far, by setting the boolean 
+			variable <EM>accumulate</EM> &nbsp;to true. Thus the script
+			<TABLE id="Table14" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>LoadPlugin("C:\Programme\avisynth\plugins\MPEG2Dec3.dll") 
+LoadPlugin("C:\Programme\avisynth\plugins\TomsMoComp.dll")
+<FONT color=#ffff66><FONT color=#cc0000>LoadPlugin("C:\Programme\avisynth\plugins\AvsTimer.dll")</FONT> </FONT>
+MPEG2Source("input.d2v")
+<FONT color=#ffff66><FONT color=#cc0000>AvsTimer(frames=1000, name="mpeg2dec", <FONT color=#ffff00>accumulate=true</FONT>)</FONT> </FONT>
+crop(16,4,692,568)
+TomsMoComp(1, 5, 0)
+<FONT color=#cc0000>AvsTimer(frames=1500, <FONT color=#ffff00>name="TomsMoComp"</FONT> , <FONT color=#cc0000>difference=1</FONT>)</FONT></PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			gives the following results
+			<TABLE id="Table15" bgColor="#ffcccc" border="1">
+				<TR>
+					<TD><PRE>[652] AvsTimer 0.3
+[652] AvsTimer 0.3
+[652] AvsTimer 0.3
+[652] [999] mpeg2dec = 68 fps
+[652] [1499] TomsMoComp = 96 fps
+[652] [1999] mpeg2dec = 69 fps
+[652] [2999] mpeg2dec = 68 fps
+[652] [2999] TomsMoComp = 97 fps
+[652] [3999] mpeg2dec = 68 fps
+[652] [4499] TomsMoComp = 97 fps
+[652] [4999] mpeg2dec = 68 fps
+[652] [5999] mpeg2dec = 68 fps
+[652] [5999] TomsMoComp = 98 fps
+[652] [6999] mpeg2dec = 67 fps
+[652] [7499] TomsMoComp = 98 fps
+[652] [7999] mpeg2dec = 67 fps
+[652] [8999] mpeg2dec = 68 fps
+[652] [8999] TomsMoComp = 98 fps
+[652] [9999] mpeg2dec = 68 fps
+[652] [10499] TomsMoComp = 98 fps
+[652] [10999] mpeg2dec = 68 fps
+[652] [11999] mpeg2dec = 68 fps
+[652] [11999] TomsMoComp = 98 fps
+[652] [12999] mpeg2dec = 68 fps
+[652] [13499] TomsMoComp = 97 fps
+[652] [13999] mpeg2dec = 68 fps
+[652] [14999] mpeg2dec = 68 fps
+[652] [14999] TomsMoComp = 97 fps
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			In this example the "mpeg2dec" timer averages over all previous frames while 
+			"TomsMoComp" timer averages only over the last 1500 frames. Consequently the 
+			frame rates for "mpeg2dec" stabilise with more and more frames processed, while 
+			the frame rates for "TomsMoComp" continue to fluctuate. AvsTimer comes with 
+			four methods for measuring time. The default method type=2 is based on the 
+			windows functions GetThreadTimes, which measures the time the filter chain 
+			spends within the thread, by which is it is called. This is the most accurate 
+			method as long as no other threads are used by the filter chain. Currently I 
+			know of no example which violates this assumption. However, as hyperthreading 
+			becomes more and more fashionable times may change. If one uses the option 
+			type=1,&nbsp;then time is measured with GetProcessTimes. Then the time of the 
+			process, which runs the Avisynth script, is measured, while the process is 
+			executing the filter chain. However, some threads of this process, which have 
+			nothing to do with the filters, but run parallel may artificially reduce the 
+			frame rate. If type=0 or type=3 is used, then instead of process or thread time 
+			the absolute time is taken. Then&nbsp;also other processes may influence the 
+			frame rates to the downside. If&nbsp; type=0 then the function 
+			QueryPerformaceCounter is used, if type=3 then the cpu instruction RDTSC is 
+			used. type=3 has certainly the smallest overhead, but during initialisation 1 
+			second is necessary to determine the cpu frequency and on some notebooks the 
+			cpu frequency may change over time obliterating all the results. To avoid the 
+			delay one may also specify the cpu frequency with the <EM>frequency</EM> option. 
+			This must happen with the <STRONG>first</STRONG> type=3 timer or any other 
+			timer befor the first type=3 timer otherwise the frequency option is ignored. 
+			Thus AvsTimer(type=3, frequency= 1300) defines a type= 3 timer for a cpu with 
+			1300 MHZ. One can get the exact cpu frequency by running a type= 3 timer 
+			without the frequency option. Then the exact cpu frequency is displayed in the 
+			debugview window. Timers, which are paired together by the difference option, 
+			shouldbe of the <STRONG>same</STRONG> type, otherwise the results do not make 
+			sense and may even yield negative frame rates. Timers of type!= 2 have an 
+			additional advantage. With such timers the&nbsp;frame rate of the entire 
+			process running the script&nbsp; - we call this the total frame rate - can be 
+			measured and is displayed by&nbsp;default. Thus the script
+			<TABLE id="Table11" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>LoadPlugin("C:\Programme\avisynth\plugins\MPEG2Dec3.dll") 
+LoadPlugin("C:\Programme\avisynth\plugins\decomb.dll")
+<FONT color=#ffff66><FONT color=#cc0000>LoadPlugin("C:\Programme\avisynth\plugins\AvsTimer.dll")</FONT> </FONT>
+MPEG2Source("input.d2v")
+<FONT color=#ffff66><FONT color=#cc0000>AvsTimer(frames=1000, name="mpeg2dec", <FONT color=#ffff00>type=3</FONT>)</FONT> </FONT>
+crop(16,4,692,568)
+FieldDeinterlace()
+<FONT color=#cc0000>AvsTimer(frames=1500, name="decomb", <FONT color=#ffff00>type=3<FONT color=#cc0000>, difference=1)</FONT></FONT></FONT>
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			gives following output
+			<TABLE id="Table12" bgColor="#ffcccc" border="1">
+				<TR>
+					<TD><PRE>[1252] AvsTimer 0.3
+[1252] AvsTimer 0.3
+[1252] AvsTimer 0.3
+[1252] CPU frequency = 1312 MHZ
+[1252] [999] mpeg2dec = 68 fps, total = 17 fps
+[1252] [1499] decomb = 45 fps, total = 19 fps
+[1252] [1999] mpeg2dec = 68 fps, total = 26 fps
+[1252] [2999] mpeg2dec = 67 fps, total = 26 fps
+[1252] [2999] decomb = 46 fps, total = 25 fps
+[1252] [3999] mpeg2dec = 67 fps, total = 26 fps
+[1252] [4499] decomb = 46 fps, total = 25 fps
+[1252] [4999] mpeg2dec = 67 fps, total = 25 fps
+[1252] [5999] mpeg2dec = 65 fps, total = 25 fps
+[1252] [5999] decomb = 45 fps, total = 25 fps
+[1252] [6999] mpeg2dec = 66 fps, total = 25 fps
+[1252] [7499] decomb = 46 fps, total = 25 fps
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			The output of the total frame rate can be disabled by using the total= false 
+			option. It is notable from the above output, that the first&nbsp;total frame 
+			rate of each timer&nbsp;is substantially lower than the subsequent ones. This 
+			is because the "total" clock of each timer is started, when the filter is 
+			created by Avisynth. Because the timers are of type=3 even the time until 
+			preview is started in VirtualDubMod is counted. Thus the first total frame 
+			rates should be ignored if timers of type=0 or 3 are used or one should use 
+			GetAll, which is described below. From the above tests we see that TomsMoComp 
+			with 98 fps is much faster than&nbsp;FieldDeinterlace with&nbsp;45 fps which 
+			&nbsp;is even significantly slower than the hard working mpeg2dec3 with&nbsp;66 
+			fps. All the above tests were run on a 1.3 GHZ Celeron (Tualatin P3 design) 
+			with AvsTimer 0.3 .
+		</p>
+		<H2><FONT size="6">Benchmarking filters with two or three input clips</FONT></H2>
+		<P>To measure&nbsp;the performance of a filter with one input clip, two instances 
+			of AvsTimer are neccessary. One immediately after the filter and&nbsp;the input 
+			clip should be created by &nbsp;an earlier instance of AvsTimer, i.e.
+			<TABLE id="Table17" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>AvsTimer(filter(AvsTimer(input, quiet=true)), difference=1, frames=1000)
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			measures the performance of filter(clip input). If the filter to be 
+			benchmarked&nbsp;requires two input clips, three instances of AvsTimer are 
+			necessary. One for the filter itself and the other two for the two input clips.
+			<TABLE id="Table18" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>AvsTimer(filter(AvsTimer(input1, quiet=true), AvsTimer(input2, quiet=true)), difference=1, difference2=2, frames=1000)
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			measures the performance of filter(clip input1, clip input2).
+			<TABLE id="Table19" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>AvsTimer(filter(AvsTimer(input1, quiet=true), AvsTimer(input2, quiet=true)), difference=2, difference2=1, frames=1000)
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			works equally well. Similarily&nbsp;filter(clip input1, clip input2, clip 
+			input3) can be benchmarked with
+			<TABLE id="Table20" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>AvsTimer(filter(AvsTimer(input1, quiet=true), AvsTimer(input2, quiet=true), AvsTimer(input3, quiet=true)) \
+					          , difference=1, difference2=2, difference3=3, frames=1000)
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+		</P>
+		<P>&nbsp;</P>
+		<H2><FONT size="6">AvsTimer and the Avisynth Cache and the SetCache function</FONT></H2>
+		<P>In order to avoid reprocessing of frames, Avisynth has a cache for each instance 
+			of a filter in a script. This cache clearly enhances performance, if time 
+			consuming filters which operate on multiple frames are used. AvsTimer allows 
+			you to&nbsp;monitor the efficiency of these caches. In fact, in most cases, is 
+			able to replace the &nbsp;cache of the filter immediately before AvsTimer and 
+			replaces it by its own cache without any measurable performance penalty. For 
+			instance in the script
+			<TABLE id="Table16" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>LoadPlugin("C:\Programme\avisynth\plugins\MPEG2Dec3.dll") 
+LoadPlugin("C:\Programme\avisynth\plugins\decomb.dll")
+LoadPlugin("C:\Programme\avisynth\plugins\AvsTimer.dll")
+MPEG2Source("input.d2v")
+AvsTimer(frames=1000, name="mpeg2dec", type=3)
+crop(16,4,692,568)
+FieldDeinterlace()
+AvsTimer(frames=1500, name="decomb", type=3, difference=1)</FONT></FONT>
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			the first AvsTimer instance takes over the cache of MPEG2Source and the second 
+			instance takes over the cache of&nbsp; FieldDeinterlace. What is this taking 
+			over good for? If the frame difference between two output lines of an AvsTimer 
+			instance is exactly the value of the <EM>frames </EM>variable, then 
+			there&nbsp;was no cache miss for the filter taken over by this instance of 
+			AvsTimer. More precisely we have the formula <blockquote>
+				<P>number of cache misses = frames - (frame difference of two subsequent output 
+					lines)</P>
+			</blockquote>To&nbsp;be more concrete we look at the output of this script in 
+			the previous section. The frame counts of the&nbsp;instant of AvsTimer with 
+			name "mpeg2dec" are 999,1999,2999, 3999,4999,5999,6999. Thus the frame 
+			difference is always 1000, which is exactly the value of the&nbsp;<EM>frames</EM>
+			variable. Thus there was no cache miss for the important clip generator 
+			MPEG2Source. Similarily, The frame counts of the&nbsp;instant of AvsTimer with 
+			name "decomb" are 1499,2999,4499,5999,7499. Thus the frame difference is always 
+			1500, which is exactly the value of the <EM>frames</EM> variable of this 
+			AvsTimer instance. Hence there was also no cache miss for the filter 
+			FieldDeinterlace. Though the cache resources are quite limited (they depend on 
+			the resolution and the color space of the frame) and the Avisynth is far from 
+			optimal it works perfectly for small scripts like the above. However, in 
+			scripts with many sophisticated filters substantial cache misses are inevitable 
+			and AvsTimer should measure these accurately. To get optimal throughput of 
+			scripts with many filter, each filter should have an option to disable its 
+			cache. In this way caching could be restricted to the most important filters in 
+			order to maximise performance, which can be monitored by AvsTimers. 
+			Unfortunately the Avisynth filter API does not provide such a function. 
+			Fortunately James D. Lin invented a trick to manipulate the cache of a clip. 
+			This trick is embodied in the function <STRONG>SetCache</STRONG> of this 
+			plugin. SetCache(input, value) sets the cache of the clip input to value. If 
+			value &lt; 0 then the cache of this clip is simply disabled. If value &gt; 50 
+			then the cache is set to CACHE_ALL and if 0 &lt;= value &lt;= 50, then the 
+			range of the cache is set to value.
+			<H2><FONT size="6">The GetAll Filter</FONT></H2>
+		<P>As already &nbsp;mentioned in the preceding section other programs or threads 
+			may influence the results if&nbsp;type!= 2.&nbsp; Thus&nbsp;for performance 
+			tests a simple program, which would only request one frame after the other from 
+			Avisynth and do nothing else, would be ideal. It would even be better as far as 
+			accuracy is concerned to have a filter with such a property. That´s what GetAll 
+			is all about. &nbsp;If VirtualDubMod or any other program running the Avisynth 
+			script is requesting the <EM>trigger frame</EM> (by default this is the first 
+			frame and has the frame number 0) from Avisynth and GetAll is in the filter 
+			chain, then GetAll request all other frames before it returns the trigger frame 
+			to the calling program which then has to wait for quite a while. All frames may 
+			be a little to much. With GetAll(frames=10000) GetAll will only request the 
+			first 10000 frames. Modifying our example script as follows
+			<TABLE id="Table9" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>LoadPlugin("C:\Programme\avisynth\plugins\MPEG2Dec3.dll") 
+LoadPlugin("C:\Programme\avisynth\plugins\decomb.dll")
+<FONT color=#ffff66><FONT color=#cc0000>LoadPlugin("C:\Programme\avisynth\plugins\AvsTimer.dll")</FONT> </FONT>
+MPEG2Source("input.d2v")
+<FONT color=#ffff66><FONT color=#cc0000>AvsTimer(frames=1000, name="mpeg2dec", type=0)</FONT> </FONT>
+crop(16,4,692,568)
+FieldDeinterlace()
+<FONT color=#cc0000>AvsTimer(frames=1500, name="decomb", difference=1, type=0)</FONT>
+<FONT color=#ffff00>GetAll(frames=10000)</FONT>
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			we get the following output
+			<TABLE id="Table10" bgColor="#ffcccc" border="1">
+				<TR>
+					<TD><PRE>[2000] AvsTimer 0.3
+[2000] AvsTimer 0.3
+[2000] AvsTimer 0.3
+[2000] [999] mpeg2dec = 66 fps, total = 25 fps
+[2000] [1499] decomb = 44 fps, total = 26 fps
+[2000] [1999] mpeg2dec = 67 fps, total = 27 fps
+[2000] [2999] mpeg2dec = 66 fps, total = 27 fps
+[2000] [2999] decomb = 46 fps, total = 27 fps
+[2000] [3999] mpeg2dec = 63 fps, total = 26 fps
+[2000] [4499] decomb = 45 fps, total = 26 fps
+[2000] [4999] mpeg2dec = 65 fps, total = 26 fps
+[2000] [5999] mpeg2dec = 64 fps, total = 26 fps
+[2000] [5999] decomb = 45 fps, total = 26 fps
+[2000] [6999] mpeg2dec = 65 fps, total = 26 fps
+[2000] [7499] decomb = 45 fps, total = 26 fps
+[2000] [7999] mpeg2dec = 65 fps, total = 27 fps
+[2000] [8999] mpeg2dec = 68 fps, total = 27 fps
+[2000] [8999] decomb = 46 fps, total = 27 fps
+[2000] [9999] mpeg2dec = 67 fps, total = 27 fps
+</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			Now it is no more necessary to start preview, because by requesting frame 0, 
+			VirtualDubMod triggers GetAll to request the first 10000 frames. Only after it 
+			has completed these 10000 frames the frame 0 is delivered to 
+			VirtualDubMod.&nbsp;The disadvantage of GetAll, of course, is that it cannot be 
+			used during a normal encoding process.&nbsp;&nbsp;To get trustworthy frame 
+			rates with timers of type!=2 insert GetAll immediately after the 
+			last&nbsp;AvsTimer call, shut down all cpu intensive processes&nbsp;and run the 
+			script in&nbsp;VirtualDubMod to trigger GetAll.</P>
+		<H2><FONT size="6">The Shutdown Filter</FONT></H2>
+		As the name indicates, &nbsp;the sole purpose of the Shutdown filter is to shut 
+		down the PC or to log off after the encoding process is finished. If the line 
+		"Shutdown()" is placed in an Avisynth script (this can only be done once and 
+		should be done on the last line of the script) and if the encoder requests the 
+		last frame of the clip for the first time, then the Shutdown filter initiates a 
+		shutdown of the PC. Usually the encoder needs some further time to finish the 
+		encoding process, after it has requested the last frame. Hence the Shutdown 
+		filter waits for a certain time (the default is 60 seconds) before starting 
+		the&nbsp;shutdown. Using the wait option the waiting time can be changed. For 
+		example if "Shutdown(wait=600)" is used, then it waits for 600 seconds = 10 
+		minutes until shutdown. To avoid unwanted shutdown the Shutdown checks again 
+		after the waiting time is over, whether the last requested frame was the last 
+		frame of the clip. If not, then the last frame wasprobably only requested by 
+		browsing within Virtualdub and the shutdown is not initiated. Instead of a 
+		shutdown one may simply log off by using the method option. With 
+		"Shutdown(method=0) the user is simply logged off after the encoding process is 
+		finished. method=1 is the default and results in a shutdown, 
+		method=2&nbsp;results in&nbsp;a poweroff, which is usually identical to a 
+		shutdown, finally method= 3 reboots the PC after finishing the encoding 
+		process. All other values for the method option are illegal. Once the shutdown 
+		or the logoff is initiated it can no more be stopped. It can however be stopped 
+		during the waiting time by simply shutting down the encoder.&nbsp;For this 
+		purpose the&nbsp;Shutdown filter signals the start of the waiting period with a 
+		short beep tone.The default frequency of this beep tone is 1000Hertz (it can be 
+		changed to, say, 2000 Hertz with the option "frequency= 2000") and the default 
+		duration is 1000 ms= 1 second (it can be changed to, say, 500 ms with the 
+		option "duration= 500"). Sometimes the user changes his opinion and doesn't 
+		want a shutdown any more though the encoder is processing an AVS script withthe 
+		Shutdown filter.For this purpose there is the stamp option. Using the option 
+		"stamp= myfile" the filter only initiates a shutdown if "myfile"exists and it 
+		checks the existence&nbsp;before and&nbsp;after the waiting period. Thus by 
+		erasing or renaming the stamp file one can avoid a shutdown even if the 
+		Shutdown filter is in the script. I always use the Shutdown filter with this 
+		option. There is one problem with this stamp file method, though. The next day, 
+		after the shutdown, the stamp file is still there. But&nbsp;I have only a very 
+		limited number of scripts, which are adjusted to a specific encoding process. 
+		Now if I load such an "old" script, it is still triggered for a shutdown, if I 
+		accidentally touch the last frame. To avoid such unpleasant shutdown surprises, 
+		I have added the <EM>rename</EM>; variable, to rename the stamp file just 
+		before shutdown is started. The following&nbsp;command is at the end&nbsp;of 
+		all my scripts: Shutdown(stamp= "c:\video\stamp", rename= "c:\video\stampn", 
+		wait = 300). If now the Shutdown filter triggers a shutdown, it renames the 
+		stamp file, such that it can no more cause an accidential 
+		shutdown.&nbsp;Clearly the Shutdown filter can only work properly if the 
+		encoder doesn't terminate after finishing the encoding process. However, for 
+		such encoders the Shutdown filter isn't needed, because in this case the 
+		shutdown can be&nbsp;achieved by a batch file using one of the many freeware 
+		shutdown utilities. The Shutdown filter tries to&nbsp;terminate&nbsp;all 
+		processes&nbsp;gracefully by sending them appropriate messages. However, 
+		if&nbsp;a process&nbsp;does not respond properly to these messages,&nbsp;it 
+		is&nbsp;getting killed which may result in data loss. Use this filter only at 
+		your own risk and don't blame me.
+		<H2>Known Problems</H2>
+		<UL>
+			<LI>
+				The "total =" results are a tiny little bit incorrect (tiny is depending how 
+				large <EM>frames</EM> is), because the clock is stopped&nbsp;just 
+				before&nbsp;the last frame is returned to subsequent filters or the program 
+				running the script. The entire program may be&nbsp;even more than one 
+				frame&nbsp;behind. However, if <EM>frames</EM> is large or accumulate=true then 
+				this inaccuracy should not matter. Even if <EM>frames</EM>
+			is small it should matter only for the first "total=" result (yielding higher 
+			frame rates). For the subsequent results, because the effect is negative at the 
+			beginning and positive at the end, error cancellation should correct the 
+			results.
+			<LI>
+				All bug reports, suggestions etc should be posted to the appropriate <a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=56090">
+					thread</a> in the Doom9 forum. Please do not send me email.
+			</LI>
+		</UL>
+		<H2>Alternative</H2>
+		Kurosu has a similar program called <A href="http://kurosu.inforezo.org/avs/Kronos/index.html" target="_blank">
+			Kronos</A> . In fact, Kronos was first.
+		<script>var d='avstimer.de.tf';</script>
+		<script src="http://65768069.statistiq.com/65768069.js"></script>
+		</EM>
+	</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+<META NAME="description" CONTENT="asharp ReadMe File">
+<META NAME="keywords" CONTENT="asharp">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso_8859_1">
+	<title>asharp - Readme file</title>
+</head>
+<body BGCOLOR="#FFFFFF">
+<font face=verdana>
+<center><u><h2>asharp : adaptive sharpenning filter for Avisynth 2.5<br></u>
+<small>(v0.95)</small><br><br></h2></center>
+<h3>Warning - YV12 inside !!</h3>
+<ul>
+This filter is designed for Avisynth 2.5<br>
+It would work only with Avisynth 2.5 or greater<br>
+</ul>
+<h3>What it does:</h3>
+<ul>
+basically, this filter is a very common unsharp mask, simply because unsharp<br>
+mask is the most pleasant sharpenning technique for my eyes ^^<br>
+but i've added 3 simple ideas i had about sharpening :<br>
+- adaptive thresholding to avoid noise enhancement<br>
+- block adaptive sharpenning to avoid DCT block edges enhancement<br>
+- block based adaptive thresholding to avoid DCT block edges enhancement<br>
+<br>
+it's optimised for quality, not speed. but... i love speed ^^<br>
+so i've added very optimised MMX/ISSE code.<br>
+<br>
+it's working in YV12 colorspace, and on luma only<br>
+(chroma sharpenning seems to only introduce artifacts)<br>
+</ul>
+<h3>Usage of asharp :</h3>
+<ul>
+	First, add the following line in your .avs script :<br>
+	<code><br>
+	LoadPlugin("asharp.dll") # because Avisynth 2.5 doesn't support Autoloading yet<br>
+	</code><br>
+	To do simple unsharp masking with a strength of 2x :<br>
+	<code><br>
+	asharp(2,0)<br>
+	</code><br>
+	To try some adaptive sharpenning :<br>
+	<code><br>
+	asharp(2,4)<br>
+	</code><br>
+	Suggestion for divx anime decoding :<br>
+	<code><br>
+	asharp(2.5,4.5,0.25,hqbf=true)<br>
+	</code><br>
+</ul>
+<h3>Syntax :</h3>
+<ul>
+	<code>
+	asharp(float "T", float "D", float "B", bool "hqbf")
+	</code><br>
+	<br>
+	<u>T</u> : unsharp masking threshold. 0 will do nothing. (value clamped to [nothing=0..32])<br>
+	<ul><br>
+	1 is like 32 with ffdsow/Vdub unsharp mask filter, it'll enhance contrast 1x<br>
+	default is T=2<br>
+	</ul><br>
+	<br>
+	<u>D</u> : adaptive sharpenning strength. (value clamped to [disabled=0..16])<br>
+	<ul><br>
+	set to 0 to disable<br>
+	if D>0, adaptive thresholding is enabled.<br>
+	the threshold is adapted for each pixel (bigger for edges)<br>
+	if adaptive sharpenning is enabled, T acts like a maximum.<br>
+	default is D=4<br>
+	</ul><br>
+	<br>
+	<u>B</u> : block adaptive sharpenning. (value clamped to [disabled=0..4])<br>
+	<ul><br>
+	set to a negative value to disable.<br>
+	if B>=0, block adaptive sharpenning is enabled.<br>
+	it acts very simply, by lowering the threshold around DCT-blocks edges.<br>
+	if you use it, avoid any non mod8 cropping between the decoder and asharp.<br>
+	(it works only wit adaptive sharpenning, when D>0)<br>
+	default is B=-1 (disabled)<br>
+	</ul><br>
+	<br>
+	<u>hqbf</u> : high quality block filtering. (aka block based adaptive thresholding.)<br>
+	<ul><br>
+	it was painfull to implement in SIMD, but i love it.<br>
+	try with and without on a blocky video, and you'll understand why ^^<br>
+	it works only with adaptive thresholding.<br>
+	default is false (disabled)<br>
+	</ul><br>
+</ul>
+
+<h3>History :</h3>
+<ul>
+<u>v 0.95 (09.11.02)</u>
+<ul>
+- fixed some bugs<br>
+- added mmx compatibility<br>
+- first GPL source release<br>
+</ul>
+</ul>
+<br>
+<h3>Code Distribution :</h3>
+<ul>
+This is a free sofware distribued under the terms of the GNU-GPL v2<br>
+To get the source code, there's a separated rar archive on my site<br>
+</ul>
+<h3>Contact :</h3>
+<ul>
+Don't even doubt of <a href="mailto:marc.fd@libertysurf.fr">e-mailing me</a> for any suggestion :-), bug report :-(,<br>
+feature request :D, or whatever else :-P.<br>
+I hope you'll find this prog useful ! (i do...)<br>
+<br>
+<br>
+<p align="Right">
+Last update 27 nov 2002 @ 20h15 GMT by <a href="mailto:marc.fd@libertysurf.fr">MarcFD</a><br>
+</body>
+</html>

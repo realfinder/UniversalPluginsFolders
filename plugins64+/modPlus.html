@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>modPlus avisynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>modPlus </h1></font>
+	 
+	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
+	  <BR>Date 25 Aug 2017	  
+	  <p>This plugin has 11 functions, which modify values of color components  to attenuate noise, blur or equalize input. These functions were originally coded as individual plugins for avisynth. Due to recent changes in avisynth+ capabilities, these functions were put together, modified and updated.
+		All these functions are thread safe. (MT_NICE_FILTER )	  
+	  </p>
+		
+	  <P> The functions in this plugin are:
+	  <br><BR>1.
+	  <a href="GBlur.html">GBlur</a> : Introduces Gaussian Blur on image.
+	  <br><BR>2.
+	  <a href="Fan.html">Fan</a> : A  filter to attenuate regular frequency noise or (white or black) streaks ( corresponds to Fan Filter plugin of avisynth). 
+	  <br><BR>3.
+	  <a href="MBlur.html">MBlur</a> : Introduces motion or focus blur on image.(F2QBlur of FQPlus operates in frequency domain while this is in 2D image domain). Corresponds to HBlur plugin of avisynth
+		<br><BR>4.
+		<a href="Median.html">Median</a> : In a grid size of which adapts, noise is attenuated.( see AdaptiveMedian of avisynth plugins).
+		  
+		<br><br>5.
+		<a href="minvar.html">minvar </a>: By minimising variance noise is attenuated. ( corresponds to DeNoise plugin of avisynth)
+		<br><br>6.
+		<a href="Morph.html">Morph </a>: Using morphology princeples image is 'dilate' or 'erode' or 'open' or 'close' or 'median' filtered ( corresponds to morph function of colorit plugin of avisynth 2.5. Now deprecated)
+		<br><br>7.
+		<a href="Neural.html">Neural</a> : Given a target image derived from input, learns to process to get similar results.( corresponds to NeuralNetLN of NeuralNet  plugin of avisynth). 
+		<br><br>8.		
+		<a href="SaltPepper.html">SaltPepper</a>	: Removes Salt and Pepper noise spikes from image. (See DeSaltPepper plugin of avisynth ).
+		<br><br> 9.
+		<a href="SegAmp.html">SegAmp</a>	: Smooths and sharpens image using watershed algorithm for segmentation(See SegmentedAmp plugin of avisynth ).
+		<br><br> 10.
+		<a href="TweakHist.html">TweakHist</a> : Equalizes or matches Histogram. (see HistogramAdjust plugin of avisynth).
+		<br><br>11.
+		<a href="Veed.html">Veed</a> : A gentle filter to remove either green or blue sheen seen in some videos ( corresponds to DeVeed plugin of avisynth).<br> 
+		</p>
+		
+	  All these functions can be used for bit depths 8 to 16 as well as float formats. 
+	  
+<BR>
+
+
+
+<table>
+
+<tr>
+       <td><a href="../index.html">To my index page</a></td>
+	   <td>down load<a href="modPlus.7z">modPlus </a>plugin</td>
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>	
+</body>
+</html>

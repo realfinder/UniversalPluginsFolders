@@ -1,0 +1,82 @@
+<html><head>
+  <title>DeCrawl for AVISynth Readme</title>
+</head>
+
+<body>
+<center>
+<table width="50%" border="0">
+<tr><td>
+<div align="center">
+<h1>DeCrawl for AVISynth version 0.50</h1><br /></div>
+<H3>Purpose</H3>To remove dot crawl, particularly in animated material.<br /><br />
+
+<H3>Method</H3> Perhaps I will explain how comb filters work later, but I am busy modifying this plugin more, so I don't feel like writing this.
+
+<H3>Usage</H3> source.DeCrawl(int ythresht, int ythreshs, int cthresh, int temporal, int spatial, int spatialpasses)<br /><br />
+Default: DeCrawl(7,8,2,50,100,1)<br /><br />
+
+<br /><br />
+
+<H3>Parameter Explanations</H3>
+-ythresht: The 2 temporally surrounding pixels must have a luma value within this threshold.<br /><br />
+-ythreshs: The 2 vertically surrounding pixels must have a luma value within this threshold.<br /><br />
+-cthresh: Chroma threshold. All 3 pixels must have a chroma value within this amount of each other.<br /><br />
+-temporal: Strength for temporal filtering. Set to 0 to disable.<br /><br />
+-spatial: Strength for spatial filtering. Set to 0 to disable.<br /><br />
+-spatialpasses: Number of times to spatially filter, in case the effect is too weak for your source.<br /><br />
+
+<br /><br /><br />
+
+<h3>Temporal filtering</h3>
+Temporal filtering will replace each pixel with 50% of the current pixel (Yc) + 25% of the temporally previous pixel (Yp) + 25% of the next pixel (Yn), if:<br />
+<ul>
+  <li>Yc-Yp <= ythresht</li>
+  <li>Yc-Yn <= ythresht</li>
+  <li>Yp-Yn <= ythresht/8</li>
+  <li>chroma conditions are similar if enabled</li>
+</ul><br /><br /><br />
+
+<h3>Spatial filtering</h3>
+Spatial filtering uses 1/2P(x,y) + 1/8P(x,y-1) + 1/8P(x,y+1) + 1/8P(x-w/376,y) + 1/8P(x+w/376,y), only taking into account the factors that are within the threshold. 
+It does NOT cap those parameters to one threshold away. If a factor is not within the thresfield, the original pixel is substituted. Overall, it's not very destructive
+to most video as long as the threshold isn't set too high. You might want to use this two or three times in a row, but don't filter temporally at all past the first time.
+Note: if a pixel is filtered temporally, it will not be filtered spatially.
+<br /><br />
+
+<br /><br /><br />
+
+<H3>Changelog</H3>
+<ul>
+<li>0.51 - Minor speedup</li>
+<li>0.50 - Major speedup to chroma thresholding</li>
+<li>0.42 - Added spatialpasses</li>
+<li>0.41 - Bitblt chroma, thresholding tweaks, enable more compiler optimizations (note: 0.40+ are compiled w/ SSE)</li>
+<li>0.40 - Chroma for thresholding is now interpolated, chroma thresholding now affects spatial filtering, temporal thresholding slightly improved, defaults changed</li>
+<li>0.32 - slight optimizations, spatial filtering no longer takes precedence over temporal filtering</li>
+<li>0.31 - slight thresholding fix</li>
+<li>0.30 - Spatial filtering is now an adaptive convolution filter. See above...</li>
+<li>0.25 - Added basic 3-line spatial filtering. It doesn't work too well at the moment, though.</li>
+<li>0.20 - Major changes. This won't even seem like the same filter anymore. Don't set ythresh too high, though, ESPECIALLY if you use it on interlaced video.
+It may be used on interlaced video if you are careful.</li>
+<li>0.15 - Fixed a nasty bug (typo) with chroma checking...</li>
+<li>0.14 - I had ydiffthresh and ysamethresh reversed in the readme. Made filter more subtle, but still kicking ass on dot crawl.</li>
+<li>0.13 - Minor MMX optimization. Changed the averaging to average the current pixel and the 2 temporally surrounding pixels, instead of just the 2 surrounding.</li>
+<li>0.12 - HUGE bugfix making crashes quite often...</li>
+<li>0.11 - Added defaults (2,10,2)</li>
+<li>0.10 - Initial release</li>
+</ul>
+
+<br /><br /><br />
+
+<H3>Todo</H3>
+<ul>
+<li>Improve spatial solution</li>
+<li>More assembly optimization</li>
+</ul>
+
+<br /><br />
+
+DeCrawl is copyright (C) 2005-2006 Dan Donovan. It is free to use.
+</td></tr>
+</table>
+</body></html>

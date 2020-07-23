@@ -1,0 +1,54 @@
+the sorathread will prefetch the next 4 frames into buffer by default.
+for example,
+
+ffvideosource(...)
+eedi2()
+sorathread()
+lanczosresize(...)
+
+feed this script to encoder.
+like when encoder ask for frame 10,
+the resizer asker sorathread for frame 10,
+the sorathread will read 10 11 12 13 14 in a standalone thread
+into buffer for later use.
+
+but, when it comes to
+
+ffvideosource(...)
+eedi2()
+sorathread()
+lanczosresize(...)
+selectevery(2)
+
+
+then the encoder will ask for 10 12 14 16 ...
+when the encoder asks for 10,
+sorathread will prefetch 11 12 13 14
+eedi2 runs on frame 11 13 but in fact it's a waste of cpu power.
+so you hope sorathread to prefetch 12 14 16 18 instead of 11 12 13 14.
+it's time for custom prefetch algorithm.
+
+you could write a lua script like this:
+
+function GetNextFrame(n)
+    local nf = n + 2
+    if nf < FrameCount then
+        return nf
+    else
+        return -1;
+    end
+end
+
+save it as c:\1.lua.
+the function name GetNextFrame is fixed,
+and global variable FrameCount is given.
+
+then, the avs script becomes
+
+ffvideosource(...)
+eedi2()
+sorathread(Prefetch="c:\1.lua")
+lanczosresize(...)
+selectevery(2)
+
+the problem solved.

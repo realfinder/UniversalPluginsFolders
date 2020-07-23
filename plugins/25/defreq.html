@@ -1,0 +1,403 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+  <link rel="stylesheet" type="text/css" href="../avisynth.css">
+  <title>DeFreq plugin for AviSynth</title>
+
+
+</head>
+
+<body>
+
+<h1>DeFreq</h1>
+
+<h3>Interference frequency remover </h3>
+
+<p>Plugin for <a href="http://www.avisynth.org">Avisynth
+2.5</a><br>
+
+Version 0.7 - April 28, 2006<br>
+
+Copyright (C)2004-2006 Alexander G. Balakhnin aka Fizick.<br>
+
+<a href="http://avisynth.org.ru">http://avisynth.org.ru</a>
+</p>
+
+<p>DeFreq is a filter that can
+remove some interfering frequencies from video frames.</p>
+
+<p>It can be used for removal of regular vertical, 
+horizontal or inclined stripes from some analog TV captures 
+without any image quality decreasing. </p>
+
+
+<h2>Sample image with filter's work</h2>
+
+<p>Stack vertical:</p>
+
+<p>1 - TV source with interference (cropped); <br>
+
+2 - Defreq v.0.6 <var>show</var> and <var>info</var> mode (2 search windows);<br>
+
+3 - Cleaned output;<br>
+
+4 - Input-output difference.</p>
+
+<p><img src="defreq6.jpg" border="0"></p>
+
+<h2>Technical info</h2>
+
+<p>DeFreq uses Fast Fourier
+Transform method for frequency selecting and removing.</p>
+
+<p>It is a spatial filter, and works as a follows:</p>
+
+<ol>
+  <li>get frequency spectrum by forward FFT transform of frame
+image;</li>
+  <li>search some defined spectrum window (windows) for local
+peak (maximum, extremum, most intense frequency);</li>
+  <li>remove from spectrum a frequency at this sharp peak and
+some similar by amplitude neighbors in search window; </li>
+  <li>optional remove highest frequencies by low pass Butterworth
+filter (for blurring, smoothing);</li>
+  <li>get output frame by inverse FFT transform of cleaned
+spectrum.</li>
+</ol>
+
+
+
+
+
+
+<h2> Function parameters</h2>
+
+<p><code>Defreq</code>(<var>clip, float
+"fx", float "fy", float "dx", float "dy", float "sharp",
+float "fx2", float "fy2", float "dx2", float "dy2", float
+"sharp2", float "fx3", float "fy3", float "dx3", float "dy3", float "sharp3", float "fx4", float "fy4", float "dx4", float
+"dy4", float "sharp4", float "cutx", float "cuty", int
+"plane", int "show", bool "info", bool "measure"</var>)</p>
+
+<p>
+first parameter - input clip<br>
+
+<var>fx</var> -
+window center frequency x-component for local
+peak search (float percent from 0.0 to 100.0, default= 10.0)<br>
+
+<var>fy</var> -
+window center frequency y-component for local
+peak search (float percent from -100.0 to 100.0, default= -10.0)<br>
+
+<var>dx</var> -
+half-width of search window, (float percent, default =1.5). <br>
+
+<var>dy</var> -
+half-height of search window, (float percent, default =2.0). <br>
+
+<var>sharp</var>
+- threshold of the peak to background relation (in search window) for
+cleaning (float, default=50.0)<br>
+
+<var>fx2</var>
+- second window center frequency x-component for local peak search
+(float percent from 0.0 to 100.0, default=0 - disabled)<br>
+
+<var>fy2</var>
+- second window center frequency y-component for local peak search
+(float percent from -100.0 to 100.0, default=0 - disabled)<br>
+
+<var>dx2</var>
+- half-width of second search window, (float percent, default
+=1.5). <br>
+
+<var>dy2</var>
+- half-height of second search window, (float percent,
+default =2.0). <br>
+
+<var>sharp2</var>
+- threshold of the peak to background relation (in second window)for
+cleaning (float, default=50.0)<br>
+
+<var>fx3</var>
+- third window center frequency x-component for local peak search
+(float percent from 0.0 to 100.0, default=0 - disabled)<br>
+
+<var>fy3</var>
+- third window center frequency y-component for local peak search
+(float percent from -100.0 to 100.0, default=0 - disabled)<br>
+
+<var>dx3</var>
+- half-width of third search window, (float percent, default
+=1.5). <br>
+
+<var>dy3</var>
+- half-height of third search window, (float percent, default
+=2.0). <br>
+
+<var>sharp3</var>
+- threshold of the maximum frequency to background relation (in third
+window) for cleaning (float, default=50.0)<br>
+
+<var>fx4</var>
+- fourth window center frequency x-component for local peak search
+(float percent from 0.0 to 100.0, default=0 - disabled)<br>
+
+<var>fy4
+</var>- fourth window center frequency y-component for local peak
+search
+(float percent from -100.0 to 100.0, default=0 - disabled)<br>
+
+<var>dx4</var>
+- half-width of fourth search window, (float percent, default
+=1.5). <br>
+
+<var>dy4</var>
+- half-height of fourth search window, (float percent,
+default =2.0). <br>
+
+<var>sharp4</var>
+- threshold of the peak to background relation (in fourth window) for
+cleaning (float, default=50.0)<br>
+
+<var>cutx</var>
+- frequency x-component cutoff for low pass filter (float percent from
+0.0 to 300.0, default = 0, disabled)<br>
+
+<var>cuty</var>
+- frequency y-component cutoff for low pass filter (float percent from
+0.0 to 300.0, default = 0, disabled)<br>
+
+<var>plane</var>
+- color plane to clean, 0-Y, 1-U, 2-V (default = 0)<br>
+
+<var>show</var>
+- show frequency spectrum surface and search windows (default = 0)<br>
+
+0 - normal processing;<br>
+
+1 - show current frame spectrum;<br>
+
+2 - show temporal average spectrum;<br>
+
+<var>info</var>
+- type found peaks info on frame (default = false)<br>
+
+<var>measure</var>
+- select fastest FFT method by speed measure (longer init stage)
+instead of simple estimation (default=true) <br>
+
+</p>
+
+
+<h2>Features and limitations </h2>
+
+<ol>
+
+  <li> Works only in YV12 and YUY2 color
+format.</li>
+
+  <li> Directly works with progressive clips.
+For interlaced sources, probably you must use SeparateFields etc.</li>
+
+  <li> Tested with Avisynth v2.5.5-2.5.6.</li>
+
+  <li>Defreq uses fast external FFTW library
+version 3 (<a href="http://www.fftw.org">http://www.fftw.org</a>)
+as Windows binary DLL (compiled with gcc under MinGW by Alessio
+Massaro), which support for threads and have AMD K7 (3dNow!) support in
+addition to SSE/SSE2.It may be downloaded from
+    <a href="ftp://ftp.fftw.org/pub/fftw/fftw3win32mingw.zip">ftp://ftp.fftw.org/pub/fftw/fftw3win32mingw.zip</a>.
+You <span style="color: rgb(255, 0, 0);">MUST</span>
+put FFTW3.DLL file from this package to some directory in path (for
+example, system folder C:\WINNT\SYSTEM32). Defreq will <span style="color: rgb(255, 0, 0);">NOT</span> work without
+it!</li>
+
+  <li> Not very fast, not assembler optimized.</li>
+
+  <li> Since v.0.4, horizontal frequency is
+relative to spectrum image width (about half of plane width), from 0 to
+100 %, and vertical frequency is relative to spectrum image half-height 
+(plane height), from -100 to 100%.</li>
+
+  <li>Since version 0.4, frequency values <var>fx,fy</var>,
+etc are independent from crop, but must be scaled after resize!</li>
+
+</ol>
+
+
+<h2>Simple sample script</h2>
+
+<pre>Avisource("input.avi")<br>loadplugin("defreq.dll")<br>DeFreq(fx=30,fy=-40)</pre>
+
+<p>Attention! It is calling syntax example only. Unlike
+most another filters, there are NO good DeFreq parameter values for
+general
+use! <br>
+
+It will not clean anything (but slow down the processing), if its
+settings are not exactly correspondent to your picture. </p>
+
+
+<h2>How to use</h2>
+
+<p>You must temporary add <var>show</var> and <var>info</var>
+parameters, visually analyze frequency spectrum surface, and adjust
+parameters <var>fx,fy</var>
+to place rectangular search window at local peak of spectrum (bright
+spot or cross), which is correspondent to interference frequency.</p>
+
+<p>Firstly look to generated sample frequency stripes at the right top
+corner, and try make them similar to your picture interference pattern
+(right bottom area).
+The sample stripe slope is dependent from <var>fy/fx</var>
+ratio, and the step
+between sample stripes is dependent from<var> fx,fy</var>
+absolute values (hint - you may
+use some AviSynth script parameter to preserve <var>fy/fx</var>
+ratio). </p>
+
+<p>Then look to spectrum sufrace, and fine tune the search window position.<br>
+
+The small <var>fx</var>is near left edge of the spectrum image, 
+and the large <var>fx</var> (up to 100) is
+near right edge.<br>
+
+Since v0.6, the large negative <var>fy</var>
+values is at bottom of the spectrum image, the large positive
+<var>fy</var> (up to 100) is at top of the spectrum image, the
+small <var>fy</var> is at middle of height.</p>
+
+<p>Set <var>fx</var>=0
+for strictly horizontal frequency interference stripes, or set <var>fy</var>=0
+for strictly vertical stripes.</p>
+
+<p>Mode <var>show</var>=2 make frequency
+spectrum peaks more visible by temporal averaging of frames power
+spectral density. Just play your video clip
+(preferrably dynamic scenes), and tune <var>fx,fy</var>. </p>
+
+<p>You may tune other parameters to set sharpness threshold,
+color plane, add other search windows, add low pass filter.<br>
+
+Hint - "sharp" word is become UPPERCASE (in <var>info</var>
+mode), when peak with value above threshold is detected.</p>
+
+
+<h2>Additional info</h2>
+
+<p>The filter discussion is at
+<a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=82978">http://forum.doom9.org/showthread.php?s=&amp;threadid=82978</a></p>
+
+<p>There are also similar new filters FanFilter and FQuiver (by vcmohan).</p> 
+
+<h2>License</h2>
+
+<p>This program is free software; you can redistribute it and/or
+modify<br>
+
+it under the terms of the GNU General Public License version 2 as
+published by<br>
+
+the Free Software Foundation.<br>
+
+<br>
+
+This program is distributed in the hope that it will be useful,<br>
+
+but WITHOUT ANY WARRANTY; without even the implied warranty of<br>
+
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the<br>
+
+GNU General Public License for more details.<br>
+
+<br>
+
+You should have received a copy of the GNU General Public License<br>
+
+along with this program; if not, write to the Free Software<br>
+
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. </p>
+Documentation is distributed under <a href="http://creativecommons.org/licenses/by-sa/3.0/">CreativeCommons BY-SA 3.0 license.</a><br>
+
+<p>Please consider to make some donation.</p>
+
+<h2>Version changes:</h2>
+
+<ul>
+
+  <li>Version 0.1, 22 September 2004 - not public alpha. Thanks
+to <span style="font-weight: bold;">Mil_Alex</span>
+for preliminary discussion.</li>
+
+  <li>Version 0.2, 26 September 2004 - add second window, set
+other planes to
+128 (first public beta).</li>
+
+  <li>Version 0.3, 28 September 2004 - change cleaning method to
+adaptive in
+window, add third
+and fourth search windows, change default sharp=50.0
+(was 100.0 really) (not public)</li>
+
+  <li>Version 0.4, 30 September 2004 - change
+    <var>fx,fy,dx,dy,cutx,cuty</var>
+parameters to (float) percent of FFT size </li>
+
+  <li>Version 0.4.1, 01 October 2004 - fixed bug with init</li>
+
+  <li>Version 0.5, 02 October 2004 - add show sample frequency
+stripes, add Measure mode,
+some bugs fixed (still beta). Thanks to <span style="font-weight: bold;">Mug Funky</span> and <span style="font-weight: bold;">JuanC</span>
+for bugs report and discussion<br>
+
+  </li>
+
+  <li>Version 0.5.0.1, 06 October 2004 - add Russian doc</li>
+
+  <li>Version 0.5.1, 07 October 2004 - more fast processing of
+frames which
+are not needed in cleaning,
+source released under GPL.</li>
+
+  <li>Version 0.5.2, 7 November 2004 - fixed strange bug for
+separated
+fields. Thanks to <span style="font-weight: bold;">johnmeyer</span>
+for report.</li>
+
+  <li>Version 0.5.3, 7 November 2004 - finally (?) fixed bug for
+separated
+fields. Thanks to <span style="font-weight: bold;">johnmeyer</span>
+for report.</li>
+
+  <li>Version 0.5.4, 3 December 2004 - Fixed bug for second peak
+for YUY2.
+Thanks to
+    <span style="font-weight: bold;">oledoe</span>
+for report.
+Manual corrected. Thanks to <span style="font-weight: bold;">Palmnut</span>
+for report.</li>
+
+  <li>Version 0.6, August 2, 2005 - added temporal average mode&nbsp;<var>show</var>=2&nbsp; (thanks to <span style="font-weight: bold;">lumier</span>
+for idea), changed <var>show</var> parameter to integer
+type; reorganized view of
+the spectrum window; cleaned a code.<br>
+
+  </li>
+  <li>Version 0.7, April 28, 2006 - changed cleaning method: more frequencies are decreased near interference peak. <br>
+  Chanded static linking of FFTW3.DLL library to dynamic loading.
+  </li>
+
+</ul>
+
+<h3><a href="defreq07.zip">Download DeFreq version 0.7</a></h3>
+
+<p><a href="../">Return to main
+page</a></p>
+
+</body>
+</html>

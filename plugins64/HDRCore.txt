@@ -1,0 +1,194 @@
+	HDRCore
+	=======
+
+HDRCore library adds 16-bit integer (stacked and linear) and 32-bit floating
+point pixel types. It is fully compatible and optimized for AviSynth MT.
+
+It is licensed under the MIT License.
+Copyright (c) 2015-2016 Andrew Revvo (andrew.revvo~gmail~com)
+Project homepage: http://www.snovidenie.com/plugins/hdrcore/
+
+
+	Clip Bitdepth Formats
+	---------------------
+
+Each HDR-compatible filter should have a parameter bitdepth to specify a processing bitdepth:
+
+8: 8-bit clip.
+	Default AviSynth bitdepth.
+88: 16-bit stacked clip.
+	It is a clip that contains low and high bytes in different places. It is useful
+	to use with legacy AviSynth plugins. But it is slow to processing because additional
+	calculation is required. Also CPU cache mismatch slows access to memory down. This clip
+	format is the first used in the Dither library by Firesledge (aka Cretindesalpes).
+16: 16-bit integer clip.
+	New fast linear access 16-bit clip format. It is easy to develop. I tested it and
+	found that memory access can be faster more than 1.5 times than 16-bit stacked format.
+32: 32-bit floating point clip.
+	New true HDR 32-bit clip format useful for precise value calculations without saturation.
+	It is a bit slower than the 16-bit format, but easy to develop.
+
+
+	Parameter Ranges
+	----------------
+
+Each HDR-compatible filter should have parameters compatible with 8-bit filters.
+Modern video data ranges are: Y: 16-235, U,V: 16-240. For compatible reasons and
+fast programming 32-bit float clip should have the same values range as used
+in any 8-bit video.
+
+
+	Format Conversion Filters
+	-------------------------
+
+This library contains core filters for common format manipulations:
+
+
+	Bitdepth
+	--------
+
+This filter converts clip formats. Currently planar clips are supported (YUV and Y).
+The values from and to are integer clip format codes: 8, 88, 16 and 32.
+8-bit conversion is dithered. Very quality and fast Sierra 2-4A dithering is used.
+You can also use this filter for dithering.
+
+Example:
+	Bitdepth(clip, from=8, to=16)
+
+
+It is useful to export clip to x264 and other encoders:
+	Bitdepth(from=current_bitdepth, to=16)
+
+
+	BitdepthLsb
+	-----------
+
+This filter returns LSB values in 8-bit clip.
+
+Example:
+	BitdepthLsb(bitdepth=88)
+
+
+	BitdepthMsb
+	-----------
+
+This filter returns MSB values in 8-bit clip.
+
+Example:
+	BitdepthMsb(bitdepth=88)
+
+
+	BitdepthMsbLsb
+	--------------
+
+This filter combines two 8-bit clips to the final HDR clip.
+
+Example:
+	BitdepthMsbLsb(msb, lsb, bitdepth=88)
+
+
+	Range Conversion Filters
+	------------------------
+
+All filters produce correct dithering and precise calculation without
+any color shift and out-of-range truncate.
+
+
+	RangeY
+	------
+
+Y-channel range correction.
+
+Example:
+	RangeY(a=16, b=235, ao=16, bo=235, g=1.0, mode=1, bitdepth=8)
+
+Here are:
+	a, b: float - source values range of input clip.
+	ao, bo: float - output values range of output clip.
+	g: float - non-clamped gamma correction float value.
+		Gamma correction in a..b base range. Values outside this range are remain.
+		The smooth curve is used for gamma correction outside the range.
+	mode: int - filter processing mode. For 8 bit clips:
+		0 - draft calculation with rounding. 1 - precise Sierra 2-4A dithering.
+	bitdepth: int - clip format bitdepth code: 8, 88, 16 and 32.
+
+You can use any values to scale ranges and for color correction.
+For example: a=10, b=100, ao=20, bo=200. No any clamping is calculated.
+You can also convert clip values: gamma-to-linear and back.
+Special effects are also possible. For example, image inversion.
+
+
+	RangeUV
+	------
+
+U, V-channels range correction.
+
+Example:
+	RangeUV(au=16, bu=240, aou=16, bou=240, av=16, bv=240, aov=16, bov=240, mode=1, bitdepth=8)
+
+Here are:
+	au, bu: float - source values range of U.
+	av, bv: float - source values range of V.
+	aou, bou: float - result values range of U.
+	aov, bov: float - result values range of V.
+	mode: int - filter processing mode. For 8 bit clips:
+		0 - draft calculation with rounding. 1 - precise Sierra 2-4A dithering.
+	bitdepth: int - clip format bitdepth code: 8, 88, 16 and 32.
+	
+You can use this filter to separated saturation in U and V channels and special effects.
+
+
+	ClampHDR
+	--------
+
+This filters clamps channel values to get video standard range or values.
+
+Example:
+	ClampHDR(ay=16, by=235, au=16, bu=240, av=16, bv=240, bitdepth=8)
+
+Here are:
+	ay, by: float - Y-channel range.
+	au, bu: float - U-channel range.
+	av, bv: float - V-channel range.
+	bitdepth: int - clip format bitdepth code: 8, 88, 16 and 32.
+
+
+	Information for AviSynth Developers
+	-----------------------------------
+
+I made this library, first of all, for you. Because we need in a quality HDR calculation.
+It is important because 8-bit processing produce rounding artifacts.
+They catastrophically reduce output quality of video in filter chains.
+
+It is recommended that you will develop new filters in 16-bit linear access format
+or using floating point. Do not use stacked file format for new filters. It is slow.
+Stacked clip format is useful only for compatible reasons to mix 8 and 16-bit filters
+or getting MSB and LSB parts. This operation is very fast for stacked clips.
+
+In my tests stacked memory access is always more slowly than 16-bit linear access.
+The cause is an increased quantity of CPU cycles for access to memory,
+additional calculations for obtaining values and a miss of hit of memory
+in the processor cache.
+
+To create compatible filters use the parameter "bitdepth". It is useful to make universal
+AviSynth scripts. Do not use these typical parameters in your filters and plugins:
+stacked=true, msb=true and similar.
+
+For 16-bit filters do not use 0..65535 filter parameters
+range. It is ugly for users also it is hard to create compatible plugin functions.
+
+You can use my plugins sources for example how to develop compatible plugins.
+I use separate functions for each bit depth and function pointers.
+Also it is easy to add SIMD optimization later.
+
+
+	Donations
+	---------
+
+This filter pack is free and it is available under very liberal MIT license.
+
+If you want to maintain my interest in development and technical support, please, donate.
+You can also purchase any of my programs and filters. See the HDRCore homepage for details.
+
+Thanks,
+Andrew Revvo, the HDRCore author.

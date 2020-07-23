@@ -1,0 +1,53 @@
+
+Interpolating Bob 0.10
+
+Copyright 2003 Kevin Atkinson under the GPL 2.0
+
+It requires version by Avisynth C API Plugin version 0.14 or better.
+The required dll, avisynth_c.dll, is included.  You can find the full
+version at http://kevin.atkinson.dhs.org/avisynth_c/.
+
+This simple filter works identically to the Avisynth builtin Bob filter
+except that it uses linear interpolation instead of bicubic resizing.
+It usage is simple:
+  IBob()
+
+The advantages of IBob over the builtin Bob is:
+
+1) The lines of the dominate field are untouched.  In particular
+   
+    assumetff()
+    orig = last
+    ibob()
+    assumetff().separatefields().selectevery(4,0,3).weave()
+    compare(last,orig)
+
+Will report 0 difference between the original and the bob than unbobed
+video (when the video format is yuy2, with yv12 the chroma will be
+slightly different).  With the builtin bob this is not the case.
+
+2) A bit faster than the builtin bob.
+
+In can be made even faster by 1) dynamically compiling key parts to
+reduce register pressure and take advantage of the "base + index +
+displacement" addressing mode, and by 2) using vector extensions.
+
+COPYRIGHT
+
+Everything in the distribution is Copyright 2003 Kevin Atkinson.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or (at
+your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA, or visit
+http://www.gnu.org/copyleft/gpl.html.
+

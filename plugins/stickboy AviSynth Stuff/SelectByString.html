@@ -1,0 +1,309 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; CHARSET=ISO-8859-1" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<title>SelectByString</title>
+<style type="text/css">
+<!--
+/* general typeface stuff */
+
+	h1, h2, h3, h4, h5, h6, th, .heading, .caption { font-family: Arial, Helvetica, sans-serif; }
+	body, p, td, ul, ol, address, cite, blockquote, .text { font-family: "Times New Roman", Times, serif; }
+
+	tt, pre, code, kbd, samp, .fixed { font-family: "Courier New", Courier, monospace; font-size: smaller; }
+
+	code, kbd { white-space: nowrap; }
+
+	address, cite, var, em, i { font-style: italic; }
+	th, strong, b { font-weight: bold; }
+
+	acronym, abbr, .slang { text-decoration: none; border-bottom: #00CC00 dotted 1px; cursor: help; }
+
+/* link stuff */
+
+	a:link { color: #0000FF; background: transparent; }
+	a:visited { color: #9966FF; background: transparent; }
+	a:hover { color: #6666FF; background: transparent; }
+	a:active { color: #FF0000; background: transparent; }
+	a.unemphasized { text-decoration: none; }	/* not underlined */
+	a:hover.unemphasized { text-decoration: underline; }
+
+	a.unemphasized img { border-style: none; }
+
+/* margin stuff */
+
+	ul, ol { margin-top: 0; margin-bottom: 0; }
+
+/* miscellaneous stuff */
+
+	.date { white-space: nowrap; }
+	hr { border: 0; border-top: black solid thin; margin: 0; clear: both; height: 1px;  }
+
+/* document-specific stuff */
+
+	body
+	{
+		background: #FFFFFF;
+		color: #000000;
+	}
+
+	#header { border-bottom: black solid 1px; padding-bottom: 0.5em; }
+
+	#header h1 { margin: 0; }
+	#header p, #footer p { font-family: Arial, Helvetica, sans-serif; }
+
+	#versionText
+	{
+		font-weight: bold;
+		margin: 0;
+		position: absolute;
+		top: 1em;
+		right: 10px;
+	}
+
+ 	#description
+	{
+		font-weight: bold;
+		margin: 0;
+	}
+
+	#author { margin: 1em 0 0 0; }
+	#content .subBody { margin-left: 2em; }
+
+	.syntax { margin-bottom: 0; }
+	.syntaxAnnotation { margin-left: 2em; margin-top: 0; }
+
+	pre.example
+	{
+		border-left: 5px solid #CCC;
+		margin-left: 1.5em;
+		padding-left: 5px;
+		font-size: 90%;
+		line-height: 110%;
+	}
+
+	#historylist
+	{
+		/*
+		height: 15em;
+		overflow: auto;
+		margin: 0em 2em 0em 2em;
+		border: black solid 1px;
+		*/
+	}
+
+	#footer
+	{
+		padding-top: 0;
+		padding-bottom: 0;
+		margin-top: 1em;
+		margin-bottom: 1em;
+		border-top: black solid 1px;
+	}
+-->
+</style>
+</head>
+
+<body>
+
+<div id="header">
+	<h1>SelectByString</h1>
+	<p id="versionText">
+		v0.3.0 (<span class="date">2004-04-08</span>)
+	</p>
+	<p id="description">
+		A version of AviSynth's Select function that operates on strings.
+	</p>
+	<p id="author">
+		by James D. Lin (<a href="http://www.avisynth.org/stickboy/">stickboy</a>)
+	</p>
+</div><!-- header -->
+
+<div id="content">
+
+<h2 id="syntax">Syntax</h2>
+<div class="subBody">
+<pre>
+SelectByString(string <var>s</var>,
+               string <var>key1</var>, <var>value1</var>
+               [, string <var>key2</var>, <var>value2 </var>[, ...]]
+               [, &quot;<var>else</var>&quot;])
+
+SelectByStringEval(string s,
+                   string <var>key1</var>, string <var>value1</var>
+                   [, string <var>key2</var>, string <var>value2</var> [, ...]]
+                   [, string &quot;<var>else</var>&quot;])
+</pre>
+</div>
+
+<h2 id="params">Parameters</h2>
+<div class="subBody">
+<table>
+	<tr valign="top">
+		<td><code><var>s</var></code></td>
+		<td>The search string.  The search string is <em>not</em> case-sensitive for ASCII character strings.</td>
+	</tr>
+	<tr valign="top">
+		<td><code><var>key1</var>, <var>value1</var> [, ...]</code></td>
+		<td>
+			If the search string matches key<var>N</var>,
+			<code>SelectByString</code> returns value<var>N</var>.  Keys and
+			values must come in pairs.
+		</td>
+	</tr>
+	<tr valign="top">
+		<td><code>&quot;<var>else</var>&quot;</code></td>
+		<td>
+			The default value to return if the search string is not found.
+			If <var>else</var> is not specified,
+			<code>SelectByString</code>/<code>SelectByStringEval</code>
+			will throw an error when the search string is not found.
+			<em>This parameter must be named.</em>
+			(See <a href="#usage">Usage</a>.)
+		</td>
+	</tr>
+</table>
+</div>
+
+<h2 id="usage">Usage</h2>
+<div class="subBody">
+<p>
+The values used with <code>SelectByString</code> may be of any type and even may be a mix of types:
+</p>
+<pre class="example">
+val = SelectByString(<var>s</var>,
+\                    &quot;foo&quot;, false,
+\                    &quot;bar&quot;, 1,
+\                    &quot;baz&quot;, 3.1415,
+\                    else=&quot;hello world!&quot;)
+
+MessageClip(String(val))
+</pre>
+
+<p>
+<code>SelectByStringEval</code> behaves the same as <code>SelectByString</code>
+except that its keys <em>and</em> its values must be strings.
+<code>SelectByStringEval</code> then evaluates the matched value.  That is:
+</p>
+
+<pre class="example">
+SelectByStringEval(<var>s</var>,
+\                  &quot;foo&quot;, &quot;0&quot;,
+\                  &quot;bar&quot;, &quot;1&quot;)
+</pre>
+
+<p>
+is shorthand for:
+</p>
+
+<pre class="example">
+Eval(SelectByString(<var>s</var>,
+\                   &quot;foo&quot;, &quot;0&quot;,
+\                   &quot;bar&quot;, &quot;1&quot;))
+</pre>
+
+<p>
+<code>SelectByString</code> is useful to create <a href="http://www.avisynth.org/index.php?page=Wrapper">wrapper functions</a> to specify
+presets to other filters.  For example:
+</p>
+
+<pre class="example">
+function TemporalSoftenPreset(clip c, string &quot;preset&quot;)
+{
+    preset = Default(preset, &quot;default&quot;)
+    s = SelectByString(preset,
+    \                  &quot;default&quot;,       &quot;c.TemporalSoften(4, 4, 8, 15, 2)&quot;,
+    \                  &quot;sh0dan-soft&quot;,   &quot;c.TemporalSoften(2, 3, 3,  6, 2)&quot;,
+    \                  &quot;sh0dan-medium&quot;, &quot;c.TemporalSoften(3, 5, 5, 10, 2)&quot;,
+    \                  &quot;sh0dan-heavy&quot;,  &quot;c.TemporalSoften(4, 8, 8, 10, 2)&quot;,
+    \                  else=&quot;&quot;)
+
+    Assert(s != &quot;&quot;, &quot;TemporalSoftenPreset: invalid preset&quot;)
+
+    return Eval(s)
+}
+</pre>
+
+<p>
+(In the example above, although it is not necessary to wrap the <code>TemporalSoften(...)</code>
+calls in strings, doing so is recommended.  If each call were not <em>thunked</em> in a string,
+AviSynth would generate a separate clip for each one.  Since AviSynth generates frames only when
+requested, the extra clips shouldn't affect performance significantly,
+although they may have negative memory consequences.  Furthermore, some
+filters (e.g. <code>PixieDust</code>) can be called only once per script.)
+</p>
+
+<p>
+See <kbd><a href="SelectByString.examples.avs">SelectByString.examples.avs</a></kbd> for additional examples.
+</p>
+
+</div>
+
+<h2>Revision History</h2>
+<div id="historylist">
+<ul>
+	<li>
+		0.3.0
+		<ul>
+			<li>
+				Added the <code>else</code> parameter.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.2.3
+		<ul>
+			<li>
+				Improved error reporting.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.2.2
+		<ul>
+			<li>
+				Added stricter argument type-checking.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.2.1
+		<ul>
+			<li>
+				Added some additional error-handling code.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.2.0
+		<ul>
+			<li>
+				Removed dependency on the AviSynth C interface.
+			</li>
+			<li>
+				Added <code>SelectByStringEval</code>.
+			</li>
+		</ul>
+	</li>
+	<li>
+		0.1.0
+		<ul>
+			<li>
+				Initial release.
+			</li>
+		</ul>
+	</li>
+</ul>
+</div><!-- historylist -->
+
+</div><!-- content -->
+
+<div id="footer">
+<p>
+Copyright &copy; 2003-2004 James D. Lin
+</p>
+</div>
+
+</body>
+</html>

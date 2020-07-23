@@ -1,0 +1,26 @@
+- SangNom beta - "readme"
+
+alors, il vous faut : 
+- du YV12 entrelacé
+- un proc qui gere l'isse (athlon tbird &+, PIII &+)
+
+syntaxe :
+
+SangNom(order,aa)
+
+order : 
+0 -> vire le top field
+1 -> vire le bottom field
+2 -> alterne, pour faire du bob : DoubleWeave.SangNom(order=2)
+
+aa : (antialiasing)
+
+pour eviter que l'algo face n'importe quoi
+sur des trucs trop complexes & sharp
+(pour le rendre kanji-proof quoi)
+
+par def, SangNom() equivaut a SangNom(order=1,aa=48)
+
+creds : cas pour le nom :p (& les beta testeurs bien sur ^^)
+
+SangNom beta - Copyright (C) 2003-2004 MarcFD

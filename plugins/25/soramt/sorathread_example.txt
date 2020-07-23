@@ -1,0 +1,27 @@
+imaging that you have a avisynth script to run, like this
+
+ffvideosource(...)
+eedi2()
+eedi2()
+
+you will find that only one core of your cpu is used,
+for instance it's 50% on my computer.
+
+
+You hope that the two eedi2 could run concurrently on the 2 cores
+to gain the speed.
+
+You may have a try like this
+
+ffvideosource(...)
+eedi2()
+sorathread()
+eedi2()
+
+now the 2 eedi2 will run on different thread to eat up your cpu power.
+one core: ffvideosource and eedi2
+another core: eedi2
+
+
+
+note: eedi2 is a plugin of avs to make video double height

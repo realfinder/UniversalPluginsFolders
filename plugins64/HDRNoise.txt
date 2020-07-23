@@ -1,0 +1,125 @@
+	HDRNoise
+	========
+
+HDRNoise is a noise library to working with HDR frames in AviSynth.
+It is fully compatible and optimized for AviSynth MT.
+
+It is licensed under the MIT License.
+Copyright (c) 2015-2016 Andrew Revvo (andrew.revvo~gmail~com)
+Project homepage: http://www.snovidenie.com/plugins/hdr/
+
+
+	NoiseY
+	------
+
+This filter adds a random noise to Y-channel.
+
+Parameters:
+	amp: float - noise amplitude.
+	seed: int - random number seed.
+	mode: int - 8-bit filter mode: 0=truncate (offset is possible), 1=dither.
+	bitdepth: int - filter bitdepth: 8,88,16,32
+
+Example:
+	NoiseY(amp=10.0, seed=0, mode=1, bitdepth=8)
+
+
+	NoiseYM
+	-------
+
+This filter adds a random noise to Y-channel, using mask.
+
+Parameters:
+	m: clip - 8-bit mask clip.
+	offset: float - mask value offset.
+	scale: float - mask value scale.
+	amp: float - noise amplitude.
+	seed: int - random number seed.
+	mode: int - 8-bit filter mode: 0=truncate (offset is possible), 1=dither.
+	bitdepth: int - filter bitdepth: 8,88,16,32
+
+	Noise value is calculated as: ((mask[x,y] - offset) * scale) * amp.
+	By default it adds noise for white areas.
+	To get black areas noised, set offset=255.0.
+	To get white and black areas noised, set offset=128.0.
+
+Example:
+	NoiseYM(m=last, offset=0.0, scale=1.0/255.0, amp=10.0, seed=0, mode=1, bitdepth=8)
+
+
+	NoiseUV
+	-------
+
+This filter adds a random noise to U and V channels.
+
+Parameters:
+	ampu: float - U noise amplitude.
+	ampv: float - V noise amplitude.
+	seed: int - random number seed.
+	mode: int - 8-bit filter mode: 0=truncate (offset is possible), 1=dither.
+	bitdepth: int - filter bitdepth: 8,88,16,32
+
+Example:
+	NoiseUV(ampu=10.0, ampv=10.0, seed=1, mode=1, bitdepth=8)
+
+
+	NoisedGrayY8
+	------------
+
+This filters creates a 8-bit gary output and fills it by a noise.
+
+Parameters:
+	amp: float - noise amplitude.
+	seed: int - random number seed.
+	uv: bool - enable fill of U and V planes by value 128.
+	bitdepth: int - filter bitdepth: 8,88,16,32
+	
+Example:
+	NoisedGrayY8(amp=10.0, seed=0, uv=true, bitdepth=8)
+
+
+	NoiseMix1Y
+	---------
+
+This filters emulates a film grain noise using a 8-bit gray noised frame.
+
+Parameters:
+	noise: clip - 8-bit gray noise frame.
+	amp: float - noise amplitude.
+	ldiff: float - a black/white difference to emulate film log color space.
+	mode: int - 8-bit filter mode: 0=truncate (offset is possible), 1=dither.
+	bitdepth: int - filter bitdepth: 8,88,16,32
+
+Example:
+	NoiseMix1Y(noise, amp=1.0, ldiff=1.0, mode=1, bitdepth=8)
+
+
+	NoiseMix2Y
+	---------
+
+This filters emulates a film grain noise using two 8-bit gray noised frames.
+
+Parameters:
+	noise1, noise2: clip - two 8-bit gray noise frames.
+	amp1, amp2: float - noise amplitudes.
+	ldiff: float - a black/white difference to emulate film log color space.
+	mode: int - 8-bit filter mode: 0=truncate (offset is possible), 1=dither.
+	bitdepth: int - filter bitdepth: 8,88,16,32
+
+Example:
+	NoiseMix2Y(noise1, noise2, amp1=1.0, amp2=1.0, ldiff=1.0, mode=1, bitdepth=8)
+
+
+	HDR Plugin Set
+	--------------
+
+This filter pack is a part of the HDR Plugin Set.
+You can download another HDR plugins from this page:
+http://www.snovidenie.com/plugins/hdr/
+
+If you want to maintain my interest in development and technical support, please purchase
+the full plugin set. You can get high quality color correction filters, including
+3D LUT 32-bit filter that reads *.cube or *.3dl files.
+
+Thanks,
+Andrew Revvo, the HDRNoise author.

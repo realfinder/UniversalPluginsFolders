@@ -1,0 +1,1 @@
+VersionNumber() < 2.60 ? Import(AviSynthPlugins64Dir + "25/LSMASHSource.avsi") : Import(AviSynthPlugins64Dir + "26/LSMASHSource.avsi")

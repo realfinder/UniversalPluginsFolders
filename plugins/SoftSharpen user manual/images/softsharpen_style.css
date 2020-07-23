@@ -1,0 +1,268 @@
+img{ 
+border: none; 
+} 
+
+a:hover, a:visited, a:link{ 
+outline:none; 
+}
+
+
+html, body{
+	background-color : #336699;
+	font-family:Microsoft sans serif;
+	font-size:0.9em;
+}
+
+.conteneur{
+	margin-left:auto;
+	margin-right:auto;
+	border: solid 2px #336699;
+	border-radius:10px;	
+	width:800px;
+    background-color : #D0D9EA;
+	box-shadow: 1px 1px 12px #336699;	
+}
+
+.conteneur2{
+    margin-left:auto;
+    margin-right:auto;
+	border-radius:10px;
+    max-width: 1300px;
+    padding-left:20px;
+    padding-right:20px;
+    background-color : #D0D9EA;
+}
+
+.conteneur3{
+    margin-left:auto;
+    margin-right:auto;
+	border-radius:10px;
+    width: 800px;
+    padding-left:20px;
+    padding-right:20px;
+    background-color : #D0D9EA;
+}
+
+.table{
+	margin-left:auto;
+	margin-right:auto;
+	width:760px;
+}
+
+.titre{
+	font-size:1.3em;
+	color:#D0D9EA;
+	text-align:center;
+	border-radius:10px;
+	padding:10px;
+	background-color : #336699;
+}
+
+.colonne1{
+	width: 410px;
+	text-align:right;
+	padding:0px 5px;
+}
+
+.colonne2{
+	width: 350px;
+	text-align:right;
+	padding:0px 5px;
+}
+
+.colonne3{
+	width: 410px;
+	padding:0px 3px;
+}
+
+input[type=text]{
+	font-family:Microsoft sans serif;
+	font-size:9pt;
+	font-weight:bold;
+	text-align:right;
+	vertical-align:center;
+	width:50px;
+	background-color:#ffffff;
+	border-color:#336699;
+	border-style:inset;
+	border-width:2px;
+	color:#336699; 
+	padding-bottom:2px;
+	opacity:0.7;
+	filter:alpha(opacity=70);
+}
+
+.script{
+	background-color : #D0D9EA;
+	color: #336699;
+	padding: 5px 10px;
+	border-radius: 10px;	
+}
+
+.script2{
+	background-color : #ffffff;
+	color: #336699;
+	margin-left: 10px;
+	padding: 5px 10px;
+	border : 1px solid #336699;
+}
+
+textarea{
+	background-color:#ffffff;
+	border-color:#336699;
+	border-width:1px;
+	color:#336699; 
+	padding-bottom:2px;
+	overflow:auto;
+	opacity:0.7;
+	filter:alpha(opacity=70);
+}
+
+span.bulle1 {
+	position : relative;
+}
+span.bulle1 span {
+	display : none;
+	border : 1px solid #ffffff;
+	border-radius: 10px;
+	background-color : #336699;
+	color : #ffffff;
+	text-decoration : none;
+	text-align: left;
+	white-space : nowrap;
+	opacity:0.9;
+	filter:alpha(opacity=90);
+}
+span.bulle1:hover span {
+	position : absolute;
+	top : 18px;
+	left : 10px;
+	padding : 10px;
+	display : block;
+	z-index:1;
+}
+
+span.bulle2 {
+	position : relative;
+}
+span.bulle2 span {
+	display : none;
+	border : 1px solid #ffffff;
+	border-radius: 10px;
+	background-color : #336699;
+	color : #ffffff;
+	text-decoration : none;
+	text-align: left;
+	white-space : nowrap;
+	opacity:0.9;
+	filter:alpha(opacity=90);
+}
+span.bulle2:hover span {
+	position : absolute;
+	top : 18px;
+	right : 10px;
+	padding : 10px;
+	display : block;
+	z-index:1;
+}
+
+span.bulle3 {
+	position : relative;
+}
+span.bulle3 span {
+	display : none;
+	border : 1px solid #ffffff;
+	border-radius: 10px;
+	background-color : #336699;
+	color : #ffffff;
+	text-decoration : none;
+	text-align: left;
+	white-space : nowrap;
+	opacity:0.9;
+	filter:alpha(opacity=90);
+}
+span.bulle3:hover span {
+	position : absolute;
+	top : 18px;
+	left : 10px;
+	padding : 5px 10px;
+	display : block;
+	z-index:1;
+}
+
+span.bulle4 {
+	position : relative;
+}
+span.bulle4 span {
+	display : none;
+	border : 1px solid #ffffff;
+	border-radius: 10px;
+	background-color : #336699;
+	color : #ffffff;
+	text-decoration : none;
+	text-align: left;
+	white-space : nowrap;
+	opacity:0.9;
+	filter:alpha(opacity=90);
+}
+span.bulle4:hover span {
+	position : absolute;
+	top : 18px;
+	right : 10px;
+	padding : 5px 10px;
+	display : block;
+	z-index:1;
+}
+
+.retour{
+	float: right;
+	margin-top:-55px;
+}
+
+hr{
+	height:1px;
+	border-width:0;
+	margin-left:10px;
+	margin-right:10px;
+	color:#00436E;
+	background-color:#7294C0;
+}
+
+div.lightbox {
+    display: none;
+    position: absolute;
+	top: 0; left: 0; right: 0; bottom: 0;
+}
+
+div.lightbox:target {
+	display: block;
+	position: fixed;
+	z-index: 20;
+	background-color: #ffffff;
+	color : #ffffff;
+	text-decoration : none;
+	text-align: left;
+	padding: 150px;
+	opacity:0.9;
+	filter:alpha(opacity=90);
+}
+
+div.lightbox:target img {
+   border: solid white 10px;
+}
+   
+a.alightbox {
+	text-decoration: none;
+	color: #ffffff;
+}
+
+.note{
+	background-color : #336699;
+	color: #ffffff;
+	padding: 10px 10px;
+	border-radius: 10px;	
+}		
+
+.nb{
+	font-style:italic;	
+}

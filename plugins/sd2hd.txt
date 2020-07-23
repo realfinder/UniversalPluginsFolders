@@ -1,0 +1,334 @@
+############################
+# sd2hd
+# 2010/01/15 00:50:00 EST
+# Dan Isaacs
+# http://3dvp.com
+############################
+
+=========================================================================================================================================================
+REQUIREMENTS
+=========================================================================================================================================================
+
+AviSynth 2.5.7 or higher
++ plugins:
+
+ConditionalSmoothBob	(ConditionalSmoothBob.avsi contains helper functions and is included in this package)
+
+ColorMatrix     	http://avisynth.org/warpenterprises/files/colormatrix_20070828.zip
+GrapeSmoother   	http://avisynth.org/warpenterprises/files/grapesmoother_25_dll_20030801.zip
+TDeint 		 	http://web.missouri.edu/~kes25c/TDeintv11.zip
+
+
+
+=========================================================================================================================================================
+SCRIPT EXAMPLES
+
+IMPORTANT: Note that YUY2 is the default output colorspace. Change the OutputColorSpace parameter as needed for your application, codec or MPEG2 encoder.
+=========================================================================================================================================================
+
+...........
+.. 720p ...
+...........
+
+# assumes interlaced widescreen input, output is 1280x720p at double the input framerate (59.94 [60000/1001] for NTSC source, 50 fps for PAL source)
+sd2hd("dv.avi")
+
+# assumes interlaced widescreen input, output is 1280x720p at the 29.97 fps [30000/1001], fields blended
+sd2hd("dv.avi", OutputFieldRate=30)
+
+# assumes interlaced widescreen input, output is 1280x720p at the 25 fps, fields blended
+sd2hd("dv.avi", OutputFieldRate=25)
+
+# assumes interlaced widescreen input, output is 1280x720p at the 29.97 fps (30000/1001), fields blended
+sd2hd("dv.avi", OutputFieldRate=30)
+
+# assumes interlaced 4:3 input, output is 1280x720p (pillarboxed) at the same framerate as the input (fields blended)
+sd2hd("dv.avi", Widescreen=false)
+
+# same as above, but disables horizontal EEDI2 interpolation to spped rendering
+sd2hd("dv.avi", Widescreen=false, iHmax=0)
+
+# assumes interlaced widescreen input, output is 1280x720p converted to 25 fps
+sd2hd("dv.avi", Widescreen=true, OutputFieldRate=25)
+
+# assumes progressive widescreen input, output is 1280x720p converted to 25 fps (no blending)
+sd2hd("dv.avi", Interlaced=false, Widescreen=true, OutputFieldRate=25, SmoothTime=false)
+
+# assumes progressive widescreen input, output is 1280x720p converted to 25 fps (no blending)
+sd2hd("dv.avi", Interlaced=false, Widescreen=true, OutputFieldRate=25, SmoothTime=false)
+
+...........
+.. 1080i ..
+...........
+
+# assumes interlaced widescreen input, output is 1440x1080i (top field first) at the same framerate as the input
+sd2hd("dv.avi", OutputWidth=1440)
+
+# same as above, but reducing interpolated resolution for faster rendering
+sd2hd("dv.avi", OutputWidth=1920, iHmax=1, iVMax=1)
+
+# assumes interlaced widescreen input, output is 1440x1080i (bottom field first) at the same framerate as the input
+sd2hd("dv.avi", OutputWidth=1440, OutputBFF=true)
+
+# assumes interlaced 4:3 input, output is 1920x1080i (top field first) at the same framerate as the input
+sd2hd("dv.avi", OutputWidth=1920, Widescreen=false)
+
+...........
+.. 1080p ..
+...........
+
+# assumes interlaced widescreen input, output is 1440x1080p at 29.97 fps
+sd2hd("dv.avi", OutputWidth=1440, OutputFieldRate=30)
+
+# assumes progressive input, output is 1440x1080p at 23.976 fps
+sd2hd("dv.avi", Interlaced=false, OutputWidth=1440, OutputFieldRate=24)
+
+
+=========================================================================================================================================================
+PARAMETERS
+=========================================================================================================================================================
+
+parameter:      Interlaced
+values:	 	true, false
+default:	true
+
+This specifies whether the source video is interlaced (true) or progressive (false)
+
+-----------------------------------------------------------------------------------
+
+parameter:      Interlaced_out
+values:	 	true, false
+default:	determined by the values of Interlaced and OutputFieldRate
+
+This specifies whether the output will be interlaced. A setting of true only makes sense when OutputFieldRate is 50 or 60.
+When OutputFieldRate is 50 or 60 and Interlaced_out is set to false, the function will not weave the output: resulting in 50p or 60p output.
+By default, Interlaced_out is always false when OutputHeight=720 (assumes 720p is desired)
+
+------------------------------------------------------------------------------------
+
+parameter:      InterlacedUV
+values:	 	true, false
+default:	automatic (set to same value as "Interlaced")
+
+Some progressive YV12 sources (like PAL film DVDs or HDV "30p over 60i" footage) have interlaced chroma sampling. This will cause the color channels to be deinterlaced, but not the luma.
+Set this to true if your progressive input is YV12 and contains combed chroma.
+
+------------------------------------------------------------------------------------
+
+parameter:      InterlacedUV_out
+values:	 	true, false
+default:	automatic (set to same value as "Interlaced_out")
+
+Setting this to true will force interlaced chroma sampling when OutputColorSpace="YV12"
+
+------------------------------------------------------------------------------------
+
+parameter:      Widescreen
+values:	 	true, false
+default:	true
+
+Set this to false if your input is 4x3 and you'd like to keep it that way (pillarboxed).
+
+------------------------------------------------------------------------------------
+
+parameter:      OutputFieldRate
+values:	 	integer 24,25,30,50,60
+default:	(automatic)
+
+When input is progressive 23.976 fps, the same framerate will be output (for all 1080 and 720 formats)
+
+When input is interlaced  25 fps or 29.97 fps and Output is 1080, the same framerate will be output (interlaced by default)
+When input is progressive 50 fps or 59.94 fps and Output is 1080, half the framerate will be output (interlaced by default)
+
+When input is interlaced  25 fps or 29.97 fps and Output is 720p, the output framerate will be doubled
+When input is progressive 50 fps or 59.94 fps and Output is 720p, the output framerate will stay the same
+
+24 is NTSC Film progressive
+25 is PAL progressive
+50 is PAL interlaced
+30 is NTSC progressive
+60 is NTSC interlaced
+
+------------------------------------------------------------------------------------
+
+parameter:      OutputColorSpace
+values:	 	"RGB32", "RGB24", "YUY2", "YV12"
+default:	YUY2
+
+This sets the output color space. This may need to be set for your encoder:
+
+use "YUY2" for CCE or ProCoder
+use "YV12" for HCEncoder or QuEnc
+use "RGB24" for TMPEG, Adobe Media Encoder, Encore or output to RGB .avi
+use "RGB32" for output to RGB .avi
+
+------------------------------------------------------------------------------------
+
+parameter:      Output601
+values:	 	true, false
+default:	false
+
+When true, this will convert the video output as needed to ITU-R BT.601 YUV coefficients .A value of false will output BT.709 (default).
+
+------------------------------------------------------------------------------------
+
+parameter:      OutputBFF
+values:	 	true, false
+default:	false
+
+Top field first is the most common field order for interlaced HD (default). Set this to true to force lower field first output.
+
+------------------------------------------------------------------------------------
+
+parameter:      OutputWidth
+default:	1280
+values: 	any integer, but 1920, 1440, and 1280 are the only ones that make sense for delivery
+
+Setting OutputWidth will also set OutputHeight unless OutputHeight is specified
+
+------------------------------------------------------------------------------------
+
+parameter:      OutputHeight
+default:	720
+values: 	any integer, but 1080 and 720 are the only ones that make sense for delivery
+
+Setting OutputHeight will also set OutputWidth unless OutputHeight is specified
+
+------------------------------------------------------------------------------------
+
+parameter:      ScaleRGBInput
+values:	 	true, false
+default:	true
+
+Some HDV .AVI codecs (such as Matrox and Canopus) have options for "Standard" or "Expanded" conversion. Setting this parameter is dependent on your input source.
+If your video looks too contrasty on output, try setting this to true (that's the default anyway).
+If your video looks washed out, try setting this to false.
+
+------------------------------------------------------------------------------------
+
+parameter:      Input601
+values:	 	true, false
+default:	true
+
+Most SD is BT.601 so this should be true (default). St this to false if your input is YUV and uses the BT.709 coefficients. This parameter has no effect on RGB input.
+
+------------------------------------------------------------------------------------
+
+parameter(s):   Sharpness
+values:	 	float 0.0 -> 1.0
+default:	0.5
+
+This applies sharpening to the video.
+
+------------------------------------------------------------------------------------
+
+parameter:	SmoothTime
+values:	 	true, false
+default:	true
+
+This parameter works in several different ways, depending on the type of conversion. In general, it blends frames when the frame rate is converted. Set it to false for a "sharper" time conversion.
+This setting has no effect at all unless you are making progressive frames from an interlaced source or converting between 60i/30p <-> 50i/25p standards
+
+------------------------------------------------------------------------------------
+
+parameter(s):   ScaleMethod
+values:	 	integer 0,1,2
+default:	1
+
+This determines which engine is used for interpolating the image.
+0 = no interpolation (Spline36Resize)
+1 = modified ELA-2 (via TDeint)
+2 = EDI (via EEDI2)
+3 = NNEDI2
+
+The default (1) tends to give pretty good results.
+In general, setting this to 2 will give better (but much slower) results.
+
+------------------------------------------------------------------------------------
+
+
+parameter(s):   iHmax, iVmax
+values:	 	integer 0,1,2,3
+default:	1
+
+These set the maximum interpolated resolution steps for upsampling the image. Higher vlaues can get better quality, but can take much longer to process.
+
+iHmax = 0 will disable interpolation altogether and scale the image up using a sharp scaling algorithm (spline36)
+
+iHmax = 1 will upsample the horizontal resolution a maximum of 2x the original
+When OutputWidth is 1280, 720 is interpolated to 1440 and then downsized using spline36 scaling
+When OutputWidth is 1440, 720 is interpolated to 1440
+When OutputWidth is 1920, 720 is interpolated to 1440 and then scaled up to 1920
+
+iHmax = 2 will upsample the horizontal resolution a maximum of 4x the original
+When OutputWidth is 1280, 720 is interpolated to 1440 and then downsized using spline36 scaling (2x)
+When OutputWidth is 1440, 720 is interpolated to 1440                                           (2x)
+When OutputWidth is 1920, 720 is interpolated to 2880 and then scaled down to 1920              (4x)
+
+iHmax = 3 is useless for normal HD formats
+
+iVmax = 1 will upsample the vertical resolution a maximum of 2x the original
+When OutputHeight is 720,  480 is interpolated to 960  and then scaled down
+When OutputHeight is 720,  576 is interpolated to 1152 and then scaled down
+When OutputHeight is 1080, 480 is interpolated to 960  and then scaled up to 1080
+When OutputHeight is 1080, 576 is interpolated to 1152 and then scaled down
+
+iVmax = 2 will upsample the vertical resolution a maximum of 4x the original
+When OutputHeight is 1080, 480 is interpolated to 1920 and then scaled down to 1080             (4x)
+When OutputHeight is 1080, 576 is interpolated to 1152 and then scaled down to 1080             (2x)
+
+------------------------------------------------------------------------------------
+
+
+parameter:	DeintMethod
+values:		integer 0, 1, 2, 3
+default:	0
+
+ 3 = Yadif                  (very fast and good)
+ 2 = Yadifmod + TomsMoComp  (very fast and good)
+ 1 = Yadifmod + EEDI2	    (slow and usually excellent)
+ 0 = Yadifmod + NNEDI2      (fairly slow but excellent)
+
+This allows you to choose the deinterlacing method used for conversions. It has no effect when interlaced=false (such as with 24p input).
+
+------------------------------------------------------------------------------------
+
+parameter:	lacethresh
+values:		integer 0 -> 100
+default):	24
+
+The is passed as-is to SmoothDeinterlacer. This determines the threshold for detecting interlacing artifacts. It has no effect on progressive input or when another deinterlacer is used.
+
+------------------------------------------------------------------------------------
+
+parameter:	showlace
+values:		true, false
+default(s):	false
+
+This is passed as-is to SmoothDeinterlacer. This will show you which areas of the images are detected as moving and/or interlaced. It has no effect on progressive input or when another deinterlacer is used.
+
+------------------------------------------------------------------------------------
+
+parameter:	edgethresh
+values:		integer 0 -> 100
+default(s):	40
+
+This is passed as-is to SmoothDeinterlacer. It has no effect on progressive input or when another deinterlacer is used.
+
+------------------------------------------------------------------------------------
+
+parameter:	staticthresh
+values:		integer 0 -> 100
+default(s):	40
+
+This is passed as-is to SmoothDeinterlacer. It has no effect on progressive input or when another deinterlacer is used.
+
+------------------------------------------------------------------------------------
+
+parameter:	staticavg
+values:		integer 0 -> 100
+default(s):	85
+
+This is passed as-is to SmoothDeinterlacer. It has no effect on progressive input or when another deinterlacer is used.
+
+------------------------------------------------------------------------------------

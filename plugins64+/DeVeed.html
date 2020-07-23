@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>DeVeed AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1><center>DeVeed </center></h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>Date  May 2015
+	  <BR>EMail: <a href="mailto:mohanvc@gmail.com">mohanvc</a>
+	  <P>DeVeed plugins for Avisynth 2.5 and 2.6 versions and avisynth+, are free and the author does 
+	  not give any guarentee for its operation. It may be downloaded 
+	  and used at the users risk.</P>
+	  
+	  <P>This plugin tries to attenuate 
+	  low level noise. seen on clips specially mpeg sources. The filtering is minimal.</P>
+	   
+	  <P> str , rad and limits control the amount and type of noise attennuation.
+		 
+		 Limit = 0 is no filtering. 1 to 10 provides normal filtering.
+		 limited to a change from original by this value. Option of  filtering only selected plane(s) is available. The filter is
+		 designed to be  gentle even at its maximum and tries to preserve original
+		 image and color. 
+		 This plugin works in RGB32, RGB24, YUY2 and Planar (YV12 only by version 2.5 )
+		 color spaces. Filtering results in RGB, will be differing from that in
+		 other color formats.
+		For Avisynth+ usage the plugin is 64 bit, The filter is thread safe. SetMTFilterMode("DeVeed", 1)</P> 
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip</td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>radius of influence</td>
+       <td>rad</td>
+       <td>integer</td>
+       <td>1 to 8</td>
+       <td>5</td>
+</tr>
+<tr>
+       <td>Strength </td>
+       <td>str</td>
+       <td>integer</td>
+       <td>1 to 10</td>
+       <td>4</td>
+</tr>
+
+
+<tr>
+       <td>Whether red or y plane is to be filtered </td>
+       <td>ry</td>
+       <td>boolean</td>
+       <td>true, false</td>
+       <td>false</td>
+</tr>
+
+<tr>
+       <td>Whether green or u plane is to be filtered </td>
+       <td>gu</td>
+       <td>boolean</td>
+       <td>true, false</td>
+       <td>true</td>
+</tr>
+<tr>
+       <td>Whether blue or v plane is to be filtered </td>
+       <td>bv</td>
+       <td>boolean</td>
+       <td>true, false</td>
+       <td>true</td>
+</tr>
+<tr>
+       <td>Whether forced value to be used for comparisons. This parameter is not available in 2.6 and avs+ versions </td>
+       <td>force</td>
+       <td>boolean</td>
+       <td>true, false</td>
+       <td>false</td>
+</tr>
+
+
+<tr>
+       <td>positive Limit of correction for red or y</td>
+       <td>pry</td>
+       <td>integer</td>
+       <td>0 to 10</td>
+       <td>3</td>
+</tr>
+
+<tr>
+       <td>negative Limit of correction for red or y</td>
+       <td>nry</td>
+       <td>integer</td>
+       <td>0 to 10</td>
+       <td>3</td>
+</tr>
+<tr>
+       <td>positive Limit of correction for green or u</td>
+       <td>pgu</td>
+       <td>integer</td>
+       <td>0 to 10</td>
+       <td>1</td>
+</tr>
+
+<tr>
+       <td>negative Limit of correction for green or u</td>
+       <td>ngu</td>
+       <td>integer</td>
+       <td>0 to 10</td>
+       <td>4</td>
+</tr>
+
+<tr>
+       <td>positive Limit of correction for blue or v</td>
+       <td>pbv</td>
+       <td>integer</td>
+       <td>0 to 10</td>
+       <td>3</td>
+</tr>
+
+<tr>
+       <td>negative Limit of correction for blue or v</td>
+       <td>nbv</td>
+       <td>integer</td>
+       <td>0 to 10</td>
+       <td>6</td>
+</tr>
+
+</table>
+
+<BR>
+Usage examples
+<BR>DeVeed()
+<BR>DeVeed(ry = false,  rad = 5)
+
+
+<BR>following script used to get the images below in YUY2 color space:
+
+<BR>DeVeed()
+
+<BR>On left is input, middle is output and on right is difference of two using levels
+
+<BR><img src="DeVeed0.jpg" width="840" height="330" alt="" border="0">
+<table>
+
+<tr>
+       <td><a href="../index.html">To my index page</a></td>
+	   <td>................................</td>
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>	
+  			
+		
+</body>
+</html>

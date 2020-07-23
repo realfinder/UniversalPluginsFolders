@@ -1,0 +1,54 @@
+Call.dll v1.3
+
+Conceived by DDogg, thrown together badly by Nic
+
+To Use:
+LoadPlugin("D:\plugin\call.dll")
+Call("d:\besweet\besweet.exe -core( -input d:\matrix\matrix.ac3 -output d:\matrix\matrix.mp3 )", "0")
+
+This will do the command on frame 0
+if you want to do things on multiple frames seperate with a comma or semicolon
+i.e.
+Call("d:\besweet\besweet.exe", "0,20,50")
+will do the call on frames 0, 20 and 50. Using the number -1 will make it do it on the very last frame!
+
+New Features !! :
+----------------
+
+1)
+To get Call to operate before any encoding starts is to specify a clip and the 
+frame number as -2
+i.e.
+LoadPlugin("call.dll")
+Call(BlankClip, "lame --decode fatboy.mp3 fatboy.wav", "-2")
+WavSource("fatboy.wav")
+
+The above script will convert fatboy.mp3 into fatboy.wav and then load it :)
+(BlankClip is very useful here :) )
+
+2)
+If you need to put in " for long file names put in single quotes as apostrophes ' and that should now
+work. i.e. Call(BlankClip, "lame --decode 'e:\my rip dir\fatboy.mp3' fatboy.wav", "-2")
+
+3)
+NicEcho can be used for outputting stuff.
+use as:
+Call(BlankClip, "d:\nicecho.exe d:\report.txt 'Hello world how are you?\nCarriage Return'", "-2")
+Remember the single quotes around the test!
+If you want to append to an already existing file prefix the file name with a @
+i.e.
+Call(BlankClip, "d:\nicecho.exe @d:\report.txt 'Appending'", "-2")
+
+Notes:
+1) REMEMBER THE QUOTES FOR THE SECOND PARAMETER (i.e. its not an integer input but a string!)
+2) REMEMBER THAT THE PROGRAM YOUR CALLING MUST CLOSE ITSELF AFTER PROCESSING. OTHERWISE THE ENCODE
+   WILL GET STUCK UNTIL YOU CLOSE IT MANUALLY!
+3) REMEMBER TO PUT IN FULL PATHS TO YOUR PROGRAM. TO TEST YOUR PATH, GO START->RUN THEN TRY IT FROM
+   THERE TO MAKE SURE IT WILL WORK.
+
+(sorry for the shouting, but I say it just to make you read it ;) )
+
+-Nic
+
+PS
+CALL_25.dll is the AviSynth 2.5 version! :)

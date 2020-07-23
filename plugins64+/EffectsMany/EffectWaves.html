@@ -1,0 +1,219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectWaves AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectWaves </h1></font>
+	 
+	  <P>On the image water waves are created. The direction of movement of waves
+	   is an option.  The speed, amplitude, pool area center and its dimensions 
+	   can be specified and also varied linearly. The wavelength (lambda) can be
+	    specified but will remain same during effect. .
+		RGB32, RGB24, YUY2 and YV12 formats are supported.
+
+ </p>  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+
+<tr>
+       <td>wave length </td>
+       <td>lambda</td>
+       <td>integer</td>
+       <td>1 to 250</td>
+       <td>40</td>
+</tr>
+
+<tr>
+       <td>wave speed at start</td>
+       <td>speed</td>
+       <td>float</td>
+       <td>0 to 100</td>
+       <td>5</td>
+</tr>
+
+<tr>
+       <td>x coordinate of pool center at start</td>
+       <td>xcoord</td>
+       <td>integer</td>
+       <td>none</td>
+       <td>mid frame</td>
+</tr>
+<tr>
+       <td>y coordinate of pool center at start</td>
+       <td>ycoord</td>
+       <td>integer</td>
+       <td>none</td>
+       <td>mid frame</td>
+</tr>
+
+<tr>
+       <td>width of pool at start</td>
+       <td>width</td>
+       <td>integer</td>
+       <td>pool must be in frame</td>
+       <td>frame width</td>
+</tr>
+
+<tr>
+       <td>height of pool at start</td>
+       <td>height</td>
+       <td>integer</td>
+       <td>none</td>
+       <td>frame height</td>
+</tr>
+
+
+
+<tr>
+       <td>x coordinate of pool center at end</td>
+       <td>ex</td>
+       <td>integer</td>
+       <td>none</td>
+       <td>xcoord</td>
+</tr>
+<tr>
+       <td>y coordinate of pool center at end</td>
+       <td>ey</td>
+       <td>integer</td>
+       <td>none</td>
+       <td>ycoord</td>
+</tr>
+
+<tr>
+       <td>width of pool at end</td>
+       <td>ewidth</td>
+       <td>integer</td>
+       <td>pool must be in frame</td>
+       <td>width</td>
+</tr>
+
+<tr>
+       <td>height of pool at end</td>
+       <td>eheight</td>
+       <td>integer</td>
+       <td>none</td>
+       <td>height</td>
+</tr>
+
+<tr>
+       <td>wave speed at end</td>
+       <td>espeed</td>
+       <td>float</td>
+       <td>0 to 100</td>
+       <td>speed</td>
+</tr>
+
+<tr>
+       <td>amplitude of wave at start</td>
+       <td>amp</td>
+       <td>integer</td>
+       <td>1 to 8</td>
+       <td>4</td>
+</tr>
+
+<tr>
+       <td>amplitude of wave at end</td>
+       <td>eamp</td>
+       <td>integer</td>
+       <td>1 to 8</td>
+       <td>amp</td>
+</tr>
+
+<tr>
+       <td>direction of wave</td>
+       <td>dir</td>
+       <td>string</td>
+       <td>"left", "right", "up", "down", "ne", "nw", "se", "sw"</td>
+       <td>"down"</td>
+</tr>
+
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>
+EffectWaves(last,50, 150, dir="sw")
+EffectWaves (last,50, 150, lambda=20, height=200, width=400)
+EffectWaves (last,50, 150,espeed=10, xcoord=0, ex=700)
+EffectWaves (last,50, 150,amp=1, eamp=8)
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="waves.jpg" border="0">
+
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

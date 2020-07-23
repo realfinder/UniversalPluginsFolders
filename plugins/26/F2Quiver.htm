@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>F2Quiver </title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>F2Quiver</h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>Date Dec, 2014
+	  <BR>EMail: <a href="mailto:mohanvc@gmail.com">mohanvc</a>
+	  
+	 
+
+<p>F2Quiver,  function  transform image into 2d frequency domain, applies filters 
+and transforms back into image domain.  Gaussian 
+or Butterworth  band stop, lowcut, high cut and notch filters are designed 
+with circular, or vertical, or horizontal, or point or line symmetry in frequency 
+domain.  All these filters are  available for HomoMorphic 
+proceesing option as well</p>
+
+<P>Filter radial length can be specified.  To avoid
+wrap around error, internally the transforms are in an extended frame size.</P> 
+
+
+<P>Homomorphic filtering :- The input image can be considered as the multiplication of incident light
+and the reflectivity of objects. While incident light varies usually slowly, the reflectivity
+varies more quickly. Homomorphic filtering is done to seperate these components with an
+appropriate low cut (high pass) filter.Scaling may be needed.</P>
+
+<P>Standard filters are specified by sets of 5 integers:
+<BR> First Integer is symmetry 1, Circular, 2. Horizontal, 3, vertical, 4. Linear Fan, 5. Point
+<BR> Second Integer is type 1. low cut, 2. High cut, 3. Band Pass, 4, Band stop, 5. Notch.
+<BR>Third Integer is X Freq (or angle1 for linear fan)
+<BR>Fourth Integer is Y freq.(or angle2 for linear fan)
+<BR> Fifth integer is Degree of sharpness. 0 to 24. If 0 Gaussian filter otherwise Butterworth filter is designed.
+ <BR> Up to 12 such sets can be specified and they will be cascaded. 
+<BR></P>
+
+ 
+<p>A test facility is included. In this option the power spectrum  is shown in 
+ the left half and if specified filter (optional), it is shown in right half of screen.
+ It should be noted that the horizontal and vertical frequencies
+ must be related to the rulers provided. Depending on the readability considerations 
+ ruler may have any of the graduations for frequency values of  100, 50( or 20) and 10.
+  The maximum value will correspond to 250 (256 being NYQUIST frequency assumed)</p>
+ 
+<p>Presence of sharp high amplitude objects (such as logos) may overwhelm the 
+image frequencies and can make finding low level noise frequencies difficult. (Using morph=true
+ for test can bring out these clearly). As a sharp discontinuity requires all frequencies of 
+spectrum to be present, any filtering that affects the balance can create
+undesirable ringing. If possible cropping and re joining after processing may
+be useful in those cases.</p>
+
+<P>Rescale facility is available. But Avisynth has better scaling functions. 
+Where low frequencies and the value at origin is affected,  rescaling may be needed</P>
+
+<p>Only YUY2 and Planar (YV12 only by 2.5 version)  formats are acceptable. Y values only are processed by F2Quiver,
+ Frame 
+height and width must be multiples of 4.</p>
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top"><b>Details of parameters</b> </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip</td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Array of values</td>
+       <td></td>
+       <td>sets of integers.  
+	   If not test atleast one set must be specified. </td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+
+<tr>
+       <td>Is this a test run?</td>
+       <td>test</td>
+       <td>boolean</td>
+       <td>true for yes</td>
+       <td>false</td>
+</tr>
+
+<tr>
+       <td>Is rescaling of output required? </td>
+       <td>rescale</td>
+       <td>boolean</td>
+       <td>true or false</td>
+       <td>false</td>
+</tr>
+
+<tr>
+       <td>gamma value to be used for spectral display scaling </td>
+       <td>gamma</td>
+       <td>float</td>
+       <td>1.0 is no scaling</td>
+       <td>0.05</td>
+</tr>
+<tr>
+       <td>Is this homomorphic process? </td>
+       <td>morph</td>
+       <td>boolean</td>
+       <td>true or false</td>
+       <td>false</td>
+</tr>
+
+
+<tr>
+       <td>Filter radial length </td>
+       <td>frad</td>
+       <td>integer</td>
+       <td>16 to 64 in steps of 4</td>
+       <td>32</td>
+</tr>
+
+
+
+</table>
+
+
+<BR>Usage examples:-
+<BR>
+
+<Pre>
+# test with no filter
+f2t1=f2Quiver(test = true)
+#Following demonstrates filters that can be designed
+#F2Quiver(5,5,60,-35,20,1,2,120,60,8,4,1,70,80,4,3,4,40,42,18,test = true,gamma=0.04)
+#check with filter
+f2t=F2Quiver(3,4,35,44,12,test = true)
+# process
+f2=F2Quiver(3,4,35,44,12)
+#f2=F2Quiver(4,4,38,42,18,test = true,morph =false,gamma=0.04)
+
+</Pre>
+
+<br>test panels
+<BR>Input image<BR><img src="FQInput0.png" width="700" height="400" border="0">
+
+<br>spectrum, filter  and output 
+<br><img src="F2Qtest0.png" width="1400" height="400" border="0">
+
+</body>
+</html>

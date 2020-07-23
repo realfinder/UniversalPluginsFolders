@@ -1,0 +1,160 @@
+=======================================================
+=                  Anaglypher v1.0                    =
+=               Shura Luberetsky 2009                 =
+=======================================================
+
+This is an AviSynth plugin for two images color mixing,
+i. e. for making anaglyphic video out of stereopairs.
+
+It realises custom linear color blending, similar to
+Stereo Photo Maker (http://stereo.jpn.org/eng/stphmkr),
+making available conversion of video to color-
+customised anaglyph.
+
+The plugin computes the resulting image as follows:
+
+|R|   |L11 L12 L13| |Rl|   |R11 R12 R13| |Rr|
+| |   |           | |  |   |           | |  | 
+|G| = |L21 L22 L23| |Gl| + |R11 R12 R13| |Gr|,
+| |   |           | |  |   |           | |  | 
+|B|   |L31 L32 L33| |Bl|   |R11 R12 R13| |Br|
+
+where (R, G, B) are red, green and blue components
+of the output, (Rl, Gl, Bl) and (Rr, Gr, Br) are
+color components of respectively left and right
+images, and (L)ij, (R)ij are color transformation
+matrices.
+
+Though it may seem strange, the usage of the plugin is
+very simple. It is called like this (the numeric input
+values are floats):
+
+Anaglypher(clip Left, clip Right, \
+	   L11, L12, L13, \
+	   L21, L22, L23, \
+	   L31, L32, L33, \
+	   R11, R12, R13, \
+	   R21, R22, R23, \
+	   R31, R32, R33)
+
+(the line is separated due to A LOT of parameters)
+
+Both clips shoulb be RGB24 or RGB32, and must have the
+same width and height.
+
+So, here come the examples.
+
+Red-blue monochrome:
+Anaglypher(Left, Right, \
+	   0.299, 0.587, 0.114, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	   0.299, 0.587, 0.114)
+This mode is used with red-blue glasses and produces a
+grayscale equivalent of the stereo image. All the color
+information is discarded, but the stereo effect is very
+good.
+
+Red-cyan monochrome:
+Anaglypher(Left, Right, \
+	   0.299, 0.587, 0.114, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	   0.299, 0.587, 0.114, \
+	   0.299, 0.587, 0.114)
+Just the same as previous, only to be used with red-cyan
+glasses. There appears to be more ghosting effects.
+
+Red-cyan color:
+Anaglypher(Left, Right, \
+	       1,     0,     0, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	       0,     1,     0, \
+	       0,     0,     1)
+This method simply separates the color components for 
+red-cyan glasses. There are some problems with bright
+colors and 'retinal rivalry' effects. The color reproduction
+is quite good.
+
+Red-cyan half-color:
+Anaglypher(Left, Right, \
+	   0.299, 0.587, 0.114, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	       0,     1,     0, \
+	       0,     0,     1)
+This method produces less 'retinal rivalry' but color
+reproduction is much worse. The red color is partially
+discarded from stereoscopic image.
+
+Red-cyan optimized:
+Anaglypher(Left, Right, \
+	       0, 0.450, 1.105, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	       0,     1,     0, \
+	       0,     0,     1)
+The red color component is completely discarded, which totally
+eleminates 'retinal rivalry'. Instead, green and blue components
+of the left image are used, which implies "weird" color 
+reproduction - a red object can become yellow.
+
+Red-cyan Dubois:
+Anaglypher(Left, Right, \
+	    0.456,  0.500,  0.176, \
+	   -0.040, -0.038, -0.016, \
+	   -0.015, -0.021, -0.005, \
+	   -0.043, -0.088, -0.002, \
+	    0.378,  0.734, -0.018, \
+	   -0.072, -0.013,  1.226)
+(as you can see, the plugin supports signed coefficients)
+This method is believed to give the best color reproducton with
+least ghosting. The coefficients were calculated by Prof. Eric
+Dubois of University of Ottawa using the least squares method,
+so the method is also called LS-method.
+
+Yellow-blue monochrome:
+Anaglypher(Left, Right, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	   0.299, 0.587, 0.114, \
+	   0.299, 0.587, 0.114, \
+	   0.299, 0.587, 0.114, \
+	       0,     0,     0)
+This is the parameters for use with yellow-blue glasses, which
+are used in USA for NTSC-coded stereo video, as the NTSC color
+system does not provide satisfactory red color reproduction.
+
+Yellow-blue color:
+Anaglypher(Left, Right, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	       0,     0,     1, \
+	       1,     0,     0, \
+	       0,     1,     0, \
+	       0,     0,     0)
+The same method for color stereo image.
+
+Yellow-blue half-color:
+Anaglypher(Left, Right, \
+	       0,     0,     0, \
+	       0,     0,     0, \
+	       0,     0,     1, \
+	   0.299, 0.587, 0.114, \
+	   0.299, 0.587, 0.114, \
+	       0,     0,     0)
+This method produces a yellow-blue anaglyphic image with less
+'retinal rivalry' on bright colors.
+
+Of course, you can use any other coefficients. Some kinds of video
+files may need custom color correction for better color reproduction,
+so you may need to change the values. A good program to test is
+Stereo Photo Maker (http://stereo.jpn.org/eng/stphmkr), which
+has an option for customizing the color transformation matrices.

@@ -1,0 +1,48 @@
++-----------------------------------------------------------------------------+
+|   PointSize v0.2 - A collection of resiziers for AviSynth 2.6 / AviSynth+   |
++-----------------------------------------------------------------------------+
+
+Filters
+-----------------
+PointSize contains the following filters:
+  scalex(clip c, int scale=2) - Scale (e.g. Scale2x) resize
+  LQx(   clip c, int scale=2) - LQ (e.g. LQ2x) resize
+  HQx(   clip c, int scale=2) - HQ (e.g. HQ2x) resize
+  xBRZ(  clip c, int scale=2, float Yweight=1, float EqColorTol=30, \
+    float DomDirThresh=3.6, float SteepDirThresh=2.2) - xBRZ resize
+
+Supported "scale" values for various filters (inclusive):
+  scalex(): 2 to 3
+  LQx():    2 to 4
+  HQx():    2 to 4
+  xBRZ():   2 to 6
+
+ALL filters take ONLY RGB32 input and produce ONLY RGB32 output.
+
+For an explanation of the various filters, please see:
+  https://en.wikipedia.org/wiki/Image_scaling
+
+
+FAQ
+-----------------
+Q: Do you plan to support more color spaces (e.g. YV12)?
+A: No.  Use the various converting functions in AviSynth (e.g. ConvertToRGB32()
+   and ConvertToYV12()) if you need to use other source/destination spaces.
+
+Q: Do you plan to support more algorithms?
+A: Yes.  However, I am limiting myself to those that already have at least some
+   working C/C++ or assembly (must support x86 and x64) implementation.  While
+   HLSL and GLSL versions of algorithms are fast, they require a graphics card
+   and I don't want that to be a prerequisite to use this filter.  If you know
+   of an implementation of an algorithm that is not included, and it works and
+   is license compatible, or you'd like to write your own for this purpose,
+   don't hesitate to contact me and I can include it in a new release.  In
+   particular, I'm looking to support the following algorithms, license
+   permitting: EPX, AdvMAME2/3, [Super]Eagle, [Super]2xSaI, xBR, and Kopf-
+   Lischinski.
+
+
+License
+-----------------
+PointSize is licensed under the GPLv3, which is included along with the source
+code for the program.

@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>GBlur AviSynth 2.6 Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>GaussBlur</h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>Date   Sep 14, 2014
+	 
+	  <p>Due to various causes noise is most often present on raw images. Generating 
+	  masks or detecting edges using the noisy raw image is not satisfactory. 
+	  The image is to be smoothed by a preprocess.</p> 
+	  
+	  <p>Gaussian blur is an image  smoothing operation done by use of seperable 
+	  symmetric matrix of convolution coefficients. The size can be any odd nimber between 3 
+	  (for a 3x3 grid size)  to 11 (for a 11x11 grid). Given the size and standard deviation, the 
+	  convolution weights are computed and applied.. In YUY2 and YV12 formats 
+	  only the Y values  are smoothed. However if  u and or v are made true, those 
+	   corresponding planes are also smoothed. In RGB formats
+	   all 3 color planes are smoothed.</p>    
+
+<p>RGB32, RGB24, YUY2 and Planar formats are supported.</p> 
+
+
+
+
+
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip to be smoothed</td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>size of grid to use</td>
+       <td>size</td>
+       <td>integer</td>
+       <td>odd number between 3 to 11</td>
+       <td>3</td>
+</tr>
+<tr>
+       <td>standard deviation</td>
+       <td>sd</td>
+       <td>float</td>
+       <td>more than 0</td>
+       <td>1.5</td>
+</tr>
+
+<tr>
+       <td>is u plane smoothing required?</td>
+       <td>u</td>
+       <td>boolean</td>
+       <td>true for yes, false for no</td>
+       <td>false</td>
+</tr>
+<tr>
+       <td>is v plane smoothing required?</td>
+       <td>v</td>
+       <td>boolean</td>
+       <td>true for yes, false for no</td>
+       <td>false</td>
+</tr>
+
+
+
+
+</table>
+
+
+<BR>Usage examples:-
+<BR>GaussBlur()
+<BR>GaussBlur(BW,false,1.0) 
+			
+
+<br>
+<table>
+<tr>
+<td><a href="ColorItSynopsis.html">To Colorit Synopsis</a></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td></td>
+<td><a href="../index.html">To my index page</a></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
+<td><a href="Colorit.zip">down load plugin</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td><a href="http://www.avisynth.nl">To Avisynth</a></td>
+</tr>
+</table>		
+</body>
+</html>

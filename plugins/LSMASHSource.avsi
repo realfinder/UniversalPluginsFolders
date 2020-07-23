@@ -1,0 +1,1 @@
+VersionNumber() < 2.60 ? Import(AviSynthPluginsDir + "25/LSMASHSource.avsi") : !SI_IsWinXP ? Import(AviSynthPluginsDir + "26/LSMASHSource.avsi") : Import(AviSynthPluginsDir + "25/LSMASHSource.avsi")

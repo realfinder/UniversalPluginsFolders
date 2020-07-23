@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="GENERATOR" CONTENT="Microsoft FrontPage 4.0">
+   <TITLE>SplineResize</TITLE>
+   <style type="text/css">
+body      { font-family: verdana, arial, helvetica, sans-serif; color: #000000; 
+            font-size: 12px; background-color: #C8D4D8; text-align: Left; 
+            line-height: 150%;
+            padding: 0px;
+            margin: 6px;}
+
+h1        { font-family: verdana, arial, helvetica, sans-serif; font-size: 26px; 
+            line-height: 150%; color: #000000;
+            padding: 0px 0px 0px 8px
+            margin-left: 0px; margin-right: 0px; margin-top: 12px; margin-bottom: 12px;}
+
+h2        { font-family: verdana, arial, helvetica, sans-serif; font-size: 22px; 
+            line-height: 150%; color: #000000; 
+            background-color: #90A0C0;
+            padding:  0px 0px 0px 8px;
+            margin-left: 0px; margin-right: 0px; margin-top: 12px; margin-bottom: 12px; 
+            border: #8080D0; border-style: solid;
+            border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px}
+
+h3        { font-family: verdana, arial, helvetica, sans-serif; font-size: 18px; 
+            line-height: 150%; color: #000000;
+            padding: 0px 0px 0px 8px;
+            margin-left: 0px; margin-right: 0px; margin-top: 12px; margin-bottom: 12px;
+            border: #8080D0; border-style: solid; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px}
+
+h4        { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px;
+            font-style: normal; font-weight: bold; text-decoration: underline}
+
+a         { color: #005090; text-decoration: none; font-family: verdana, arial, helvetica, sans-serif }
+a:link    { color: #005090}
+a:visited { color: #005090}
+a:hover   { background-color: #FF6060; color: #005090}
+
+table     { font-size: 12px; margin-left: 0px; margin-top: 12px; margin-bottom: 12px;
+            line-height: 150% }
+
+pre       { font-size: 12px; font-family: Courier, mono;
+            margin-top: 10px; margin-bottom: 10px; 
+            background-color: #D0D0C0;
+            padding-left: 12px; padding-top: 12px; padding-right: 12px; padding-bottom: 12px;
+            border: #908030; border-style: solid; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px}
+
+code      { font-family: Courier, mono; font-size: 12px; letter-spacing: 1px; color: #660033}
+var       { font-family: Verdana, Arial, Helvetica, sans-serif; font-weight: normal; font-size: 12px;
+            font-style: italic; letter-spacing: 1px; color: #660033}
+tt        { font-family: Courier, mono; font-size: 12px}
+em        { font-family: Courier, mono; font-weight: normal; color: #FFFFFF; font-style: normal}
+strong    { font-family: Courier, mono; font-weight: bold; color: #FFFF66; font-style: normal}
+cite      { border: 1px #3030A0 dotted; padding-left: 2px; padding-right: 2px; padding-top: 1px; padding-bottom: 1px}
+kbd       { color: #808000; font-family: Verdana, Arial, Helvetica, sans-serif; font-weight: normal; font-size: 10px; font-style: normal}
+</style>
+</HEAD>
+<BODY>
+
+<h1>SplineResize v0.2</h1>
+<h2>Abstract</h2>
+<b>author:</b>     Wilbert Dijkhof (wilbertdijkhof at yahoo.com)
+<br><b>version:</b>             v0.1<br>
+<b>download:</b>    <a href="http://www.geocities.com/wilbertdijkhof">http://www.geocities.com/wilbertdijkhof</a>
+<br><b>category:</b>  Resizers
+<br><b>requirements:</b>
+<ul>
+  <li>none</li>
+</ul>
+
+<p><b>license:</b> GPL v2</p>
+
+<h2>Description</h2>
+<p>SplineResize contrains two kinds of spline based resizers:</p>
+<p>The first ones are the (cubic) spline based resizers from Panorama tools that fit a spline through the sample points and then derives the filter kernel from the resulting blending polynomials.
+See this <a href="http://forum.doom9.org/showthread.php?t=147117">thread</a> for
+the details. Spline100Resize (using 10 sample points) and Spline144Resize (using
+12 sample points) are added here. <a href="http://avisynth.org/mediawiki/Resize">Other
+ones</a> are available in AviSynth itself.</p>
+<p>The second ones are natural cubic splines that use the kernel itself as a spline.
+The theory can be found <a href="http://online.redwoods.cc.ca.us/instruct/darnold/laproj/Fall98/SkyMeg/Proj.PDF">here</a>.</p>
+
+
+<h3>Syntax</h3>
+<P>
+<code>Spline100Resize</code> (clip <var>clip</var>, int <var>target_width</var>, int
+<var>target_height </var>[, float <var>src_left</var>, float <var>src_top</var>, float
+<var>src_width</var>, float <var>src_height</var>])<br>
+<code>Spline144Resize</code> (clip <var>clip</var>, int <var>target_width</var>, int
+<var>target_height </var>[, float <var>src_left</var>, float <var>src_top</var>, float
+<var>src_width</var>, float <var>src_height</var>])<br>
+<code>SplineResize</code> (clip <var>clip</var>, int <var>target_width</var>, int
+<var>target_height</var>, int <var>taps</var> = 4 [, float <var>src_left</var>, float <var>src_top</var>, float
+<var>src_width</var>, float <var>src_height</var>])
+</P>
+
+
+<P>
+The number of sample points is given by 2*taps (yes i abused the meaning of taps
+to keep the notation inline with AviSynth's documentation), where
+1&lt;=taps&lt;=100.
+</P>
+
+
+<h3>Examples</h3>
+
+
+<pre>clip = ...
+Spline100Resize(clip, 640, 480)
+SplineResize(clip, 640, 480, taps=6)</pre>
+
+
+<h3>Theory</h3>
+<p>As a follow up to <a href="http://online.redwoods.cc.ca.us/instruct/darnold/laproj/Fall98/SkyMeg/Proj.PDF">Cubic Spline Interpolation
+(authors: Sky McKinley and Megan Levine</a>). We start with equation 28 with
+h=1, n=2*taps+1, y(j)=0 and y(taps)=1. This results in the following symmetric
+system:</p>
+<p>A*m = f</p>
+<p>with A = [4 1 0 0 ... ; 1 4 1 0 ... ; 0 1 4 1 ... ; ... ; ... 0 1 4], m =
+[m(2); m(3); ...; m(2*taps)] and f = 6*[0; 0; ... ;1; -2; 1; ...; 0; 0].</p>
+<p>The solution of the system can be obtained in the following way (with
+x(0)=M(1)=0, x(1)=M(2),..., x(2*taps-1)=M(2*taps), x(2*taps)=M(2*taps+1)=0):</p>
+<p>w(0)=4, w(j) = 4 - 1/w(j-1) for j=1..2*taps-1<br>
+z(0) = f(0)/w(0), z(j) = (f(j) - z(j-1))/w(j) for j=1..2*taps-1<br>
+x(0)=0, x(2*taps)=0, x(j) = z(j) - x(j+1)/w(j) for j=2*taps-1..1</p>
+<p>This will follow after doing a <a href="http://en.wikipedia.org/wiki/LU_decomposition">LU
+decomposition</a>. The coefficients are obtained from (j=1..2*taps,
+y(0)=...=y(2*taps+1)=0, y(taps)=1)</p>
+<p>a(j) = (m(j+1) - m(j))/6<br>
+b(j) = m(j)/2<br>
+c(j) = (y(j) - y(j-1)) - (m(j+1) + 2*m(j))/6<br>
+d(j) = y(j-1)</p>
+<p>Note that as as a result of the symmetry: a(j) = a(2*taps-j) (for b(j), c(j)
+and d(j) similar). As a result the second set of equations (j=taps..2*taps) is
+used for the resizer.</p>
+
+
+<h2>Changelog</h2>
+<p>v0.2, 20st June 2009
+</p>
+<ul>
+  <li>Fixed one of the coefficients in Spline100Resize.</li>
+</ul>
+<p>v0.1, 1st June 2009
+</p>
+<ul>
+  <li>Initial version.</li>
+</ul>
+</BODY>
+</HTML>

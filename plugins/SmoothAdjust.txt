@@ -1,0 +1,569 @@
+
+  +-------------------------------------------------------------------------------------------------------+
+  |                                                                                                       |
+  |   SmoothAdjust plugin: SmoothLevels(), SmoothTweak(), SmoothCurve(), SmoothCustom() & SmoothTools()   |
+  |                                                                                                       |
+  |                                         v2.95 by "LaTo INV."                                          |
+  |                                                                                                       |
+  |                                           14 November 2013                                            |
+  |                                                                                                       |
+  +-------------------------------------------------------------------------------------------------------+
+
+
+
+      I.    DESCRIPTION
+      II.   DISCLAIMER
+      III.  INSTALLATION
+      IV.   REQUIREMENTS
+      V.    USAGE
+      VI.   COMMON SETTINGS
+      VII.  SMOOTHLEVELS - GENERAL SETTINGS
+      VIII. SMOOTHLEVELS - LIMITING SETTINGS
+      IX.   SMOOTHTWEAK - GENERAL SETTINGS
+      X.    SMOOTHTWEAK - LIMITING SETTINGS
+      XI.   SMOOTHCURVE SETTINGS
+      XII.  SMOOTHCUSTOM SETTINGS
+      XIII. SMOOTHTOOLS SETTINGS
+      XIV.  16 BITS SETTINGS
+      XV.   CHANGELOG
+
+
+
+ I. DESCRIPTION :
+ ================
+
+  SmoothAdjust is a set of 5 plugins to make YUV adjustements:
+   - SmoothLevels allows to change levels & gamma with optional limiting
+   - SmoothTweak  allows to change brightness, contrast, saturation & hue
+   - SmoothCurve  allows to change a plane according to a fixed curve
+   - SmoothCustom allows to change a plane according to a custom expression
+   - SmoothTools  allows to use all the previous filters in one single pass
+
+  These 5 plugins have a smoothing & dithering algorithm to avoid banding issue.
+  Calculations are made in 32bits float to avoid rounding errors and artifacts.
+  SmoothAdjust is multithreaded (up to 16 threads) and SSE2 optimized.
+
+  For automatic adjustments, see the "AutoGain" standalone plugin.
+
+
+
+ II. DISCLAIMER :
+ ================
+
+  This program is free for non-commercial use only and must be distributed
+  in its original form without any modification, including this documentation file.
+  This program is provided as-is in the hope it will be useful but 
+  without any warranty, including any hypothetical damages or issues.
+
+  The official home page is "http://forum.doom9.org/showthread.php?t=154971",
+  it always contains the latest version of this program.
+  This page acts as the official support center, also the author is reachable
+  through his member page: "http://forum.doom9.org/member.php?u=131032".
+
+  This plugin has required a lot of work and hundreds of coding hours, so if you like
+  it and feel the need to reward or inspire the author then please consider donating.
+  Donations are a fast, easy and secure operation through Paypal: simply follow the
+  link into the "Donate.url" shortcut (you do not need a Paypal account to donate).
+  All donations will be very useful and I thank in advance all the generous people,
+  also if you are on the doom9's forum please specify your nickname when donating.
+
+
+
+ III. INSTALLATION :
+ ===================
+
+  There are different versions of SmoothAdjust to suit all installations of Avisynth.
+
+  avs-2.5.x & avs-2.6.x: - avs-2.5.x builds are for Avisynth v2.5.x
+                         - avs-2.6.x builds are for Avisynth v2.6.x
+
+  x86 & x64: - x86 builds are for Avisynth 32bits
+             - x64 builds are for Avisynth 64bits
+
+
+
+ IV. REQUIREMENTS :
+ ==================
+   
+  - Windows XP SP3 minimum
+  - Avisynth 2.5.x or Avisynth 2.6.x
+  - YUV Planar (Y8, YV411, YV12, YV16, YV24)
+  - 8bits or 16bits(MSB/LSB)
+
+
+
+ V. USAGE :
+ ==========
+
+  - SmoothLevels( input_low, gamma, input_high, output_low, output_high, chroma, limiter, TVrange, preset,
+                  Lmode, darkSTR, brightSTR, Ecurve, Ecenter, protect,
+                  interp, dither, HQ, useMT, useOPT, debug, screenW, screenH, scale )
+
+  - SmoothTweak( brightness, contrast, saturation, hue1, hue2, limiter, TVrange,
+                 Lmode, limitSTR, Ecenter,
+                 interp, dither, HQ, useMT, useOPT, debug, screenW, screenH, scale )
+
+  - SmoothCurve( Ycurve, Ucurve, Vcurve, mode, limiter, TVrange,
+                 interp, dither, HQ, useMT, useOPT, debug, screenW, screenH, scale )
+
+  - SmoothCustom( Yexpr, Uexpr, Vexpr, limiter, TVrange,
+                  interp, dither, HQ, useMT, useOPT, debug, screenW, screenH, scale )
+
+  - SmoothTools( filename,
+                 interp, dither, HQ, useMT, useOPT, debug, screenW, screenH, scale )
+
+  - SmoothLevels16(...), SmoothTweak16(...), SmoothCurve16(...), SmoothCustom16(...), SmoothTools16(...) for 16 bits
+
+
+
+ VI. COMMON SETTINGS :
+ =====================
+
+    interp [default: 100]
+    ---------------------
+     Strength of the interpolation
+     0   = disable (faster +++)
+     1   = weak
+     xx  = intermediary
+     200 = strong
+
+    dither [default: 75]
+    --------------------
+     Type of the dithering
+     -1  = dithering OFF
+     0   = pattern
+     xx  = intermediary
+     100 = noise
+
+    HQ [default: false]
+    -------------------
+     Enable high quality interpolation (slower)
+
+    useMT [default: 0]
+    ------------------
+     Use multithreading if necessary
+     0  = automatic choice
+     xx = xx threads (max = 16 threads)
+
+    useOPT [default: 0]
+    -------------------
+     Use SSE2 optimization when available
+     0 = automatic choice
+     1 = use C code
+     2 = use SSE2 code
+
+    debug [default: false]
+    ----------------------
+     Show the debug view at fullscreen resolution
+
+    screenW / screenH [default: -1 / -1]
+    ------------------------------------
+     Specific screen resolution for debug view
+
+    scale [default: true]
+    ---------------------
+     Auto-scale the size of parameters in debug view
+   
+
+
+ VII. SMOOTHLEVELS - GENERAL SETTINGS :
+ ======================================
+
+    levels parameters [default: 16, 1.0, 235, 16, 235]
+    --------------------------------------------------
+     input_low   [0-255]
+     gamma       [> 0.0]
+     input_high  [0-255]
+     output_low  [0-255]
+     output_high [0-255]
+
+    chroma [default: 100]
+    ---------------------
+     Strength for chroma (conversion based on levels parameters)
+      0   = no chroma processing
+      xx  = weak
+      100 = normal chroma processing
+      xx  = strong
+      200 = maximum chroma processing
+
+    limiter [default: 0]
+    --------------------
+     Clamp the output values
+      0 = no limiter
+      1 = clamp to output_low/output_high
+      2 = clamp to 16-235 for luma & 16-240 for chroma
+
+    TVrange [default: true]
+    -----------------------
+     Range of the clip (affects only limiting, see Lmode)
+
+    preset [default: "default"]
+    ---------------------------
+     "fullrange" = use "0, 1.0, 255, 0, 255" as default & set "TVrange = false"
+     "pc2tv"     = PC -> TV conversion
+     "tv2pc"     = TV -> PC conversion
+
+
+
+ VIII. SMOOTHLEVELS - LIMITING SETTINGS :
+ ========================================
+
+    Lmode [default: 0]
+    ------------------
+     Mode to reduce conversion on special areas for better looking result
+      0 = no limiting
+      1 = limit conversion on dark areas          (apply conversion @0%   at luma=0 & @100% at luma=255)
+      2 = limit conversion on bright areas        (apply conversion @100% at luma=0 & @0%   at luma=255)
+      3 = limit conversion on dark & bright areas (apply conversion @0%   at luma=0 & @100% at luma=Ecenter & @0% at luma=255)
+     (If TVrange=true, 16 & 235 are used instead of 0 & 255)
+
+    darkSTR [default: 100] 
+    ----------------------
+     Strength for limiting: the higher, the more conversion are reduced on dark areas (for Lmode=1&2)
+      0   = OFF
+      10  = weak limiting
+      200 = strong limiting
+
+    brightSTR [default: 100]
+    ------------------------
+     Strength for limiting: the higher, the more conversion are reduced on bright areas (for Lmode=1&3)
+      0   = OFF
+      10  = weak limiting
+      200 = strong limiting
+
+    Ecurve [default: 0]
+    -------------------
+     Type of curve used for limiting
+      0 = sine curve
+      1 = linear curve
+
+    Ecenter [default: 128]
+    ----------------------
+     Center of expression for Lmode=1 (0~255)
+
+    protect [default: -1]
+    ---------------------
+     -1  = protecting off
+     >=0 = black zone protection
+           ---> don't apply conversion on pixels egal or below this value 
+                (ex: with 16, the black areas like borders 
+                     and generic are untouched so they don't look washed out)
+
+
+
+ IX. SMOOTHTWEAK - GENERAL SETTINGS :
+ ====================================
+
+    brigthness [default: 0]
+    -----------------------
+     -255...0 = decrease the brigthness
+     0...+255 = increase the brigthness
+
+    contrast [default: 1.0]
+    -----------------------
+     0.0...1.0  = decrease the contrast
+     1.0...10.0 = increase the contrast
+
+    saturation [default: 1.0]
+    -------------------------
+     0.0...1.0  = decrease the saturation
+     1.0...10.0 = increase the saturation
+
+    hue1 [default: 0]
+    -----------------
+     -255...0 = shift the hue towards yellow
+     0...+255 = shift the hue towards blue
+
+    hue2 [default: 0]
+    -----------------
+     -255...0 = shift the hue towards green
+     0...+255 = shift the hue towards red
+
+    limiter [default: false]
+    ------------------------
+     Clamp the output to 16-235 for luma & 16-240 for chroma
+      false = OFF
+      true  = ON
+
+    TVrange [default: true]
+    -----------------------
+     Range of the clip (affects only contrast adjustment)
+
+
+
+ X. SMOOTHTWEAK - LIMITING SETTINGS :
+ ====================================
+
+   Lmode [default: 0]
+    ------------------
+     Mode to reduce conversion on special areas for better looking result (vibrance effect)
+      0 = no limiting
+      1 = limit conversion on dark areas (for luma) and on low saturated areas (for chroma)
+      2 = limit conversion on bright areas (for luma) and on high saturated areas (for chroma)
+
+    limitSTR [default: 100] 
+    -----------------------
+     Strength for limiting: the higher, the more conversion are reduced on specified areas
+      0   = OFF
+      10  = weak limiting
+      200 = strong limiting
+
+    Ecurve [default: 0]
+    -------------------
+     Type of curve used for limiting
+      0 = sine curve
+      1 = linear curve
+
+
+
+ XI. SMOOTHCURVE SETTINGS :
+ ==========================
+
+    Ycurve [default: "0-0;255-255"]
+    -------------------------------
+     Curve for the Y plane (luma)
+      Syntax: "a-b;c-d;e-f;..." a, c & e are source values and b, d & f are destination values
+       ---> Examples: "0-0;255-255"  = do nothing
+                      "0-255;255-0"  = invert the clip
+                      "0-16;255-235" = PC to TV conversion
+                      "0-0;16-0;235-255;255-255" = TV to PC conversion
+
+    Ucurve [default: "0-0;255-255"]
+    -------------------------------
+     Curve for the U plane (chroma)
+
+    Vcurve [default: "0-0;255-255"]
+    -------------------------------
+     Curve for the V plane (chroma)
+
+    mode [default: 100]
+    -------------------
+     Interpolation mode between control points
+      0   = linear
+      xx  = intermediary
+      100 = cubic
+
+    limiter [default: false]
+    ------------------------
+     Clamp the output to 16-235 for luma & 16-240 for chroma
+      false = OFF
+      true  = ON
+
+    TVrange [default: 0]
+    --------------------
+     Convert the curves to TVrange(16-235/16-240) before applying conversion
+      0 = OFF
+      1 = ON, clip values outside TVrange
+      2 = ON, process values outside TVrange
+
+
+
+ XII. SMOOTHCUSTOM SETTINGS :
+ ============================
+
+    Yexpr [default: "Y"]
+    --------------------
+     Expression for the Y plane (luma)
+
+       ---> OPERATORS:
+            ----------
+            Arithmetic : ^ * / % + -
+            Comparison : ! > < >= <= == != && ||
+            Ternary    : ? :
+            Constant   : pi
+
+       ---> FUNCTIONS:
+            ----------
+            sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, exp, log, ln, sqrt, abs, round, floor, ceil
+
+       ---> Examples: "Y"     = do nothing
+                      "255-Y" = invert the clip
+                      "Y+32"  = adjust brightness
+                      "Y*2"   = adjust contrast
+
+    Uexpr [default: "U"]
+    --------------------
+     Expression for the U plane (chroma)
+
+       ---> Example: "abs(U-128)+128"
+
+    Vexpr [default: "V"]
+    --------------------
+     Expression for the V plane (chroma)
+
+       ---> Example: "round(V/16)*16"
+
+    limiter [default: false]
+    ------------------------
+     Clamp the output to 16-235 for luma & 16-240 for chroma
+      false = OFF
+      true  = ON
+
+    TVrange [default: 0]
+    --------------------
+     Convert the expressions to TVrange(16-235/16-240) before applying conversion
+      0 = OFF
+      1 = ON, clip values outside TVrange
+      2 = ON, process values outside TVrange
+
+
+
+ XIII. SMOOTHTOOLS SETTINGS :
+ ============================
+
+    SmoothTools allows to use all the previous filters in one single pass.
+    The benefits are significant speedup, no rounding errors between each filters (internal 32-bits),
+    one pass smoothing/dithering (much better quality) and preset support (one file by settings).
+
+
+    filename [default: "default.smt"]
+    ---------------------------------
+     File used for processing
+
+       ---> SYNTAX:
+            -------
+            The file syntax is the same as avisynth but all parameters must be named.
+            Common settings between filters (smooth, dither, useMT, useOPT, ...) should not be used.
+            There is no limit to the number of filters in one file (but only one filter by line).
+            8-bits and 16-bits filters can not be mixed.
+
+       ---> EXAMPLES:
+            ---------
+               SmoothLevels(gamma=1.4,Lmode=1)
+               SmoothCurve(Ycurve="0-255;255-0")
+            OR
+               SmoothTweak16(saturation=1.6,Lmode=2)
+               SmoothCustom16(Yexpr="65535-Y")
+
+
+
+ XIV. 16 BITS SETTINGS :
+ =======================
+
+    Some parameters must be mapped to the [0-65535] range before use:
+
+      - SmoothLevels: input_low, input_high, output_low, output_high, Ecenter, protect
+      - SmoothTweak:  brightness, hue1, hue2
+      - SmoothCurve:  Ycurve, Ucurve, Vcurve
+      - SmoothCustom: Yexpr, Uexpr, Vexpr
+      - SmoothTools:  *
+
+    For example: SmoothCurve("0-255;128-128;255-0") --> SmoothCurve16("0-65535;32768-32768;65535-0")
+
+
+
+ XV. CHANGELOG :
+ ===============
+
+  - v2.95: fixed minor things
+           tweaked multi-threading code
+
+  - v2.90: fixed possible freeze in MT code
+           added explicit error messages
+
+  - v2.85: fixed bugs inside multi-threading code
+           removed user32 dependency
+           added AVX2 detection (for future opt)
+
+  - v2.80: used new C++11 features
+           rewritten multi-threading (native)
+           speed optimization (40% faster)
+           exception-safe code
+           added a high quality interpolation mode
+           changed some parameter names
+           fixed bugs in SmoothTools parser
+
+  - v2.62: fixed minor things & bugs
+           dropped ICL builds support
+
+  - v2.60: used new interface for v2.6.x builds
+
+  - v2.55: added small optimizations
+
+  - v2.51: fixed crash in SmoothCurve
+
+  - v2.50: added SmoothTools
+           improved SmoothTweak
+           improved dithering
+           tweaked memory usage
+           tweaked multithreading
+           cleaned various stuff
+
+  - v2.00: added Avisynth 2.6.x support
+           added Y8, YV411, YV16, YV24 support
+           added 16bits support with stacked MSB/LSB
+           added SmoothCustom filter
+           added TVrange parameter
+           added AVX optimization
+
+           improved smoothing algorithm
+           improved debug view
+           improved startup delay
+           improved speed with smoothing OFF
+
+           added decimals support in SmoothCurve
+           fixed interp scaling in SmoothCurve
+           changed defaults in SmoothLevels
+           fixed gamma clamping bug in SmoothLevels
+
+           fixed crash with mod4 clip 
+           fixed freeze in debug view
+           deleted Smode parameter
+           switched from ICL11 to ICL12
+           cleaned a lot the code
+           updated the documentation
+
+  - v1.74: updated preset="tv2pc" & preset="pc2tv"
+           fixed a bug in smoothing algorithm
+
+  - v1.70: added curve in debug mode for SmoothLevels
+
+  - v1.68: improved multithreading
+
+  - v1.64: fixed cache problem with UV planes
+
+  - v1.62: fixed crash with misaligned clip
+           added MOD2 support
+
+  - v1.60: improved startup time
+           fixed MOD4 error message
+           tweaked various things
+           added ICC11 build
+
+  - v1.56: added SSSE3 code
+           changed CPU detection routine
+
+  - v1.52: added SSE2 code (Smode=1 is 2x faster & Smode=2 is 3x faster)
+           added useopt parameter
+
+  - v1.46: tweaked smoothing code
+           removed useless Smode=1 & Smode=2
+           prepared support for YV16 & YV24 in Avisynth 2.6.x
+           switched from VS2008 to VS2010
+
+  - v1.44: added screenW & screenH for debugview
+           fixed a bug in font drawing
+           cleaned code
+
+  - v1.40: added debugview (see show=true)
+
+  - v1.30: fixed a bug in spline interpolation
+           cleaned various stuff
+
+  - v1.26: Smode=3 is now the default (instead of Smode=1)
+           tweaked smoothing sensitivity
+           updated documentation about Smode
+
+  - v1.24: added new interpolation mode for SmoothCurve (see interp)
+
+  - v1.18: tweaked Smode 3 & 4
+           updated avisynth header
+
+  - v1.16: replaced Smode 3 & 4 with stronger smoothing function
+           changed minors things
+
+  - v1.02: added x64 build
+           fixed a bug in SmoothLevels
+
+  - v1.00: first public release
+

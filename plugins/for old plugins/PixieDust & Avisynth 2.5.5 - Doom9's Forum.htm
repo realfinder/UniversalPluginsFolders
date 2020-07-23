@@ -1,0 +1,4227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="generator" content="vBulletin 3.8.5">
+
+<meta name="keywords" content=" PixieDust &amp; Avisynth 2.5.5, doom9,video,dvd,conversion,mpeg-2,mpeg-4,divx,xvid,avisynth">
+<meta name="description" content=" PixieDust &amp; Avisynth 2.5.5 Avisynth Usage">
+
+
+<!-- CSS Stylesheet -->
+<style type="text/css" id="vbulletin_css"><!--
+/* Effective stylesheet produced by snapshot save */
+body { background: none repeat scroll 0% 0% rgb(255, 255, 255); color: rgb(0, 0, 0); font: 10pt verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; margin: 5px 10px 10px; }
+a:link, body_alink { color: rgb(183, 90, 62); text-decoration: none; }
+a:visited, body_avisited { color: rgb(183, 90, 62); text-decoration: none; }
+a:hover, a:active, body_ahover { color: rgb(213, 147, 128); text-decoration: none; }
+.page { background: none repeat scroll 0% 0% rgb(255, 255, 255); color: rgb(0, 0, 0); }
+td, th, p, li { font: 10pt verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.tborder { background: none repeat scroll 0% 0% rgb(255, 255, 255); color: rgb(0, 0, 0); border: 1px solid rgb(11, 25, 140); }
+.tcat { background: none repeat scroll 0% 0% rgb(162, 192, 223); color: rgb(0, 0, 0); font: bold 10pt verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.tcat a:link, .tcat_alink { color: rgb(0, 0, 0); text-decoration: none; }
+.tcat a:visited, .tcat_avisited { color: rgb(0, 0, 0); text-decoration: none; }
+.tcat a:hover, .tcat a:active, .tcat_ahover { color: rgb(255, 255, 102); text-decoration: underline; }
+.thead { background: none repeat scroll 0% 0% rgb(153, 153, 153); color: rgb(255, 255, 255); font: bold 11px tahoma,verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.thead a:link, .thead_alink { color: rgb(255, 255, 255); }
+.thead a:visited, .thead_avisited { color: rgb(255, 255, 255); }
+.thead a:hover, .thead a:active, .thead_ahover { color: rgb(255, 255, 0); }
+.tfoot { background: none repeat scroll 0% 0% rgb(162, 192, 223); color: rgb(0, 0, 0); }
+.tfoot a:link, .tfoot_alink { color: rgb(255, 255, 255); }
+.tfoot a:visited, .tfoot_avisited { color: rgb(255, 255, 255); }
+.tfoot a:hover, .tfoot a:active, .tfoot_ahover { color: rgb(255, 255, 102); }
+.alt1, .alt1Active { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(0, 0, 0); }
+.alt2, .alt2Active { background: none repeat scroll 0% 0% rgb(218, 218, 218); color: rgb(0, 0, 0); }
+.inlinemod { background: none repeat scroll 0% 0% rgb(255, 255, 204); color: rgb(0, 0, 0); }
+.wysiwyg { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(0, 0, 0); font: 10pt verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+textarea, .bginput { font: 10pt verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.bginput option, .bginput optgroup { font-size: 10pt; font-family: verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.button { font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+select { font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+option, optgroup { font-size: 11px; font-family: verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.smallfont { font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.time { color: rgb(102, 102, 134); }
+.navbar { font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.highlight { color: rgb(255, 0, 0); font-weight: bold; }
+.fjsel { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(0, 0, 0); }
+.fjdpth0 { background: none repeat scroll 0% 0% rgb(247, 247, 247); color: rgb(0, 0, 0); }
+.panel { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(0, 0, 0); padding: 10px; border: 2px outset; }
+.panelsurround { background: none repeat scroll 0% 0% rgb(218, 218, 218); color: rgb(0, 0, 0); }
+legend { color: rgb(34, 34, 156); font: 11px tahoma,verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; }
+.vbmenu_control { background: none repeat scroll 0% 0% rgb(162, 192, 223); color: rgb(255, 255, 255); font: bold 11px tahoma,verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; padding: 3px 6px; white-space: nowrap; }
+.vbmenu_control a:link, .vbmenu_control_alink { color: rgb(255, 255, 255); text-decoration: none; }
+.vbmenu_control a:visited, .vbmenu_control_avisited { color: rgb(255, 255, 255); text-decoration: none; }
+.vbmenu_control a:hover, .vbmenu_control a:active, .vbmenu_control_ahover { color: rgb(255, 255, 255); text-decoration: underline; }
+.vbmenu_popup { background: none repeat scroll 0% 0% rgb(255, 255, 255); color: rgb(0, 0, 0); border: 1px solid rgb(11, 25, 140); }
+.vbmenu_option { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(0, 0, 0); font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; white-space: nowrap; cursor: pointer; }
+.vbmenu_option a:link, .vbmenu_option_alink { color: rgb(183, 90, 62); text-decoration: none; }
+.vbmenu_option a:visited, .vbmenu_option_avisited { color: rgb(183, 90, 62); text-decoration: none; }
+.vbmenu_option a:hover, .vbmenu_option a:active, .vbmenu_option_ahover { color: rgb(213, 147, 128); text-decoration: none; }
+.vbmenu_hilite { background: none repeat scroll 0% 0% rgb(238, 238, 238); color: rgb(255, 255, 255); font: 11px verdana,geneva,lucida,'lucida grande',arial,helvetica,sans-serif; white-space: nowrap; cursor: pointer; }
+.vbmenu_hilite a:link, .vbmenu_hilite_alink { color: rgb(255, 255, 255); text-decoration: none; }
+.vbmenu_hilite a:visited, .vbmenu_hilite_avisited { color: rgb(255, 255, 255); text-decoration: none; }
+.vbmenu_hilite a:hover, .vbmenu_hilite a:active, .vbmenu_hilite_ahover { color: rgb(255, 255, 255); text-decoration: none; }
+.bigusername { font-size: 14pt; }
+td.thead, th.thead, div.thead { padding: 4px; }
+.pagenav a { text-decoration: none; }
+.pagenav td { padding: 2px 4px; }
+.shade, a.shade:link, a.shade:visited { color: rgb(119, 119, 119); text-decoration: none; }
+a.shade:active, a.shade:hover { color: rgb(255, 68, 0); text-decoration: underline; }
+.tcat .shade, .thead .shade, .tfoot .shade { color: rgb(221, 221, 221); }
+.fieldset { margin-bottom: 6px; }
+.fieldset, .fieldset td, .fieldset p, .fieldset li { font-size: 11px; }
+--></style>
+<link rel="stylesheet" type="text/css" href="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/vbulletin_important.css">
+
+
+<!-- / CSS Stylesheet -->
+
+<script type="text/javascript" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/connection-min.js"></script>
+<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+<script type="text/javascript" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/vbulletin_global.js"></script>
+<script type="text/javascript" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/vbulletin_menu.js"></script>
+
+
+	<link rel="alternate" type="application/rss+xml" title="Doom9's Forum RSS Feed" href="http://forum.doom9.org/external.php?type=RSS2">
+	
+		<link rel="alternate" type="application/rss+xml" title="Doom9's Forum - Avisynth Usage - RSS Feed" href="http://forum.doom9.org/external.php?type=RSS2&amp;forumids=33">
+	
+
+<script type="text/javascript" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/tapatalkdetect.js"></script><script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+		
+	<title> PixieDust &amp; Avisynth 2.5.5 - Doom9's Forum</title>
+	<script type="text/javascript" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/vbulletin_post_loader.js"></script>
+	<style type="text/css" id="vbulletin_showthread_css"><!--
+/* Effective stylesheet produced by snapshot save */
+#links div { white-space: nowrap; }
+#links img { vertical-align: middle; }
+--></style>
+</head>
+<body onload="">
+<!-- logo -->
+<a name="top"></a>
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr>
+	<td><center><p><b>Welcome to <a href="http://www.doom9.org/">Doom9</a>'s Forum, THE in-place to be for everyone interested in DVD conversion.</b></p>
+<p><b>Before you start posting please read the <a href="http://forum.doom9.org/forum-rules.htm">forum rules</a>. By posting to this forum you agree to abide by the rules.</b></p></center></td>
+
+	<td id="header_right_cell" align="right">
+		 
+	</td>
+</tr>
+</tbody></table>
+<!-- /logo -->
+
+<!-- content table -->
+<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+
+
+
+
+<br>
+
+<!-- breadcrumb, login, pm info -->
+<table class="tborder" align="center" border="0" cellpadding="6" cellspacing="1" width="100%">
+<tbody><tr>
+	<td class="alt1" width="100%">
+		
+			<table border="0" cellpadding="0" cellspacing="0">
+			<tbody><tr valign="bottom">
+				<td><a href="#" onclick=""><img title="Go Back" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/navbits_start.gif" alt="Go Back" border="0"></a></td>
+				<td> </td>
+				<td width="100%"><span class="navbar"><a href="http://forum.doom9.org/index.php" accesskey="1">Doom9's Forum</a></span> 
+	<span class="navbar">&gt; <a href="http://forum.doom9.org/forumdisplay.php?f=67">Capturing and Editing Video</a></span>
+
+
+	<span class="navbar">&gt; <a href="http://forum.doom9.org/forumdisplay.php?f=33">Avisynth Usage</a></span>
+
+</td>
+			</tr>
+			<tr>
+				<td class="navbar" style="font-size:10pt; padding-top:1px" colspan="3"><a href="#"><img title="Reload this Page" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/navbits_finallink_ltr.gif" alt="Reload this Page" border="0"></a> <strong>
+	 PixieDust &amp; Avisynth 2.5.5
+
+</strong></td>
+			</tr>
+			</tbody></table>
+		
+	</td>
+
+	<td class="alt2" style="padding:0px" nowrap="nowrap">
+		<!-- login form -->
+		<form action="http://forum.doom9.org/login.php?do=login" method="post" onsubmit="">
+		<script type="text/javascript" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/vbulletin_md5.js"></script>
+		<table border="0" cellpadding="0" cellspacing="3">
+		<tbody><tr>
+			<td class="smallfont" style="white-space: nowrap;"><label for="navbar_username">User Name</label></td>
+			<td><input class="bginput" style="font-size: 11px" name="vb_login_username" id="navbar_username" size="10" accesskey="u" tabindex="101" value="User Name" onfocus="" type="text"></td>
+			<td class="smallfont" nowrap="nowrap"><label for="cb_cookieuser_navbar"><input name="cookieuser" value="1" tabindex="103" id="cb_cookieuser_navbar" accesskey="c" type="checkbox">Remember Me?</label></td>
+		</tr>
+		<tr>
+			<td class="smallfont"><label for="navbar_password">Password</label></td>
+			<td><input class="bginput" style="font-size: 11px" name="vb_login_password" id="navbar_password" size="10" tabindex="102" type="password"></td>
+			<td><input class="button" value="Log in" tabindex="104" title="Enter your username and password in the boxes provided to login, or click the 'register' button to create a profile for yourself." accesskey="s" type="submit"></td>
+		</tr>
+		</tbody></table>
+		<input name="s" value="" type="hidden">
+		<input name="securitytoken" value="guest" type="hidden">
+		<input name="do" value="login" type="hidden">
+		<input name="vb_login_md5password" type="hidden">
+		<input name="vb_login_md5password_utf" type="hidden">
+		</form>
+		<!-- / login form -->
+	</td>
+
+</tr>
+</tbody></table>
+<!-- / breadcrumb, login, pm info -->
+
+<!-- nav buttons bar -->
+<div class="tborder" style="padding:1px; border-top-width:0px">
+	<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+	<tbody><tr align="center">
+		
+		
+			<td class="vbmenu_control"><a href="http://forum.doom9.org/register.php" rel="nofollow">Register</a></td>
+		
+		
+		<td class="vbmenu_control"><a rel="help" href="http://forum.doom9.org/faq.php" accesskey="5">FAQ</a></td>
+		
+			
+			
+		
+		<td class="vbmenu_control"><a href="http://forum.doom9.org/calendar.php">Calendar</a></td>
+		
+			
+				
+				<td class="vbmenu_control"><a href="http://forum.doom9.org/search.php?do=getdaily" accesskey="2">Today's Posts</a></td>
+				
+				<td class="vbmenu_control"><a id="navbar_search" href="http://forum.doom9.org/search.php" accesskey="4" rel="nofollow">Search</a> </td>
+			
+			
+		
+		
+		
+		</tr>
+	</tbody></table>
+</div>
+<!-- / nav buttons bar -->
+
+<br>
+
+
+
+
+
+
+<!-- NAVBAR POPUP MENUS -->
+
+	
+	
+	
+	<!-- header quick search form -->
+	<div class="vbmenu_popup" id="navbar_search_menu" style="display:none;margin-top:3px" align="left">
+		<table border="0" cellpadding="4" cellspacing="1">
+		<tbody><tr>
+			<td class="thead">Search Forums</td>
+		</tr>
+		<tr>
+			<td class="vbmenu_option" title="nohilite">
+				<form action="http://forum.doom9.org/search.php?do=process" method="post">
+
+					<input name="do" value="process" type="hidden">
+					<input name="quicksearch" value="1" type="hidden">
+					<input name="childforums" value="1" type="hidden">
+					<input name="exactname" value="1" type="hidden">
+					<input name="s" value="" type="hidden">
+					<input name="securitytoken" value="guest" type="hidden">
+					<div><input class="bginput" name="query" size="25" tabindex="1001" type="text"><input class="button" value="Go" tabindex="1004" type="submit"></div>
+					<div style="margin-top:6px">
+						<label for="rb_nb_sp0"><input name="showposts" value="0" id="rb_nb_sp0" tabindex="1002" checked="checked" type="radio">Show Threads</label>
+						 
+						<label for="rb_nb_sp1"><input name="showposts" value="1" id="rb_nb_sp1" tabindex="1003" type="radio">Show Posts</label>
+					</div>
+				</form>
+			</td>
+		</tr>
+		
+		<tr>
+			<td class="vbmenu_option"><a href="http://forum.doom9.org/tags.php" rel="nofollow">Tag Search</a></td>
+		</tr>
+		
+		<tr>
+			<td class="vbmenu_option"><a href="http://forum.doom9.org/search.php" accesskey="4" rel="nofollow">Advanced Search</a></td>
+		</tr>
+		
+		</tbody></table>
+	</div>
+	<!-- / header quick search form -->
+	
+	
+	
+<!-- / NAVBAR POPUP MENUS -->
+
+<!-- PAGENAV POPUP -->
+	<div class="vbmenu_popup" id="pagenav_menu" style="display: none; position: absolute; z-index: 50;">
+		<table border="0" cellpadding="4" cellspacing="1">
+		<tbody><tr>
+			<td class="thead" nowrap="nowrap">Go to Page...</td>
+		</tr>
+		<tr>
+			<td class="vbmenu_option" title="">
+			<form action="http://forum.doom9.org/index.php" method="get" onsubmit="" id="pagenav_form">
+				<input class="bginput" id="pagenav_itxt" style="font-size:11px" size="4" type="text">
+				<input class="button" id="pagenav_ibtn" value="Go" type="button">
+			</form>
+			</td>
+		</tr>
+		</tbody></table>
+	</div>
+<!-- / PAGENAV POPUP -->
+
+
+
+
+
+
+
+
+
+
+<a name="poststop" id="poststop"></a>
+
+<!-- controls above postbits -->
+<table style="margin-bottom:3px" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr valign="bottom">
+	
+		<td class="smallfont"><a href="http://forum.doom9.org/newreply.php?do=newreply&amp;noquote=1&amp;p=569974" rel="nofollow"><img title="Reply" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/reply.gif" alt="Reply" border="0"></a></td>
+	
+	<td align="right"><div class="pagenav" align="right">
+<table class="tborder" border="0" cellpadding="3" cellspacing="1">
+<tbody><tr>
+	<td class="vbmenu_control" style="font-weight:normal">Page 1 of 2</td>
+	
+	
+		<td class="alt2"><span class="smallfont" title="Showing results 1 to 20 of 21"><strong>1</strong></span></td>
+ <td class="alt1"><a class="smallfont" href="http://forum.doom9.org/showthread.php?t=85384&amp;page=2" title="Show results 21 to 21 of 21">2</a></td>
+	<td class="alt1"><a rel="next" class="smallfont" href="http://forum.doom9.org/showthread.php?t=85384&amp;page=2" title="Next Page - Results 21 to 21 of 21">&gt;</a></td>
+	
+	<td style="cursor: pointer;" id="pagenav.31" class="vbmenu_control" title=""> <img alt="" title="" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/menu_open.gif" border="0"></td>
+</tr>
+</tbody></table>
+</div></td>
+</tr>
+</tbody></table>
+<!-- / controls above postbits -->
+
+<!-- toolbar -->
+<table class="tborder" style="border-bottom-width:0px" align="center" border="0" cellpadding="6" cellspacing="1" width="100%">
+<tbody><tr>
+	<td class="tcat" width="100%">
+		<div class="smallfont">
+		
+		 
+		</div>
+	</td>
+	<td style="cursor: pointer;" class="vbmenu_control" id="threadtools" nowrap="nowrap">
+		<a href="http://forum.doom9.org/showthread.php?t=85384&amp;nojs=1#goto_threadtools">Thread Tools</a>
+		<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script> <img alt="" title="" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/menu_open.gif" border="0">
+	</td>
+	
+	
+	
+	<td style="cursor: pointer;" class="vbmenu_control" id="displaymodes" nowrap="nowrap">
+		<a href="http://forum.doom9.org/showthread.php?t=85384&amp;nojs=1#goto_displaymodes">Display Modes</a>
+		<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script> <img alt="" title="" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/menu_open.gif" border="0">
+	</td>
+	
+
+	
+
+</tr>
+</tbody></table>
+<!-- / toolbar -->
+
+
+
+<!-- end content table -->
+
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+<!-- / end content table -->
+
+
+
+
+
+<div id="posts"><!-- post #569974 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit569974" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post569974" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post569974"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			15th November 2004, 01:08
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=569974&amp;postcount=1" target="new" rel="nofollow" id="postcount569974" name="1"><strong>1</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=569974#post569974" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_569974">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=65445">SoundScape</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Sitting On The Moon...</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=65445"><img title="SoundScape's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="SoundScape's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Oct 2004</div>
+				<div>Location: Greece</div>
+				
+				<div>
+					Posts: 66
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_569974" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+			<!-- icon and title -->
+			<div class="smallfont">
+				
+				<strong>PixieDust &amp; Avisynth 2.5.5</strong>
+			</div>
+			<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+			<!-- / icon and title -->
+		
+
+		<!-- message -->
+		<div id="post_message_569974">
+			
+			Hello to all,<br>
+<br>
+My apologies if the following question has been answered elsewhere. I am having trouble getting PixieDust to work in Avisynth 2.5.5. I know that this filter is designed to work only in Avisynth 2.0x but at some point I realised that it is possible to get it to work with version 2.5x. There is a relevant reference to the way it can be done <a href="http://www.avisynth.org/LoadOldPlugins" target="_blank">here</a>. I followed the instructions to the letter but when I try to apply PixieDust, my video file opens and then closes immediately. I've tried opening the .avs file using a variety of video players and all behaved exactly the same, i.e. they open and close without displaying the video. Does anyone has any suggestions to make? Is there a version of PixieDust that works with Avisynth 2.5x? That's all, thank you in advance!
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				"Everything that has a beginning has an end..."
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="SoundScape is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="SoundScape is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=569974" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 569974 popup menu -->
+<div class="vbmenu_popup" id="postmenu_569974_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">SoundScape</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=65445">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=65445" rel="nofollow">Find More Posts by SoundScape</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 569974 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #569974 --><!-- post #570001 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit570001" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post570001" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post570001"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			15th November 2004, 02:49
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=570001&amp;postcount=2" target="new" rel="nofollow" id="postcount570001" name="2"><strong>2</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=570001#post570001" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_570001">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=43950">hartford</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=43950"><img title="hartford's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php.png" alt="hartford's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Nov 2003</div>
+				
+				
+				<div>
+					Posts: 320
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_570001" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_570001">
+			
+			I believe that you have the incorrect version.<br>
+<br>
+You need LoadPluginEx.dll, 60K in size.<br>
+<br>
+There is another version of this dll 56K in size.  This one won't work.<br>
+<br>
+Go to <a href="http://www.avisynth.org/warpenterprises" target="_blank">www.avisynth.org/warpenterprises</a> and get the<a href="http://www.avisynth.org/warpenterprises/files/warpsharppackage_25_dll_20031103.zip" target="_blank">WarpSharpPackage</a>
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="hartford is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="hartford is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=570001" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 570001 popup menu -->
+<div class="vbmenu_popup" id="postmenu_570001_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">hartford</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=43950">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=43950" rel="nofollow">Find More Posts by hartford</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 570001 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #570001 --><!-- post #570371 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit570371" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post570371" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post570371"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			16th November 2004, 00:53
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=570371&amp;postcount=3" target="new" rel="nofollow" id="postcount570371" name="3"><strong>3</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=570371#post570371" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_570371">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=65445">SoundScape</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Sitting On The Moon...</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=65445"><img title="SoundScape's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="SoundScape's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Oct 2004</div>
+				<div>Location: Greece</div>
+				
+				<div>
+					Posts: 66
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_570371" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_570371">
+			
+			Unfortunately I have the correct version of LoadPluginEx.dll. It is indeed 60K in size and I got it through the WarpSharp Package. Still I encounter the same problem. Any other suggestions?  <img src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/biggrin.gif" alt="" title="Big Grin" class="inlineimg" border="0"> <br>
+<br>
+BTW, what's the purpose of LoadPluginEx.dll? What does it do? Thanks!
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				"Everything that has a beginning has an end..."
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="SoundScape is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="SoundScape is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=570371" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 570371 popup menu -->
+<div class="vbmenu_popup" id="postmenu_570371_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">SoundScape</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=65445">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=65445" rel="nofollow">Find More Posts by SoundScape</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 570371 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #570371 --><!-- post #570431 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit570431" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post570431" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post570431"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			16th November 2004, 03:48
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=570431&amp;postcount=4" target="new" rel="nofollow" id="postcount570431" name="4"><strong>4</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=570431#post570431" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_570431">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=49533">iradic</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Jan 2004</div>
+				
+				
+				<div>
+					Posts: 332
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_570431" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_570431">
+			
+			maybe this will help...<br>
+<br>
+pixiedust works only in yuy2 ... try converttoyuy2() before pixiedust...<br>
+<br>
+alos in your avs you must order loadplugin list... and i think that pixiedust must be the last plugin loaded...<br>
+<br>
+# 1) avisynth 2.5x plugins<br>
+loadplugin...<br>
+# 2) 2.0 plugins import<br>
+loadplugin("...\loadpluginex.dll")<br>
+# 3) 2.0 plugins<br>
+loadplugin...<br>
+# pixiedust the last one...<br>
+loadplugin("...\dustv5.dll")<br>
+<br>
+and i think you can put only one instance of pixiedust in the script... but i never tried that...
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="iradic is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="iradic is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=570431" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 570431 popup menu -->
+<div class="vbmenu_popup" id="postmenu_570431_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">iradic</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=49533">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=49533" rel="nofollow">Find More Posts by iradic</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 570431 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #570431 --><!-- post #570435 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit570435" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post570435" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post570435"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			16th November 2004, 03:56
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=570435&amp;postcount=5" target="new" rel="nofollow" id="postcount570435" name="5"><strong>5</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=570435#post570435" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_570435">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=45003">Audionut</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Nov 2003</div>
+				
+				
+				<div>
+					Posts: 1,217
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_570435" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_570435">
+			
+			LoadPlugin("C:\DGDecode.dll")  #load avisynth 2.5 plugins first.<br>
+LoadPlugin("C:\Unfilter.dll")<br>
+LoadPlugin("C:\LoadPluginEX.dll")<br>
+LoadPlugin("C:\dustv5.dll")<br>
+<br>
+Mpeg2Source("C:\test.d2v")<br>
+<br>
+crop(x,x,x,x)<br>
+<br>
+converttoyuy2()<br>
+pixiedust()<br>
+converttoyv12()<br>
+<br>
+resize(xxx,xxx)<br>
+unfilter(-x,-x)
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Audionut is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Audionut is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=570435" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 570435 popup menu -->
+<div class="vbmenu_popup" id="postmenu_570435_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Audionut</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=45003">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=45003" rel="nofollow">Find More Posts by Audionut</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 570435 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #570435 --><!-- post #570439 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit570439" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post570439" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post570439"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			16th November 2004, 04:17
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=570439&amp;postcount=6" target="new" rel="nofollow" id="postcount570439" name="6"><strong>6</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=570439#post570439" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_570439">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=43950">hartford</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=43950"><img title="hartford's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php.png" alt="hartford's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Nov 2003</div>
+				
+				
+				<div>
+					Posts: 320
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_570439" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_570439">
+			
+			<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<i>Originally posted by SoundScape </i><br>
+<b>Unfortunately I have the correct version of LoadPluginEx.dll. It is indeed 60K in size and I got it through the WarpSharp Package. Still I encounter the same problem. Any other suggestions?  <img src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/biggrin.gif" alt="" title="Big Grin" class="inlineimg" border="0"> <br>
+<br>
+BTW, what's the purpose of LoadPluginEx.dll? What does it do? Thanks! </b>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>It allows you to use a plugin developed for Avisynth 2.0 to be used in<br>
+Avisynth 2.5<br>
+<br>
+The plugin LoadPluginEx.dll should not be "automatically" loaded; ie, <br>
+do not put it in the  .../avisynth/plugin  directory.  Put it in some<br>
+other directory and call it from your script.<br>
+<br>
+If that does not work, then you have some other problem.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="hartford is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="hartford is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=570439" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 570439 popup menu -->
+<div class="vbmenu_popup" id="postmenu_570439_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">hartford</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=43950">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=43950" rel="nofollow">Find More Posts by hartford</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 570439 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #570439 --><!-- post #570641 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit570641" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post570641" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post570641"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			16th November 2004, 17:32
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=570641&amp;postcount=7" target="new" rel="nofollow" id="postcount570641" name="7"><strong>7</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=570641#post570641" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_570641">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=17545">pelle412</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Pinhead</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=17545"><img title="pelle412's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php-1.jpg" alt="pelle412's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Sep 2002</div>
+				<div>Location: Twin Cities, MN, USA</div>
+				
+				<div>
+					Posts: 158
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_570641" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_570641">
+			
+			You also need a few other dlls, particularly msvcr71.dll and msvcp71.dll in your windows\system32 directory. You can find them by googling for them.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="pelle412 is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="pelle412 is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=570641" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 570641 popup menu -->
+<div class="vbmenu_popup" id="postmenu_570641_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">pelle412</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=17545">View Public Profile</a></td></tr>
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://www.messyface.com/">Visit pelle412's homepage!</a></td></tr>
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=17545" rel="nofollow">Find More Posts by pelle412</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 570641 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #570641 --><!-- post #570773 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit570773" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post570773" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post570773"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			16th November 2004, 23:43
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=570773&amp;postcount=8" target="new" rel="nofollow" id="postcount570773" name="8"><strong>8</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=570773#post570773" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_570773">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=65445">SoundScape</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Sitting On The Moon...</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=65445"><img title="SoundScape's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php.jpg" alt="SoundScape's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Oct 2004</div>
+				<div>Location: Greece</div>
+				
+				<div>
+					Posts: 66
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_570773" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_570773">
+			
+			Thanks guys! Problem solved. The cause was that I forgot to use ConvertToYUY2 prior to using PixieDust  <img src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/redface.gif" alt="" title="Embarrassment" class="inlineimg" border="0"><br>
+Works flawlessly but it is too slow. Encoding runs at 4-5fps!!!<br>
+Anyway, thanks again.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				"Everything that has a beginning has an end..."
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="SoundScape is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="SoundScape is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=570773" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 570773 popup menu -->
+<div class="vbmenu_popup" id="postmenu_570773_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">SoundScape</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=65445">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=65445" rel="nofollow">Find More Posts by SoundScape</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 570773 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #570773 --><!-- post #570837 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit570837" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post570837" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post570837"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			17th November 2004, 03:29
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=570837&amp;postcount=9" target="new" rel="nofollow" id="postcount570837" name="9"><strong>9</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=570837#post570837" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_570837">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=17545">pelle412</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Pinhead</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=17545"><img title="pelle412's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php-1.jpg" alt="pelle412's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Sep 2002</div>
+				<div>Location: Twin Cities, MN, USA</div>
+				
+				<div>
+					Posts: 158
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_570837" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_570837">
+			
+			If you want the best noise remover / compressibility, there is a price to pay :-)
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="pelle412 is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="pelle412 is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=570837" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 570837 popup menu -->
+<div class="vbmenu_popup" id="postmenu_570837_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">pelle412</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=17545">View Public Profile</a></td></tr>
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://www.messyface.com/">Visit pelle412's homepage!</a></td></tr>
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=17545" rel="nofollow">Find More Posts by pelle412</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 570837 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #570837 --><!-- post #649378 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit649378" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post649378" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post649378"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			4th May 2005, 05:26
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=649378&amp;postcount=10" target="new" rel="nofollow" id="postcount649378" name="10"><strong>10</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=649378#post649378" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_649378">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=59677">gavo</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">intel codec family</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=59677"><img title="gavo's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php.gif" alt="gavo's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Jun 2004</div>
+				<div>Location: In a desert</div>
+				
+				<div>
+					Posts: 295
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_649378" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_649378">
+			
+			I dont know were to put WarpSharpPackage? do I put it in the plugins folder?
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				You can take away my SIG but you can't take away my pride as a NOOBIE!
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="gavo is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="gavo is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=649378" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 649378 popup menu -->
+<div class="vbmenu_popup" id="postmenu_649378_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">gavo</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=59677">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=59677" rel="nofollow">Find More Posts by gavo</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 649378 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #649378 --><!-- post #649464 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit649464" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post649464" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post649464"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			4th May 2005, 10:37
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=649464&amp;postcount=11" target="new" rel="nofollow" id="postcount649464" name="11"><strong>11</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=649464#post649464" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_649464">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=2705">Wilbert</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Moderator</div>
+			<div class="smallfont"><img src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/d9.gif" alt="" border=""></div>
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Nov 2001</div>
+				<div>Location: Netherlands</div>
+				
+				<div>
+					Posts: 5,925
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_649464" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_649464">
+			
+			Just put it in a separate folder.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Wilbert is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Wilbert is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=649464" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 649464 popup menu -->
+<div class="vbmenu_popup" id="postmenu_649464_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Wilbert</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=2705">View Public Profile</a></td></tr>
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://www.wilbertdijkhof.com/">Visit Wilbert's homepage!</a></td></tr>
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=2705" rel="nofollow">Find More Posts by Wilbert</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 649464 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #649464 --><!-- post #650077 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit650077" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post650077" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post650077"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			5th May 2005, 17:14
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=650077&amp;postcount=12" target="new" rel="nofollow" id="postcount650077" name="12"><strong>12</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=650077#post650077" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_650077">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=7246">dvwannab</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Feb 2002</div>
+				
+				
+				<div>
+					Posts: 76
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_650077" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+			<!-- icon and title -->
+			<div class="smallfont">
+				
+				<strong>unfilter</strong>
+			</div>
+			<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+			<!-- / icon and title -->
+		
+
+		<!-- message -->
+		<div id="post_message_650077">
+			
+			<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<i>Originally posted by Audionut </i><br>
+<b>LoadPlugin("C:\DGDecode.dll")  #load avisynth 2.5 plugins first.<br>
+LoadPlugin("C:\Unfilter.dll")<br>
+LoadPlugin("C:\LoadPluginEX.dll")<br>
+LoadPlugin("C:\dustv5.dll")<br>
+<br>
+Mpeg2Source("C:\test.d2v")<br>
+<br>
+crop(x,x,x,x)<br>
+<br>
+converttoyuy2()<br>
+pixiedust()<br>
+converttoyv12()<br>
+<br>
+resize(xxx,xxx)<br>
+unfilter(-x,-x) </b>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>What is the purpose of Unfilter?  And what does "unfilter(-x,-x)" do?  Thnaks.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="dvwannab is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="dvwannab is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=650077" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 650077 popup menu -->
+<div class="vbmenu_popup" id="postmenu_650077_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">dvwannab</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=7246">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=7246" rel="nofollow">Find More Posts by dvwannab</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 650077 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #650077 --><!-- post #650355 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit650355" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post650355" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post650355"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			6th May 2005, 10:06
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=650355&amp;postcount=13" target="new" rel="nofollow" id="postcount650355" name="13"><strong>13</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=650355#post650355" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_650355">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=45003">Audionut</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Nov 2003</div>
+				
+				
+				<div>
+					Posts: 1,217
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_650355" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+			<!-- icon and title -->
+			<div class="smallfont">
+				
+				<strong>Re: unfilter</strong>
+			</div>
+			<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+			<!-- / icon and title -->
+		
+
+		<!-- message -->
+		<div id="post_message_650355">
+			
+			<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<i>Originally posted by dvwannab </i><br>
+<b>What is the purpose of Unfilter?  And what does "unfilter(-x,-x)" do?  Thnaks. </b>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>Sharpener/softener.<br>
+<br>
+Minus (-) values soften.<br>
+<br>
+Positive values sharpen.<br>
+<br>
+A little bit of softening will help with compressability.<br>
+<br>
+<a href="http://forum.doom9.org/showthread.php?s=&amp;threadid=28197&amp;highlight=unfilter" target="_blank">It's amazing what the search feature provides.</a> 
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Audionut is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Audionut is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=650355" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 650355 popup menu -->
+<div class="vbmenu_popup" id="postmenu_650355_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Audionut</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=45003">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=45003" rel="nofollow">Find More Posts by Audionut</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 650355 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #650355 --><!-- post #765025 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit765025" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post765025" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post765025"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			9th January 2006, 16:44
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=765025&amp;postcount=14" target="new" rel="nofollow" id="postcount765025" name="14"><strong>14</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=765025#post765025" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_765025">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=87965">kohsaf1</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Neuer</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=87965"><img title="kohsaf1's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php-1.gif" alt="kohsaf1's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Nov 2005</div>
+				<div>Location: UK</div>
+				
+				<div>
+					Posts: 13
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_765025" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_765025">
+			
+			can someone upload 'LoadPluginEx.dll, 60K in size.' this as an attachment here please<img src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/smile.gif" alt="" title="Smilie" class="inlineimg" border="0"> <br>
+<br>
+tried searching through the forum but couldnt find it and looks like avisynth.org is down.....
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="kohsaf1 is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="kohsaf1 is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=765025" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 765025 popup menu -->
+<div class="vbmenu_popup" id="postmenu_765025_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">kohsaf1</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=87965">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=87965" rel="nofollow">Find More Posts by kohsaf1</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 765025 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #765025 --><!-- post #765083 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit765083" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post765083" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post765083"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			9th January 2006, 18:53
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=765083&amp;postcount=15" target="new" rel="nofollow" id="postcount765083" name="15"><strong>15</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=765083#post765083" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_765083">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=51199">unskinnyboy</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=51199"><img title="unskinnyboy's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php-1.png" alt="unskinnyboy's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Feb 2004</div>
+				<div>Location: NTSC R1</div>
+				
+				<div>
+					Posts: 2,053
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_765083" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_765083">
+			
+			<a href="http://rapidshare.de/files/10727703/LoadPluginEx.dll.html" target="_blank">Here</a>!
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				<div align="center"><i><b>I encode, therefore I am.</b></i><br>
+<br>
+<a href="http://forum.doom9.org/showthread.php?t=112252" target="_blank"><font color="DarkRed"><b>Doom9 Toolbar Extension for Firefox [v3.1]</b></font></a></div>
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="unskinnyboy is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="unskinnyboy is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=765083" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 765083 popup menu -->
+<div class="vbmenu_popup" id="postmenu_765083_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">unskinnyboy</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=51199">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=51199" rel="nofollow">Find More Posts by unskinnyboy</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 765083 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #765083 --><!-- post #765861 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit765861" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post765861" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post765861"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			10th January 2006, 23:49
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=765861&amp;postcount=16" target="new" rel="nofollow" id="postcount765861" name="16"><strong>16</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=765861#post765861" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_765861">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=87965">kohsaf1</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Neuer</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=87965"><img title="kohsaf1's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php-1.gif" alt="kohsaf1's Avatar" border="0"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Nov 2005</div>
+				<div>Location: UK</div>
+				
+				<div>
+					Posts: 13
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_765861" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_765861">
+			
+			<div style="margin:20px; margin-top:5px; ">
+	<div class="smallfont" style="margin-bottom:2px">Quote:</div>
+	<table border="0" cellpadding="6" cellspacing="0" width="100%">
+	<tbody><tr>
+		<td class="alt2" style="border:1px inset">
+			
+				<div>
+					Originally Posted by <strong>unskinnyboy</strong>
+					
+				</div>
+				<div style="font-style:italic"><a href="http://rapidshare.de/files/10727703/LoadPluginEx.dll.html" target="_blank">Here</a>!</div>
+			
+		</td>
+	</tr>
+	</tbody></table>
+</div>thank you very much USB <img src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/smile.gif" alt="" title="Smilie" class="inlineimg" border="0">
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+		<!-- edit note -->
+			<div class="smallfont">
+				<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+				<em>
+					
+						Last edited by kohsaf1; 10th January 2006 at <span class="time">23:58</span>.
+					
+					
+				</em>
+			</div>
+		<!-- / edit note -->
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="kohsaf1 is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="kohsaf1 is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=765861" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 765861 popup menu -->
+<div class="vbmenu_popup" id="postmenu_765861_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">kohsaf1</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=87965">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=87965" rel="nofollow">Find More Posts by kohsaf1</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 765861 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #765861 --><!-- post #836438 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit836438" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post836438" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post836438"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			4th June 2006, 11:08
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=836438&amp;postcount=17" target="new" rel="nofollow" id="postcount836438" name="17"><strong>17</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=836438#post836438" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_836438">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=31159">MarioGarcia</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Mar 2003</div>
+				<div>Location: Brussels</div>
+				
+				<div>
+					Posts: 113
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_836438" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_836438">
+			
+			where can I download pixiedust?<br>
+thank you
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				you are never safe till you see the dawn 
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="MarioGarcia is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="MarioGarcia is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=836438" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 836438 popup menu -->
+<div class="vbmenu_popup" id="postmenu_836438_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">MarioGarcia</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=31159">View Public Profile</a></td></tr>
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://pws.prserv.net/danidar/">Visit MarioGarcia's homepage!</a></td></tr>
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=31159" rel="nofollow">Find More Posts by MarioGarcia</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 836438 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #836438 --><!-- post #836444 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit836444" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post836444" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post836444"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			4th June 2006, 11:33
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=836444&amp;postcount=18" target="new" rel="nofollow" id="postcount836444" name="18"><strong>18</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=836444#post836444" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_836444">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=12180">Abond</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">Registered User</div>
+			
+			
+
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Jun 2002</div>
+				
+				
+				<div>
+					Posts: 416
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_836444" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_836444">
+			
+			<a href="http://www.avisynth.org/warpenterprises/attic.html" target="_blank">http://www.avisynth.org/warpenterprises/attic.html</a><br>
+The filter called Dust.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="Abond is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="Abond is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=836444" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 836444 popup menu -->
+<div class="vbmenu_popup" id="postmenu_836444_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Abond</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=12180">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=12180" rel="nofollow">Find More Posts by Abond</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 836444 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #836444 --><!-- post #871866 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit871866" style="padding:0px 0px 6px 0px">
+	<!-- this is not the last post shown on the page -->
+
+
+
+<table id="post871866" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post871866"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			5th September 2006, 20:46
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=871866&amp;postcount=19" target="new" rel="nofollow" id="postcount871866" name="19"><strong>19</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=871866#post871866" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_871866">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=86472">gatekeeper_007</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">The fish knows everything</div>
+			
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=86472"><img title="gatekeeper_007's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php-2.jpg" alt="gatekeeper_007's Avatar" border="0" height="70" width="70"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Oct 2005</div>
+				<div>Location: Greece</div>
+				
+				<div>
+					Posts: 63
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_871866" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+			<!-- icon and title -->
+			<div class="smallfont">
+				
+				<strong>advice needed</strong>
+			</div>
+			<hr style="color:#FFFFFF; background-color:#FFFFFF" size="1">
+			<!-- / icon and title -->
+		
+
+		<!-- message -->
+		<div id="post_message_871866">
+			
+			It's more of a 'speed' issue...<br>
+<br>
+ok, I'm using the following script:<br>
+<br>
+mpeg....<br>
+converttoYUV2().Pixiedust(2).converttoYV12()<br>
+crop()<br>
+lumaYV12(lumoff=-2)<br>
+unfilter(5,5)<br>
+LanczosResize()<br>
+undot()<br>
+<br>
+and it works fine but...<br>
+I really want to use Pixiedust after croppin'  __but__not after the resize!<br>
+The problem is that when I try to apply the filter right after croppin', Vdub cannot load up the script...<br>
+it says something like that..... Pixiedust can't handle the mod! (but the crop is 32x16 mod ??)<br>
+when I put it after the resizer everything is ok<br>
+(but as I all ready said I want to use it before that)<br>
+ any suggestion..?
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="gatekeeper_007 is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="gatekeeper_007 is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=871866" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 871866 popup menu -->
+<div class="vbmenu_popup" id="postmenu_871866_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">gatekeeper_007</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=86472">View Public Profile</a></td></tr>
+	
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=86472" rel="nofollow">Find More Posts by gatekeeper_007</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 871866 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #871866 --><!-- post #871896 -->
+
+	<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+	<div id="edit871896" style="padding:0px 0px 6px 0px">
+	
+
+
+
+<table id="post871896" class="tborder" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-right: 0px">
+			<!-- status icon and date -->
+			<a name="post871896"><img title="Old" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/post_old.gif" alt="Old" border="0"></a>
+			5th September 2006, 21:46
+			
+			<!-- / status icon and date -->
+		</td>
+		<td class="thead" style="font-weight:normal; border: 1px solid #FFFFFF; border-left: 0px" align="right">
+			 
+			#<a href="http://forum.doom9.org/showpost.php?p=871896&amp;postcount=20" target="new" rel="nofollow" id="postcount871896" name="20"><strong>20</strong></a>
+<!-- hack -->
+ |  <a href="http://forum.doom9.org/showthread.php?p=871896#post871896" target="new"><strong>Link</strong></a>
+<!-- endhack -->
+			
+		</td>
+	
+</tr>
+<tr valign="top">
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px; border-bottom: 0px" width="175">
+
+			<div id="postmenu_871896">
+				
+				<a class="bigusername" href="http://forum.doom9.org/member.php?u=66545">foxyshadis</a>
+				<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+				
+			</div>
+
+			<div class="smallfont">&#1072;&#1085;&#1075;&#1077;&#1083; &#1089;&#1084;&#1077;&#1088;&#1090;&#1080;</div>
+			<div class="smallfont"><img src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/d9.gif" alt="" border=""></div>
+			
+
+			
+				<div class="smallfont">
+					 <br><a href="http://forum.doom9.org/member.php?u=66545"><img title="foxyshadis's Avatar" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/image.php-3.jpg" alt="foxyshadis's Avatar" border="0" height="70" width="70"></a>
+				</div>
+			
+
+			<div class="smallfont">
+				 <br>
+				<div>Join Date: Nov 2004</div>
+				<div>Location: Fresno, CA</div>
+				
+				<div>
+					Posts: 7,743
+				</div>
+				
+				
+				
+				
+				<div>    </div>
+			</div>
+
+	</td>
+	
+	<td class="alt1" id="td_post_871896" style="border-right: 1px solid #FFFFFF">
+	
+		
+		
+
+		<!-- message -->
+		<div id="post_message_871896">
+			
+			Maybe you need align=true on the crop, for this filter. Maybe pull out a calculator to make absolutely sure the cropping is the mod you think it is.
+		</div>
+		<!-- / message -->
+
+		
+
+		
+		
+
+		
+		<!-- sig -->
+			<div>
+				__________________<br>
+				<font size="1">There are four boxes to be used in defense of liberty: soap, ballot, jury, and ammo. Please use in that order. <b>~ Ed Howdershelt</b></font>
+			</div>
+		<!-- / sig -->
+		
+
+		
+
+		
+
+	</td>
+</tr>
+<tr>
+	<td class="alt2" style="border: 1px solid #FFFFFF; border-top: 0px">
+		<img title="foxyshadis is offline" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/user_offline.gif" alt="foxyshadis is offline" border="0">
+
+
+		
+		
+		
+		
+		 
+	</td>
+	
+	<td class="alt1" style="border: 1px solid #FFFFFF; border-left: 0px; border-top: 0px" align="right">
+	
+		<!-- controls -->
+<!-- hack -->
+
+<!-- endhack -->
+		
+		
+		
+			<a href="http://forum.doom9.org/newreply.php?do=newreply&amp;p=871896" rel="nofollow"><img title="Reply With Quote" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/quote.gif" alt="Reply With Quote" border="0"></a>
+		
+		
+		
+		
+		
+		
+		
+			
+		
+		
+		<!-- / controls -->
+	</td>
+</tr>
+</tbody></table>
+
+
+<!-- post 871896 popup menu -->
+<div class="vbmenu_popup" id="postmenu_871896_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">foxyshadis</td>
+	</tr>
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/member.php?u=66545">View Public Profile</a></td></tr>
+	
+	
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://www.foxyshadis.com/">Visit foxyshadis's homepage!</a></td></tr>
+	
+	
+		<tr><td class="vbmenu_option"><a href="http://forum.doom9.org/search.php?do=finduser&amp;u=66545" rel="nofollow">Find More Posts by foxyshadis</a></td></tr>
+	
+	
+	
+	</tbody></table>
+</div>
+<!-- / post 871896 popup menu -->
+
+
+	</div>
+	
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+
+<!-- / post #871896 --><div id="lastpost"></div></div>
+
+<!-- start content table -->
+<!-- open content container -->
+
+<div align="center">
+	<div class="page" style="width:100%; text-align:left">
+		<div style="padding:0px 0px 0px 0px" align="left">
+
+<!-- / start content table -->
+
+<!-- controls below postbits -->
+<table style="margin-top:-3px" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr valign="top">
+	
+		<td class="smallfont"><a href="http://forum.doom9.org/newreply.php?do=newreply&amp;noquote=1&amp;p=871896" rel="nofollow"><img title="Reply" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/reply.gif" alt="Reply" border="0"></a></td>
+	
+	
+		<td align="right"><div class="pagenav" align="right">
+<table class="tborder" border="0" cellpadding="3" cellspacing="1">
+<tbody><tr>
+	<td class="vbmenu_control" style="font-weight:normal">Page 1 of 2</td>
+	
+	
+		<td class="alt2"><span class="smallfont" title="Showing results 1 to 20 of 21"><strong>1</strong></span></td>
+ <td class="alt1"><a class="smallfont" href="http://forum.doom9.org/showthread.php?t=85384&amp;page=2" title="Show results 21 to 21 of 21">2</a></td>
+	<td class="alt1"><a rel="next" class="smallfont" href="http://forum.doom9.org/showthread.php?t=85384&amp;page=2" title="Next Page - Results 21 to 21 of 21">&gt;</a></td>
+	
+	<td style="cursor: pointer;" id="pagenav.230" class="vbmenu_control" title=""> <img alt="" title="" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/menu_open.gif" border="0"></td>
+</tr>
+</tbody></table>
+</div>
+		
+		</td>
+	
+</tr>
+</tbody></table>
+<!-- / controls below postbits -->
+
+
+
+
+
+
+
+
+
+
+<!-- lightbox scripts -->
+	<script type="text/javascript" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/vbulletin_lightbox.js"></script>
+	<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+<!-- / lightbox scripts -->
+
+
+
+
+
+
+
+
+
+
+<!-- next / previous links -->
+	<br>
+	<div class="smallfont" align="center">
+		<strong>«</strong>
+			<a href="http://forum.doom9.org/showthread.php?t=85384&amp;goto=nextoldest" rel="nofollow">Previous Thread</a>
+			|
+			<a href="http://forum.doom9.org/showthread.php?t=85384&amp;goto=nextnewest" rel="nofollow">Next Thread</a>
+		<strong>»</strong>
+	</div>
+<!-- / next / previous links -->
+
+
+
+
+
+
+
+<!-- popup menu contents -->
+<br>
+
+<!-- thread tools menu -->
+<div class="vbmenu_popup" id="threadtools_menu" style="display:none">
+<form action="http://forum.doom9.org/postings.php?t=85384&amp;pollid=" method="post" name="threadadminform">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Thread Tools<a name="goto_threadtools"></a></td>
+	</tr>
+	<tr>
+		<td class="vbmenu_option"><img title="Show Printable Version" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/printer.gif" alt="Show Printable Version"> <a href="http://forum.doom9.org/printthread.php?t=85384" accesskey="3" rel="nofollow">Show Printable Version</a></td>
+	</tr>
+	
+	
+	
+	
+	</tbody></table>
+</form>
+</div>
+<!-- / thread tools menu -->
+
+<!-- **************************************************** -->
+
+<!-- thread display mode menu -->
+<div class="vbmenu_popup" id="displaymodes_menu" style="display:none">
+	<table border="0" cellpadding="4" cellspacing="1">
+	<tbody><tr>
+		<td class="thead">Display Modes<a name="goto_displaymodes"></a></td>
+	</tr>
+	<tr>
+	
+		<td class="vbmenu_option" title="nohilite"><img title="Linear Mode" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/mode_linear.gif" alt="Linear Mode"> <strong>Linear Mode</strong></td>
+	
+	</tr>
+	<tr>
+	
+		<td class="vbmenu_option"><img title="Hybrid Mode" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/mode_hybrid.gif" alt="Hybrid Mode"> <a href="http://forum.doom9.org/showthread.php?mode=hybrid&amp;t=85384">Switch to Hybrid Mode</a></td>
+	
+	</tr>
+	<tr>
+	
+		<td class="vbmenu_option"><img title="Threaded Mode" class="inlineimg" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/mode_threaded.gif" alt="Threaded Mode"> <a href="http://forum.doom9.org/showthread.php?p=569974&amp;mode=threaded#post569974">Switch to Threaded Mode</a></td>
+	
+	</tr>
+	</tbody></table>
+</div>
+<!-- / thread display mode menu -->
+
+<!-- **************************************************** -->
+
+
+
+<!-- **************************************************** -->
+
+
+
+<!-- / popup menu contents -->
+
+
+<!-- forum rules and admin links -->
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr valign="bottom">
+	<td valign="top" width="100%">
+		<table class="tborder" border="0" cellpadding="6" cellspacing="1" width="210">
+<thead>
+<tr>
+	<td class="thead">
+		<a style="float:right" href="#top" onclick=""><img id="collapseimg_forumrules" src="PixieDust%20&amp;%20Avisynth%202.5.5%20-%20Doom9%27s%20Forum_files/collapse_thead.gif" alt="" border="0"></a>
+		Posting Rules
+	</td>
+</tr>
+</thead>
+<tbody id="collapseobj_forumrules" style="">
+<tr>
+	<td class="alt1" nowrap="nowrap"><div class="smallfont">
+		
+		<div>You <strong>may not</strong> post new threads</div>
+		<div>You <strong>may not</strong> post replies</div>
+		<div>You <strong>may not</strong> post attachments</div>
+		<div>You <strong>may not</strong> edit your posts</div>
+		<hr>
+		
+		<div><a href="http://forum.doom9.org/misc.php?do=bbcode" target="_blank">BB code</a> is <strong>On</strong></div>
+		<div><a href="http://forum.doom9.org/misc.php?do=showsmilies" target="_blank">Smilies</a> are <strong>On</strong></div>
+		<div><a href="http://forum.doom9.org/misc.php?do=bbcode#imgcode" target="_blank">[IMG]</a> code is <strong>On</strong></div>
+		<div>HTML code is <strong>Off</strong></div>
+		<hr>
+		<div><a href="http://forum.doom9.org/misc.php?do=showrules" target="_blank">Forum Rules</a></div>
+	</div></td>
+</tr>
+</tbody>
+</table>
+	</td>
+	<td class="smallfont" align="right">
+		<table border="0" cellpadding="0" cellspacing="0">
+		
+		<tbody><tr>
+			<td>
+			<div class="smallfont" style="text-align:left; white-space:nowrap">
+	<form action="http://forum.doom9.org/forumdisplay.php" method="get">
+	<input name="s" value="" type="hidden">
+	<input name="daysprune" value="" type="hidden">
+	<strong>Forum Jump</strong><br>
+	<select name="f" onchange="">
+		<optgroup label="Site Areas">
+			<option value="cp">User Control Panel</option>
+			<option value="pm">Private Messages</option>
+			<option value="subs">Subscriptions</option>
+			<option value="wol">Who's Online</option>
+			<option value="search">Search Forums</option>
+			<option value="home">Forums Home</option>
+		</optgroup>
+		
+		<optgroup label="Forums">
+		<option value="43" class="fjdpth0"> Announcements and Chat</option>
+<option value="8" class="fjdpth1">     General Discussion</option>
+<option value="79" class="fjdpth1">     News</option>
+<option value="45" class="fjdpth1">     Forum / Site Suggestions &amp; Help</option>
+<option value="3" class="fjdpth0"> General</option>
+<option value="9" class="fjdpth1">     Decrypting</option>
+<option value="6" class="fjdpth1">     Newbies</option>
+<option value="5" class="fjdpth1">     DVD2AVI / DGIndex</option>
+<option value="11" class="fjdpth1">     Audio encoding</option>
+<option value="12" class="fjdpth1">     Subtitles</option>
+<option value="63" class="fjdpth1">     Linux, Mac OS X, &amp; Co</option>
+<option value="67" class="fjdpth0"> Capturing and Editing Video</option>
+<option value="33" class="fjsel" selected="selected">     Avisynth Usage</option>
+<option value="69" class="fjdpth1">     Avisynth Development</option>
+<option value="10" class="fjdpth1">     Capturing Video</option>
+<option value="59" class="fjdpth1">     DV</option>
+<option value="64" class="fjdpth1">     HDTV / DVB / TiVo</option>
+<option value="68" class="fjdpth1">     NLE - Non Linear Editing</option>
+<option value="22" class="fjdpth1">     VirtualDub, VDubMod &amp; AviDemux</option>
+<option value="74" class="fjdpth1">     New and alternative a/v containers</option>
+<option value="17" class="fjdpth0"> Video Encoding</option>
+<option value="28" class="fjdpth1">     (Auto) Gordian Knot</option>
+<option value="52" class="fjdpth1">     MPEG-4 ASP</option>
+<option value="78" class="fjdpth1">     MPEG-4 Encoder GUIs</option>
+<option value="77" class="fjdpth1">     MPEG-4 AVC / H.264</option>
+<option value="54" class="fjdpth1">     New and alternative video codecs</option>
+<option value="62" class="fjdpth1">     MPEG-2 Encoding</option>
+<option value="49" class="fjdpth0"> (HD) DVD, Blu-ray &amp; (S)VCD</option>
+<option value="47" class="fjdpth1">     One click suites for DVD backup and DVD creation</option>
+<option value="75" class="fjdpth1">     DVD Rebuilder</option>
+<option value="39" class="fjdpth1">     (HD) DVD &amp; Blu-ray authoring</option>
+<option value="61" class="fjdpth1">     Advanced authoring</option>
+<option value="50" class="fjdpth1">     IFO/VOB Editors</option>
+<option value="60" class="fjdpth1">     DVD burning</option>
+<option value="13" class="fjdpth0"> Hardware &amp; Software</option>
+<option value="15" class="fjdpth1">     Software players</option>
+<option value="73" class="fjdpth1">     Hardware players</option>
+<option value="16" class="fjdpth1">     PC Hard &amp; Software</option>
+<option value="40" class="fjdpth0"> Programming and Hacking</option>
+<option value="41" class="fjdpth1">     Development</option>
+<option value="58" class="fjdpth1">     Translations</option>
+
+		</optgroup>
+		
+	</select><input class="button" value="Go" type="submit">
+	</form>
+</div>
+			</td>
+		</tr>
+		</tbody></table>
+	</td>
+</tr>
+</tbody></table>
+<!-- /forum rules and admin links -->
+
+<br>
+
+
+
+
+
+<br>
+<div class="smallfont" align="center">All times are GMT +1. The time now is <span class="time">01:16</span>.</div>
+<br>
+
+
+		</div>
+	</div>
+</div>
+
+<!-- / close content container -->
+<!-- /content area table -->
+
+<form action="http://forum.doom9.org/index.php" method="get" style="clear:left">
+
+<table class="page" align="center" border="0" cellpadding="6" cellspacing="0" width="100%">
+<tbody><tr>
+	
+	
+	<td class="tfoot" align="right" width="100%">
+		<div class="smallfont">
+			<strong>
+				
+				<a href="http://www.doom9.org/">Doom9.org</a> -
+				
+				
+				<a href="http://forum.doom9.org/archive/index.php">Archive</a> -
+				
+				
+				
+				<a href="#top" onclick="">Top</a>
+			</strong>
+		</div>
+	</td>
+</tr>
+</tbody></table>
+
+<br>
+
+<div align="center">
+	<div class="smallfont" align="center">
+	<!-- Do not remove this copyright notice -->
+	Powered by vBulletin® Version 3.8.5<br>Copyright ©2000 - 2012, Jelsoft Enterprises Ltd.
+	<!-- Do not remove this copyright notice -->
+	</div>
+
+	<div class="smallfont" align="center">
+	<!-- Do not remove cronimage or your scheduled tasks will cease to function -->
+	
+	<!-- Do not remove cronimage or your scheduled tasks will cease to function -->
+
+	
+	</div>
+</div>
+
+</form>
+
+
+
+
+<script type="text/javascript"><!--
+/* Script removed by snapshot save */
+--></script>
+
+<!-- temp -->
+<div style="display:none">
+	<!-- thread rate -->
+	
+		
+	
+	<!-- / thread rate -->
+</div>
+
+
+<script id="FoxLingoJs"><!--
+/* Script removed by snapshot save */
+--></script></body></html>

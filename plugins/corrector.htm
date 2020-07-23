@@ -1,0 +1,55 @@
+<html>
+<head>
+<title>Corrector</title>
+<link rel="stylesheet" type="text/css" href="avisynth.css">
+<!--
+Automatically generated, don't change:
+$Id: mvtools.htm,v 1.4 2005/07/21 20:32:46 fizick Exp $ 
+-->
+</head>
+<body>
+<h1>Corrector</h1>
+<h2>Abstract</h2>
+<b>author:</b> Manao & Fizick
+<br><b>version:</b> 1.2
+<br><b>download:</b> <a href="http://bag.hotmail.ru/">http://bag.hotmail.ru/</a> <br>
+<b>category:</b>  Misc Plugins<br>
+<b>requirements:</b> YV12, YUY2 Colorspace<br>
+<b>license:</b> GPL
+<hr>
+
+<p>Clips correction. This filter allows to construct a clip, pixels per pixels, from the output clips, based on the analyse clips.
+Useful for motion compensated clips (MVTools plugin), etc. 
+Ask <b>scharfis_brain</b> :-)</p>
+
+<h2>Syntax and parameters</h2>
+<p><code>Corrector</code> (<var>clip analyse_0, clip output_0, clip analyse_i[, ...],
+clip output_i[, ...], int "mode", int "th"</var>)</p>
+There's two <var>mode</var>.
+<p><var>mode</var> = 0 : the output pixels whose collocated analyse pixels differs from the analyse_0 clip
+by less than <var>th</var> are averaged to form the new pixel. If none are found, the output_0 pixel is chosen.</p>
+<p><var>mode</var> = 1 : the output pixel whose collocated analyse pixels is the closest from analyse_0 clip
+is chosen. If none differs by less than <var>th</var>, the output_0 pixel is chosen.</p>
+<p>Defaults are <var>mode</var> = 0 and <var>th</var> = 10.</p>
+
+<h2> License</h2>
+<p>This plugin is released under the GPL license. You must agree to the terms of
+'Copying.txt' before using the plugin or its source code.<br>
+Please donate for support.
+</p>
+
+<h2>Revisions</h2>
+
+<p>Standalone plugin version 1.2 (14.02.2006) by Fizick</p>
+<ul>
+<li>Removed from MVTools v1.1.1 and implemented as standalone plugin.</li>
+<li>YUY2 and other colorspaces support in addition to YV12.</li>
+</ul>
+
+<p>MVtools v0.9.8.3 (28.11.2004) by Manao </p>
+<ul>
+<li>Added <code>Corrector</code> function, as requested by <b>scharfis_brain</b>.</li>
+</ul>
+</body>
+</html>
+  

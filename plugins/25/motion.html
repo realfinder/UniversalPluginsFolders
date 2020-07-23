@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Motion Compensation for AVISynth 2.5</title>
+<link href="motion.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<h1 align="center">Motion</h1>
+<h1 align="center" class="subtitle">Fast True-Motion Motion-Compensation Functions for AVISynth</h1>
+<p>This filter is in development and not yet ready for real use. Discussion can be found at:</p>
+<p><a href="http://forum.doom9.org/showthread.php?t=101859">http://forum.doom9.org/showthread.php?t=101859</a></p>
+<p>This is a quick recap of the functions and options; it's not intended as a substitute for reading the discussion, which contains interesting feature requests and suggestions not repeated here. If you have been following the thread, you may just want to skip to the <a href="#reference">function reference</a>. Please note that all filters are intended for use on progressive YV12 only, and require mod 8 width and height.</p>
+<h2>Basic Usage</h2>
+<p>You have probably come here for motion compensated frame rate change. Usage is very simple -- grab the latest versions of the plug-in and the MotionCompensatedFPS script, put them in your plug-in autoloading directory, and write something like this:</p>
+<p class="Example">MotionCompensatedFPS(100)</p>
+<p>In other words, it's used just like ConvertFPS. </p>
+<p>That's it!</p>
+<h2>Intermediate Usage</h2>
+<p align="left" class="Example">#AVISource...<br />
+<a href="#Compensate">Compensate</a>()</p>
+<p>This will replace each frame with an approximation to it, calculated using chunks of the previous frame. [So frame 31 will be replaced with frames stitched together from sections of frame 30.]</p>
+<p>If you instead want to use an approximation based on the next frame, use this:</p>
+<p class="Example">#AVISource...<br />
+<a href="#Compensate">Compensate</a>(source = next)</p>
+<p>[So frame 31 will be replaced with a new frame stitched together from sections of frame 32.]</p>
+<p>To see the motion vectors, use:</p>
+<p class="Example">#source<br />
+<a href="#DrawMotion">DrawMotion</a>(<a href="#FindMotion">FindMotion</a>())</p>
+<p class="Example">#source<br />
+<a href="#DrawMotion">DrawMotion</a>(<a href="#FindMotion">FindMotion</a>(from = next))</p>
+<h2>Example</h2>
+<p>  For motion compensated denoising:</p>
+<p class="Example">#AVISource...<br />
+  Interleave(\<br />
+  <a href="#Compensate">Compensate</a>(),\<br />
+  last,\<br />
+  <a href="#Compensate">Compensate</a>(source = next))<br />
+  #temporal smoother, radius 1<br />
+SelectEvery(3, 1)</p>
+<p>See the documentation for <a href="#Compensate">Compensate</a> the notes on compensating across radii greater than one.</p>
+<h2><a name="reference" id="reference"></a>Function Reference</h2>
+<p><strong><a href="#BlendFPS">BlendFPS</a><br>
+  <a href="#CombineFPS">CombineFPS</a><br>
+  <a href="#Compensate">Compensate</a><br>
+  <a href="#DrawMotion">DrawMotion</a><br>
+  <a href="#FindMotion">FindMotion</a><br>
+  <a href="#MotionFPS">MotionFPS</a></strong></p>
+<h3>General Note</h3>
+<p>Because I find mode numbers hard to remember and hard to read in scripts, I have defined named constants for use in all the filters below. So while other filters often have the form <span class="fragment">Filter(mode = 3)</span>, the filters in this package tend to use the form <span class="fragment">Filter(mode = move)</span>. </p>
+<p>In some cases modes are selected by <em>functions</em> rather than constants -- so you may see<span class="fragment"> Filter(mode = warp(firstargument, secondargument))</span>. This usage has its advantages when writing scripts, but in case it is confusing for casual users I have define presets which should be sufficient in nearly all cases.</p>
+<h3><a name="Methods" id="Methods"></a>Frame Construction Methods</h3>
+<p>Some of the functions construct new frames from existing ones using motion compensation. All such functions share arguments <span class="fragment">method</span> and <span class="fragment">chromamethod</span>. (<span class="fragment">method</span> is used on luma and chroma planes unless <span class="fragment">chromamethod</span> is specified, in which case this is used for chroma planes.) This section describes the use of such arguments.</p>
+<h4>Presets</h4>
+<p>In order from fastest to slowest:</p>
+<p><span class="fragment">move</span> -- construct new frame by moving blocks<br><span class="fragment">warpfast</span> -- construct new frame by stretching blocks<br><span class="fragment">warp</span> -- construct new frame by stretching blocks; more accurate than <span class="fragment">warpfast</span></p>
+<p> For example:</p>
+<p class="Example">#AVISource...<br />
+  <a href="#MotionFPS">MotionFPS</a>(100.0, warpfast) #warp all planes quickly</p>
+<p class="Example">#AVISource...<br />
+  <a href="#MotionFPS">MotionFPS</a>(100.0, warp, move) #warp luma but move chroma</p>
+Warping is slower than moving blocks (although still fast), but is much less likely to produce blocking. It can cause a 'ripple' affected, but this is typically much less distracting than blocking.
+<h4>Advanced Usage</h4>
+<p><em>Reading this section is only useful for writing advanced scripts.</em></p>
+<p><span class="fragment">move</span> and <span class="fragment">warp</span> are in fact functions:</p>
+<p><span class="fragment">move(interpolation = halfpixel)</span> and<br /> 
+  <span class="fragment">warp(warpinterpolation = bilinear, moveinterpolation = halfpixel)</span>.</p>
+<p>The interpolation arguments are used to round motion vectors before frames are  constructed. They can take the values <span class="fragment">pixel</span>, <span class="fragment">halfpixel</span> or <span class="fragment">hpel</span>, and <span class="fragment">bilinear</span> (in order from fastest to slowest).</p>
+<p> <span class="fragment">move</span> simply moves blocks from the source frame to construct a new frame; as <span class="fragment">move(halfpixel)</span> is just as fast as <span class="fragment">move(pixel)</span>, <span class="fragment">halfpixel</span> is set as the default. [<span class="fragment">move(bilinear)</span> is currently only implemented in C and is therefore slow.]</p>
+<p><span class="fragment">warp</span> stretches blocks using bilinear mesh-warping (bilinear in terms of motion vectors). <span class="fragment">warpinterpolation</span> must be <span class="fragment">pixel</span> or <span class="fragment">bilinear</span>. [<span class="fragment">halfpixel</span> would be almost as slow as <span class="fragment">bilinear</span>.] When the four corners of a block move by the same amount, it can be moved instead of warped, and in this case <span class="fragment">moveinterpolation</span> is used.</p>
+<p><span class="fragment">warpfast</span> is currently set to <span class="fragment">warp(pixel, halfpixel)</span>.</p>
+<h3><a name="FindMotion" id="FindMotion"></a>FindMotion(clip, ...)</h3>
+<h4>Optional arguments to <span class="fragment">FindMotion</span> (not in order):</h4>
+ <span class="fragment">from = previous/next</span><br />
+ <span class="fragment">int reset</span> (default <span class="fragment">0</span>)<br />
+ <span class="fragment">int initialise</span> (default <span class="fragment">1</span>)
+<p><span class="fragment">FindMotion</span> estimates block motion for use by other functions in this plug-in. With the default setting of <span class="fragment">from = previous</span>, it finds where (in the previous frame) each block in the current frame has come from [forward prediction]. If you set <span class="fragment">from = next</span>, it finds where (in the following frame) each block in the current frame will go [backwards prediction].</p>
+<p>With the default setting of <span class="fragment">reset = 0</span>, motion estimation always uses estimated motion vectors for the previous frame, which forces linear access. If e.g. <span class="fragment">reset = 50</span> then motion vectors are calculated from scratch every 50 frames, allowing seeking. Lower values of <span class="fragment">reset</span> will allow faster seeking.</p>
+<p>Increasing initialise increases the accuracy of vectors calculated from scratch, at the cost of increased calculation time (I am currently using <span class="fragment">initialise =4</span>).</p>
+<h4>Arguments to <span class="fragment">FindMotion</span> not recommended for use:</h4>
+<p>  <span class="fragment">subpixel = true/false</span> (default <span class="fragment">true</span>)<br />
+  <span class="fragment">useassembly = true/false</span> (default <span class="fragment">true</span>)<br />
+  <span class="fragment">iterate </span>(default <span class="fragment">1</span>)</p>
+<h3><a name="Compensate" id="Compensate"></a>Compensate(clip tocompensate[, method, chromamethod, source = previous/next, clip motion])</h3>
+<p><span class="fragment">Compensate</span> constructs a near-copy of the each frame of <span class="fragment">tocompensate</span> using material from the previous or next frame (as specified by <span class="fragment">source</span>, default <span class="fragment">previous</span>). This can be used to e.g. interleave clips for motion compensated denoising. </p>
+<p>The construction <span class="fragment">method</span> used can be one of <span class="fragment">move</span> (default), <span class="fragment">warp</span> or <span class="fragment">warpfast</span> -- also see <a href="#Methods">above</a>. The <span class="fragment">method</span> is used on luma and chroma planes unless <span class="fragment">chromamethod</span> is specified, in which case this is used for chroma planes. For example:</p>
+<p class="Example">#AVISource...<br>
+Compensate(warp) #warp all planes</p>
+<p class="Example">#AVISource...<br>
+  Compensate(warp, chromamethod = move) #warp luma but move chroma</p>
+<p>If specified, <span class="fragment">motion</span> should be a clip produced by <a href="#FindMotion" class="fragment">FindMotion</a>. (The <span class="fragment">source</span> argument of <span class="fragment">Compensate</span> should match the <span class="fragment">from</span> argument of <a href="#FindMotion" class="fragment">FindMotion</a>, as in the scripts above.) If motion is omitted, it will be computed automatically.</p>
+<p>	The source frame is taken from <span class="fragment">tocompensate</span>. If <span class="fragment">motion</span> is specified, it is usual to set this to be the clip which was passed to <a href="#FindMotion" class="fragment">FindMotion</a>, as follows:</p>
+<p class="Example">#source = ...<br />
+motionclip = <a href="#FindMotion">FindMotion</a>(source)<br />
+compensated = Compensate(source, motion = motionclip)</p>
+<p>But it is also possible to compensate another clip. In particular, we can compensate an already compensated clip, like this:</p>
+<p class="Example">#source = ...<br />
+motionclip = <a href="#FindMotion">FindMotion</a>(source)<br />
+singlycompensated = source.Compensate(motion = motionclip)<br />
+output = singlycompensated.Compensate(motion = motionclip)</p>
+Now frame 32 of the output is made up of portions of frame 31 of the singly compensated clip.
+But frame 31 of the singly compensated clip is itself made up of portions of frame 30 of the source. So we have indirectly used (only) frame 30 of the source to mimic frame 32 of it. This
+allows us to apply motion compensated temporal denoise with radii larger than 1.
+<h3><a name="DrawMotion" id="DrawMotion"></a>DrawMotion(clip, clip motion)</h3>
+<p><span class="fragment">DrawMotion</span> illustrates the block motion using motion vectors previously found by <span class="fragment"><a href="#FindMotion">FindMotion</a></span><a href="#FindMotion">.</a> <span class="fragment">motion</span> should be a clip produced by <a href="#FindMotion" class="fragment">FindMotion</a>. </p>
+<h3><a name="MotionFPS" id="MotionFPS"></a>MotionFPS(clip, float FPS[, method, chromamethod, source = previous/next, clip motion])</h3>
+<p><span class="fragment">MotionFPS</span> changes the frame rate like <span class="fragment">ConvertFPS</span> or  <span class="fragment">ChangeFPS</span>. It is<em> not meant as</em> a usable replacement for <span class="fragment">ConvertFPS</span>; it is a building block for frame rate conversion scripts and a tool to help find situations which are difficult for motion compensated frame rate change to deal with. </p>
+<p><span class="fragment">MotionFPS</span> constructs intermediate frames<span class="fragment"></span> using material from either the previous or next frame (as specified by <span class="fragment">source</span>, default <span class="fragment">previous</span>). The construction <span class="fragment">method</span> used can be one of <span class="fragment">move</span> (default), <span class="fragment">warp</span> or <span class="fragment">warpfast</span> -- also see <a href="#Methods">above</a>. The <span class="fragment">method</span> is used on luma and chroma planes, unless <span class="fragment">chromamethod</span> is specified, in which case this is used for chroma planes. For example:</p>
+<p class="Example">#AVISource...<br>MotionFPS(100.0, warp) #warp all planes</p>
+<p class="Example">#AVISource...<br />
+  MotionFPS(100.0, warp, move) #warp luma but move chroma</p>
+<p>If specified, <span class="fragment">motion</span> should be a clip produced by <a href="#FindMotion" class="fragment">FindMotion</a>. (The <span class="fragment">source</span> argument of <span class="fragment">MotionFPS</span> should match the <span class="fragment">from</span> argument of <a href="#FindMotion" class="fragment">FindMotion</a>, as in the scripts above.) If motion is omitted, it will be computed automatically.</p>
+<p>Further examples:</p>
+<p class="Example">#AVISource...<br>
+  MotionFPS(100) </p>
+  <p class="Example">#AVISource...<br>
+MotionFPS(100, warp, from = next) </p>
+  <h3><a name="CombineFPS" id="CombineFPS"></a>CombineFPS(clip, float FPS, clip fromprevious, clip fromnext)</h3>
+<p><span class="fragment">CombineFPS</span> takes two frame rate converted clips (as produced by<a href="#MotionFPS" class="fragment"> MotionFPS</a>), one (<span class="fragment">fromprevious</span>) produced using <span class="fragment">source = previous</span> and one (<span class="fragment">fromnext</span>) produced using <span class="fragment">source = next</span>, and combines them with a weighted average. Weights are chosen to give greater emphasis to frames which are closer to the original source.</p>
+<p>Using this function is (for obvious reasons) more than twice as slow as simple frame rate conversion, and so it is not recommended for general use.</p>
+<p>Example usage:</p>
+<p class="Example">#source= AVISource...<br>source<br>
+  fromprevious = <a href="#MotionFPS">MotionFPS</a>(100)<br>
+  fromnext = <a href="#MotionFPS">MotionFPS</a>(100, source = next)<br>
+  source.CombineFPS(100, fromprevious, fromnext)</p>
+<h3><a name="BlendFPS" id="BlendFPS"></a>BlendFPS(clip, float FPS[, float aperture = 1])</h3>
+<p>Converts the frame rate to <span class="fragment">FPS</span> using blend-conversion. Intended as a YV12 alternative to <span class="fragment">ConvertFPS</span>. Unlike the other functions in this filter, it also supports other colourspaces. <span class="fragment">FPS</span> may take any value, but blend-conversion is not recommended for changing the frame rate by a large factor. Increasing <span class="fragment">aperture</span> will blend more frames; decreasing it will blend fewer.</p>
+</body>
+</html>

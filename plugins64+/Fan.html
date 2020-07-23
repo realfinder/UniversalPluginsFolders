@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Fan AviSynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>Fan</h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>Date   25 Aug 2017
+	 
+	  <p>Regular frequency noise patterns are seen on some data. Some videos have white streaks. Such videos can be cleaned through Fan function. Fan can also be used to filter random noise.</p> 
+	  
+	  <p>Fan filters one horizontal line after next. So noise appearing as vertical to sub vertical alignments can be processed. For data having horizontal or sub horizontal alignments, process after turnleft and later turnright. If noise is regular appears as waves then Span may encompass the full wave length. For streaks it can be short.</p>    
+<P> If edge option is selected tries to preserve edges. Otherwise some averaging may result. 
+tolerances on plus side and minus side can be specified to minimise averaging. Only data which are beyond these tolerances from average are modified. 1.0 corresponds to maximum amplitude of input data.</P>
+<p>Packed RGB ( 8 and 16 bit), YUY2 and 8, 16 or 32 bit  Planar formats are supported. This is thread safe. MT_NICE_FILTER</p>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+<tr>
+       <td>edge to be preserved?</td>
+       <td>edge</td>
+       <td>boolean</td>
+       <td>true for yes, false for no</td>
+       <td>true</td>
+</tr>
+<tr>
+       <td>span of filter</td>
+       <td>span</td>
+       <td>integer</td>
+       <td>odd number between 3 to width / 4</td>
+       <td>5</td>
+</tr>
+<tr>
+       <td>u and v also to be filtered?</td>
+       <td>uv</td>
+       <td>boolean</td>
+       <td>true for yes, false for no</td>
+       <td>true</td>
+</tr>
+<tr>
+       <td>plus tolerance</td>
+       <td>plus</td>
+       <td>float</td>
+       <td>0 to 0.5</td>
+       <td>0.02</td>
+</tr>
+<tr>
+       <td>minus tolerance</td>
+       <td>minus</td>
+       <td>float</td>
+       <td>0 to 0.5</td>
+       <td>0.02</td>
+</tr>
+
+</table>
+
+
+<BR>Usage examples:-
+<BR>Fan(a,span = 7,edge = true, uv = true, plus = 0.05, minus = 0.05)
+			
+
+
+<table>
+
+<tr>
+       <td><a href="../index.html">To my index page</a></td>
+	   <td>down load<a href="modPlus.7z">modPlus </a>plugin</td
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>
+</body>
+</html>

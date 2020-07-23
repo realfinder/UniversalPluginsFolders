@@ -1,0 +1,62 @@
+	HDRSharp
+	========
+
+HDRSharp is a sharpening library to working with HDR frames in AviSynth.
+It is fully compatible and optimized for AviSynth MT.
+
+It is licensed under the MIT License.
+Copyright (c) 2016 Andrew Revvo (andrew.revvo~gmail~com)
+Project homepage: http://www.snovidenie.com/plugins/hdr/
+
+
+	UnsharpMask16Y
+	------
+
+Y-channel unsharp masking using a 16-bit bicubic blurred clip.
+
+Parameters:
+	mask: clip - 16-bit blur mask clip (bitdepth=16).
+	edges: float - edges sharpening amount.
+	g: float - gamma correction for sharpening.
+	wg: float - gamma correction for a white areas halo protection.
+	bl: float - black level offset.
+	str: float - sharpening strength.
+	mode: int - 8-bit filter mode: 0=truncate (offset is possible), 1=dither.
+	bitdepth: int - filter bitdepth: 8,88,16,32
+
+Example:
+	UnsharpMask16Y(mask, edges=1.0, g=2.2, wg=1.0, bl=0.0, str=1.0, mode=1, bitdepth=8)
+
+
+	UnsharpMask8Y
+	------
+
+Y-channel unsharp masking using a 8-bit bicubic blurred clip.
+
+Parameters:
+	mask: clip - 8-bit blur mask clip.
+	edges: float - edges sharpening amount.
+	g: float - gamma correction for sharpening.
+	wg: float - gamma correction for a white areas halo protection.
+	bl: float - black level offset.
+	str: float - sharpening strength.
+	mode: int - 8-bit filter mode: 0=truncate (offset is possible), 1=dither.
+	bitdepth: int - filter bitdepth: 8,88,16,32
+
+Example:
+	UnsharpMask8Y(mask, edges=1.0, g=2.2, wg=1.0, bl=0.0, str=1.0, mode=1, bitdepth=8)
+
+
+	HDR Plugin Set
+	--------------
+
+This filter pack is a part of the HDR Plugin Set.
+You can download another HDR plugins from this page:
+http://www.snovidenie.com/plugins/hdr/
+
+If you want to maintain my interest in development and technical support, please purchase
+the full plugin set. You can get high quality color correction filters, including
+3D LUT 32-bit filter that reads *.cube or *.3dl files.
+
+Thanks,
+Andrew Revvo, the HDRNoise author.

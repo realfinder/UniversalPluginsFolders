@@ -1,0 +1,106 @@
+--------------------------------------------------------------------------------
+                                     a60224
+                                   2004/03/15
+--------------------------------------------------------------------------------
+
+
+【このソフトウェアの概要】
+30fps→24fps化。アニメや映画で行われている3:2プルダウンの逆をやります。全自動で
+す。位相の設定とかはできません。
+
+Avisynthのフィルタなので、Avisynthが必要です。2.54でテストしています。
+http://www.avisynth.org/
+
+
+【インストール方法】
+a60224.dllをAvisynthのpluginsディレクトリにコピー。
+
+
+【使い方】
+Avisynthスクリプトで次のように書く。
+
+AVISource("sample.avi")
+AssumeTFF()
+DoubleWeave().a60224(fast=true,blur_rate=0.0,x1=0,x2=0,y1=0,y2=0)
+
+fast=true を指定すると高速モードになります。デフォルトの値は false です。
+blur_rate はフレームが次のフレームにどの程度の残像を残すかを示す値です。3DNRがか
+かる環境でキャプチャした時のためにありますが、必要ないかもしれません。0.03より大
+きい値を指定しても良い結果が得られることは無いと思います。デフォルトの値は0です。
+x1,x2,y1,y2を指定すると上下左右をCropした範囲で計算します。
+
+【アンインストール方法】
+Avisynthのpluginsディレクトリにあるa60224.dllを削除。
+
+
+【詳しい情報】
+このフィルタは各フレームごとに横縞の量を計測し、その値を基に出力するフレームを選
+択します。
+前後の選択結果は考慮しないのでどんな順番で出力しても同じ結果が得られます。
+動きを計算していないので3:2プルダウンされた場所以外で使うとガクガクします。
+高速モードでは計算を1/4に間引いています。
+フォーマットはYUY2,YV12,RGB24,RGB32に対応しています。
+YUY2,YV12の場合は輝度信号のみ計算します。
+
+
+【更新履歴】
+2004/03/15
+・計算範囲のCropがバイト単位になってたのでピクセル単位に修正
+2004/03/06
+・Avisynth2.5用
+・色信号を無視
+・引数x1,x2,y1,y2
+2003/11/16-2
+・GetFrame後にemmsを実行するようにした
+   DeDotAのようにemmsを行わないMMXルーチンの後に使っても大丈夫です。
+2003/11/16
+・浮動小数点エラーをチェックするようにした
+   DeDotAの後に使うと浮動小数点エラーになります。なぜエラーになるのかわかりませ
+   ん。一応エラーが出ないようにはしてあります。
+2003/11/11
+・blur_rateオプションの追加
+2003/11/03
+・作者の環境専用だった余計な部分を削除
+・高速モードを追加
+2003/10/28
+・後半が動かないバグを修正
+2003/10/26
+・存在しないフレームを返そうとするバグを修正
+2003/10/13
+・初版公開
+
+
+【ライセンス】
+このソフトウェアはGPLで公開します。詳しくは copying.txt を見てください。
+
+
+--------------------------------------------------------------------------------
+作者 : ちよクロ
+master@chiyoclone.net
+ホームページ : ちよクロシステム
+http://www.chiyoclone.net/
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.2.1 (MingW32)
+
+mQGiBD83XuwRBACNBFVMn+vkL9mT3xD8RMYyqx6zy5QPCvBd1RoQmYTIykE58Mmv
+jBhZPO2aL0nZ6I1vFIygaY1hSBBhrujauvKbm3Ge57IIf72VVKTR9I+oT4GTVXEM
+a+gTkGaMxuQftrsaLEAxVzA+LO0pg8kyQpjpykGWdetmdslgrbtHXJmCbwCggPoR
+IPOL5Wz6f20b+TZg1vAtJXsD/jMoXvqs2qQbXrTkIiFUvoDq1JNisGohXNVba2RE
+k8SoNV3uw1YiuN2Bh7HrPUqNeMvpxKE7RZ2d8bvLZh+g89dw49lQ9SMqrGbljSzz
+v08RvwJ3iQxfRCHNU8d9WWw07OK22Hky/kOLWad7cbAFexmSuTo9SxppCGTrevMR
+hSllA/9XG1E/OlLl5qHRKphgxQvdg95FdtJuVqt5gHz+ySqWz2an0aTjXMyb4NPu
+rbP3AGd7zng4ljKCjb30sly7fz4ClrDEQtB7Com1Q/tK0CGPWJVmsAACdrNtb84B
+kEFJ3I4zl2WBqJwUJ01E+y9bkfrDiIYrlqpyOyxwibpZBrGs1bQiY2hpeW9jbG9u
+ZSA8bWFzdGVyQGNoaXlvY2xvbmUubmV0PohcBBMRAgAcBQI/gOmlAhsDBAsHAwID
+FQIDAxYCAQIeAQIXgAAKCRBSEfp4Az9Vk0E+AJ9SJJF48JLHLXCWw1myKUFQsFXq
+0ACfcUQHksZhqFWEkot+uPpEAR8CF9W5AQ0EPzde7hAEANSahchVkCAUDABvTPRh
+t+C0AEYgI2/al769Pl+ir8GV6NRJbFMX3KLjX+jtaj1nDJgz7J7NSv096sDIEjWt
+iE6T0C3BK6AZmdUWchj0ys/YrHNmnDtK/+CZWxTRioYjbciF8bk7vTHKLYsS/LeO
+E57K9sn4/lpTS7IXOW05IGWXAAMFA/9k9Kut0l7tWM5g+CN1pXCJ2oOHenC+pb6F
+kddP105mi9C+5uyXo39Wb9kYHW8psjmFngGxkcNu0ckBvFnpe8el/XNb948r4a/a
+2irwyCTZZGER/QlHkLGLsPRs8C+EbxMg4DP5v3yTn+AIJwDvBl7Gb8ojdlDFAHzF
+YkPIlTgKeIhGBBgRAgAGBQI/N17uAAoJEFIR+ngDP1WTtfIAnRtgDv/9lh9IIf5r
+ELqoVU3+fAklAJ9QUrrzUAR36LbmdWxW3dJOj2xG0g==
+=MkFF
+-----END PGP PUBLIC KEY BLOCK-----

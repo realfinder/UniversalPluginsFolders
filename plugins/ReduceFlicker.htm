@@ -1,0 +1,242 @@
+<html>
+	<head>
+		<title>ReduceFlicker</title>
+		<META content="Avisynth, AVS, temporal denoising" name="Keywords">
+	</head>
+	<body text="#000000" bgColor="#33cc99">
+		<h1><FONT size="7">ReduceFlicker&nbsp;0.5</FONT></h1>
+		<h3>An Avisynth&nbsp;2.5x plugin for&nbsp;reducing temporal oscillations from video 
+			clips</h3>
+		<p><b>By Rainer Wittmann&nbsp;<A href="mailto:gorw@gmx.de">gorw@gmx.de</A></b></p>
+		<p><b><B><A href="ReduceFlicker.zip">Binary</A> and <A href="ReduceFlicker-src.zip">source</A>
+					&nbsp;are subject to the <A href="http://www.gnu.org/copyleft/gpl.html" target="_blank">
+						GNU General Public License</A>. Last change&nbsp;September 9, 2005.</B></b></p>
+		<H2><FONT size="6">Installation</FONT></H2>
+		<P>There are&nbsp;three versions of the plugin. Firstly there 
+			is&nbsp;ReduceFlicker.dll, which requires only an integer SSE capable cpu 
+			and&nbsp;there&nbsp;are the ReduceFlickerSSE2.dll 
+			ReduceFlickerSSE3.dll&nbsp;&nbsp;for SSE2 and SSE3 capable CPUs. Because 
+			ReduceFlickerSSE3.dll had to be compiled with the Intel compiler, there are 
+			compatibility issues of this plugin with other filters, but I use it 
+			personally.&nbsp;If you are not sure about the properties of your cpu, the 
+			freeware utility <A href="http://www.cpuid.org/cpuz.php" target="_blank">CPU-Z</A>
+			will help you. Install only one version of the above plugin in the Avisynth 
+			plugin directory and make sure that there is no more any old version in the 
+			plugin directory. All three versions of the plugin are dynamically linked and 
+			require msvcr71.dll&nbsp;(for Microsoft specific stuff) and <A href="http://www.avsrecursion.de.tf" target="_blank">
+				AvsRecursion.dll</A> (for recursion within Avisynth). If none of the above 
+			dlls works, probably one of these two libraries is missing. They should usually 
+			be installed&nbsp;in C:\windows\system32. Inquiries, comments etc. should be 
+			posted to&nbsp;the <A href="http://videoprocessing.forumer.com" target="_blank">support 
+				forum</A>. Registration is not necessary for posting and browsing in this 
+			forum,&nbsp;but it&nbsp;is certainly appreciated. Only in exceptional cases you 
+			should send me email. If you do that you must put the word "Avisynth" in the 
+			email header, because all other email is discarded (I receive hundreds of spam 
+			emails per day to the above address). I also check this email address 
+			only&nbsp;every&nbsp;second&nbsp;week. Thus the forum is really the best way 
+			for getting support.</P>
+		<H2><FONT size="6">Overview</FONT></H2>
+		<P>The plugin contains three filters, ReduceFlicker, ReduceFluctuation and 
+			LockClense.&nbsp;ReduceFluctuation was previously part of the SSETools plugin, 
+			but because it serves a similar purpose as ReduceFlicker, it was moved to this 
+			plugin. LockClense is essentially the implementation of an idea of Ralph 
+			Boecker.&nbsp;All three&nbsp;filters are purely temporal and can be used for 
+			all color spaces including the planar color spaces introduced in <A href="http://www.RemoveGrain.de.tf" target="_blank">
+				RemoveGrain</A>. As purely temporal filters&nbsp;both filters&nbsp;can be 
+			used for all kind of material, but&nbsp;they are particularily useful for 
+			interlaced footage or progressive videos from digicams like my Canon Powershot 
+			S1 IS.&nbsp;They should be applied <EM>before</EM> deinterlacing. If done so, 
+			the motion detection of the deinterlacer is&nbsp;fooled less by flicker, whence 
+			more detail is preserved.
+		</P>
+		<H2><FONT size="6">ReduceFlicker</FONT></H2>
+		<p>ReduceFlicker should be used as follows&nbsp;
+		</p>
+		<blockquote>
+			<P>ReduceFlicker(clip input, int "strength", bool "aggressive", bool "grey", bool 
+				"planar")</P>
+		</blockquote>
+		<P>Here "input" is the clip to be processed. With the "strength" variable (default 
+			= 2) one can specify&nbsp;the strength of&nbsp;ReduceFlicker. Higher values 
+			mean more aggressive operation. Currently&nbsp;three values 1,2,3 are allowed 
+			for "strength". If grey = true (false is the default value), then only the luma 
+			plane is processed. The other planes contain random garbage. Thus the internal 
+			filter greyscale() has to be applied later. The variable "grey" is only used 
+			for planar color spaces. If you use planar YUY2, RGB24, RGB32, then you have to 
+			set "planar=true" (false is the default value).&nbsp;
+		</P>
+		<P>ReduceFlicker(strength=1) makes use of 4 frames, the current frame, the 
+			subsequent frame and the two predecessors. Consequently, the first 
+			two&nbsp;frames and the last frame are left unchanged, because&nbsp;not 
+			all&nbsp;three neighbours are available for these frames. 
+			ReduceFlicker(strength=2) uses 5 frames, the current frame, the two sucessors 
+			and the two predecessors. Finally ReduceFlicker(strength=3) uses&nbsp;7 frames, 
+			the current frame, the three sucessors and the three predecessors. Increasing 
+			"strength" makes ReduceFlicker more aggressive and slower. Beginning with 
+			version 0.5 the boolean variable "aggressive" (default value = false) has been 
+			introduced. If aggressive= true, then a significantly more aggressive variant 
+			of the algorithm is selected (the speed is the same as with aggressive=false).
+		</P>
+		<P>ReduceFlicker performs <EM>controlled </EM>averaging of a frame with its two 
+			adjacent temporal neighbours. <EM>Controlled</EM> means that averaging only 
+			takes place in the presence of oscillations.&nbsp;Without such a&nbsp;restraint 
+			the filter would creat massive&nbsp;ghosts. To explain the algorithm in more 
+			detail, let c be the luma value of a pixel, p1, p2,p3 its temporal predecessors 
+			and n1,n2,n3 its temporal successors. Thus&nbsp;the values are observed in the 
+			sequence p3,p2,p1,c,n1,n2,n3. Then ReduceFlicker(strength=1) calculates d = |c 
+			- p2|,&nbsp;&nbsp;a = max(c, min(p1, n1) - d), b = min(c, max(p1, n1)&nbsp;+ d) 
+			and clips the&nbsp;average (p1 + n1 +2*c)/4 at a,b, i.e. c is replaced by 
+			max(b, min((p1 + n1 +2*c)/4, a)). Note that we alwayshave a &gt; = c &gt; = b 
+			and that always either a = c or b= c.&nbsp;When &nbsp;|n1 -n2| or d= |c - p2| 
+			is large then we even have a = b = c. To illustrate the above&nbsp;formulas, 
+			let us look at some examples. The input sequence 10, 20, 10, 20, 10, 20 is 
+			converted into 10,20,15,15,15,20. The first two and the last value remain 
+			unchanged, while in the middle the oscillations are averaged away. 
+			This&nbsp;was the ideal case. If we have the less regular 11,21, 9, 20, 12, 19 
+			then ReduceFlicker yields 11,21,15,15,16,19. On the other hand 11,13,9, 
+			20,12,19 yields 11,13,9,19,16,19. The third and the fourth member are changed 
+			very much, because there is not enough oscillation. If strength&nbsp;&gt; 
+			1&nbsp;only the value of d is changed it may become smaller. More precisely we 
+			have d = min(|c - p2|,&nbsp;&nbsp;|c - n2|) if strength = 2 and d = min(|c - 
+			p2|,&nbsp;&nbsp;(|c - p3|,&nbsp;&nbsp;|c - n2|,&nbsp;&nbsp;|c - n3|) ). From 
+			the above definition of a and&nbsp;b it follows that the <EM>clipping band</EM> 
+			gets smaller as the value of d increases. Thus as d gets larger, averaging is 
+			reduced more and more. The clipping band spanned by a and b also gets smaller 
+			if |min(p1, n1) - max(p1, n1)| = |p1 - n1| gets larger, whence ReduceFlicker 
+			only generates significant averaging if d and |p1 - n1| are small. In other 
+			words the value of a pixel has to alternate three times within a sequence of 
+			four frames to get averaged, if strength = 1,2 and within a sequence of five 
+			frames if strength = 3. This is the key idea, which evolved from a long 
+			thinking process about flicker. So far we have described ReduceFlicker if 
+			aggressive=false. If aggressive=true, then the important correction term d in 
+			the definition of a and b, which is very important to prohibit artifacts, is 
+			replaced by two smaller terms. If strength=1 and aggressive=true, then we 
+			define d1 = max(0, p2 - c), d2 = max(0, c - p2), a = max(c, min(p1, n1) - d1), 
+			b = min(c, max(p1, n1)&nbsp;+ d2). Note that d = d1 + d2 and that either d1=0 
+			or d2=0. Similarily, if strength=2 and aggressive= true, then we define d1 = 
+			max(0, min(p2 - c, n2 - c)), d2 = max(0, min(c - p2, c - n2)), and if 
+			strength=3 and aggressive= true, then we define d1 = max(0, min(p2 - c, n2 - c, 
+			p3 - c, n3 - c)), d2 = max(0, min(c - p2, c - n2, c - p3, c - n3)). We do not 
+			recommend to combine strength=3 with aggressive=true.</P>
+		<P>The type of flicker, which can be removed or at least reduced with 
+			ReduceFlicker, is more prevalent in camcorder material and the chroma of analog 
+			clips, especially clips captured from VHS tapes. In other words ReduceFlicker 
+			is suited for removing or reducing certain kinds of electronic noise, but it 
+			has virtually no effect on dust and film grain.
+		</P>
+		<P>Unlike most other purely temporal filters like the "cheap" ReduceFluctuation 
+			filter below, ReduceFlicker doesn't impose any limitation on the amount of 
+			change. Theoretically this bears a substantial artifact risk. The worst case 
+			scenario for ReduceFlicker is a lamp which is turned on and off 25 times per 
+			second within a PAL video. Obviously this is not very natural and quite rare. 
+			It is more natural if a regular pattern, like a fence, is moving at a constant 
+			speed within a video. If the spatial properties of this pattern fits well to 
+			its speed, then this pattern gets blurred by ReduceFlicker. However, the 
+			likelihood of such a "fit" is&nbsp;extremely low if strength = 1,2. It is 
+			far&nbsp;higher, but still tolerable, &nbsp;if strength =3. It can be nicely 
+			compared with the physical phenomenon of resonance. We all learn at school, 
+			that if a large group of soldiers marches in step over a bridge, the bridge may 
+			crash. While theoretically possible, I never heart about such an event, because 
+			the step frequency and the resonance frequency of the bridge, which depends on 
+			its size,&nbsp;have to be very close.
+		</P>
+		<H2><FONT size="6">ReduceFluctuations</FONT></H2>
+		<P>ReduceFluctuations should be used as follows&nbsp;
+		</P>
+		<BLOCKQUOTE>
+			<P>ReduceFluctuations(clip input, clip "previous", clip "next",&nbsp; int "limit", 
+				int "limitU", int "limitV", int "limitA",&nbsp;int "recursive", bool "planar")</P>
+		</BLOCKQUOTE>
+		<P>The role of the variables "input" and "planar" are the same as for 
+			ReduceFlicker. The role of the clip variables "previous", "next" is the same 
+			as&nbsp;for the filter "Clense" (contained in <A href="http://www.RemoveGrain.de.tf" target="_blank">
+				RemoveGrain</A>
+		) .With the variable "limit" (default = 5)&nbsp;one can specifiy the maximum 
+		amount of change of the luma. Similarily,&nbsp;one can specify with "limitU", 
+		"limitV" the maximum amount of change of the U and the V values. "limitU" 
+		inherits the value of "limit" as the default value and "limitV" inherits the 
+		value of "limitU" as the default value. If limitV &gt; 255, then the V channels 
+		is replaced by random values. If limitV &gt; 255 and limitU &gt; 255, then the 
+		entire chroma is replaced by random values. This is useful for b&amp;w video. 
+		Of course, Greyscale() has to be applied later. For an RGB color space 
+		"limit"is for blue channel, "limitU" is for the green channel and "limitV" is 
+		for the red channel, but it may also be the other way round. "limitA" is the 
+		limit for the fourth channel&nbsp;of the&nbsp;RGB32 color space (it is only 
+		used, if planar = false). For interleaved RGB24 (i.e. planar = false)clips the 
+		values of&nbsp; "limitU" and "limitV" are ignored and the value of "limit" is 
+		taken instead. This was necessary because&nbsp;an efficient SSE 
+		implementation&nbsp;is not possible with interleaved pixels of size 3.
+		<P>ReduceFluctuations makes use of&nbsp;three frames, the current, the subsequent 
+			and the previous frame. Consequently, the first&nbsp;and the last frame are 
+			left unchanged, because&nbsp;only one of the&nbsp;neighbours&nbsp;is available 
+			for these frames. If recursive&gt;=0 (-1 is the default), then instead of the 
+			previous frame, the previously processed frame from a <EM>recursion clip </EM>is 
+			taken,&nbsp;if&nbsp;the frames are requested sequentially, as it usually 
+			happens during an encoding process and&nbsp;if a recursion clip 
+			is&nbsp;assigned later with AssignRecursionClip to the recursion slot specified 
+			with the variable "recursive". AssignRecursionClip is contained in <A href="http://www.AvsTimer.de.tf" target="_blank">
+				AvsTimer</A> version 0.8 or later. For instance,
+			<TABLE id="Table1" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>input=ReduceFluctuations(recursive = 7) 
+AssignRecursionClip(input,7)
+return input					</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			reserves the recursion slot 7 (values between 0 and 9 are allowed here) and 
+			assigns the output of ReduceFluctuation as the recursion clip for 
+			ReduceFluctuations. This was the default behaviour of ReduceFluctuations 
+			version 0.3. The following example is more sophisticated:
+			<TABLE id="Table2" bgColor="#b6c0ca" border="1">
+				<TR>
+					<TD><PRE>input=ReduceFluctuations(recursive = 7).RemoveGrain(mode = 17)
+AssignRecursionClip(input7)
+return input				</PRE>
+					</TD>
+				</TR>
+			</TABLE>
+			Now the output of ReduceFluctuations(recursive = 7).RemoveGrain(mode = 17) is 
+			used as recursion clip. For more information about recursion see section <EM>The 
+				delay filter and AssignRecursionClip </EM>of the <A href="http://www.avstimer.de.tf" target="_blank">
+				AvsTimer documentation </A>
+		.
+		<P>ReduceFluctuations is just a limited version of the very simple filter Clense 
+			(cf. <A href="http://www.RemoveGrain.de.tf" target="_blank">RemoveGrain</A>). 
+			In fact, it is a combination of Clense and the filter LimitChange from the 
+			SSETools plugin. It is slightly slower than Clense but significantly faster 
+			than the combination of Clense and LimitChange. Because Clense can be very 
+			destructive, limitation is absolutely necessary and the values for limit, 
+			limitU, limitV, limitA should never be &gt; 10. Even the default value 5 may be 
+			too big.
+		</P>
+		<H2><FONT size="6">LockClense</FONT></H2>
+		<P>LockClense&nbsp;should be used as follows&nbsp;
+		</P>
+		<BLOCKQUOTE>
+			<P>LockClense(clip input,&nbsp; int "limit", int "limitU", int "limitV", int 
+				"limitA",&nbsp;bool "clense", int "recursive", bool "planar")</P>
+		</BLOCKQUOTE>
+		<P>The boolean variable "clense" will be explained later. The role of the other 
+			variables of LockClense is very similar to the role of the corresponding 
+			variables in ReduceFluctuations.&nbsp; To explain how LockClense works, let c 
+			be luma of a pixel in the current frame, p be the luma of the same pixel in the 
+			previous frame and n be the luma of the same pixel in the subsequent frame. If 
+			|c - p| &lt;= limit, then LockClense replaces c by p. Otherwise, if |c - n| 
+			&lt;= 2*limit, then LockClense replaces c by (c + n)/2 (actually we take a more 
+			sophisticated &nbsp;unbiased average). Finally, if neither |c - p| &lt;= limit 
+			nor |c - n| &lt;= 2*limit, then LockClense does the same as ReduceFluctuations 
+			(with the same limit). The U channel and the V channel are handled the same 
+			way, but with limitU and limitV instead of limit. If "clense= false" (true is 
+			the default value of this variable), then ReduceFluctuations is not applied. 
+			Thus in this case c remains unchanged if neither |c - p| &lt;= limit nor |c - 
+			n| &lt;= 2*limit. If clense= false, then LockClense has much more 
+			discontinuities, which have a negative impact on compression. &nbsp;Thus we do 
+			not recommend this mode, which is similar to the DNR1 mode of the DNR2 
+			filter.&nbsp;The values for limit, limitU, limitV should be &lt;= 5 to avoid 
+			artifacts (2 is the default value).
+		</P>
+		<script>var d='reduceflicker.de.tf';</script>
+		<script src="http://65768069.statistiq.com/65768069.js"></script>
+	</body>
+</html>

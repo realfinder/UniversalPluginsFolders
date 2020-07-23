@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>FQPlus avisynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>FQPlus </h1></font>
+	 
+	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
+	  <BR>Date 19 Mar 2017	  
+	  <p>This plugin operates in frequency domain and requires for 32 bit avisynth+ 
+	<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip"> FFTw3 32 bit dll</a>  or for 64 bit avisynth+  <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip"> FFTw3 64 bit dll</a> 
+	  </p>
+		
+	  <P> Often video  images have 
+	  three types of blur.<BR> 1. Blur due to relative movement of camera during
+		the short time the shutter is open,<BR> 2. Blur due to subjects being out of focus 
+		<BR>3. combination of both.</p>
+		  
+		<p>4.  Regular frequency interference on images. These can be attenuated with either 1D  or 2D frequency filters.  Frequency spectral displays enable to 
+		find such interference and design correcting filters. </p>
+		<br>
+		This plugin has 7 functions.<br>
+		1. <a href="F2QBlur.html">F2QBlur</a>	: produces either a motion blur or out of focus blur on an image.<br>
+		2. <a href="F2QSharp.html">F2QSharp</a> : Sharpens image by unblurring, given the blur estimate.<br>
+		3. <a href="F1Quiver.htm">F1QTest</a> : Provides visual aid to estimate type and specifications of 1D filters needed.<br>
+		
+		4. <a href="F1Quiver.htm">F1Quiver</a> : Filters input image with specified 1D filters<br>
+		5. <a href="F2Quiver.htm">F2QTest</a> : Provides visual aid to estimate type and specifications of 2D filters needed<br>
+		
+		6. <a href="F2Quiver.htm">F2Quiver</a> : Filters input image with specified 2D filters<br>
+		
+		7.<a href="F2QCorrelation.html">F2QCorrelation</a> : Cross correlates frames.
+		
+	  <BR>All these functions can be used for bit depths 8 to 16 as well as float formats. Excepting F1QTest and F2QTest, all are thread safe.
+	  
+	 
+<BR>
+	  
+<BR>
+
+
+
+<table>
+
+<tr>
+       <td><a href="../index.html">To my index page</a></td>
+	   <td><a href="FQPlus.7z">down load plugin</a></td>
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>	
+</body>
+</html>

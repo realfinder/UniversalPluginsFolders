@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectUnderWater AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectUnderWater </h1></font>
+	 
+	  <P>EffectUnderWater function creates the effect of the image floating on 
+	  a pool of water. Slowness of sashay, number of cells and wave height as 
+	  %age of cell dimension are the parameters. (Cells*Cells) gives total number
+	   of cells used to create effect. The larger it is the finer the appearance.
+	    But as amp is a %age, the upheaval will become less. The parameter calm 
+		(slowness in seconds) determines how fast the sashaying takes place. See 
+		<a href="EffectWater.html">EffectWater</a> function also.
+RGB32, RGB24 YUY2 and YV12 formats only are supported.
+
+
+ </p>  
+
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td>slowness in seconds </td>
+       <td>calm</td>
+       <td>integer</td>
+       <td>1 to 10</td>
+       <td>5</td>
+</tr>
+
+<tr>
+       <td>number of cells in each dimension of frame</td>
+       <td>n</td>
+       <td>integer</td>
+       <td>4 to 24</td>
+       <td>10</td>
+</tr>
+
+<tr>
+       <td>wave amplitude as %age </td>
+       <td>amp</td>
+       <td>integer</td>
+       <td>1 to 100</td>
+       <td>60</td>
+</tr>
+
+</table>
+
+<BR>#Usage examples:- 
+
+<pre>
+EffectUnderWater(last,50,90,1,8,40)
+		EffectUnderWater(last,59,90,amp=80)
+EffectUnderWater(last,59,90)
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="underwater.jpg" border="0">
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

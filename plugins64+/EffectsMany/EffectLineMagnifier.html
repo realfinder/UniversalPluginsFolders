@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectLineMagnifier AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectLineMagnifier </h1></font>
+	 
+	  <P>EffectLineMagnifier Magnifies either a vertical or Horizontal strip of 
+	  image. The magnifier can be moved across image as per the coordinates. 
+ 	  Mag is the magnification.
+	  RGB32, RGB24, YuY2 and YV12 only are supported at this time.
+
+ </p>  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+<tr>
+       <td>type of magnifier</td>
+       <td>type</td>
+       <td>string</td>
+       <td>"hor" or "ver"</td>
+       <td>"hor"</td>
+</tr>
+
+<tr>
+       <td>magnifier lens width</td>
+       <td>lwidth</td>
+       <td>integer</td>
+       <td>4 and 1/2 of frame width or height</td>
+       <td>1/8th of frame dimension</td>
+</tr>
+<tr>
+       <td>magnification</td>
+       <td>mag</td>
+       <td>integer</td>
+       <td>2 to 12</td>
+       <td>6</td>
+</tr>
+
+<tr>
+       <td>initial xY coordinate of strip center</td>
+       <td>initxy</td>
+       <td>integer</td>
+       <td>lwidth/2 to width or height minus lwidth/2</td>
+       <td>lwidth/2</td>
+</tr>
+
+<tr>
+       <td>Final xy coordinate</td>
+       <td>finalxy</td>
+       <td>integer</td>
+       <td>lwidth/2 to width or height minus lwidth/2</td>
+       <td>width-lwidth/2</td>
+</tr>
+
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>EffectLineMagnifier(last,51,190, "hor",40,4,60,400)
+Move across frame begin to frame end :-
+EffectLineMagnifier(last,51,190, "ver",40,6)
+Stationary:-
+EffectLineMagnifier(last,51,190. "ver", 60, 5,100,100)
+
+
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="linemagnifier.jpg" border="0">
+
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+<head>
+	<title>Kernel visualizations - ResampleHQ</title>
+	<link rel="stylesheet" type="text/css" href="kernels.css"/>
+	<script type="text/javascript" src="kernels_min.js"></script>
+</head>
+<body class="hyphenate" onload="draw_all_kernels()">
+<div>
+	<h1>ResampleHQ kernel visualizations</h1>
+	<p>
+		This page attempts to visualize various resampling kernels in a way that will help to you
+		choose which one is right for you.  There is no "best" kernel -- they all have their uses and
+		the right one for will depend greatly on both the source and personal preference.
+	</p>
+	
+	<p>
+		Start off with a common choice, like Mitchell-Netravali or Lanczos3.  If it doesn't look
+		acceptible, compare them with other kernels on the graphs to find one that has better
+		properties in the area you wish to improve.
+	</p>
+	
+	<p>
+		The X axis represents the distance between the optimal sample location and the actual sample
+		location.  A dead-on hit would be at 0.0, while a hit one pixel away would be 1.0, and so on.
+		Note that kernels can take multiple samples.
+	</p>
+	
+	<p>
+		The Y axis represents the weight applied to the sample at that distance.  Note that most
+		kernels have negative weights at some distances.
+	</p>
+	
+	<p id="note">
+		<b>Note:</b> The graphs below require a web browser with HTML5 Canvas and Javascript support
+		to display.  Any modern browser like Firefox 3.5, Chrome, and IE9 should work.  If you don't
+		see graphs, <a href="http://getfirefox.com">upgrade your browser</a>!
+	</p>
+	
+	<p>
+		Here are some of my own observations:
+	</p>
+	
+	<ul>
+		<li>
+			<b>Blurring</b> occurs if there is a positive bias.  Look at Bilinear as a base&mdash;any
+			other kernels with weights higher than it introduce a positive bias that must be removed
+			with negative weights.  <b>SoftCubic100</b> doesn't remove the positive bias, so is very
+			blurry.
+		</li>
+		<li>
+			<b>Sharpness</b> is proportional to the sample count and total absolute weight.
+			<b>Bilinear</b> is the least sharp, even though it is not blurry.
+		</li>
+		<li>
+			<b>Ringing</b> is proportional to negative weight.  <b>Lanczos4</b> will cause a lot of
+			ringing.
+		</li>
+	</ul>
+	
+	<canvas id="canvas" width="1000" height="357"></canvas>
+	<table>
+	<tr>
+		<td id="legend"></td>
+		<td id="kerneldesc"></td>
+	</tr>
+	</table>
+	
+	<p>
+		Mouseover the kernel names to highlight the corresponding line on the graph.
+	</p>
+	
+	<canvas id="Blurring" width="400" height="160"></canvas>
+	<canvas id="Sharpness" width="400" height="160"></canvas>
+	<canvas id="Ringing" width="400" height="160"></canvas>
+</div>
+
+<script src="http://hyphenator.googlecode.com/svn/tags/Version%203.3.0/Hyphenator.js" type="text/javascript"></script>
+<script type="text/javascript">
+	Hyphenator.run();
+</script>
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript"></script><script type="text/javascript">
+<!--
+_uacct = "UA-118965-1";
+urchinTracker();
+//-->
+</script>
+</body>
+</html>

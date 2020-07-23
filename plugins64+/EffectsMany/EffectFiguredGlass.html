@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectFiguredGlass AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectFiguredGlass </h1></font>
+	 
+	  <P>EffectFiguredGlass generates a number of circular discs with image 
+	  inside distorted spherically giving impression of looking through a 
+	  figured glass. 
+		Radius of disc determines the circular area. These are repeated as tiles
+		 over the image.
+ 		Mag controls distortion inside each disc area.
+		Drop determines whether distortion is uniform or varying from center to edges.
+		 
+		 RGB32, RGB24, YUY2 and YV12 only are supported at this time.
+
+
+ </p>  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td>Radius of discs</td>
+       <td>radius</td>
+       <td>integer</td>
+       <td>8 to 1/4th of frame smaller dimension</td>
+       <td>30</td>
+</tr>
+
+<tr>
+       <td>magnification</td>
+       <td>mag</td>
+       <td>integer</td>
+       <td>2 to 32</td>
+       <td>4</td>
+</tr>
+
+<tr>
+       <td>Is drop effect desired?</td>
+       <td>drop</td>
+       <td>boolean</td>
+       <td>true for yes</td>
+       <td>true</td>
+</tr>
+
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>EffectFiguredGlass(last,51,190,radius=40,mag=8,drop=false)
+EffectFiguredGlass(last,51,190)
+
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="figuredglass.jpg" border="0">
+
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

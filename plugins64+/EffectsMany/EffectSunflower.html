@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectSunflower AviSynth Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectSunflower </h1></font>
+	 
+	  <P>EffectSunflower generates radially expanding (from given x and y 
+	  coordinates), colored light spots as in the Sunflower fireworks.. The radius 
+	  to which the beams grow, whether beams are  colored or white can be specified.
+	   Due to gravitation effect, some of the beams may fall back well before 
+	   the max radius is attained, while some may travel more than radius, 
+	  depending upon number of frames in the effect and fps of the clip.
+ Sufficent number of frames must be included in this effect to be properly visualised..
+RGB32, RGB24, YUY2 and YV12 only are supported at this time.
+
+
+ </p>  
+
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td> x coordinate of the sunflower center</td>
+       <td>x</td>
+       <td>integer</td>
+       <td>ensure atleast a part is seen</td>
+       <td>mid frame</td>
+</tr>
+
+<tr>
+       <td>y coordinate of the sunflower center</td>
+       <td>y</td>
+       <td>integer</td>
+       <td>ensure a part is atleast seen</td>
+       <td>mid frame</td>
+</tr>
+
+<tr>
+       <td>maximum radius of flower</td>
+       <td>radius</td>
+       <td>integer</td>
+       <td>not more than frame diagonal</td>
+       <td>1/2 of diagonal</td>
+</tr>
+<tr>
+       <td>are flower petals colored or white?</td>
+       <td>color</td>
+       <td>boolean</td>
+       <td>true for colored, false for white</td>
+       <td>true</td>
+</tr>
+
+</table>
+
+<BR>#Usage examples:- 
+
+<pre>
+EffectSunflower(last,51,190,280,200,300, false)
+EffectSunflower(last,51,190)
+EffectSunflower(last,51,190, radius=150, color=false)
+
+</pre>
+
+
+<BR>Image with effect  :
+<img src="sunflower1.jpg" border="0">
+<img src="sunflower2.jpg" border="0">
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsMany_index.html#synopsys">EffectsMany Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsMany.zip">down load EffectsMany plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

@@ -1,0 +1,29 @@
+/* Effective stylesheet produced by snapshot save */
+h1, h2, h3, h4, h5, h6, th, .heading, .caption { font-family: Arial,Helvetica,sans-serif; }
+body, p, td, ul, ol, address, cite, blockquote, .text { font-family: "Times New Roman",Times,serif; }
+tt, pre, code, kbd, samp, .fixed { font-family: "Courier New",Courier,monospace; font-size: smaller; }
+code, kbd { white-space: nowrap; }
+address, cite, var, em, i { font-style: italic; }
+th, strong, b { font-weight: bold; }
+acronym, abbr, .slang { text-decoration: none; border-bottom: 1px dotted rgb(0, 204, 0); cursor: help; }
+a:link { color: rgb(0, 0, 255); background: none repeat scroll 0% 0% transparent; }
+a:visited { color: rgb(153, 102, 255); background: none repeat scroll 0% 0% transparent; }
+a:hover { color: rgb(102, 102, 255); background: none repeat scroll 0% 0% transparent; }
+a:active { color: rgb(255, 0, 0); background: none repeat scroll 0% 0% transparent; }
+a.unemphasized { text-decoration: none; }
+a.unemphasized:hover { text-decoration: underline; }
+a.unemphasized img { border-style: none; }
+.left { text-align: left; }
+.right { text-align: right; }
+.center { text-align: center; }
+.just { text-align: justify; }
+ul, ol { margin-top: 0px; margin-bottom: 0px; }
+div.indent { margin-left: 1em; }
+address { margin-top: 1em; margin-bottom: 1em; }
+hr { border-top: thin solid black; margin: 0px; clear: both; height: 1px; }
+.iso-date { white-space: nowrap; }
+.breadCrumbs { font-family: Arial,Helvetica,sans-serif; font-size: 90%; font-weight: bold; }
+#mainTitle .breadcrumbs { margin-bottom: 0.5em; }
+#mainTitle h1 { margin-top: 0px; margin-bottom: 0px; padding-bottom: 0.5em; }
+#mainTitle { border-bottom: 1px solid black; }
+body { color: black; background: none repeat scroll 0% 0% white; font-style: normal; font-weight: normal; }

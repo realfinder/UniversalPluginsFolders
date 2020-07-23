@@ -1,0 +1,8 @@
+/* Effective stylesheet produced by snapshot save */
+.goog-te-combo, .goog-te-banner *, .goog-te-ftab *, .goog-te-menu *, .goog-te-menu2 *, .goog-te-balloon * { font-family: arial; font-size: 10pt; }
+.goog-te-ftab { margin: 0px; background-color: rgb(255, 255, 255); white-space: nowrap; }
+.goog-te-ftab-link { text-decoration: none; font-weight: bold; font-size: 10pt; border: 1px outset rgb(136, 136, 136); padding: 6px 10px; white-space: nowrap; position: absolute; left: 0px; top: 0px; }
+.goog-te-ftab-link img { margin-left: 2px; margin-right: 2px; width: 19px; height: 19px; border: medium none; vertical-align: middle; }
+.goog-te-ftab-link span { text-decoration: underline; margin-left: 2px; margin-right: 2px; vertical-align: middle; }
+.goog-float-bottom .goog-te-ftab-link { padding: 2px; border-bottom-width: 0px; }
+#goog-gt-tt input::-moz-focus-inner { border: 0px none; }

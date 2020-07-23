@@ -1,0 +1,14 @@
+2.19 20130917
+
+Built with MSVC 2012 Update 3:
+c99-to-c89      7e75aa9     https://github.com/libav/c99-to-c89
+ffmpeg          78f680c     http://www.ffmpeg.org/
+opencore-amr    0.13        http://sourceforge.net/projects/opencore-amr/
+zlib            1.28        http://www.zlib.net
+
+../ffmpeg/configure --enable-gpl --enable-version3 --enable-runtime-cpudetect \
+--disable-debug --samples=/f/build/fate-ffmpeg-samples --toolchain=msvc \
+--enable-w32threads --enable-avresample --enable-zlib \
+--enable-libopencore-amrnb --enable-libopencore-amrwb --disable-inline-asm \
+--disable-muxers --disable-encoders --disable-filters --disable-hwaccels \
+--disable-network --disable-devices

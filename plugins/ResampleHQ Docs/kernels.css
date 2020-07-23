@@ -1,0 +1,6 @@
+p,li,td{max-width:50em}
+td{vertical-align:top}
+.kerneldesc{border-top:#dcdcdc 1px solid}
+#legend{column-count:3;column-gap:2em;-moz-column-count:3;-moz-column-gap:2em;-webkit-column-count:3;-webkit-column-gap:2em;width:450px}
+#legend p{cursor:pointer;margin:0}
+#note{color:#c00}
