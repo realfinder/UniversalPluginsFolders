@@ -1,26 +1,26 @@
-function ConvertFromDoubleWidth(clip clip, int "bits")
-{
-AvsPlusVersionNumber < 3276 ? LoadPlugin(AviSynthPluginsDir + "26/Shader165.dll") : LoadPlugin(AviSynthPluginsDir + "26/Shader.dll")
-        ConvertFromDoubleWidth(clip, bits)
-}
+#function ConvertFromDoubleWidth(clip clip, int "bits")
+#{
+#AvsPlusVersionNumber < 3276 ? LoadPlugin(AviSynthPluginsDir + "26/Shader165.dll") : LoadPlugin(AviSynthPluginsDir + "26/Shader.dll")
+#        ConvertFromDoubleWidth(clip, bits)
+#}
 
-function ConvertFromStacked(clip clip, int "bits")
-{
-AvsPlusVersionNumber < 3276 ? LoadPlugin(AviSynthPluginsDir + "26/Shader165.dll") : LoadPlugin(AviSynthPluginsDir + "26/Shader.dll")
-        ConvertFromStacked(clip, bits)
-}
+#function ConvertFromStacked(clip clip, int "bits")
+#{
+#AvsPlusVersionNumber < 3276 ? LoadPlugin(AviSynthPluginsDir + "26/Shader165.dll") : LoadPlugin(AviSynthPluginsDir + "26/Shader.dll")
+#        ConvertFromStacked(clip, bits)
+#}
 
-function ConvertToDoubleWidth(clip clip)
-{
-AvsPlusVersionNumber < 3276 ? LoadPlugin(AviSynthPluginsDir + "26/Shader165.dll") : LoadPlugin(AviSynthPluginsDir + "26/Shader.dll")
-        ConvertToDoubleWidth(clip)
-}
+#function ConvertToDoubleWidth(clip clip)
+#{
+#AvsPlusVersionNumber < 3276 ? LoadPlugin(AviSynthPluginsDir + "26/Shader165.dll") : LoadPlugin(AviSynthPluginsDir + "26/Shader.dll")
+#        ConvertToDoubleWidth(clip)
+#}
 
-function ConvertToStacked(clip clip)
-{
-AvsPlusVersionNumber < 3276 ? LoadPlugin(AviSynthPluginsDir + "26/Shader165.dll") : LoadPlugin(AviSynthPluginsDir + "26/Shader.dll")
-        ConvertToStacked(clip)
-}
+#function ConvertToStacked(clip clip)
+#{
+#AvsPlusVersionNumber < 3276 ? LoadPlugin(AviSynthPluginsDir + "26/Shader165.dll") : LoadPlugin(AviSynthPluginsDir + "26/Shader.dll")
+#        ConvertToStacked(clip)
+#}
 
 function GetBitDepth(clip clip, string "format")
 {
