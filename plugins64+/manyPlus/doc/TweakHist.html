@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>TweakHist Function of manyPlus plugin for avisynth+</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>TweakHist </h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>Date   1 Oct 2020
+	  <BR>EMail: <a href="mailto:mohanvc@gmail.com">mohanvc</a>
+	  <P> This  function adjusts the histogram of a frame by either
+	  equalizing it or by matching with histogram of another image, or with given
+	   histogram table of values. </p>
+	   
+	   		
+		<p>The function accepts RGB, YUY2 and Planar color formats. Clip to be processed and to be used for matching need not have identical
+		color formats and dimensions. For example processing clip can be  
+		YV12 , 720 X 480 pixels while matching clip is YUY2, 256 X 16 pixels. However their bit depths must be same.</p>
+		
+		<p>If matching with given table values,
+		then matching clip need not be specified. The second parameter is a
+		table  of integer pairs.Each pair consists of
+		 Luma ( intensity)value and the second number is %population (type = 3) or %cummulative population (type = 4) at this value.The table is normalized by the function and so approximate values are OK.
+		 
+		 Not more than 25 pairs can be specified. It will be possible to input by
+		 table any desired histogram shape.
+		 The plugin linearly interpolates and extrapolates to construct
+		  a full normalized histogram from these  values. In case of RGB input the selected color histogram is tweaked ( in case all 3 color components of RGB input are to be tweaked the function may be invoked in the script 3 times). For other formats only Y value histogram is tweaked. </p>
+		<br> This function is thread safe. MT_NICE_FILTER and supports all avisynth+ supported formats (except stacked formats).
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip (histogram of which is to be tweaked)</td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td><font color="#3300ff">The following is a table of Histogram values in %ages, to be specified only if 'table' is true </font></td>
+       <td></td>
+       <td></td>
+       <td></td>
+       <td></td>
+</tr>
+
+<tr>
+       <td><font color="#3300ff">Luma value % of maximum </font></td>
+       <td></td>
+       <td>integer</td>
+       <td>0 to 100 % and to inrease monotonically</td>
+       <td></td>
+</tr>
+<tr>
+       <td><font color="#3300ff"> % age of population or cummulative population  at this luma value </font></td>
+       <td></td>
+       <td>integer</td>
+       <td>non negative. In case of type = 4, should monotonically increase and Max value is 100 %.</td>
+       <td></td>
+</tr>
+
+<tr>
+       <td>Type of process</td>
+       <td>type</td>
+       <td>integer</td>
+       <td>1 for equalization 2.  for matching with specified frame, 3 for matcing with given table of Luma, population %ages. 4. for matching with table of luma vs cummulative population %ages </td>
+       <td>1</td>
+</tr>
+
+
+<tr>
+       <td>Clip in which image for matching is available</td>
+       <td>mclip</td>
+       <td>clip</td>
+       <td>valid clip to be specified for type = 2 option</td>
+       <td>dummy clip</td>
+</tr>
+<tr>
+       <td>frame number on clip for matching</td>
+       <td>mf</td>
+       <td>integer,  may be specified for type = 2 option</td>
+       <td>within clip</td>
+       <td>0</td>
+</tr>
+
+<tr>
+       <td>limit on % of change in value from original for tweaking allowed.</td>
+       <td>limit</td>
+       <td>integer</td>
+       <td>1 to 100 </td>
+       <td>100</td>
+</tr>
+
+<tr>
+       <td>color of RGB input to process.</td>
+       <td>rgb</td>
+       <td>integer</td>
+       <td>0: red, 1 : Green, 2: Blue </td>
+       <td>1 (green)</td>
+</tr>
+
+</table>
+
+
+<BR>#Usage examples:-
+<Pre>
+TweakHist() 
+TweakHist(c,type=2,mclip=mm,mf=26)
+TweakHist(c,15,2, 30,12, 50, 33, 90, 12,150,35,200,10, type=3,limit=50)
+TweakHist(20,1,150,100,255,110, type=4,limit = 70) 
+# RGB input. Repeated for each color
+TweakHist(limit = 70,rgb = 0)
+TweakHist(limit = 70,rgb = 1)
+TweakHist(limit = 50, rgb = 2)
+</Pre>
+<BR>
+<table>
+
+<tr>
+       <td>To my <a href="../index.html">index </a>page</td>
+	   <td>down load<a href="manyPlus.7z">manyPlus </a>plugin</td>
+       <td>To <a href="http://www.avisynth.nl">Avisynth</a> </td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>SegAmp Function of manyPlus plugin of avisynth+</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>SegAmp </h1></font>
+	 
+	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
+	  <BR> 1 Oct 2020  
+	  
+	  <P> Image  enhancement is attempted
+		by  segmenting using Allen Soille algorithm for watershed and basin delineation. In general
+		watershed technique over-segments. To minimise this, the input may be preprocessed (with minvar or
+		GBlur functions of this  plugin or other functions available for Avisynth+) to reduce segmentation.
+		</p>
+	  
+	  <P> This plugin smoothens within segments (basins) and or accentuates (sharpens) the
+		segment boundaries to visually enhance the image. For RGB or Y plane of planar or YUY2
+		formats.  sm is smoothening factor with values
+		between 0 and 10. Sh is sharpening factor with value between -10 to 10. Both should not be
+		simultaneously	zero. sh values of -2 or so appears to yield better results.</P>
+		
+		 <P>  Smoothenig is done on R,G,B and Y color and 
+		 can also be done on u, v  of YUY2 and Planar formats 
+		  Sharpening is always limited to Y values.</P> 
+		 
+		<P>Segmention can be done on the image of a different clip (sclip) and used for smoothing or sharpening.
+		 For instance, a blurred clip or denoised clip preferably be used as the
+		 sclip. </P>
+	  
+	  This function is Thread Safe. MT_NICE_FILTER
+	  
+<BR>
+
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>sharpening factor for RGB or Y values</td>
+       <td>sh</td>
+       <td>integer</td>
+       <td>-10 to 10, both sh and sm must not be 0 for RGB formats. Use small value.</td>
+       <td>2</td>
+</tr>
+
+
+<tr>
+       <td>smoothing factor for RGB or Y plane</td>
+       <td>sm</td>
+       <td>integer</td>
+       <td>0 to 10, both sh and sm must not be 0 for RGB formats</td>
+       <td>2</td>
+</tr>
+
+<tr>
+       <td>smoothing factor for U plane(for YUY and YV12 only)</td>
+       <td>smu</td>
+       <td>integer</td>
+       <td>0 to 10</td>
+       <td>2</td>
+</tr>
+
+<tr>
+       <td>smoothing factor for v plane(for YUY and YV12 only)</td>
+       <td>smv</td>
+       <td>integer</td>
+       <td>0 to 10</td>
+       <td>2</td>
+</tr>
+
+<tr>
+       <td> nearest  4 or  8 to be used for connectivity</td>
+       <td>c4</td>
+       <td>boolean</td>
+       <td>true for connect 4, false for connect 8</td>
+       <td>true</td>
+</tr>
+<tr>
+       <td>Use a different clip for segmenting?</td>
+       <td>useclip</td>
+       <td>bool</td>
+       <td>true for use clip. false for segment and process same clip</td>
+       <td>false</td>
+</tr>
+<tr>
+       <td> clip for segmenting if useclip is true</td>
+       <td>sclip</td>
+       <td>clip</td>
+       <td>valid clip. Not the one at first parameter </td>
+       <td>need not be specified if useclip is false</td>
+</tr>
+
+
+
+</table>
+
+
+<BR>#Usage examples:- 
+<pre>
+
+dn = denoise(......)
+SegAmp(dn, useclip = false,sh = 0, sm = 10 )
+SegAmp(img, useclip = false,  sh = -5, sm = 0 )
+inv1 = invert(dn)
+SegAmp(img, useclip = true, sclip = inv1, sh =-1,sm = 10)
+gb = gaussblur(img,size=5, sd = 3.5)
+SegAmp(dn, useclip = true,sclip = gb, sh =-5, sm =4)
+
+</pre>
+
+<BR> below are  illustration of results. Top row are inputs. Left is the original
+image. Center is Gaussian blurred image. Right de noised with minvar image. Bottom row is
+the output using this plugin.
+script used for this output is:-
+<pre>
+
+sh0 =SegAmp(gb, useclip = false, sh = -6, sm = 10, smu = 0, smv = 0 )
+sh1=SegAmp(dn, useclip = false,  sh = -6, sm = 2 , smu = 0, smv = 0)
+sh2=SegAmp(img, useclip = false, sh =0,sm = 10)
+s1 = stackhorizontal(img,gb,dn)
+s2 = stackhorizontal(sh2,sh0, sh1)
+stackvertical(s1,s2)
+</pre>
+
+<img src="./SegmentedAmp0.jpg" width="768" height="800" border="0">
+
+<table>
+
+<tr>
+       <td>To my <a href="../index.html">index </a>page</td>
+	   <td>down load<a href="manyPlus.7z">manyPlus </a>plugin</td>
+       <td>To <a href="http://www.avisynth.nl">Avisynth</a> </td>
+</tr>
+</table>
+</body>
+</html>

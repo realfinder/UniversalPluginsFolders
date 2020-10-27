@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Balloon AviSynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>Balloon </h1></font>
+	 
+	  <P> Balloon creates a colored balloon with given reflectivity and 
+	  opacity at a starting x coord and floor Y coordinate. The balloon hops on 
+	  the image nhops times to the final x coordinate and floor Y coordinate. 
+	  Floor Y will be the base below which the balloon does not descend. The 
+	  maximum rise of the balloon above this floor y is given by value of rise. 
+	  Atleast 8 frames per hop must be input for this effect. Preferably do not 
+	  exceed 127 for any color component. Refl(ectivity) should not exceed 
+	  opacity. Light direction and its offset as %age of radius in the direction
+	    are other parameters. If light is "frame" then lightx and lighty coordinates 
+		may be specified. Instead of light coming from one direction it will 
+		illuminate the balloon from the lightx and lighty coordinates. Offset  
+		parameter will still have effect ( for the light can be out of plane)..
+RGB, YUY2 and Planar formats 8/ 9-16/32 bit depths  are supported. The function is thread safe..
+
+ </p>  
+
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip and at least 8 times nhops more than start frame</td>
+       <td>last frame</td>
+</tr>
+<tr>
+       <td>Radius of balloon</td>
+       <td>radius</td>
+       <td>integer</td>
+       <td>8 or more, less than 1/4th of smaller frame dimension</td>
+       <td>1/8th smaller frame dimension</td>
+</tr>
+
+<tr>
+       <td>RGB color of balloon</td>
+       <td>color</td>
+       <td>integer</td>
+       <td>RRGGBB color value</td>
+       <td>0xff</td>
+</tr>
+
+<tr>
+       <td>Opacity %age</td>
+       <td>opacity</td>
+       <td>integer</td>
+       <td>0 to 100</td>
+       <td>50</td>
+</tr>
+
+<tr>
+       <td>number of hops the balloon makes</td>
+       <td>nhops</td>
+       <td>integer</td>
+       <td>not more than 1/8 of number of frames in effect</td>
+       <td>1</td>
+</tr>
+<tr>
+       <td>Maximum rise of balloon</td>
+       <td>rise</td>
+       <td>integer</td>
+       <td>minimum radius, maximum floory-radius</td>
+       <td>floory-radius</td>
+</tr>
+<tr>
+       <td>starting x coordinate of center of balloon</td>
+       <td>startx</td>
+       <td>integer</td>
+       <td>minimum radius, max frame width-radius</td>
+       <td>radius</td>
+</tr>
+<tr>
+       <td>Final x coordinate of center of balloon</td>
+       <td>finalx</td>
+       <td>integer</td>
+       <td>minimum radius, max frame width-radius</td>
+       <td>width-radius</td>
+</tr>
+<tr>
+       <td>Floor Y coordinate of center of balloon</td>
+       <td>floory</td>
+       <td>integer</td>
+       <td>minimum radius, max frame height-radius</td>
+       <td>height-radius</td>
+</tr>
+<tr>
+       <td>Direction of illumination of balloon</td>
+       <td>light</td>
+       <td>string</td>
+       <td>"north""east" "south" "west" "front" "ne" "nw" "se" "sw" "frame"	</td>
+       <td>"front"</td>
+</tr>
+
+<tr>
+       <td>Reflectivity %age</td>
+       <td>refl </td>
+       <td>integer</td>
+       <td>0 to 100, less than opacity </td>
+       <td>40</td>
+</tr>
+
+<tr>
+       <td>light offset  %age (of radius) perpendicular to image plane. 
+	   not used for front lighting</td>
+       <td>offset</td>
+       <td>integer</td>
+       <td>0 to 100</td>
+       <td>80</td>
+</tr>
+<tr>
+       <td> light x coord for frame option </td>
+       <td>lightx</td>
+       <td>integer</td>
+       <td>In frame</td>
+       <td>Frame width center</td>
+</tr>
+
+<tr>
+       <td> light Y coord for frame option </td>
+       <td>lighty</td>
+       <td>integer</td>
+       <td>In frame</td>
+       <td>Frame top</td>
+</tr>
+
+
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>EffectBalloon(last,51,190)
+EffectBalloon(last,51,190, 20,$3f7f4f,50,4,200,600,20,400, "east",40,60)
+
+EffectBalloon(last,51,190, color=$cc00, nhops=6)
+
+EffectBalloon(last,51,190, color=127,opacity=75, refl=20)
+
+EffectBalloon(last,51,190, radius= 40, refl=40, light="frame", lightx=300, lighty=240)
+
+EffectBalloon(last,51,190, rise=300, light="west", offset=50)</pre>
+
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsPlus_index.html#synopsys">EffectsPlus Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsPlus.7z">down load EffectsPlus plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

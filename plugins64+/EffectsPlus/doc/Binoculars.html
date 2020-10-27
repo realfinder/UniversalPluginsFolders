@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Binoculars AviSynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>Binoculars </h1></font>
+	 
+	  <P> The Binoculars function creates twin magnified circular 
+windows touching each other and can be panned. The radius of viewing disc, 
+co-ordinates of the center point of the line joining the disc centers   
+(and final co-ordinates) are to be given. If final co-ordinates are omitted, 
+the view remains stationary at initial co-ordinates. The end magnification 
+can also be specified. It can give a zoom effect if properly used.
+The co-ordinates must be specified within limits that ensure both the discs are 
+inside frame.
+RGB, YUY2 and Planar formats 8/9-16/32 bit depths  are supported. Is Thread Safe.
+
+
+ </p>  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Effect start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td>Effect end frame number </td>
+       <td></td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>none</td>
+</tr>
+<tr>
+       <td>Radius of view circles</td>
+       <td>radius</td>
+       <td>integer</td>
+       <td>8 or more</td>
+       <td>1/8th smaller frame dimension</td>
+</tr>
+
+<tr>
+       <td>magnification at start</td>
+       <td>magx</td>
+       <td>integer</td>
+       <td>minimum 2, not more than 1/4 of radius</td>
+       <td>4</td>
+</tr>
+
+<tr>
+       <td>x coordinate at start</td>
+       <td>sx</td>
+       <td>integer</td>
+       <td>diameter to width - diameter</td>
+       <td>mid frame</td>
+</tr>
+
+<tr>
+       <td>y coordinate at start</td>
+       <td>sy</td>
+       <td>integer</td>
+       <td>radius to height - radius</td>
+       <td>mid frame</td>
+</tr>
+<tr>
+       <td>x coordinate at end</td>
+       <td>ex</td>
+       <td>integer</td>
+       <td>diameter to width - diameter</td>
+       <td>sx</td>
+</tr>
+
+<tr>
+       <td>y coordinate at end</td>
+       <td>ey</td>
+       <td>integer</td>
+       <td>radius to height - radius</td>
+       <td>sy</td>
+</tr>
+<tr>
+       <td>magnification at end</td>
+       <td>emagx</td>
+       <td>integer</td>
+       <td>minimum 2, not more than 1/4 of radius</td>
+       <td>magx</td>
+</tr>
+
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>EffectBinoculars(last,51,100,radius=60,magx=4,sx=60,sy=60,ex=600,ey=400)
+EffectBinoculars(last,51,100,radius=60,magx=2,sx=200,sy=300, emagx=8)
+</pre>
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsPlus_index.html#synopsys">EffectsPlus Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsPlus.7z">down load EffectsPlus plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

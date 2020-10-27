@@ -1,7 +1,7 @@
 #########################################################################################################################
 ###                                                                                                                   ###
 ###                                                  RemoveDirtMC                                                     ###
-###                                                      v1.56                                                        ###
+###                                                      v1.57                                                        ###
 ###                                               **SPECIAL EDITION**                                                 ###
 ###                                           	      By NEPHILIS                                                     ###
 ###                                                      @2011                                                        ###
@@ -74,11 +74,11 @@
 #
 ##########################################################################################################################
 
-Function RemoveDirtMC_SE(clip input, bool"GPU", int"radius", int"repmode", int"clmode", bool"TwoPass", int"thSAD", int"thSADC", int"resrepmode",float "rStr",float "Amp", bool "luma_rebuild", clip "PreNR", bool "recalculate", int "limit", bool "_grey", int "noisy", int "dist", int "gmthreshold", string "RDSE_params", int "mcthSAD", int "pel", int "dct", int "thSCD1", int "thSCD2")
+Function RemoveDirtMC_SE(clip input, bool"GPU", int"radius", int"repmode", int"clmode", bool"TwoPass", int"thSAD", int"thSADC", int"resrepmode",float "rStr",float "Amp", bool "luma_rebuild", clip "PreNR", bool "recalculate", int "limit", bool "_grey", int "noisy", int "dist", int "gmthreshold", string "RDSE_params", int "mcthSAD", int "pel", int "dct", int "thSCD1", int "thSCD2", int "Threads")
 
 {
 
-version  = "v1.56"
+version  = "v1.57"
 
      GPU = default(GPU,     true)
    _grey = default(_grey,  false)
@@ -93,6 +93,8 @@ version  = "v1.56"
    Amp   = default( Amp,  0.0625)
  luma_rebuild = default(luma_rebuild,   true)
  recalculate  = default(recalculate, TwoPass)
+ Threads      = default(Threads, sh_GetUserGlobalIMTint())
+ mtbd         = Defined(threads)
     
       ox = input.width()
       oy = input.height()
@@ -105,49 +107,49 @@ version  = "v1.56"
  overlap2= int(overlap/2) + (int(overlap/2)%2)
 
          src = input
-       PreNR = defined(PreNR) ? PreNR : (GPU==true) ? src.NLMeansCL2(h=radius*1.5,u=3,v=3).TemporalDeGrain_SE(5,9,_grey=_grey) \
-                           : src.FFT3DFilter(sigma=radius*2,plane=_grey ? 0 : 4,bw=16,bh=16,ow=8,oh=8,bt=3,wintype=1).TemporalDeGrain_SE(5,9,_grey=_grey)
+       PreNR = defined(PreNR) ? PreNR : (GPU==true) ? src.SH_KNLMeansCL(a=2,h=radius*1.5,chroma=!_grey).TemporalDeGrain_SE(5,9,_grey=_grey) \
+                           : src.sneo_FFT3D(u=_grey ? 1 : 3,v=_grey ? 1 : 3,sigma=radius*2,bw=16,bh=16,ow=8,oh=8,bt=3,wintype=1,ncpu=Threads).TemporalDeGrain_SE(5,9,_grey=_grey)
        PreNR = luma_rebuild ? isyuy2(input) ? PreNR.Interleaved2Planar(_grey).dither_luma_rebuild(S0=rStr,c=Amp,uv=_grey ? 1 : 3).Planar2Interleaved(_grey) \
                            : PreNR.dither_luma_rebuild(S0=rStr,c=Amp,uv=_grey ? 1 : 3) : PreNR
- PreNR_super = MSuper(PreNR,hpad=4,vpad=4,pel=pel,sharp=2,chroma=!_grey)
-   src_super = MSuper(src  ,hpad=4,vpad=4,pel=pel,sharp=2,levels=1,chroma=!_grey)
-  recalc_sup = recalculate ? MSuper(PreNR  ,hpad=4,vpad=4,pel=pel,sharp=2,levels=1,chroma=!_grey) : nop()
+ PreNR_super = mtbd ? MSuper(PreNR,hpad=4,vpad=4,pel=pel,sharp=2,chroma=!_grey, mt=threads!=1) : MSuper(PreNR,hpad=4,vpad=4,pel=pel,sharp=2,chroma=!_grey)
+   src_super = mtbd ? MSuper(src  ,hpad=4,vpad=4,pel=pel,sharp=2,levels=1,chroma=!_grey, mt=threads!=1) : MSuper(src  ,hpad=4,vpad=4,pel=pel,sharp=2,levels=1,chroma=!_grey)
+  recalc_sup = recalculate ? mtbd ? MSuper(PreNR  ,hpad=4,vpad=4,pel=pel,sharp=2,levels=1,chroma=!_grey, mt=threads!=1) : MSuper(PreNR  ,hpad=4,vpad=4,pel=pel,sharp=2,levels=1,chroma=!_grey) : nop()
 
- bwv1 = MAnalyse(PreNR_super, blksize=blksize, search=search, isb=true,  delta=1, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey) 
+ bwv1 = mtbd ? MAnalyse(PreNR_super, blksize=blksize, search=search, isb=true,  delta=1, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey, mt=threads!=1) : MAnalyse(PreNR_super, blksize=blksize, search=search, isb=true,  delta=1, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey)
  bwv2 = (radius>=2) ? \
-	MAnalyse(PreNR_super, blksize=blksize, search=search, isb=true,  delta=2, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey) : nop()
+	mtbd ? MAnalyse(PreNR_super, blksize=blksize, search=search, isb=true,  delta=2, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey, mt=threads!=1) : MAnalyse(PreNR_super, blksize=blksize, search=search, isb=true,  delta=2, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey) : nop()
  bwv3 = (radius==3) ? \
-	MAnalyse(PreNR_super, blksize=blksize, search=search, isb=true,  delta=3, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey) : nop()
- fwv1 = MAnalyse(PreNR_super, blksize=blksize, search=search, isb=false, delta=1, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey) 
+	mtbd ? MAnalyse(PreNR_super, blksize=blksize, search=search, isb=true,  delta=3, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey, mt=threads!=1) : MAnalyse(PreNR_super, blksize=blksize, search=search, isb=true,  delta=3, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey) : nop()
+ fwv1 = mtbd ? MAnalyse(PreNR_super, blksize=blksize, search=search, isb=false, delta=1, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey, mt=threads!=1) : MAnalyse(PreNR_super, blksize=blksize, search=search, isb=false, delta=1, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey)
  fwv2 = (radius>=2) ? \
-	MAnalyse(PreNR_super, blksize=blksize, search=search, isb=false, delta=2, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey) : nop()
+	mtbd ? MAnalyse(PreNR_super, blksize=blksize, search=search, isb=false, delta=2, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey, mt=threads!=1) : MAnalyse(PreNR_super, blksize=blksize, search=search, isb=false, delta=2, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey) : nop()
  fwv3 = (radius==3) ? \
-	MAnalyse(PreNR_super, blksize=blksize, search=search, isb=false, delta=3, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey) : nop()
+	mtbd ? MAnalyse(PreNR_super, blksize=blksize, search=search, isb=false, delta=3, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey, mt=threads!=1) : MAnalyse(PreNR_super, blksize=blksize, search=search, isb=false, delta=3, dct=dct, overlap=overlap, truemotion=true,chroma=!_grey) : nop()
 	
 	
 	recalculate ? Eval("""
- bwv1 = MRecalculate(recalc_sup,bwv1, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey) 
+ bwv1 = mtbd ? MRecalculate(recalc_sup,bwv1, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey, mt=threads!=1) : MRecalculate(recalc_sup,bwv1, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey)
  bwv2 = (radius>=2) ? \
-	MRecalculate(recalc_sup,bwv2, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey) : nop()
+	mtbd ? MRecalculate(recalc_sup,bwv2, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey, mt=threads!=1) : MRecalculate(recalc_sup,bwv2, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey) : nop()
  bwv3 = (radius==3) ? \
-	MRecalculate(recalc_sup,bwv3, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey) : nop()
- fwv1 = MRecalculate(recalc_sup,fwv1, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true) 
+	mtbd ? MRecalculate(recalc_sup,bwv3, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey, mt=threads!=1) : MRecalculate(recalc_sup,bwv3, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey) : nop()
+ fwv1 = mtbd ? MRecalculate(recalc_sup,fwv1, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true, mt=threads!=1) : MRecalculate(recalc_sup,fwv1, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true)
  fwv2 = (radius>=2) ? \
-	MRecalculate(recalc_sup,fwv2, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey) : nop()
+	mtbd ? MRecalculate(recalc_sup,fwv2, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey, mt=threads!=1) : MRecalculate(recalc_sup,fwv2, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey) : nop()
  fwv3 = (radius==3) ? \
-	MRecalculate(recalc_sup,fwv3, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey) : nop()
+	mtbd ? MRecalculate(recalc_sup,fwv3, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey, mt=threads!=1) : MRecalculate(recalc_sup,fwv3, blksize=blksize2, search=search, dct=dct, overlap=overlap2,thSAD=thSAD2, truemotion=true,chroma=!_grey) : nop()
                   """) : nop()
 	
 
- bcomp = MCompensate(src,src_super,bwv1,thSAD=defined(mcthSAD) ? mcthSAD : TwoPass ? undefined : thSAD, thSCD1=thSCD1, thSCD2=thSCD2) 
- fcomp = MCompensate(src,src_super,fwv1,thSAD=defined(mcthSAD) ? mcthSAD : TwoPass ? undefined : thSAD, thSCD1=thSCD1, thSCD2=thSCD2)
+ bcomp = mtbd ? MCompensate(src,src_super,bwv1,thSAD=defined(mcthSAD) ? mcthSAD : TwoPass ? undefined : thSAD, thSCD1=thSCD1, thSCD2=thSCD2, mt=threads!=1) : MCompensate(src,src_super,bwv1,thSAD=defined(mcthSAD) ? mcthSAD : TwoPass ? undefined : thSAD, thSCD1=thSCD1, thSCD2=thSCD2)
+ fcomp = mtbd ? MCompensate(src,src_super,fwv1,thSAD=defined(mcthSAD) ? mcthSAD : TwoPass ? undefined : thSAD, thSCD1=thSCD1, thSCD2=thSCD2, mt=threads!=1) : MCompensate(src,src_super,fwv1,thSAD=defined(mcthSAD) ? mcthSAD : TwoPass ? undefined : thSAD, thSCD1=thSCD1, thSCD2=thSCD2)
   
  NR1 = src.RemoveDirtSE(fcomp, bcomp, limit=limit, _grey=_grey, noisy=noisy, dist=dist, gmthreshold=gmthreshold, repmode=repmode, clmode=clmode, resrepmode=resrepmode, RDSE_params=RDSE_params)
- NR1_super = ( TwoPass==true  ) ? MSuper(NR1,hpad=4,vpad=4,pel=pel,sharp=2,levels=1,chroma=!_grey) : nop()
+ NR1_super = ( TwoPass==true  ) ? mtbd ? MSuper(NR1,hpad=4,vpad=4,pel=pel,sharp=2,levels=1,chroma=!_grey, mt=threads!=1) : MSuper(NR1,hpad=4,vpad=4,pel=pel,sharp=2,levels=1,chroma=!_grey) : nop()
        NR2 = ( TwoPass==false ) ? NR1
-\   	   : (  radius==1  ) ? MDeGrain1(NR1, NR1_super, bwv1, fwv1, thSAD=thSAD, thSADC=thSADC,plane=_grey ? 0 : 4, thSCD1=thSCD1, thSCD2=thSCD2)
-\   	   : (  radius==2  ) ? MDeGrain2(NR1, NR1_super, bwv1, bwv2, fwv1, fwv2, thSAD=thSAD, thSADC=thSADC,plane=_grey ? 0 : 4, thSCD1=thSCD1, thSCD2=thSCD2)
-\   	   : 		           MDeGrain3(NR1, NR1_super, bwv1, bwv2, bwv3, fwv1, fwv2, fwv3, thSAD=thSAD, thSADC=thSADC,plane=_grey ? 0 : 4, thSCD1=thSCD1, thSCD2=thSCD2)
+\   	   : (  radius==1  ) ? mtbd ? MDeGrain1(NR1, NR1_super, bwv1, fwv1, thSAD=thSAD, thSADC=thSADC,plane=_grey ? 0 : 4, thSCD1=thSCD1, thSCD2=thSCD2, mt=threads!=1) : MDeGrain1(NR1, NR1_super, bwv1, fwv1, thSAD=thSAD, thSADC=thSADC,plane=_grey ? 0 : 4, thSCD1=thSCD1, thSCD2=thSCD2)
+\   	   : (  radius==2  ) ? mtbd ? MDeGrain2(NR1, NR1_super, bwv1, bwv2, fwv1, fwv2, thSAD=thSAD, thSADC=thSADC,plane=_grey ? 0 : 4, thSCD1=thSCD1, thSCD2=thSCD2, mt=threads!=1) : MDeGrain2(NR1, NR1_super, bwv1, bwv2, fwv1, fwv2, thSAD=thSAD, thSADC=thSADC,plane=_grey ? 0 : 4, thSCD1=thSCD1, thSCD2=thSCD2)
+\   	   : 		           mtbd ? MDeGrain3(NR1, NR1_super, bwv1, bwv2, bwv3, fwv1, fwv2, fwv3, thSAD=thSAD, thSADC=thSADC,plane=_grey ? 0 : 4, thSCD1=thSCD1, thSCD2=thSCD2, mt=threads!=1) : MDeGrain3(NR1, NR1_super, bwv1, bwv2, bwv3, fwv1, fwv2, fwv3, thSAD=thSAD, thSADC=thSADC,plane=_grey ? 0 : 4, thSCD1=thSCD1, thSCD2=thSCD2)
  	Return(NR2)
 
 }

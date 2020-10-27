@@ -1,7 +1,6 @@
-
-###########################################################################
-# DO NOT OPEN THIS DOCUMENT IN GOOGLE TRANSLATE OR BAD THINGS WILL HAPPEN #
-###########################################################################
+################################################################################
+# DO NOT OPEN THIS DOCUMENT IN ANY MACHINE TRANSLATE OR BAD THINGS WILL HAPPEN #
+################################################################################
 # Latest version of this script can always be found here: http://avisynth.nl/index.php/AviSynth+#Help_filling_MT_modes
 ###########################################################################
 # General info:
@@ -174,6 +173,7 @@ SetFilterMTMode("TDecimate",            MT_SERIALIZED)     #1 gave error, 2 was 
 SetFilterMTMode("FTurnLeft",            MT_NICE_FILTER)    #FTurn is deprecated since it's already included in the avs+ core
 SetFilterMTMode("FTurnRight",           MT_NICE_FILTER)    #FTurn is deprecated since it's already included in the avs+ core
 SetFilterMTMode("nnedi3ocl",            MT_MULTI_INSTANCE)
+SetFilterMTMode("IT", MT_SERIALIZED) 
 SetFilterMTMode("Yadif",                MT_MULTI_INSTANCE)
 #note1: Can't use mode 1 or 2 on any filters if encoding 1080i files(480i works perfectly fine).
 #FFVideoSource runs a few seconds, however, it always crashes.
@@ -214,9 +214,19 @@ SetFilterMTMode("EEDI2",               MT_MULTI_INSTANCE)
 SetFilterMTMode("MPP_SharedMemoryClient", 2) # real.finder
 SetFilterMTMode("MPP_SharedMemoryServer", 3) # real.finder
 SetFilterMtMode("MP_Pipeline",MT_SPECIAL_MT)
-
+ 
+########################################
+SetFilterMTMode("FrameCache", 3)
+SetFilterMTMode("ContinuityFixer",1)
+SetFilterMTMode("ReferenceFixer",1)
+SetFilterMTMode("InpaintLogo",1)
+SetFilterMTMode("DeblendLogo",1)
+SetFilterMTMode("AnalyzeLogo",1)
+SetFilterMTMode("DistanceFunction",1)
+SetFilterMTMode("ExInpaint",1)
  
 #########################################
 #keep it the last line please
-#avstp_set_threads(1)   #disable threading in dither
- 
+# this isn't actually optimal, because it will also disable avstp threads if running 
+# on a single-threaded filter chain
+#avstp_set_threads(0, 1)   #disable threading in dither and mvtools2

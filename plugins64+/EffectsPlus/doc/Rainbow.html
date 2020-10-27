@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>RainBow AviSynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>RainBow </h1></font>
+	 
+	  <P>Rainbow adds a rainbow to the image centered at the specified 
+	  coordinates and with a given radius. The center coordinates and radius 
+	  can be linearly varied during the effect  by specifying the end coordinates
+	   and radius. Left and right cut off of rainbow display can be specified 
+	   and varied during . (these cutoffs were introduced as an user wanted these to
+	   block the rainbow due to buildings).
+	   RGB  YUY2 and Planar 8/9-16/32 bit depth color formats  are supported.Thread Safe.
+
+ </p>  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td> start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td> end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td>radius of rainbow at start</td>
+       <td>rad</td>
+       <td>integer</td>
+       <td>60 or more</td>
+       <td>1/2 of frame height</td>
+</tr>
+
+<tr>
+       <td>x coordinate of rainbow center at start</td>
+       <td>x</td>
+       <td>integer</td>
+       <td>ensure rainbow part is seen</td>
+       <td>mid frame</td>
+</tr>
+<tr>
+       <td>y coordinate of rainbow center at start</td>
+       <td>y</td>
+       <td>integer</td>
+       <td>ensure rainbow part is seen</td>
+       <td>mid frame</td>
+</tr>
+
+<tr>
+       <td>radius of rainbow at end</td>
+       <td>erad</td>
+       <td>integer</td>
+       <td>60 or more</td>
+       <td>rad</td>
+</tr>
+
+<tr>
+       <td>x coordinate of rainbow center atend</td>
+       <td>ex</td>
+       <td>integer</td>
+       <td>ensure rainbow part is seen</td>
+       <td>x</td>
+</tr>
+<tr>
+       <td>y coordinate of rainbow center at end</td>
+       <td>ey</td>
+       <td>integer</td>
+       <td>ensure rainbow part is seen</td>
+       <td>y</td>
+</tr>
+<tr>
+       <td>x cut off, left of which rainbow will not be seen at start</td>
+       <td>xleft</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>0</td>
+</tr>
+<tr>
+       <td>x cut off, right of which rainbow will not be seen at start</td>
+       <td>xright</td>
+       <td>integer</td>
+       <td>more than xleft and within frame</td>
+       <td>frame width</td>
+</tr>
+
+<tr>
+       <td>x cut off, left of which rainbow will not be seen at end</td>
+       <td>exleft</td>
+       <td>integer</td>
+       <td>within frame</td>
+       <td>xleft</td>
+</tr>
+<tr>
+       <td>x cut off, right of which rainbow will not be seen at end</td>
+       <td>exright</td>
+       <td>integer</td>
+       <td>more than endxleft and within frame</td>
+       <td>xright</td>
+</tr>
+
+</table>
+
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsPlus_index.html#synopsys">EffectsPlus Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsPlus.7z">down load EffectsPlus plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

@@ -1,4 +1,4 @@
-# Advanced Denoising and anime bob v1.893
+# Advanced Denoising and anime bob v1.899
 # Collections of Functions
 
 ### Functions list:-
@@ -51,16 +51,17 @@ cfr=current_frame
  
 mtpav=cfr<3 ? 0 : mtcav
 global mtcav=cfr<2 ? 0 : mtnav
-mtnavb = sisphbdr ? BitsPerComponent() > 8 ? BitsPerComponent() == 10 ? 4 : BitsPerComponent() == 12 ? 8 : BitsPerComponent() == 14 ? 64 : nop() : nop() : nop()
+mtnavb = sisphbdr ? BitsPerComponent() > 8 ? BitsPerComponent() == 10 ? 4 : BitsPerComponent() == 12 ? 8 : BitsPerComponent() == 14 ? 64 : 256 : nop() : nop()
 global mtnav=sisphbdr ? isvideofloat() ? morinc.YDifferenceToNext()*255.0 : BitsPerComponent() > 8 ? BitsPerComponent() < 16 ? morinc.YDifferenceToNext()/mtnavb : morinc.YDifferenceToNext()/256 : morinc.YDifferenceToNext() : morinc.YDifferenceToNext()
-global mtnav=sisphbdr ? isvideofloat() ? motinc.trim(1,0).AverageLuma()*255.0 : BitsPerComponent() > 8 ? BitsPerComponent() < 16 ? motinc.trim(1,0).AverageLuma()/mtnavb : sqrt(motinc.trim(1,0).AverageLuma()) : motinc.trim(1,0).AverageLuma() : motinc.trim(1,0).AverageLuma()
+global mtnav=sisphbdr ? isvideofloat() ? motinc.trim(1,0).AverageLuma()*255.0 : BitsPerComponent() > 8 ? motinc.trim(1,0).AverageLuma()/mtnavb : motinc.trim(1,0).AverageLuma() : motinc.trim(1,0).AverageLuma()
 
 cond1 = abs(mtcav-mtpav) > MotionThreshthresh ? MotionThreshwhite : MotionThreshblack
 cond2 = abs(mtcav-mtnav) > MotionThreshthresh ? MotionThreshwhite : MotionThreshblack
 Overlay(cond1, cond2, mode="darken")
 """) : nop()
+resmt = sh_GetUserGlobalIMTint(true)
 fast ? last : Overlay(cond1, cond2, mode="darken")
-tile ? last : Eval("try { PointResizemt(motinc.width, motinc.height) } catch(error_msg) { PointResize(motinc.width, motinc.height) }")
+tile ? last : resmt!=1 ? Eval("try { PointResizemt(motinc.width, motinc.height,threads=resmt) } catch(error_msg) { PointResize(motinc.width, motinc.height) }") : PointResize(motinc.width, motinc.height)
 fast ? cache<0 ? last : last.RequestLinear(8, cache, 5, false, false) : last
 }
 
@@ -141,7 +142,8 @@ fast ? cache<0 ? last : last.RequestLinear(8, cache, 5, false, false) : last
 TemporalSoften(radius,255,0,255,2)
 fast ? last : Levels(floor, 1, ceil, min, max)
 fast ? last : ColorYUV(levels="TV->PC")
-tile ? last : Eval("try { PointResizemt(morinc.width, morinc.height) } catch(error_msg) { PointResize(morinc.width, morinc.height) }")
+resmt = sh_GetUserGlobalIMTint(true)
+tile ? last : resmt!=1 ? Eval("try { PointResizemt(morinc.width, morinc.height,threads=resmt) } catch(error_msg) { PointResize(morinc.width, morinc.height) }") : PointResize(morinc.width, morinc.height)
 }
 
 
@@ -203,15 +205,17 @@ return GScriptClip("""
 
 
 ##########
-#edge side bleed
+#edge side bleed v 2.3
 #original idea by "colours", this function mod by A.SONY
 ##########
-function edgesidebleed(clip input, float "w32", float "w16", float "w8", float "w4", float "w2", bool "bleed", bool "chroma", int "mode") {
+function edgesidebleed(clip input, float "w32", float "w16", float "w8", float "w4", float "w2", bool "bleed", bool "chroma", int "mode", float "w1", float "w3") {
 w2     = Default(w2,     0.001)
 w4     = Default(w4,     0.055)
 w8     = Default(w8,     0.015)
 w16    = Default(w16,     0.02)
 w32    = Default(w32,    0.001)
+w1     = Default(w1,      0.00)
+w3     = Default(w3,      0.00)
 chroma = default(chroma, false)
 mode   = default(mode,       0)
 avs26  = !(VersionNumber() < 2.6)
@@ -238,9 +242,15 @@ w8==0 ? last : mode == 0 ? average(last,1+w8,shift8,-w8) : mode==1 ? lightPreser
 shift4 = w4!=0 ? !bleed ? Crop(Width()-4,0,4,0,true).StackHorizontal(Crop(0,0,-4,0,true)) : nop() : nop()
 shift4 = w4!=0 ? bleed ? BicubicResize (w / 4, h, 1, 0,src_left=-4).BicubicResize (w, h, 1, 0) : shift4 : nop()
 w4==0 ? last : mode == 0 ? average(last,1+w4,shift4,-w4) : mode==1 ? lightPreserve_function(average(last,1+w4,shift4,-w4),last) : DarkPreserve_function(average(last,1+w4,shift4,-w4),last)
+shift3 = w3!=0 ? !bleed ? Crop(Width()-3,0,3,0,true).StackHorizontal(Crop(0,0,-3,0,true)) : nop() : nop()
+shift3 = w3!=0 ? bleed ? BicubicResize (w / 3, h, 1, 0,src_left=-1).BicubicResize (w, h, 1, 0) : shift3 : nop()
+w3==0 ? last : mode == 0 ? average(last,1+w3,shift3,-w3) : mode==1 ? lightPreserve_function(average(last,1+w3,shift3,-w3),last) : DarkPreserve_function(average(last,1+w3,shift3,-w3),last)
 shift2 = w2!=0 ? !bleed ? Crop(Width()-2,0,2,0,true).StackHorizontal(Crop(0,0,-2,0,true)) : nop() : nop()
 shift2 = w2!=0 ? bleed ? BicubicResize (w / 2, h, 1, 0,src_left=-2).BicubicResize (w, h, 1, 0) : shift2 : nop()
 w2==0 ? last : mode == 0 ? average(last,1+w2,shift2,-w2) : mode==1 ? lightPreserve_function(average(last,1+w2,shift2,-w2),last) : DarkPreserve_function(average(last,1+w2,shift2,-w2),last)
+shift1 = w1!=0 ? !bleed ? Crop(Width()-1,0,1,0,true).StackHorizontal(Crop(0,0,-1,0,true)) : nop() : nop()
+shift1 = w1!=0 ? bleed ? BicubicResize (w / 2, h, 1, 0,src_left=-1).BicubicResize (w, h, 1, 0) : shift1 : nop()
+w1==0 ? last : mode == 0 ? average(last,1+w1,shift1,-w1) : mode==1 ? lightPreserve_function(average(last,1+w1,shift1,-w1),last) : DarkPreserve_function(average(last,1+w1,shift1,-w1),last)
 
 !chroma ? sislumaonly ? last : sisphbd ? CombinePlanes(last,input,planes="YUV",sample_clip=input) : ytouv(input.utoy8(),input.vtoy8(),last) : last
 sisyuy2 ? converttoyuy2() : last
@@ -441,10 +451,10 @@ sislumaonly ? last : sisphbd ? CombinePlanes(last,clip,planes="YUV",sample_clip=
 
 # LUTComb by real.finder
 # LUTComb wrapper for LUTDeRainbow and LUTDeCrawl, it can used with MC
-# v1.12
+# v1.13
 
 function LUTComb(clip input, float "cthresh", float "ythresh", bool "y", bool "linkUV", bool "mask", float "dythresh", float "dcthresh", float "maxdiff", 
-	          \ float "scnchg", bool "usemaxdiff", bool "dmask", bool "DeCrawing", bool "DeRainbowing", bool "mc", int "thSAD", clip "prefil", bool "chroma") {
+	          \ float "scnchg", bool "usemaxdiff", bool "dmask", bool "DeCrawing", bool "DeRainbowing", bool "mc", int "thSAD", clip "prefil", bool "chroma", bool "smoothmask") {
 
 sisfield = input.IsFieldBased()
 
@@ -474,13 +484,13 @@ org_plus=mc ? sisfield ? interleave(f1ce,f1co) : f1ce : input.Trim(sisfield ? 2 
 
 input
 
-DeCrawing ? LUTDeCrawl(dythresh, dcthresh, maxdiff, scnchg, usemaxdiff, dmask, org_minus, org_plus) : last
+DeCrawing ? LUTDeCrawl(dythresh, dcthresh, maxdiff, scnchg, usemaxdiff, dmask, org_minus, org_plus, smoothmask) : last
 DeRainbowing ? LUTDeRainbow(cthresh, ythresh, y, linkUV, mask, org_minus, org_plus) : last
 }
 
 
 # sGConvolution by R.F
-# v1.01
+# v1.02
 function sGConvolution (clip clp, string "matrix", string "UVmatrix", float "bias", float "divisor", bool "auto", bool "luma", bool "chroma", bool "alpha")
 {
 sisphbd = AvsPlusVersionNumber > 2294
@@ -503,7 +513,7 @@ u=!sispngc ? sisphbd ? clp.ExtractU() : sisavs26 ? clp.UToY8() : clp.UToY().Conv
 v=!sispngc ? sisphbd ? clp.ExtractV() : sisavs26 ? clp.VToY8() : clp.VToY().ConvertToYV12() : nop()
 
 yc=luma ? sispngc ? y.GeneralConvolution(bias,matrix,divisor,auto,true,false,alpha) : MergeRGB(y,y,y).GeneralConvolution(bias,matrix,divisor,auto).ShowRed(sisavs26 ? "Y8" : "YV12") : y
-uv=sispngc ? chroma ? yc.GeneralConvolution(bias,matrix,divisor,auto,false,true,alpha) : yc : chroma ? MergeRGB(u,v,v).GeneralConvolution(bias,UVmatrix,divisor,auto) : nop()
+uv=sispngc ? chroma ? yc.GeneralConvolution(bias,UVmatrix,divisor,auto,false,true,alpha) : yc : chroma ? MergeRGB(u,v,v).GeneralConvolution(bias,UVmatrix,divisor,auto) : nop()
 uv=sispngc ? uv : chroma ? Interleave(uv.ShowRed(sisavs26 ? "Y8" : "YV12"),uv.ShowGreen(sisavs26 ? "Y8" : "YV12")) : nop()
 
 sispngc ? uv : YToUV (chroma ? uv.SelectEven() : u, chroma ? uv.SelectOdd() : v, yc)

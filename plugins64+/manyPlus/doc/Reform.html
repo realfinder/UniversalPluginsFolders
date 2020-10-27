@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Reform Function of manyplus plugin for avisynth+ </title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>Reform </h1></font>
+	 
+	  <BR><b><a href="vcmohan.html">Author V. C. Mohan</a></b>
+	  <BR> 1 Oct 2020
+	  
+	   <BR>Reform uses matrix algebra for transformations
+	   . <p><B>This function accepts RGB, Planar and YUY2 formats for all bit depths supported by avisynth+. It is thread safe. MT_NICE_FILTER</B> </p>
+	   
+<P> Reform has two modes  viz: rectangle to quadrilateral and quadrilateral to rectangle.  Lanczos or cubic or linear or nearest point interpolation methods
+  can be opted.   Coordinates can be specified in floating point
+    real or in normalized form.
+ </p>
+ <p> While there are no limits for specifying coordinate values, it has to be ensured thatthey do not result in
+  twist or fold the Quadrlateral.The accuracy of transform deteriorates with higher deviation of quad from rectangle. In the table of
+  parameters R stands for Rectangle and Q stands for Quadrilateral.The quadrilateral coordinates need to be specified in clockwise order starting from the corner the top left corner of rectangle transforms to.</P>
+ <BR>Function Grid can help specifying coordinates correctly.
+
+<p>
+<table border="2" bordercolor="#c0c0c0">
+
+<caption align="center">Description of parameters. Q stands for Quadrilateral
+ and R for rectangle.</caption>
+<tr>
+       <td><strong><font color="#cc0066">Parameter</font></strong></td>
+       <td><strong><font color="#cc0066">Parameter name</font></strong></td>
+	   <td><strong><font color="#cc0066">Variable type</font></strong></td>
+       <td><strong><font color="#cc0066">Limits of values</font></strong></td>
+       <td><strong><font color="#cc0066">Default value</font></strong></td>
+</tr>
+
+<tr>
+       <td>clip to be skewed into quadrilateral or deskewed into rectangle</td>
+       <td></td>
+	   <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>clip to be used as background</td>
+       <td></td>
+	   <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+<tr>
+       <td>interpolation method to be used</td>
+       <td>resize</td>
+	   <td>string</td>
+       <td>"lanczos" "cubic" "line" "point"</td>
+       <td>"cubic"</td>
+</tr>
+
+<tr>
+       <td>Q left top x coordinate</td>
+       <td>qx</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>0</td>
+</tr>
+
+<tr>
+       <td>Q left top y coordinate</td>
+       <td>qy</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>0</td>
+</tr>
+
+<tr>
+       <td>Q right top x coordinate</td>
+       <td>qx1</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>frame wwidth - 1</td>
+</tr>
+<tr>
+       <td>Q right top y coordinate</td>
+       <td>qy1</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>0</td>
+</tr>
+
+<tr>
+       <td>Q right bottom x coordinate</td>
+       <td>qx2</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>frame width-1</td>
+</tr>
+
+<tr>
+       <td>Q right bottom y coordinate</td>
+       <td>qy2</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>height - 1</td>
+</tr>
+
+<tr>
+       <td>Q left bottom x coordinate</td>
+       <td>qx3</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>0</td>
+</tr>
+<tr>
+       <td>Q left bottom y coordinate</td>
+       <td>qy3</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>frame height-1</td>
+</tr>
+
+<tr>
+       <td>R left  x coordinate</td>
+       <td>lx</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>0</td>
+</tr>
+
+<tr>
+       <td>R right x coordinate</td>
+       <td>rx</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>frame width-1</td>
+</tr>
+
+<tr>
+       <td>R top y coordinate</td>
+       <td>ty</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>0</td>
+</tr>
+<tr>
+       <td>R bottom y coordinate</td>
+       <td>by</td>
+	   <td>float</td>
+       <td>none</td>
+       <td>frame height-1</td>
+</tr>
+<tr>
+       <td>Whether quadrilateral to rectangle conversion</td>
+       <td>qr</td>
+	   <td>boolean</td>
+       <td>true for q to r, false for r to q</td>
+       <td>true</td>
+</tr>
+<tr>
+       <td>Whether normalised coordinates are specified?</td>
+       <td>norm</td>
+	   <td>boolean</td>
+       <td>true for normalized, false for real</td>
+       <td>false</td>
+</tr>
+
+</table>
+
+<br>
+<pre>Script examples:-
+ColorBars(). converttorgb32()
+bg = blankclip(last)
+Reform(last,bg,qr = false,norm = false, qx = 80, qy = 270, qx1 = 320, qy1 = 50, qx2 = 650, qy2 = 320,qx3 = 100, qy3 = 400)
+Reform(last,last,qr = true,norm = false, qx = 80, qy = 270, qx1 = 320, qy1 = 50, qx2 = 650, qy2 = 320,qx3 = 100, qy3 = 400)
+</pre>
+Below is a suitably modified interesting script due to Martin53 ( sept 2012)in the quad
+ plugin thread). By  commenting either call or  or none the power of
+ the plugin can be viewed.
+ <Pre>
+  ColorBars(). converttoYV12()
+bg = blankclip(last)
+Subtitle("Flying Colorbars()",text_color=$d0c000,align=5,size=40)
+ ScriptClip("""
+c= last
+
+	bg = blankclip(last)
+	h = height(bg)-1
+	w = width(bg)-1	
+    t = 0.061 *(current_frame)
+    t2 = 0.127 *( current_frame)
+    a = 0.501 + 0.5 * sin(t/pi)
+    t1x = (-0.2*cos(t2)) * w
+    t1y = (0.5-0.5*cos(t2)) * h
+    t2x = (1.0+0.2*cos(t2)) * w
+    t2y = (0.5-0.5*cos(t2)) * h
+    t3x = (1.0+0.2*cos(t2)) * w
+    t3y = (0.5+0.5*cos(t2)) * h
+    t4x = (-0.2*cos(t2)) * w
+    t4y = (0.5+0.5*cos(t2)) * h
+    c1x = (0.5+a*cos(t)) * w
+    c1y = (0.5+a*sin(t)) * h
+    c2x = (0.5-a*sin(t)) * w
+    c2y = (0.5+a*cos(t)) * h
+    c3x = (0.5-a*cos(t)) * w
+    c3y = (0.5-a*sin(t)) * h
+    c4x = (0.5+a*sin(t)) * w
+    c4y = (0.5-a*cos(t)) * h
+	# comment out call having qr = true or qr = false or have both running to see the effect
+	Reform(c, bg,lx=t1x,rx=t2x,ty=t1y,by=t3y,qx=c1x,qy=c1y, qx1=c2x,qy1=c2y,  qx2=c3x,qy2=c3y,qx3=c4x,qy3=c4y, resize = "point", qr = false)
+
+#Reform(c,bg,lx=t1x,rx=t2x,ty=t1y,by=t3y,qx=c1x,qy=c1y, 		      qx1=c2x,qy1=c2y,  qx2=c3x,qy2=c3y,qx3=c4x,qy3=c4y,          resize="point", qr = true)
+
+ """)
+
+ </Pre>
+
+
+<BR>
+<table>
+
+<tr>
+       <td>To my <a href="../index.html">index </a>page</td>
+	   <td>down load<a href="manyPlus.7z">manyPlus </a>plugin</td>
+       <td>To <a href="http://www.avisynth.nl">Avisynth</a> </td>
+</tr>
+</table>	
+	
+</body>
+</html>

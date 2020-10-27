@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Flashes AviSynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>Flashes </h1></font>
+	 
+	  <P> Firework Flashes during the first Tsmoke seconds generates smoke filled 
+	  area (in a dark sky). Thereafter a series of light (reddish) flashes occur in the smoke 
+	  filled portion as in fire works. The duration
+	   of flashes 'tflash', maximum radius of area 'radius' and its center 'x' and 'y' 
+	   coordinates may be specified. Reasonably long dark (or black blank) clip 
+	   will show the effect  properly.  
+	   RGB, YUY2 and Planar 8/ 9-16/ 32 bit depth formats are supported. Thread safe.
+
+
+ </p>  
+
+	  
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td> clip </td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td> start frame number </td>
+       <td>sf</td>
+       <td>Integer</td>
+       <td>within clip</td>
+       <td>first frame</td>
+</tr>
+
+<tr>
+       <td> end frame number </td>
+       <td>ef</td>
+       <td>Integer</td>
+       <td>within clip </td>
+       <td>last frame</td>
+</tr>
+
+<tr>
+       <td>x coordinate of source</td>
+       <td>x</td>
+       <td>integer</td>
+       <td>to ensure visibilty of fireworks</td>
+       <td>mid frame width</td>
+</tr>
+<tr>
+       <td>y coordinate of source</td>
+       <td>y</td>
+       <td>integer</td>
+       <td>ensure visibility</td>
+       <td>frame height/2</td>
+</tr>
+
+<tr>
+       <td>Maximum radius of smoke area</td>
+       <td>radius</td>
+       <td>integer</td>
+       <td>diagonal of frame</td>
+       <td>half of smaller dimension of frame</td>
+</tr>
+
+<tr>
+       <td>time in seconds for smoke filling</td>
+       <td>tsmoke</td>
+       <td>float</td>
+       <td>more than 0</td>
+       <td>1</td>
+</tr>
+<tr>
+       <td>duration of each flash</td>
+       <td>tflash</td>
+       <td>float</td>
+       <td>more than 0</td>
+       <td>1</td>
+</tr>
+
+</table>
+
+
+<BR>#Usage examples:- 
+
+<pre>Flashes(last,51,650,280,200,300,4,1)
+Flashes(last,51,650,tsmoke=4)
+Flashes(last,51,650, radius=150, tflash=1)
+
+</pre>
+
+<BR>
+<table>
+
+<tr>
+       <td>Back to <a href="EffectsPlus_index.html#synopsys">EffectsPlus Synopsys</a>.</td>
+       <td></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td><a href="EffectsPlus.7z">down load EffectsPlus plugin</a></td>
+       <td></td>
+	   <td></td>
+</tr>
+<tr>
+       <td></td>
+	   <td></td>
+       <td><a href="../index.html">Back to my plugins page</a></td>
+       <td></td>
+</tr>
+<tr>
+       <td></td>
+       <td></td>
+	   <td></td>
+       <td><a href="http://www.avisynth.nl/">back to Avisynth</a></td>
+</tr>
+</table>
+
+</body>
+</html>
+
+

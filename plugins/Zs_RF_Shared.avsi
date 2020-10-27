@@ -1,5 +1,5 @@
 # Shared Functions and utility
-# V1.135
+# V1.141
 
 ### Functions list:-
 # sh_StrReplace
@@ -73,6 +73,11 @@
 # svsTTempSmoothf
 # svsMSharpen
 # svsTBilateral
+# svsTcanny
+# sTcannyMod
+# sh_GetUserGlobalIMT
+# sh_GetUserGlobalIMTint
+# sh_GetUserGlobalIMTbool
 # IsAvsNeo
 # IsAvsPlus
 # AvsPlusVersionNumber
@@ -396,7 +401,7 @@ lsb ? lsb_out ? dp_merge : dp_merge.Ditherpost(mode=7, slice=false) : dp_merge
 # Padding by Didée
 function sh_Padding(clip c, int left, int top, int right, int bottom, int "threads")
 {
-threads = Default(threads, 0)
+threads = Default(threads, sh_GetUserGlobalIMTint(true))
 w = c.width()
 h = c.height()
 threads!=1 ? Eval("try { pointresizemt(w+left+right, h+top+bottom, -left, -top, w+left+right, h+top+bottom+0.0001, threads=threads) } catch(error_msg) { c.pointresize( w+left+right, h+top+bottom, -left, -top, w+left+right, h+top+bottom+0.0001 ) }") : c.pointresize( w+left+right, h+top+bottom, -left, -top, w+left+right, h+top+bottom+0.0001 )
@@ -405,6 +410,7 @@ threads!=1 ? Eval("try { pointresizemt(w+left+right, h+top+bottom, -left, -top, 
 
 function sTryFTurnRight(clip c, bool "chroma", int "bitdepth", bool "mt") {
 bitdepth=Default(bitdepth, 8)
+mt = sh_GetUserGlobalIMTbool
 bitdepth==8 ? eval("""
 try {
     IsAvsPlus ? dontdoft : nop()
@@ -419,6 +425,7 @@ catch(err_msg) {
 
 function sTryFTurnLeft(clip c, bool "chroma", int "bitdepth", bool "mt") {
 bitdepth=Default(bitdepth, 8)
+mt = sh_GetUserGlobalIMTbool
 bitdepth==8 ? eval("""
 try {
     IsAvsPlus ? dontdoft : nop()
@@ -433,6 +440,7 @@ catch(err_msg) {
 
 function sTryFTurn180(clip c, bool "chroma", int "bitdepth", bool "mt") {
 bitdepth=Default(bitdepth, 8)
+mt = sh_GetUserGlobalIMTbool
 bitdepth==8 ? eval("""
 try {
     IsAvsPlus ? dontdoft : nop()
@@ -1322,6 +1330,7 @@ sisphbd = AvsPlusVersionNumber > 2294
 qtgmc_lsb = default(qtgmc_lsb, sisphbd ? false : true)
 qtgmc_n16 = default(qtgmc_n16, sisphbd ? input.BitsPerComponent() > 8 ? false : true : false)
 repblend  = default(repblend, false)
+threads = sh_GetUserGlobalIMTint()
 
 defined(filter) ? Assert((Isclip(filter) || IsString(filter)),        "'filter' only accepts clip or string") : nop()
 
@@ -1332,9 +1341,9 @@ dslow           = default(dslow, sisbob ? 5 : -5)
 tr2             = default (tr2, sisbob ? 3 : 1)
 usedaa3mod      = default (usedaa3mod, exfilclp ? 0 : sisbob ? 1 : 2)
 
-infiltr = usedaa3mod == 1 ? input.daa3mod(dslow) : input
-filclip = defined(filter) ? exfilclp ? filter : eval("infiltr." + filter) : infiltr.QTGMC(InputType=1, tr0=0, tr1=sisbob ? undefined : 1, tr2=tr2, lsb=qtgmc_lsb, n16=qtgmc_n16, rep1=sisbob ? undefined : 11, rep2=sisbob ? undefined : 11, Sharpness=0.0, TV_range=TV_range, Str=Str, Amp=Amp)
-filclip = usedaa3mod == 2 ? filclip.daa3mod(dslow) : filclip
+infiltr = usedaa3mod == 1 ? input.daa3mod(dslow,threads=threads) : input
+filclip = defined(filter) ? exfilclp ? filter : eval("infiltr." + filter) : infiltr.QTGMC(InputType=1, tr0=0, tr1=sisbob ? undefined : 1, tr2=tr2, lsb=qtgmc_lsb, n16=qtgmc_n16, rep1=sisbob ? undefined : 11, rep2=sisbob ? undefined : 11, Sharpness=0.0, TV_range=TV_range, Str=Str, Amp=Amp, EdiThreads=threads)
+filclip = usedaa3mod == 2 ? filclip.daa3mod(dslow,threads=threads) : filclip
 
 momask  = !defined(motionmask) ? input.smam_mask(prefilter,pel,blksize) : motionmask #if you deal with YUY2 then it should be Planar YUY2 in avs2.5 and yv16 in avs2.6
 isyuy2(input) && VersionNumber() < 2.60 ? mt_merge(input.Interleaved2Planar(),filclip.Interleaved2Planar(),momask,u=3,v=3).Planar2Interleaved() : isyuy2(input) ? mt_merge(input.converttoyv16(),filclip.converttoyv16(),momask,u=3,v=3).converttoyuy2() : mt_merge(input,filclip,momask,u=3,v=3)
@@ -1355,10 +1364,12 @@ function smam_mask(clip input, clip "prefilter", int "pel", int "blksize", bool 
     pel = default( pel,     HD ? 1 : 2 )
     dct = default( dct, sisbob ? 0 : 2 )
     blksize = default(blksize,HD ? sisbob ? 8 : 16 : sisbob ? 4 : 8)
-preclip= defined(prefilter) ? prefilter : (VersionNumber() < 2.60) && isyv12(input) ? input.HQdn3d().FFT3DFilter() : input.HQdn3d_2().sneo_FFT3D()
-sup    = preclip.MSuper(pel=pel,sharp=1)
-fv1    = sup.MAnalyse(isb=false,delta=1,DCT=dct,Truemotion=false,blksize=blksize,chroma=chroma)
-fv2    = sup.MAnalyse(isb=true,delta=1,DCT=dct,Truemotion=true,blksize=blksize,chroma=chroma)
+	threads = sh_GetUserGlobalIMTint()
+	mt = sh_GetUserGlobalIMTbool()
+preclip= defined(prefilter) ? prefilter : (VersionNumber() < 2.60) && isyv12(input) ? input.HQdn3d().FFT3DFilter(ncpu=threads) : input.HQdn3d_2().sneo_FFT3D(ncpu=threads)
+sup    = defined(mt) ? preclip.MSuper(pel=pel,sharp=1,mt=mt) : preclip.MSuper(pel=pel,sharp=1)
+fv1    = defined(mt) ? sup.MAnalyse(isb=false,delta=1,DCT=dct,Truemotion=false,blksize=blksize,chroma=chroma,mt=mt) : sup.MAnalyse(isb=false,delta=1,DCT=dct,Truemotion=false,blksize=blksize,chroma=chroma)
+fv2    = defined(mt) ? sup.MAnalyse(isb=true,delta=1,DCT=dct,Truemotion=true,blksize=blksize,chroma=chroma,mt=mt) : sup.MAnalyse(isb=true,delta=1,DCT=dct,Truemotion=true,blksize=blksize,chroma=chroma)
 
 momask1 = input.MMask(fv1, kind = 1, ml=2)
 momask2 = input.MMask(fv2, kind = 1, ml=3)
@@ -1459,9 +1470,12 @@ nonyuy2clipout(doyuy2)
 function tmm2_ortmm1(clip clip, int "mode", int "order", int "field", int "length", int "mtype", int "ttype", int "mtqL", int "mthL", int "mtqC", int "mthC", int "nt", int "minthresh", int "maxthresh", int "cstr", int "opt")
 {
 sisavs26=!(VersionNumber() < 2.6)
+sisphbd=AvsPlusVersionNumber > 2294
+sischbd=sisphbd ? clip.BitsPerComponent() > 8 : false
 nonyuy2=sisavs26 && clip.isyuy2()
-sisavs26 ? clip.nonyuy2clipin(nonyuy2).tmm2(mode, order, field, length, mtype, ttype, mtqL, mthL, mtqC, mthC, nt, minthresh, maxthresh, cstr, opt).nonyuy2clipout(nonyuy2) : \
-        clip.TMM(mode, order, field, length, mtype, ttype, mtqL, mthL, mtqC, mthC, nt, minthresh, maxthresh, cstr)
+sischbd ? clip.nonyuy2clipin(nonyuy2).vsTMM(mode, order, field, length, mtype, ttype, mtqL, mthL, mtqC, mthC, nt, minthresh, maxthresh, cstr, opt=opt).nonyuy2clipout(nonyuy2) \
+            : sisavs26 ? clip.nonyuy2clipin(nonyuy2).tmm2(mode, order, field, length, mtype, ttype, mtqL, mthL, mtqC, mthC, nt, minthresh, maxthresh, cstr, opt).nonyuy2clipout(nonyuy2) : \
+                         clip.TMM(mode, order, field, length, mtype, ttype, mtqL, mthL, mtqC, mthC, nt, minthresh, maxthresh, cstr)
 }
 
 
@@ -1523,21 +1537,21 @@ function sh_Bob(clip cp, float "b", float "c", int "height" )
 }
 
 
-Function sneo_FFT3D(clip input, float "sigma", float "beta", int "bw", int "bh", int "bt", int "ow", int "oh", float "kratio", float "sharpen", float "scutoff", float "svr", float "smin", float "smax", bool "measure", bool "interlaced", int "wintype", int "pframe", int "px", int "py", bool "pshow", float "pcutoff", float "pfactor", float "sigma2", float "sigma3", float "sigma4", float "degrid", float "dehalo", float "hr", float "ht", int "y", int "u", int "v", int "l", int "t", int "r", int "b", int "opt")
+Function sneo_FFT3D(clip input, float "sigma", float "beta", int "bw", int "bh", int "bt", int "ow", int "oh", float "kratio", float "sharpen", float "scutoff", float "svr", float "smin", float "smax", bool "measure", bool "interlaced", int "wintype", int "pframe", int "px", int "py", bool "pshow", float "pcutoff", float "pfactor", float "sigma2", float "sigma3", float "sigma4", float "degrid", float "dehalo", float "hr", float "ht", int "y", int "u", int "v", int "l", int "t", int "r", int "b", int "opt", int "ncpu")
 {
 y=Default(y,3)
 u=Default(u,3)
 v=Default(v,3)
-	   try { input.neo_fft3d(sigma=sigma, beta=beta, bw=bw, bh=bh, bt=bt, ow=ow, oh=oh, kratio=kratio, sharpen=sharpen, scutoff=scutoff, svr=svr, smin=smin, smax=smax, measure=measure, interlaced=interlaced, wintype=wintype, pframe=pframe, px=px, py=py, pshow=pshow, pcutoff=pcutoff, pfactor=pfactor, sigma2=sigma2, sigma3=sigma3, sigma4=sigma4, degrid=degrid, dehalo=dehalo, hr=hr, ht=ht, y=y, u=u, v=v, l=l, t=t, r=r, b=b, opt=opt)
+	   try { input.neo_fft3d(sigma=sigma, beta=beta, bw=bw, bh=bh, bt=bt, ow=ow, oh=oh, kratio=kratio, sharpen=sharpen, scutoff=scutoff, svr=svr, smin=smin, smax=smax, measure=measure, interlaced=interlaced, wintype=wintype, pframe=pframe, px=px, py=py, pshow=pshow, pcutoff=pcutoff, pfactor=pfactor, sigma2=sigma2, sigma3=sigma3, sigma4=sigma4, degrid=degrid, dehalo=dehalo, hr=hr, ht=ht, y=y, u=u, v=v, l=l, t=t, r=r, b=b, opt=opt, ncpu=ncpu)
 } catch(error_msg) { 
 plane = y==3 && u!=3 && v!=3 ? 0 : y!=3 && u==3 && v!=3 ? 1 : y!=3 && u!=3 && v==3 ? 2 : y!=3 && u==3 && v==3 ? 3 : 4
-input.FFT3DFilter(sigma=sigma, beta=beta, bw=bw, bh=bh, bt=bt, ow=ow, oh=oh, kratio=kratio, sharpen=sharpen, scutoff=scutoff, svr=svr, smin=smin, smax=smax, measure=measure, interlaced=interlaced, wintype=wintype, pframe=pframe, px=px, py=py, pshow=pshow, pcutoff=pcutoff, pfactor=pfactor, sigma2=sigma2, sigma3=sigma3, sigma4=sigma4, degrid=degrid, dehalo=dehalo, hr=hr, ht=ht  , plane=plane) }
+input.FFT3DFilter(sigma=sigma, beta=beta, bw=bw, bh=bh, bt=bt, ow=ow, oh=oh, kratio=kratio, sharpen=sharpen, scutoff=scutoff, svr=svr, smin=smin, smax=smax, measure=measure, interlaced=interlaced, wintype=wintype, pframe=pframe, px=px, py=py, pshow=pshow, pcutoff=pcutoff, pfactor=pfactor, sigma2=sigma2, sigma3=sigma3, sigma4=sigma4, degrid=degrid, dehalo=dehalo, hr=hr, ht=ht  , plane=plane, ncpu=ncpu) }
 }
 
 
-Function sneo_dfttest(clip input, int "ftype", float "sigma", float "sigma2", float "pmin", float "pmax", int "sbsize", int "smode", int "sosize", int "tbsize", int "tmode", int "tosize", int "swin", int "twin", float "sbeta", float "tbeta", bool "zmean", float "f0beta", string "nlocation", float "alpha", string "slocation", string "ssx", string "ssy", string "sst", int "ssystem", int "dither", int "y", int "u", int "v", int "opt", int "threads")
+Function sneo_dfttest(clip input, int "ftype", float "sigma", float "sigma2", float "pmin", float "pmax", int "sbsize", int "smode", int "sosize", int "tbsize", int "tmode", int "tosize", int "swin", int "twin", float "sbeta", float "tbeta", bool "zmean", float "f0beta", string "nlocation", float "alpha", string "slocation", string "ssx", string "ssy", string "sst", int "ssystem", int "dither", int "y", int "u", int "v", int "opt", int "threads", int "fft_threads")
 {
-	   try { input.neo_dfttest(ftype=ftype, sigma=sigma, sigma2=sigma2, pmin=pmin, pmax=pmax, sbsize=sbsize, smode=smode, sosize=sosize, tbsize=tbsize, tmode=tmode, tosize=tosize, swin=swin, twin=twin, sbeta=sbeta, tbeta=tbeta, zmean=zmean, f0beta=f0beta, nlocation=nlocation, alpha=alpha, slocation=slocation, ssx=ssx, ssy=ssy, sst=sst, ssystem=ssystem, dither=dither, y=y, u=u, v=v, opt=opt, threads=threads)
+	   try { input.neo_dfttest(ftype=ftype, sigma=sigma, sigma2=sigma2, pmin=pmin, pmax=pmax, sbsize=sbsize, smode=smode, sosize=sosize, tbsize=tbsize, tmode=tmode, tosize=tosize, swin=swin, twin=twin, sbeta=sbeta, tbeta=tbeta, zmean=zmean, f0beta=f0beta, nlocation=nlocation, alpha=alpha, slocation=slocation, ssx=ssx, ssy=ssy, sst=sst, ssystem=ssystem, dither=dither, y=y, u=u, v=v, opt=opt, threads=threads, fft_threads=fft_threads)
 } catch(error_msg) { 
 nstring = defined(nlocation) && defined(alpha) ? "a:" + string(alpha) + " " + nlocation : nlocation
 sstring = defined(slocation) && defined(ssystem) ? ssystem == 1 ? "$" + " " + slocation : slocation : slocation
@@ -1564,13 +1578,13 @@ input.TTempSmoothf(maxr=maxr, lthresh=lthresh, cthresh=cthresh, strength=strengt
 }
 
 
-Function svsMSharpen(clip input, float "threshold", float "strength", bool "mask", bool "luma", bool "chroma")
+Function svsMSharpen(clip input, float "threshold", float "strength", bool "highq", bool "mask", bool "luma", bool "chroma")
 {
 threshold=Default(threshold,15)
 strength=Default(strength,100)
 	   try { input.vsMSharpen(threshold=threshold/2.55, strength=strength/2.55, mask=mask, luma=luma, chroma=chroma)
 } catch(error_msg) { 
-input.MSharpen (threshold=round(threshold), strength=round(strength), mask=mask)   }
+input.MSharpen (threshold=round(threshold), strength=round(strength), highq=highq, mask=mask)   }
 }
 
 
@@ -1579,6 +1593,56 @@ Function svsTBilateral(clip input, int "diameterL", int "diameterC", float "sDev
 	   try { input.vsTBilateral(diameterY=diameterL, diameterU=diameterC, diameterV=diameterC, sDevY=sDevL, sDevU=sDevC, sDevV=sDevC, iDevY=iDevL, iDevU=iDevC, iDevV=iDevC, csY=csL, csU=csC, csV=csC, d2=d2, u=defined(chroma)?chroma?3:2:undefined, v=defined(chroma)?chroma?3:2:undefined, ppClip=ppClip, kernS=kernS, kernI=kernI, resType=resType)
 } catch(error_msg) { 
 input.TBilateral(diameterL=diameterL, diameterC=diameterC, sDevL=sDevL, sDevC=sDevC, iDevL=iDevL, iDevC=iDevC, csL=csL, csC=csC, d2=d2, chroma=chroma, ppClip=ppClip, kernS=kernS, kernI=kernI, resType=resType)   }
+}
+
+
+Function svsTcanny(clip clip, float "sigma", float "t_h", float "t_l", int "mode", float "gmmax", int "y", int "u", int "v", int "opt") 
+{
+sigma=Default(sigma,1.5)
+	   try { vsTCanny(clip, sigmaY=sigma, sigmaU=sigma, sigmaV=sigma, sigma_vY=sigma, sigma_vU=sigma, sigma_vV=sigma, t_h=t_h, t_l=t_l, mode=mode, op=0, gmmax=gmmax, y=y, u=u, v=v, opt=opt)
+} catch(error_msg) { 
+sTcannymod(clip, mode=mode, sigma=sigma, t_h=t_h, t_l=t_l, opt=opt, gmmax=gmmax, y=y, u=u, v=v, opt=opt)
+}
+}
+
+
+Function sTcannyMod(clip clip, float "sigma", float "t_h", float "t_l", int "mode", float "gmmax", int "y", int "u", int "v", int "opt") 
+{
+gmmax=Default(gmmax,50)
+y=Default(y,3)
+u=Default(u,3)
+v=Default(v,3)
+chroma = max(u,v) == 3 ? 1 : max(u,v) == 2 ? 2 : 0
+try { TCannyMod(clip, mode=mode, sigma=sigma, t_h=t_h, t_l=t_l, sobel=false, chroma=chroma, gmmax=gmmax, opt=opt)
+} catch(error_msg) { 
+plane = y==3 && u!=3 && v!=3 ? 1 : y!=3 && u==3 && v!=3 ? 2 : y!=3 && u!=3 && v==3 ? 4 : y!=3 && u==3 && v==3 ? 6 : y==3 && u==3 && v!=3 ? 3 : y==3 && u!=3 && v==3 ? 5 : 7
+TCanny(clip, mode=mode, sigma=sigma, t_h=t_h, t_l=t_l, gmmax=gmmax, plane=plane)
+}
+}
+
+function sh_GetUserGlobalIMT(bool "setzero")
+{
+	setzero = default( setzero, false )
+	try       { ret = Eval( string(set_plugins_threads) ) }
+	catch (e) { ret = setzero ? 0 : Undefined }
+	return ret
+}
+
+
+function sh_GetUserGlobalIMTint(bool "setzero")
+{
+	setzero = default( setzero, false )
+	try       { ret = Eval( string(set_plugins_threads_int) ) }
+	catch (e) { ret = sh_GetUserGlobalIMT(setzero) }
+	return ret
+}
+
+
+function sh_GetUserGlobalIMTbool()
+{
+	try       { ret = Eval( string(set_plugins_threads_bool) ) }
+	catch (e) { ret = defined(sh_GetUserGlobalIMT) ? sh_GetUserGlobalIMT!=1 : Undefined }
+	return ret
 }
 
 
