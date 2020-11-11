@@ -46,6 +46,7 @@ SI_IsWinXP ? Import(AviSynthPluginsDir + "cplugin/ffms2.avsi") : nop()
 Import(AviSynthPluginsDir + "26/edi_rpow2.avsi")
 Import(AviSynthPluginsDir + "26/eedi3_resize16.avsi")
 Import(AviSynthPluginsDir + "26/ffms2.avsi")
+Import(AviSynthPluginsDir + "26/HaloBuster.avsi")
 #Import(AviSynthPluginsDir + "26/neo-f3kdb.avsi") #bug
 #Import(AviSynthPluginsDir + "26/neo-fft3d.avsi")
 Import(AviSynthPluginsDir + "26/nnchromaupsubsampling.avsi")
@@ -111,7 +112,7 @@ function AVS_P_MT_A_SONY() {
 !SI_IsWinXP ? Import(AviSynthPluginsDir + "avsplus/avsresize.avsi") : nop()
 LoadPlugin(AviSynthPluginsDir + "avsplus/RawSourcePlus.dll")
 AvsPlusVersionNumber > 2958 ? LoadPlugin(AviSynthPluginsDir + "26/GRunT_26.dll") : nop()
-AvsPlusVersionNumber < 3276 ? nop() : LoadPlugin(AviSynthPluginsDir + "avsplus/vsLGhost.dll")
+AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/vsLGhost.avsi")
 Import(AviSynthPluginsDir + "avsplus/MtModes.avsi")
 }
 
