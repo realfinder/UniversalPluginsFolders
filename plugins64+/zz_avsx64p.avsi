@@ -1,5 +1,7 @@
 hashasalpha = InternalFunctionExists("hasalpha")
 hasIsVersionOrGreater = InternalFunctionExists("IsVersionOrGreater")
-hasIsVersionOrGreater ? IsVersionOrGreater(3,6) ? LoadPlugin(AviSynthPlugins64PDir + "3x/vsLGhost.dll") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,6) ? import(AviSynthPlugins64PDir + "3x/vsLGhost.avsi") : nop() : nop()
 hashasalpha ? import(AviSynthPlugins64PDir + "mt/avsresize.avsi") : nop()
 hashasalpha ? import(AviSynthPlugins64PDir + "mt/BestAudioSource.avsi") : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,6) ? import(AviSynthPlugins64PDir + "3x/Butteraugli.avsi") : nop() : nop()
+hashasalpha ? import(AviSynthPlugins64PDir + "mt/Cube.avsi") : nop()
