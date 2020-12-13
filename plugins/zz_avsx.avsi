@@ -3,6 +3,7 @@
 function avs25x_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/DGDecode.dll")
 LoadPlugin(AviSynthPluginsDir + "25/mt_masktools-25.dll")
+Import(AviSynthPluginsDir + "25/MT.avsi")
 Import(AviSynthPluginsDir + "25/nnedi3.avsi")
 Import(AviSynthPluginsDir + "25/ffms2_p25.avsi")
 Import(AviSynthPluginsDir + "25/ffms2.avsi")
@@ -30,7 +31,7 @@ function AVS_2_6_A4_A_SONY() {
 sisnonavsp = !IsAvsPlus
 LoadPlugin(AviSynthPluginsDir + "26/Average.dll")
 LoadPlugin(AviSynthPluginsDir + "26/aWarpSharpMT.dll")
-sisnonavsp ? LoadPlugin(AviSynthPluginsDir + "26/DirectShowSource.dll") : LoadPlugin(AviSynthPluginsDir + "avsplus/DirectShowSource.dll")
+sisnonavsp ? Import(AviSynthPluginsDir + "26/DirectShowSource.avsi") : Import(AviSynthPluginsDir + "avsplus/DirectShowSource.avsi")
 LoadPlugin(AviSynthPluginsDir + "26/masktools2.dll")
 LoadPlugin(AviSynthPluginsDir + "26/mvtools2.dll")
 #!sisnonavsp ? LoadPlugin(AviSynthPluginsDir + "26/neo-DFTTest.dll") : nop()
@@ -47,6 +48,8 @@ Import(AviSynthPluginsDir + "26/edi_rpow2.avsi")
 Import(AviSynthPluginsDir + "26/eedi3_resize16.avsi")
 Import(AviSynthPluginsDir + "26/ffms2.avsi")
 Import(AviSynthPluginsDir + "26/HaloBuster.avsi")
+Import(AviSynthPluginsDir + "26/InpaintDelogo.avsi")
+Import(AviSynthPluginsDir + "26/JincResizeNR.avsi")
 #Import(AviSynthPluginsDir + "26/neo-f3kdb.avsi") #bug
 #Import(AviSynthPluginsDir + "26/neo-fft3d.avsi")
 Import(AviSynthPluginsDir + "26/nnchromaupsubsampling.avsi")
@@ -57,6 +60,7 @@ Import(AviSynthPluginsDir + "26/MedianBlur2.avsi")
 Import(AviSynthPluginsDir + "26/MiniDeen.avsi")
 Import(AviSynthPluginsDir + "26/neo-vague-denoiser.avsi")
 Import(AviSynthPluginsDir + "26/QTGMC.avsi")
+Import(AviSynthPluginsDir + "26/ResampleMT.avsi")
 Import(AviSynthPluginsDir + "26/Resize8.avsi")
 Import(AviSynthPluginsDir + "26/ResizeX.avsi")
 Import(AviSynthPluginsDir + "26/Shader.avsi")
@@ -94,9 +98,7 @@ AvsPlusVersionNumber > 1576 ? AVS_P_MT_A_SONY() : nop()
 function AVS_2_6_NB_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "26/AutoLevels_0.9.dll")
 LoadPlugin(AviSynthPluginsDir + "26/CombMask.dll")
-LoadPlugin(AviSynthPluginsDir + "26/exinpaint.dll")
 LoadPlugin(AviSynthPluginsDir + "26/FFTQuiver.dll")
-LoadPlugin(AviSynthPluginsDir + "26/JincResize.dll")
 LoadPlugin(AviSynthPluginsDir + "26/JpegSource.dll") #make 2012.03.31 and 2012.04.03 and 2012.05.16 crash so load it manually if you need it
 LoadPlugin(AviSynthPluginsDir + "26/DeJitter.dll")
 LoadPlugin(AviSynthPluginsDir + "26/PlanarTools.dll")
@@ -105,7 +107,6 @@ LoadPlugin(AviSynthPluginsDir + "26/tcolormask.dll")
 LoadPlugin(AviSynthPluginsDir + "26/tmaskcleaner.dll")
 LoadPlugin(AviSynthPluginsDir + "26/xNLMeans.dll")
 LoadPlugin(AviSynthPluginsDir + "26/YV12To422.dll")
-Import(AviSynthPluginsDir + "26/nrJinc36Resize.avsi")
 }
 
 function AVS_P_MT_A_SONY() {
@@ -116,9 +117,6 @@ AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/vsLGh
 Import(AviSynthPluginsDir + "avsplus/MtModes.avsi")
 }
 
-function AVSTP_A_SONY(bool "ResampleMT", bool "avstp") {
-ResampleMT  = default( ResampleMT, true)
-avstp       = default( avstp, true)
-avstp ? LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll") : nop()
-VersionNumber() < 2.6 || !ResampleMT ? NOP() : LoadPlugin(AviSynthPluginsDir + "26/ResampleMT.dll")
+function AVSTP_A_SONY() {
+LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")
 }

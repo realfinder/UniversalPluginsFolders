@@ -1,0 +1,666 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+	<head>
+		<title>MT - Avisynth</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+		<meta name="keywords" content="MT,MT modes explained,MT support page,Meta-Filters">
+		<link rel="shortcut icon" href="/images/avisynth-logo-gears-favicon.ico">
+			<link rel="search" type="application/opensearchdescription+xml" href="/mediawiki/opensearch_desc.php"
+				title="Avisynth (English)">
+				<link title="Creative Commons" type="application/rdf+xml" href="/mediawiki/index.php?title=MT&amp;action=creativecommons"
+					rel="meta">
+					<link rel="copyright" href="http://creativecommons.org/licenses/by-sa/2.5/">
+						<style type="text/css" media="screen,projection">@import url( /mediawiki/skins/monobook/main.css?42 ); 
+	</style>
+						<link rel="stylesheet" type="text/css" media="print" href="/mediawiki/skins/common/commonPrint.css?42">
+							<link rel="stylesheet" type="text/css" media="handheld" href="/mediawiki/skins/monobook/handheld.css?42"> <!--[if lt IE 5.5000]><style type="text/css">@import "/mediawiki/skins/monobook/IE50Fixes.css?42";</style><![endif]-->  <!--[if IE 5.5000]><style type="text/css">@import "/mediawiki/skins/monobook/IE55Fixes.css?42";</style><![endif]-->  <!--[if IE 6]>
+<STYLE type=text/css>@import url( /mediawiki/skins/monobook/IE60Fixes.css?42 );
+</STYLE>
+<![endif]-->  <!--[if IE 7]><style type="text/css">@import "/mediawiki/skins/monobook/IE70Fixes.css?42";</style><![endif]-->  <!--[if lt IE 7]>
+<SCRIPT src="/mediawiki/skins/common/IEFixes.js?42" 
+type=text/javascript></SCRIPT>
+
+<META http-equiv=imagetoolbar content=no><![endif]-->
+								<script type="text/javascript">/*<![CDATA[*/
+var skin = "monobook";
+var stylepath = "/mediawiki/skins";
+var wgArticlePath = "/mediawiki/$1";
+var wgScriptPath = "/mediawiki";
+var wgServer = "http://avisynth.org";
+var wgCanonicalNamespace = "";
+var wgCanonicalSpecialPageName = false;
+var wgNamespaceNumber = 0;
+var wgPageName = "MT";
+var wgTitle = "MT";
+var wgArticleId = "1604";
+var wgIsArticle = true;
+var wgUserName = "Tsp";
+var wgUserLanguage = "en";
+var wgContentLanguage = "en";
+var wgBreakFrames = false;
+var wgCurRevisionId = "2383";
+/*]]>*/</script>
+								<script type="text/javascript" src="/mediawiki/skins/common/wikibits.js?42"><!-- wikibits js --></script>
+								<script type="text/javascript" src="/mediawiki/index.php?title=-&amp;action=raw&amp;smaxage=0&amp;gen=js"><!-- site js --></script>
+								<style type="text/css">@import url( /mediawiki/index.php?title=MediaWiki:Common.css&usemsgcache=yes&action=raw&ctype=text/css&smaxage=18000 ); @import url( /mediawiki/index.php?title=MediaWiki:Monobook.css&usemsgcache=yes&action=raw&ctype=text/css&smaxage=18000 ); @import url( /mediawiki/index.php?title=-&action=raw&gen=css&maxage=18000&smaxage=0 ); 
+	</style> <!-- Head Scripts -->
+	</head>
+	<body class="mediawiki ns-0 ltr page-MT">
+		<div id="globalWrapper">
+			<div id="column-content">
+				<div id="content">
+					<a name="top" id="top"></a>
+					<h1 class="firstHeading">MT</h1>
+					<div id="bodyContent">
+						<h3 id="siteSub">Version 0.7 -&nbsp;01&nbsp;Marts 2007<BR>
+							Copyright (C)2005-2007 Tonny S Petersen (tsp)</h3>
+						<div id="contentSub"></div>
+						<div id="jump-to-nav">Jump to: <a href="#column-one">navigation</a>, <a href="#searchInput">
+								search</a></div> <!-- start content -->
+						<table rules="all" style="BORDER-RIGHT: #000 1px solid; BORDER-TOP: #000 1px solid; MARGIN: 0.5em 0px 1em 1em; BORDER-LEFT: #000 1px solid; BORDER-BOTTOM: #000 1px solid"
+							cellpadding="3" align="right" width="300">
+							<tr>
+								<th colspan="2">
+									Abstract
+								</th>
+							</tr>
+							<tr>
+								<td width="30%">
+									<b>Author</b>
+								</td>
+								<td>
+									tsp
+								</td>
+							</tr>
+							<tr>
+								<td><b>Version</b>
+								</td>
+								<td>
+									0.7
+								</td>
+							</tr>
+							<tr>
+								<td><b>Download</b>
+								</td>
+								<td>
+									<a href="http://www.avisynth.org/tsp/MT_07.zip" class="external text" title="http://www.avisynth.org/tsp/MT_07.zip"
+										rel="nofollow">MT 0.7 (includes modified avisynth 2.5.7.5)</a>
+								</td>
+							</tr>
+							<tr>
+								<td><b>Category</b>
+								</td>
+								<td>
+									<a href="/mediawiki/index.php?title=Category:Meta-Filters&amp;action=edit" class="new"
+										title="Category:Meta-Filters">Category:Meta-Filters</a>
+								</td>
+							</tr>
+							<tr>
+								<td><b>Requirements</b>
+								</td>
+								<td>
+									<ul>
+										<li>
+											None
+										</li>
+									</ul>
+								</td>
+							</tr>
+							<tr>
+								<td><b>License</b>
+								</td>
+								<td>
+									GPL v2
+								</td>
+							</tr>
+						</table>
+						<table id="toc" class="toc" summary="Contents">
+							<tr>
+								<td><div id="toctitle"><h2>Contents</h2>
+									</div>
+									<ul>
+										<li class="toclevel-1">
+											<a href="#MT_0.7">
+												<span class="tocnumber">1</span>
+												<span class="toctext">MT 0.7</span></a>
+											<ul>
+												<li class="toclevel-2">
+													<a href="#Abstract">
+														<span class="tocnumber">1.1</span>
+														<span class="toctext">Abstract</span></a>
+												<li class="toclevel-2">
+													<a href="#Technical_info">
+														<span class="tocnumber">1.2</span>
+														<span class="toctext">Technical info</span></a>
+												<li class="toclevel-2">
+													<a href="#Syntax">
+														<span class="tocnumber">1.3</span>
+														<span class="toctext">Syntax</span></a>
+													<ul>
+														<li class="toclevel-3">
+															<a href="#MT">
+																<span class="tocnumber">1.3.1</span>
+																<span class="toctext">MT</span></a>
+														<li class="toclevel-3">
+															<a href="#MTi">
+																<span class="tocnumber">1.3.2</span>
+																<span class="toctext">MTi</span></a>
+														<li class="toclevel-3">
+															<a href="#MTsource">
+																<span class="tocnumber">1.3.3</span>
+																<span class="toctext">MTsource</span></a></li>
+													</ul>
+												<li class="toclevel-2">
+													<a href="#Examples">
+														<span class="tocnumber">1.4</span>
+														<span class="toctext">Examples</span></a>
+												<li class="toclevel-2">
+													<a href="#Changelog">
+														<span class="tocnumber">1.5</span>
+														<span class="toctext">Changelog</span></a></li>
+											</ul>
+										<li class="toclevel-1">
+											<a href="#modified_avisynth_MT_2.5.7.5">
+												<span class="tocnumber">2</span>
+												<span class="toctext">modified avisynth MT 2.5.7.5</span></a>
+											<ul>
+												<li class="toclevel-2">
+													<a href="#Abstract_2">
+														<span class="tocnumber">2.1</span>
+														<span class="toctext">Abstract</span></a>
+												<li class="toclevel-2">
+													<a href="#Syntax_2">
+														<span class="tocnumber">2.2</span>
+														<span class="toctext">Syntax</span></a>
+												<li class="toclevel-2">
+													<a href="#Example:">
+														<span class="tocnumber">2.3</span>
+														<span class="toctext">Example:</span></a>
+												<li class="toclevel-2">
+													<a href="#How_to_development_threadsafe_filters">
+														<span class="tocnumber">2.4</span>
+														<span class="toctext">How to development threadsafe filters</span></a></li>
+											</ul>
+										<li class="toclevel-1">
+											<a href="#Links">
+												<span class="tocnumber">3</span>
+												<span class="toctext">Links</span></a></li>
+									</ul>
+								</td>
+							</tr>
+						</table>
+						<script type="text/javascript"> if (window.showTocToggle) { var tocShowText = "show"; var tocHideText = "hide"; showTocToggle(); } </script>
+						<a name="MT_0.7"></a>
+						<h2>
+							<span class="mw-headline"> MT 0.7 </span></h2>
+						<p><span style="FONT-WEIGHT: bold; COLOR: purple">MT(clip <i>clip</i>,string <i>filter</i>,int <i>threads</i>,int <i>overlap</i>,bool <i>splitvertical</i>)</span>
+							<span style="FONT-WEIGHT: bold; COLOR: purple">MTi(clip <i>clip</i>,string <i>filter</i>)</span>
+							<span style="FONT-WEIGHT: bold; COLOR: purple">MTsource(string <i>filter</i>,int <i>delta</i>,int <i>threads</i>)</span>
+						</p>
+						<a name="Abstract"></a>
+						<h3>
+							<span class="mw-headline"> Abstract </span></h3>
+						<p>MT is a filter that enables other filter to run multithreaded. This should 
+							hopeful speed up processing on hyperthreaded/multicore processors or 
+							multiprocessor systems.
+						</p>
+						<p><b><FONT color="#ff0000">Important: Always remember to judge the result by looking at 
+									the speed improvement not the cpu utilization.</FONT></b>
+						</p>
+						<p><i><FONT color="#ff0000">Also see the </FONT><a href="/mediawiki/MT_support_page" title="MT support page">
+									<FONT color="#ff0000">MT support page</FONT></a><FONT color="#ff0000"> for more 
+									information before asking for help</FONT></i>
+						</p>
+						<a name="Technical_info"></a>
+						<h3>
+							<span class="mw-headline"> Technical info </span></h3>
+						<p>MT is a filter that split a frame up in smaller fragment that are processed in 
+							individual threads allowing full utilization of multiprocessor or hyperthread 
+							enabled computers. I tested it on my old abit bp6 with 2x celeron 400 MHz and 
+							it increased the speed by 40%. Note that if you is already getting 100% cpu 
+							utilization when processing avs scripts(ie if you're encoding to DivX/XviD) you 
+							don't need to use this filter.
+						</p>
+						<p>The filter works like this avs function:
+						</p>
+						<pre>function PseudoMT(clip c,string filter)
+{
+a=eval("c.crop(0,0,src.width/2,src.height)."+filter)
+b=eval("c.crop(src.width/2,0,src.width/2,src.height)."+filter)
+stackhorizontal(a,b)
+}
+</pre>
+						<p><br>
+							The only difference is that a and b are executed in parallel and it is possible 
+							to split the frame into more than 2 pieces. If the filter works with the above 
+							script it should work with MT if the filter is thread safe. Dust does not work 
+							with the above script so if you want to use iip use another denoiser or get 
+							Steady to fix the bug. Limitations
+						</p>
+						<p>The filter to be run must only accept one input clip and that is last. Also the 
+							filter should not rely on the content of the whole frame(like smart 
+							deinterlacers) else there is a risk that only part of the frame will be 
+							processed. The filter should also be thread safe. Most filters are thread safe 
+							but some will produce a wrong result or crash. Installation
+						</p>
+						<p>copy mt.dll into the avisynth plugin directory and copy the included 
+							avisynth.dll into your windows\system32 directory or where avisynth.dll is 
+							located and remember to backup the old avisynth.dll(rename it or something) if 
+							you don't have version 2.6 installed.
+						</p>
+						<p>from version 0.7 two other filters are included too:
+						</p>
+						<ul>
+							<li>
+								MTi() that creates two threads and let each thread process one field before 
+								combining them like this avs function
+							</li>
+						</ul>
+						<pre>function PseudoMTi(clip c,string filter)
+{
+a=eval("c.AssumeFieldBased().SeparateFields.selecteven()."+filter)
+b=eval("c.AssumeFieldBased().SeparateFields.selectodd()."+filter)
+interleave(a,b).weave()
+}
+</pre>
+						<p>like the other pseudoscript a and b are executed in parallel. Note that only two 
+							threads are created so it will only use two (virtual) cores.
+						</p>
+						<ul>
+							<li>
+								MTsource() that are used to run source filters multithreaded. It works like 
+								this:
+							</li>
+						</ul>
+						<pre>function PseudoMTsource(string filter)
+{
+SetMTmode(2)
+eval(filter)
+SetMtmode(0)
+}
+</pre>
+						<p>So different from the two other filters it is a temporal filter that fetches 
+							frames ahead of time and store them in the cache for fast retrieval.
+						</p>
+						<a name="Syntax"></a>
+						<h3>
+							<span class="mw-headline"> Syntax </span></h3>
+						<a name="MT"></a>
+						<h4>
+							<span class="mw-headline"> MT </span></h4>
+						<p><span style="FONT-WEIGHT: bold; COLOR: purple">MT(clip <i>clip</i>,string <i>filter</i>,int <i>threads</i>,int <i>overlap</i>,bool <i>splitvertical</i>)</span>
+						</p>
+						<p>All parameters are named. Function parameters:
+						</p>
+						<p><b>clip</b> <i>clip</i> = last<br>
+							input clip
+						</p>
+						<p><b>filter</b> <i>string</i> = No default<br>
+							filter to run multithreaded. Note that the filter must not change both the 
+							frame height and width (but colorspace is okay) and the only 1 input clip is 
+							allowed. It can be any build-in filter, avs defined filter or external plugin 
+							filter as long as the restrictions are observed.
+						</p>
+						<p><b>threads</b> <i>int</i> = 2<br>
+							number of threads to run. Set this to the number of threads your computer is 
+							able to run concurrently.
+						</p>
+						<p><b>overlap</b> <i>int</i> = 0<br>
+							- number of pixel to add at the top and bottom border or left and right border. 
+							Increase this if you see artifacts where the frame is split.
+						</p>
+						<p><b>splitvertical</b> <i>bool</i> = false<br>
+							- if true the frame are cut vertical(and the filter is allowed to change the 
+							height) else it is cut horizontal(and the filter is allowed to change the 
+							width).
+						</p>
+						<a name="MTi"></a>
+						<h4>
+							<span class="mw-headline"> MTi </span></h4>
+						<p><span style="FONT-WEIGHT: bold; COLOR: purple">MTi(clip <i>clip</i>,string <i>filter</i>)</span>
+						</p>
+						<p>All parameters are named. Function parameters:
+						</p>
+						<p><b>clip</b> <i>clip</i> = last<br>
+							input clip. Must be mod2 height for RGB and YUY2 colorspace and mod4 height for 
+							YV12 colorspace
+						</p>
+						<p><b>filter</b> <i>string</i> = No default<br>
+							filter to run multithreaded. Note that the filter are allowed to change both 
+							width and height at the same time but only 1 input clip is allowed. It can be 
+							any build-in filter, avs defined filter or external plugin filter as long as 
+							the restrictions are observed.
+						</p>
+						<p><br>
+						</p>
+						<a name="MTsource"></a>
+						<h4>
+							<span class="mw-headline"> MTsource </span></h4>
+						<p><span style="FONT-WEIGHT: bold; COLOR: purple">MTsource(string <i>filter</i>,int <i>delta</i>,int <i>threads</i>,int <i>max_fetch</i>)</span>
+						</p>
+						<p>All parameters are named. Function parameters:
+						</p>
+						<p><b>filter</b> <i>string</i> = No default<br>
+							source filter to run multithreaded. Currently only internal and external source 
+							filters are supported (like DirectShowSource, Avisource, MPEG2Source) . You can 
+							use an avs defined filter or a non-source filter but it might crash or produce 
+							frame corruption.
+						</p>
+						<p><b>delta</b> <i>int</i> = 1<br>
+							this is how many frames there are between each frame request so if you are only 
+							going to read every second frame set it to 2 or if you are reading the frames 
+							backwards set it to -1. More complex frame access pattern like 
+							SelectEvery(10,3,6,7) are not supported (but might work anyway as the requested 
+							frames are in the cache, there will just be some waisted memory from non 
+							requested frame in the cache)
+						</p>
+						<p><b>threads</b> <i>int</i> = 2<br>
+							number of threads to run. Set this to the number of threads your computer is 
+							able to run concurrently.
+						</p>
+						<p><b>max_fetch</b> <i>int</i> = 30<br>
+							This is the maximum number of frames ahead of the currently requested frame 
+							that MTsource will fetch. Setting it to low will leaving the threads idle for 
+							most of the time and setting it to high will waste to much memory.
+						</p>
+						<a name="Examples"></a>
+						<h3>
+							<span class="mw-headline"> Examples </span></h3>
+						<p>ordinary blur:
+						</p>
+						<pre>MT("blur(1)",2,2)
+</pre>
+						<p>also user defined function (uses variableblur):
+						</p>
+						<pre>MT("unsharp(2,0.7)",2,2)
+
+function unsharpen(clip c,float variance,float k)
+{
+blr=binomialBlur(c,vary=variance,varc=2,Y=3,U=2,V=2)
+return yv12lutxy(blr,c,"y x - "+string(k)+" * y +",y=3,u=2,v=2)
+}
+</pre>
+						<p>This one will not produce the intended result but shows how to use the triple 
+							quotes:
+						</p>
+						<pre>MT(""" subtitle("Doh") """,4,0)
+</pre>
+						<p>Example of MTi
+						</p>
+						<pre>MTi("fft3dfilter()")
+</pre>
+						<p>produces nearly the same result as
+						</p>
+						<pre>MT("fft3dfilter(interlaced=true)",threads=2)
+</pre>
+						<p>but for filters that doesn't natively support interlaced content it can be 
+							easier to use MTi()
+						</p>
+						<p>Example of MTsource()
+						</p>
+						<pre>ir=MTSource(""" imagereader("c:\test.png") """,delta=1,threads=2,max_fetch=10)
+as=MTSource(""" avisource("c:\test.avi") """,delta=-1) #delta negative due to reverse()
+ms=MTSource(""" MPEG2Source("c:\test.d2v") """,delta=9) #delta is 9 due to selectevery(9,1)
+stackhorizontal(ir.trim(0,100),as.reverse().trim(0,100),ms.selectevery(9,1).trim(0,100))
+</pre>
+						<p><br>
+						</p>
+						<a name="Changelog"></a>
+						<h3>
+							<span class="mw-headline"> Changelog </span></h3>
+						<pre>   * 0.1 first release.
+   * 0.2 Should be more thread safe.
+   * 0.21 forgot to comment out a Sleep(0)
+   * 0.25 Added the splitvertical option
+   * 0.3 More stable(and slower)
+   * 0.4 Includes a custom version of avisynth 2.56 beta that should speed things up
+   * 0.41 Minor speed increase
+   * 0.5 Requires the included modified avisynth 2.5.6 or avisynth 2.6
+   * 0.6 Bugfix: height can be changed with splitvertical=true without crashing. Also includes modified avisynth MT 2.5.7.3
+   * 0.7 two new filters: MTi(), MTsource() and Avisynth MT 2.5.7.5
+</pre>
+						<p><br>
+						</p>
+						<a name="modified_avisynth_MT_2.5.7.5"></a>
+						<h2>
+							<span class="mw-headline"> modified avisynth MT 2.5.7.5 </span></h2>
+						<a name="Abstract_2"></a>
+						<h3>
+							<span class="mw-headline"> Abstract </span></h3>
+						<p>It contains the two new functions <i>SetMTMode()</i> and <i>GetMTMode()</i> and 
+							is needed by MT.dll. Install it by overwriting avisynth.dll in your 
+							c:\windows\system32 (and remember to take a backup of the old file first) 
+							Technical info
+						</p>
+						<p>These functions enable avisynth to use more than one thread when processing 
+							filters. This is useful if you have more than one cpu/core or hyperthreading. 
+							This feature is still experimental.
+						</p>
+						<a name="Syntax_2"></a>
+						<h3>
+							<span class="mw-headline"> Syntax </span></h3>
+						<p><span style="FONT-WEIGHT: bold; COLOR: purple">GetMTMode(bool <i>threads</i>)</span>
+							<b>threads</b> <i>bool</i> = false<br>
+							if true <i>GetMTMode</i> returns the number of threads used else the current 
+							mode is returned (see below).
+						</p>
+						<p><span style="FONT-WEIGHT: bold; COLOR: purple">SetMTmode(int <i>mode</i>,int <i>threads</i>)</span>
+						</p>
+						<p>Place this at the first line in the avs file to enable temporal (that is more 
+							than one frame is processed at the same time) multithreading. Use it later in 
+							the script to change the mode for the filters below it.
+						</p>
+						<p><b>mode</b> <i>int</i> (2, default 1-6)<br>
+							- there are 6 modes 1 to 6.
+						</p>
+						<pre>   * Mode 1 is the fastest but only works with a few filter
+   * Mode 2 should work with most filters but uses more memory
+   * Mode 3 should work with some of the filters that doesn't work with mode 2 but is slower
+   * Mode 4 is a combination of mode 2 and 3 and should work with even more filter but is both slower and uses more memory
+   * Mode 5 is slowest(<FONT color=#ff0000><STRONG>Slower than not using SetMTMode</STRONG></FONT>) but should work with all filters that doesn't require linear frameserving (that is the frames come in order (frame 0,1,2 ... last)
+   * Mode 6 is a modified mode 5 that might be slightly faster
+</pre>
+						<p>A more detailed explanation of the different modes can be read here: <a href="/mediawiki/MT_modes_explained" title="MT modes explained">
+								MT modes explained</a>
+						</p>
+						<p><b>threads</b> <i>int</i> = 0<br>
+							number of threads to use. Set to 0 to set it to the number of processors 
+							available. It is not possible to change the number of threads other than in the 
+							first SetMTMode.
+						</p>
+						<a name="Example:"></a>
+						<h3>
+							<span class="mw-headline"> Example: </span></h3>
+						<pre>SetMTMode(2,0) #enables multihreading using thread = to the number of available processors and mode 2
+LoadPlugin("...\LoadPluginEX.dll") #needed to load avisynth 2.0 plugins
+LoadPlugin("...\DustV5.dll") #Loads Pixiedust
+import("limitedsharpen.avs")
+src=AVIsource("test.avi")
+SetMTMode(5) #change the mode to 5 for the lines below
+src=src.converttoyuy2().PixieDust()#Pixiedust needs mode 5 to function.
+SetMTMode(2) #change the mode back to 2
+src.LimitedSharpen() #because LimitedSharpen works well with mode 2
+subtitle("Number of threads used: "+string(GetMTMode(true))+" Current MT Mode: "+string(GetMTMode())) #display mode and number of threads in use
+</pre>
+						<a name="How_to_development_threadsafe_filters"></a>
+						<h3>
+							<span class="mw-headline"> How to development threadsafe filters </span></h3>
+						<p>No linear frame order is assured(unless MT is used instead of setmtmode) and for 
+							each mode there are different restrictions:
+						</p>
+						<ul>
+							<li>
+								Mode 1: all access to class variables, global variables and static variables 
+								most be threadsafe by using appropriate locking(Enter/LeaveCriticalSection etc, 
+								no locking need for readonly variables) because more than 1 thread may access a 
+								class instance at a time.
+							</li>
+						</ul>
+						<ul>
+							<li>
+								Mode 2: access to class variable doesn't have to be threadsafe because there is 
+								only 1 instance of the class per thread. All global/static variable access must 
+								be threadsafe. Because each class instance only process every other frame 
+								internal caches(that is a cache inside the filter) wouldn't work well. I have 
+								created PClipLocalStorage to share a pointer between different filter 
+								instances.
+							</li>
+						</ul>
+						<ul>
+							<li>
+								Mode 3: Only 1 thread is allowed to execute code from the filter at the same 
+								time.When child-&gt;GetFrame is called another thread can enter the filter and 
+								execute code. That means that class variables/global variables/static variables 
+								shouldn't be assigned to any values before after the lastchild-&gt;GetFrame has 
+								been called. Instead local function variables should be used like this:
+							</li>
+						</ul>
+						<pre>PVideoFrame __stdcall AdjustFocusV::GetFrame(int n, IScriptEnvironment* env) { 
+PVideoFrame frame = child-&gt;GetFrame(n, env);
+//Assigned to a local variable so this will work in mode 3
+env-&gt;MakeWritable(&amp;frame); if (!line) line = new uc[frame-&gt;GetRowSize()+32];
+uc* linea = (uc*)(((int)line+15) &amp; -16);// Align 16
+uc* buf = frame-&gt;GetWritePtr();
+int pitch = frame-&gt;GetPitch();
+int row_size = vi.RowSize();
+int height = vi.height; 
+memcpy(linea, buf, row_size); // First row - map centre as upper 
+if ((pitch &gt;= ((row_size+7) &amp; -8)) &amp;&amp; (env-&gt;GetCPUFlags() &amp; CPUF_MMX)) 
+{ 
+ AFV_MMX(linea, buf, height, pitch, row_size, amount); }
+else
+{ 
+ AFV_C(linea, buf, height, pitch, row_size, amount); } 
+return frame; 
+}
+</pre>
+						<p>But not like this:
+						</p>
+						<pre>PVideoFrame TemporalSoften::GetFrame(int n,IScriptEnvironment* env) {
+__int64 i64_thresholds = 0x1000010000100001i64;
+int radius = (kernel-1) / 2&nbsp;;
+int c= 0;
+// Just skip if silly settings
+if((!luma_threshold)&amp;&amp; (!chroma_threshold) || (!radius))
+  return child-&gt;GetFrame(n,env); 
+for(int p= 0;p&lt;16;p++) planeDisabled[p]=false;
+ for(p= n-radius;p&lt;=n+radius;p++) 
+  { 
+   frames[p+radius-n] = child-&gt;GetFrame(min(vi.num_frames-1,max(p,0)), env);
+   //GetFrame assigned to class variable frames. This wouldn't work with Mode 3 
+   //because the next thread that enters this getframe will overwrite the result 
+   // from the last thread } 
+  //do stuff
+  }
+</pre>
+						<p>but when using mode 3 there is no need for threadsafe access to class variables. 
+							And because there is only 1 instance of the class that process all frames 
+							internal caches will work much better. The bad thing is only 1 thread can 
+							execute the filter at a time so if it's the only slow filter in the script the 
+							speed increase wouldn't be that big.
+						</p>
+						<ul>
+							<li>
+								Mode 4: a combination of mode 2 and 3 so it's okay to assign class variables 
+								before the lastchild-&gt;getframe has been called because there is a class 
+								instance per thread but the problem with internal cache is the same as mode 2
+							</li>
+						</ul>
+						<ul>
+							<li>
+								Mode 5: No restrictions.
+							</li>
+						</ul>
+						<ul>
+							<li>
+								Mode 6: A slightly modified version of mode 5 that might be a little faster.
+							</li>
+						</ul>
+						<p>PClipLocalStorage
+						</p>
+						<p>Here is an example on how the PClipLocalStorage can be used to share a cache 
+							between multiple instances(that are created with mode=2,4):
+						</p>
+						<pre>class Cache
+{
+public: //These function should be threadsafe. The most simple way is to use 
+ a //critical section like
+ this PVideoFrame GetCachedFrame(int
+ framenumber)
+ {
+  EnterCriticalSection(&amp;cs);
+  //Code
+   
+  //...
+  LeaveCriticalSection(&amp;cs); 
+  return retval;
+ } SetCachedFrame(PVideoFrame
+frame);
+private: 
+ CRITICAL_SECTION cs;
+} 
+
+class Sample&nbsp;: public GenericVideoFilter{
+public:
+ Sample(PClip _child, IScriptEnvironment* env);
+ ~Sample();
+ PVideoFrame __stdcall GetFrame(int n, IScriptEnvironment* env);
+protected: 
+ PClipLocalStorage cls;
+ Cache* FrameCache;
+}
+
+Sample::Sample(PClip _child, IScriptEnvironment* env)
+:
+GenericVideoFilter(_child),cls(env)
+{ //if the cache has not been created yet GetValue will return 0
+ if(cls-&gt;GetValue()==0) {
+ //create the cache and save the address in the PClipLocalStorage
+ FrameCache =  new
+ Cache();cls-&gt;SetValue(static_cast(FrameCache));
+ }
+ // The cache has been created so assign the address to FrameCache
+ else  {
+ FrameCache=static_cast(cls-&gt;GetValue());
+ }  
+}
+
+Sample::~Sample()
+{
+//only delete FrameCache if it is not delete yet.
+if(cls-&gt;GetValue()!=0)  {
+ delete FrameCache;
+ cls-&gt;SetValue(0);//Signal that the cache is deleted
+ }
+}
+</pre>
+						<a name="Links"></a>
+						<h2>
+							<span class="mw-headline"> Links </span></h2>
+						<p><a href="http://www.avisynth.org/tsp/" class="external text" title="http://www.avisynth.org/tsp/"
+								rel="nofollow">tsp's filter page</a>
+						</p>
+						<p><a href="http://forum.doom9.org/showthread.php?t=94996" class="external text" title="http://forum.doom9.org/showthread.php?t=94996"
+								rel="nofollow">official thread on doom9.org forum</a> Please read this page 
+							and the support page below before asking for help thanks.
+						</p>
+						<p><a href="/mediawiki/MT_support_page" title="MT support page">MT support page</a>
+						</p> <!-- Pre-expand include size: 1698 bytes Post-expand include size: 2141 bytes Template argument size: 778 bytes-->  <!-- Saved in parser cache with key avisynth-mw_:pcache:idhash:1604-0!1!0!!en!2 and timestamp 20070301200834 -->
+						<div class="printfooter">
+							Retrieved from "<a href="http://avisynth.org/mediawiki/MT">http://avisynth.org/mediawiki/MT</a>"</div>
+						<div id="catlinks"><p class='catlinks'><a href="/mediawiki/Special:Categories" title="Special:Categories">Category</a>:
+								<span dir='ltr'>
+									<a href="/mediawiki/index.php?title=Category:Meta-Filters&amp;action=edit" class="new"
+										title="Category:Meta-Filters">Meta-Filters</a></span></p>
+						</div> <!-- end content -->
+						<div class="visualClear"></div>
+					</div>
+				</div>
+			</div>
+			<div id="column-one">
+				<div id="p-cactions" class="portlet">&nbsp;
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

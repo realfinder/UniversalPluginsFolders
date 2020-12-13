@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Jitter </title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1><center>Jitter </center></h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>Date 28 May 2020
+	  <BR>EMail: <a href="mailto:mohanvc@gmail.com">mohanvc</a>
+	  
+	  <P> Function from TestInput Avisynth+  version, is free to use under GPL 3 licence.</P>
+	  
+	  <p>This function intoduces  Jitter on input akin to what sometimes seen on VHS conversions due hardware malfunction.</p>	  
+	  
+	  <p> Type of Jitter which can be introduced are random and sinusoidal. In case of random jitter density of occurance can be specified. For sinusoidal type, speed of movement from frame to frame can be specified.</P>
+	  
+	   
+	  
+	  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip</td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+<tr>
+       <td>type of pattern</td>
+       <td>type</td>
+       <td>string</td>
+       <td> "rand",  and "sine" </td>
+       <td> "rand"</td>
+</tr>
+<tr>
+       <td> Maximum amplitude of Jitter</td>
+       <td>jmax</td>
+       <td>integer</td>
+       <td>Between 4 and frame width / 4 </td>
+       <td>32 </td>
+</tr>
+<tr>
+       <td>Wave length of sinusoid</td>
+       <td>wl</td>
+       <td>integer</td>
+       <td>should be between 16 and frame height / 2</td>
+       <td>height/8</td>
+</tr>
+
+<tr>
+       <td>speed of sinusoid moving frame to frame</td>
+       <td>speed</td>
+       <td>string</td>
+       <td>"slow", "med", and "fast"</td>
+       <td>"med"</td>
+</tr>
+<tr>
+       <td>density of randomly jittered rows in a frame</td>
+       <td>density</td>
+       <td>string</td>
+       <td>"sparse", "med", and "dense"</td>
+       <td>"med"</td>
+</tr>
+
+
+</table>
+
+<BR>
+Usage examples
+<BR>
+
+<PRE>
+#avisource("c:\.............rl.avi")
+
+#colorbars()
+jitter( type = "rand", jmax = 24, density = "dense")
+jitter( type = "sine", jmax = 16,wl = 80,speed = "med")
+</PRE>
+
+<table>
+<tr>
+       <td>To my<a href="../index.html"> index page</a></td>
+	   <td>down load<a href="manyPlus.7z">manyPlus </a>plugin</td>
+	   <td>To <a href="http://www.avisynth.nl">Avisynth</a> </td>
+</tr>
+</table>	
+  			
+		
+</body>
+</html>

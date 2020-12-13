@@ -1,0 +1,247 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>EffectsPlus AviSynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>EffectsPlus </h1></font>
+	  <BR><b><a href="../vcmohan.html">Author V. C. Mohan</a></b>
+	  <BR>Date: June 2017
+	  <p>About 26 functions are in this package of special effects. These effects are created on the input clip in the range of the frame numbers specified. The 
+	  Audio is not affected. A brief description of these functions are in  the 
+	  synopsis. Links are provided to transfer to the full description pages. All functions are thread safe. RGB, YUY2 and Planar 8/ 9-16/ 32 bit depth color formats are supported.</p>
+
+<p>The first three parameters are identical for all the functions excepting TVLook. These are
+<BR>1.	Clip 
+<BR>2.	 Start Frame Number sf defaults to first frame of clip
+<BR>3.	 End Frame Number ef defaults to last frame of clip <BR> TVLook does not have starting and ending frame parameters.</p>
+
+<p>Some effectss if used one after other can give unexpected interesting results. 
+
+The fireworks, pool, ripples and bubbles functions can be better appreciated with 
+about 4 sec or more(may be few minutes) of input frames.</p>
+
+
+<BR>  
+<BR>
+<b><a href="Synopsis">Synopsis of EffectsPlus plugin functions</a></b>
+
+ <BR>
+<BR><b><a href="Balloon.html">Balloon</a>:</b> This function creates
+ a balloon of desired color and opacity and which hops.
+<BR>
+<BR> <b><a href="Binoculars.html">Binoculars</a>:</b> This creates 
+twin circular discs with identical magnified image from an area situated midway 
+between the discs.The center can be moved  linearly during the effect . 
+<BR>
+<BR><b><a href="Bubbles.html">Bubbles</a></b> creates soap bubbles 
+in myriad colors emanating at selected point, that travel in different paths 
+and speeds.
+ <BR>
+<BR><b><a href="Conez.html">Conez</a>:</b> The image is wrapped over
+ either a vertical or a horizontal cone,  top and base diameters of which can be
+  specified. The image is either fully  wrapped from start to end or progressively
+   the cone takes shape. 
+<BR>
+<BR><b><a href="DiscoLights.html">DiscoLights</a>:</b> Multicolored 
+light spots flash and move over the image. Parameters control the size, direction,
+ type and speed of movement of light spots.
+<BR>
+
+<BR><b><a href="Distort.html">Distort</a>:</b> This function 
+distorts and can produce grotesque  image. 
+ <BR>
+
+<BR><b><a href="Fire.html">Fire</a>:</b> This function 
+generates a fire at given x level.
+<BR>
+<BR><b><a href="Flashes.html">Flashes</a>:</b> Creates a smoke filled area.Thereafter a series of light flashes occur 
+in the smoke filled portion. This  resembles  flashing fire works.
+<BR>
+<BR><b><a href="FlowerPot.html">Flowerpot</a>:</b> This function 
+generates multi colored glowing embers in parabolic trajectories from given point,
+ resembling Flower Pot Fire Works (as popularly known in India).
+<BR>
+<BR><b><a href="Fog.html">Fog</a>:</b> Creates fog on the image
+<BR>
+<BR><b><a href="Lens.html">Lens</a>:</b> A circular area is magnified 
+with uniform magnification or with magnification varying from center to edge. 
+The center of the disc can be linearly varied during the ..
+<BR>
+<BR><b><a href="LineMagnifier.html">LineMagnifier</a>:</b>  Magnifies 
+either a vertical or Horizontal strip of image. The magnifier can be moved across image.
+ <BR>
+<BR><b><a href="Plasma.html">Plasma</a>:</b> This function 
+generates a plasma of colors in an area of image. 
+<BR>
+<BR><b><a href="Rain.html">Rain</a>:</b>  Adds rain to the image. 
+The rain can be light, medium, heavy, increasing from light to heavy or decrease 
+from heavy to light.  The color of rain, their opacity can be specified. The 
+direction of rain fall can be varied during the .
+<BR>
+<BR><b><a href="Rainbow.html">Rainbow</a>:</b> Adds a rainbow to the
+ image centered at the specified coordinates  and with a given radius. The center
+  coordinates and radius can be linearly varied  in the range. Left and right 
+  cut off of rainbow display can be specified and  varied during . 
+<BR>
+
+<BR><b><a href="Ripples.html">Ripples</a>:</b>  
+
+a ripple
+ is created over the image centered at the specified coordinates and growing up and 
+subsiding
+
+<BR>
+<BR><b><a href="Rockets.html">Rockets</a>:</b> This function generates 
+rocket fire works firing off at regular intervals and displays the glowing embers.  
+<BR>
+<BR><b><a href="SnowFlakes.html">SnowFlakes</a>:</b> creates big or 
+small size snow flakes that drift in wind and fall down. The dense (ness) of snow,
+ drift %age, the falling speed (%age) and whether big or small flakes can be opted.
+<BR>
+<BR><b><a href="SnowStorm.html">SnowStorm</a>:</b> Swirling white 
+particles of snow are created on the image. 
+The snow can be either light, medium or heavy or increase from light to heavy or
+ decrease from heavy to light. 
+<BR>
+
+<BR><b><a href="Sparkler.html">Sparkler</a></b> generates multi 
+colored flashing flowers around a thin pencil like object known as the Firework 
+Sparkler. The sparkler burns from start to end  during the range of the . 
+<BR>
+<BR><b><a href="Spotlight.html">SpotLight</a>:</b> This function 
+illuminates a specified circular disc area. 
+The illumination (color and strength) can be specified and remains constant. 
+The spot center moves during . 
+<BR>
+<BR><b><a href="Sunflower.html">SunFlower</a>:</b> This function 
+generates radially expanding colored light 
+beams in the sky and which finally fall back as in the fireworks. 
+<BR>
+<BR><b><a href="Swirl.html">Swirl</a>:</b>   Swirls the image 
+centered at the specified coordinates and up
+ to a given maximum radius. The swirl starts from zero and increases to full in 
+ the first part, remains at this size in the second part and reduces to 
+ zero in the last part. 
+<BR>
+<BR><b><a href="TVLook.html">TVlook</a>:</b> On a clip a old TV set type image is created
+from a second clip.
+<BR>
+
+<pre>
+
+#effectsPlus Test
+loadplugin("C:\..................EffectsPlus.dll")
+#----------------------------------------
+SetFilterMTMode("Swirl", MT_NICE_FILTER)
+SetFilterMTMode("Sunflower", MT_NICE_FILTER)
+SetFilterMTMode("SpotLight", MT_NICE_FILTER)
+SetFilterMTMode("Sparkler", MT_NICE_FILTER)
+SetFilterMTMode("SnowStorm", MT_NICE_FILTER)
+SetFilterMTMode("SnowFlakes", MT_NICE_FILTER)
+SetFilterMTMode("Rockets", MT_NICE_FILTER)
+SetFilterMTMode("Ripples", MT_NICE_FILTER)
+SetFilterMTMode("Rainbow", MT_NICE_FILTER)
+SetFilterMTMode("Plasma", MT_NICE_FILTER)
+SetFilterMTMode("Pool", MT_NICE_FILTER)
+SetFilterMTMode("LineMagnifier", MT_NICE_FILTER)
+SetFilterMTMode("Flowerpot", MT_NICE_FILTER)
+SetFilterMTMode("Flashes", MT_NICE_FILTER)
+SetFilterMTMode("Fire", MT_NICE_FILTER)
+#
+SetFilterMTMode("Distort", MT_NICE_FILTER)
+SetFilterMTMode("conez", MT_NICE_FILTER)
+SetFilterMTMode("Binoculars", MT_NICE_FILTER)
+SetFilterMTMode("Bubbles", MT_NICE_FILTER)
+SetFilterMTMode("Balloon", MT_NICE_FILTER)
+# use either an image or color bars or a video as input
+imagereader("C:\..............jpg", end = 200)
+#some effects are not seen clearly on colorbars
+#colorbars()
+#trim(1,200)
+#
+#converttoYUY2()
+#converttoYV12()
+#converttoY8()
+#converttoY()
+
+#converttoYV16()
+converttoYV24()
+#ConvertToPlanarRGB()
+#ConvertToPlanarRGBA()
+#converttoRGB32()
+#converttoRGB24()
+
+#ConvertBits(10)
+#ConvertBits(12)
+#ConvertBits(14)
+#ConvertBits(16)
+#ConvertBits(32)
+
+#converttoRGB48()
+#converttoRGB64()
+
+#ConvertToYUV420() 
+#ConvertToYUV422 
+#ConvertToYUV444 
+#ConvertToYUV411
+
+i = invert()
+out = swirl().subtitle(" S W I R L",text_color=0,align=5,size=32)
+out = out + sunflower(radius = 200).subtitle(" S U N F L O W E R",text_color=0,align=5,size=32)
+out = out + TVlook(i,last, elx = 600, ety = 400, col = $ff0000, hq = false, pal = true, cab = $f00).subtitle(" T V L O O K",text_color=0,align=5,size=32)
+out = out + spotlight(radius = 80,x=0, y=0,ex=600,ey=400,color = $7f7f7f).subtitle(" S P O T L I G H T",text_color=0,align=5,size=32)
+out = out + sparkler(radius = 80, x = 0, ex = 600).subtitle(" S P A R L K E R",text_color=0,align=5,size=32)
+out = out + snowstorm().subtitle(" S N O W S T O R M ",text_color=0,align=5,size=32)
+out = out + snowflakes().subtitle(" S N O W F L A K E S ",text_color=0,align=5,size=32)
+out = out + rockets().subtitle(" R O C K E T S ",text_color=0,align=5,size=32)
+out = out + ripples(lambda = 16, amp = 4).subtitle(" R I P P L E S",text_color=0,align=5,size=32)
+out = out + rainbow(rad = 80, erad = 300).subtitle(" R A I N B O W",text_color=0,align=5,size=32)
+out = out + pool().subtitle(" P O O L ",text_color=0,align=5,size=32)
+out = out + plasma( plasma = 1, pallet = 1, speed = 1, width = 400, height = 400).subtitle(" P L A S M A ",text_color=0,align=5,size=32)
+out = out + LineMagnifier( type = "hor", xy = 2, exy =400, mag = 6, lwidth = 160, simple = false).subtitle(" L I N E M A G N I F I E R ",text_color=0,align=5,size=32)
+out = out + LineMagnifier( type = "vert", xy = 2, exy =400, mag = 6, lwidth = 160, simple = true).subtitle(" L I N E M A G N I F I E R ",text_color=0,align=5,size=32)
+out = out + lens(radius = 100, x = 0, ex = 600, mag = 2, drop = true).subtitle(" L E N S ",text_color=0,align=5,size=32)
+
+out = out + fog(startfog=10, endfog = 90, density = 70).subtitle(" F O G ",text_color=0,align=5,size=32)
+out = out + flowerpot( x = 0, ex = 600).subtitle(" F L O W E R P O T ",text_color=0,align=5,size=32)
+out = out + flashes().subtitle(" F L A S H E S ",text_color=0,align=5,size=32)
+out = out + fire(decay = 4.01, style = false).subtitle(" F I R E ",text_color=0,align=5,size=32)
+out = out + distort().subtitle(" D I S T O R T ",text_color=0,align=5,size=32)
+a = DiscoLights(flick = 1, style = "converge", minrad = 12)
+a = a +DiscoLights(flick = 1, style = "diverge", nspots = 20)
+a = a +DiscoLights(flick = 1, style = "random")
+out = out + a.subtitle(" D I S C O L I G H T S ",text_color=0,align=5,size=32)
+c = conez(type = "hor", base = 300, top = 20, shade = 50)
+c = c + conez(c,type = "vert", base = 20, top = 250, shade = -50, bkgrnd = c)
+out = out +c.subtitle(" C O N E Z ",text_color=0,align=5,size=32)
+out = out + bubbles().subtitle(" B U B B L E S ",text_color=0,align=5,size=32)
+out = out + binoculars(sx = 10, sy =400, ex = 400,ey = 10, magx = 2, emagx = 6, radius = 30).subtitle(" B I N O C U L A R S ",text_color=0,align=5,size=32)
+out = out + balloon( sx = 10,color = $f72354, opacity = 20,radius = 80,nhops = 3,refl = 70, light = "frame", lightx = 300, lighty = 200).subtitle(" B A L L O O N ",text_color=0,align=5,size=32)
+last = out
+# following  2 lines are required as vdub can not play all formats
+ConvertBits(8)
+converttoRGB24()
+return (last)
+prefetch(6)
+</pre>
+
+<table>
+
+<tr>
+       <td><a href="../index.html">Back to vcmohan's plugins index</a></td><td></td><td></td>
+</tr>
+<tr>	   
+       <td></td><td><a href="EffectsPlus.7z">down load EffectsPlus plugin</a></td><td></td>
+</tr>
+ <tr>
+       <td></td><td></td><td><a href="http://www.avisynth.nl/">back to Avisynth home page</a></td>
+</tr>
+</table>
+
+
+	
+</body>
+</html>

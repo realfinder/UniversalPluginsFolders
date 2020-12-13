@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>manyPlus avisynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>manyPlus </h1></font>
+	 
+	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
+	  <BR>Date 1 oct 2020	  
+	  <p>This plugin is a cosolidation of modPlus, movePlus, FQPlus, testInput  and Grid into one. While doing this some of the code has been updated. The freq domain filter functions require<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip"> FFTw3f 32 bit dll</a>  or for 64 bit  <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip"> FFTw3f 64 bit dll</a>, to be in the path.</p> Rest of functions work in image space domain. It is better to seperate fields of interlaced video input. Not all functions check this, so left to users descretion. All these functions can be used for bit depths 8 to 16 as well as float formats.
+		Most of these functions are thread safe (MT_NICE_FILTER and a few are MT_MULTI_INSTANCE).	  
+	  </p>
+		
+	  <BR> Functions which were part of modPlus
+	  <br><BR>1.
+	  <a href="GBlur.html"><b>GBlur</b></a> : Introduces Gaussian Blur on image.
+	  <br><BR>2.
+	  <a href="Fan.html"><b>Fan</b></a> : A  filter to attenuate regular frequency noise or (white or black) streaks ( corresponds to Fan Filter plugin of avisynth). 
+	  <br><BR>3.
+	  <a href="MBlur.html"><b>MBlur</b></a> : Introduces motion or focus blur on image.(F2QBlur of FQPlus operates in frequency domain while this is in 2D image domain). Corresponds to HBlur plugin of avisynth
+		<br><BR>4.
+		<a href="Median.html"><b>Median</b></a> : In a grid, size of which is changed depending on local statistics, noise is attenuated.( Corresponds to AdaptiveMedian of avisynth plugins).
+		  
+		<br><br>5.
+		<a href="minvar.html"><b>minvar </b></a>: By minimising variance noise is attenuated. ( corresponds to DeNoise plugin of avisynth)
+		<br><br>6.
+		<a href="Morph.html"><b>Morph </b></a>: Using morphology princeples image is 'dilate' or 'erode' or 'open' or 'close' or 'median' filtered ( corresponds to morph function of colorit plugin of avisynth 2.5. Now deprecated)
+		<br><br>7.
+		<a href="Neural.html"><b>Neural</b></a> : Given a target image derived from input, learns to process to get similar results.( corresponds to NeuralNetLN of NeuralNet  plugin of avisynth). 
+		<br><br>8.		
+		<a href="SaltPepper.html"><b>SaltPepper</b></a>	: Removes Salt and Pepper noise spikes from image. ( DeSaltPepper plugin of avisynth ).
+		<br><br> 9.
+		<a href="SegAmp.html"><b>SegAmp</b></a>	: Smooths and sharpens image using watershed algorithm for segmentation( SegmentedAmp plugin of avisynth ).
+		<br><br> 10.
+		<a href="TweakHist.html"><b>TweakHist</b></a> : Equalizes or matches Histogram. ( HistogramAdjust plugin of avisynth).
+		<br><br>11.
+		<a href="Veed.html"><b>Veed</b></a> : A gentle filter to remove either green or blue sheen seen in some videos ( corresponds to DeVeed plugin of avisynth).<br> 
+		<p> the following three functions are from movePlus plugin. As the name implies, these functions move or reposition pixels</P>
+		
+		<BR>1. <a href="Barrel.html"><b>Barrel</b></a> : Due to sphericity of the lenses used in cameras, either Barrel type or Pin cushion type distortions are often seen in images. This Function corrects these distortions.
+		<BR> 2. <a href="Reform.html"><b>Reform</b></a> : Converts a quadrilateral image into rectangular one or vice versa.
+	  <BR> 3. <a href="Turn.html"><b>Turn</b></a> : Turns the image through given angle in degrees about a specified fulcrum
+	  <P>The following 7 functions operate in frequency domain and for performing FFT, need  libfftw3f-3. dll to be in the path. (32 bit version in SysWOW64 and 64 bit version in system32 directories). These were part of FQPlus</P>
+	  <br>
+		
+		
+		1. <a href="F1Quiver.htm"><b>F1QTest</b></a> : Provides visual aid to estimate type and specifications of 1D filters needed.<br>
+		
+		2. <a href="F1Quiver.htm"><b>F1Quiver</b></a> : Filters input image with specified 1D filters<br>
+		3. <a href="F2Quiver.htm"><b>F2QTest</b></a> : Provides visual aid to estimate type and specifications of 2D filters needed<br>
+		
+		4. <a href="F2Quiver.htm"><b>F2Quiver</b></a> : Filters input image with specified 2D filters<br>
+		5. <a href="F2QBlur.html"><b>F2QBlur</b></a>	: produces either a motion blur or out of focus blur on an image.<br>
+		6. <a href="F2QCorrelation.html"><b>F2QCorrelation</b></a> : Cross correlates two image frames.<BR>
+		
+		7. <a href="F2QSharp.html"><b>F2QSharp</b></a> : Sharpens image by unblurring, given the blur estimate.<br>
+		<BR>
+		<P>The following 4 functions are utilities and some were developed on specific request from academia.</P>
+		<BR>1. <a href="DeJitter.html"><b>DeJitter</b></a>. Removes Jitter  on input, seen in some VHS conversions.
+		 <BR>2. <a href="Grid.html"><b>Grid</b></a> creates a grid or rulers on frame to estimate coordinates correctly
+		<BR>3. <a href="Jitter.html"><b>Jitter</b></a>. Jitter introduces some Jitter on input, akin to what some VHS conversions have.			
+		<BR>4. <a href="Pattern.html"><b> Pattern</b></a>Pattern overlays some sinusoidal pattern which may be useful to test software during development. </p>	
+	   
+	  
+<BR>
+
+
+
+<table>
+
+<tr>
+       <td><a href="../index.html">To my index page</a></td>
+	   <td>down load<a href="manyPlus.7z">manyPlus </a>plugin</td>
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>	
+</body>
+</html>
