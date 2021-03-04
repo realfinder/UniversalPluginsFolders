@@ -84,6 +84,7 @@ Import(AviSynthPluginsDir + "26/YUY2toYV12i and YV12toYUY2i.avsi")
 function AVS_p_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "avsplus/ConvertStacked.dll")
 LoadPlugin(AviSynthPluginsDir + "avsplus/ImageSeq.dll")
+LoadPlugin(AviSynthPluginsDir + "avsplus/manyPlus.dll")
 LoadPlugin(AviSynthPluginsDir + "avsplus/Shibatch.dll")
 LoadPlugin(AviSynthPluginsDir + "avsplus/TimeStretch.dll")
 LoadPlugin(AviSynthPluginsDir + "avsplus/VDubFilter.dll")

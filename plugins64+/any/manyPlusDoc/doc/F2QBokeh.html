@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>F2QBokeh function of  manyPlus Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>F2QBokeh </h1></font>
+	 
+	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
+	  <BR>19 Dec 2020
+	  
+	  <p>F2QBokeh function operates in frequency domain and requires for avisynth+ 
+	<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip"> FFTw3f-3 32 bit dll</a>  or for 64 bit avisynth+ <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip"> FFTw3f-3 64 bit dll</a>, to be in the path. One can also use Bokeh function of this plugin,  which operates in spatial domain only for a similar application.</p> 
+	  <P> Photographs or videos of birds, animals, flowers etc; taken with high end cameras usually keep lesser depth of field so that the object is well in focus and background blurred beyond recognition. On the other hand most such videos taken by us do not look so good as background is insufficiently blurred.<P>  
+	  <p>F2QBokeh function requires input image(clip) that is required to get Bokeh effect, and a clip containing heavily blurred version of first clip.It detects parts of image in focus and out of focus. The in focus parts are inserted into the blurred clip. Parameters grid and thresh distinguish  between focus and out of focus and need critical adjustments.</p>
+	  <P> for the image I  used, the values of grid and thresh which were near acceptable were 8: 0.15, 16: 0.45, 24: 0.6, 32: 0.75, 48: 0.8, 64: 0.85. Better to experiment using either script clip or animate or applyrange functions of avisynth+. As with other functions using grid, the border areas are left unprocessed. Suggest crop later.</P>
+	 
+	 <P>Only RGB, Y and YUV444 ( no subsampling) formats are processed.  Preferably input be field seperated. RGB formats give better results than YUV</P>
+	 	
+	<br> SetFilterMTMode("F2QBlur", MT_MULTI_INSTANCE).
+	<BR><BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip </td>
+       <td></td>
+       <td>clip</td>
+       <td>RGB, YUV444, Y</td>
+       <td>none</td>
+</tr>
+<tr>
+       <td>Heavily blurred clip </td>
+       <td></td>
+       <td>clip</td>
+       <td>identical format of input clip</td>
+       <td>none</td>
+</tr>
+<tr>
+       <td> grid X grid size to be used for detection</td>
+       <td>grid</td>
+       <td>integer</td>
+       <td>3 to 64</td>
+       <td>16</td>
+</tr>
+
+<tr>
+       <td>Threshold for distinguishing focus and out of focus</td>
+       <td>thresh</td>
+       <td>float</td>
+       <td>-1.0 to 1.0</td>
+       <td>0.45</td>
+</tr>
+
+</table>
+
+
+<BR># to get displayed image following script was used:- 
+<pre>
+avisource  or imagereader etc;
+imagereader("c:\images\Rose.jpg",end = 100)
+converttoRGB24()
+# function does not check
+assumefieldbased()
+F2qb= F2QBlur(psf = "focus",x = 38)
+#mb = MBlur(a, x = 24, y = 6, blur = "focus", uv = true)
+#F2QBokeh( last, mb,grid = 16, thresh = 0. 45)
+f2b = F2QBokeh(last, f2qb,grid = 16, thresh = 0.4505)
+fs=subtract(f2b, f2qb).Levels(127,1,129,0,255)
+s=subtract(f2b, last).Levels(127,1,129,0,255)
+stackHorizontal(s,fs)
+b =stackHorizontal(f2b,s)
+a=stackHorizontal(last,f2qb)
+stackVertical(a,b)
+convertbits(8)
+reduceby2()
+</pre>
+<img src="./f2qbokeh0.png" width="900" height="720" border="0">
+</pre>
+<table>
+
+<tr>
+       <td>To my <a href="../manyPlus avisynth+ Plugin.html">index </a>page</td>
+	   <td>down load <a href="manyPlus.7z">plugin</a></td>
+       <td>To <a href="http://www.avisynth.nl">Avisynth</a> </td>
+</tr>
+</table>	
+</body>
+</html>

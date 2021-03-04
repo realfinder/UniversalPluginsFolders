@@ -1,9 +1,9 @@
 /*
-    SpotLess v1.04. temporal spot/noise remover, by StainlessS @ Doom9.   https://forum.doom9.org/showthread.php?t=181777
+    SpotLess v1.06. temporal spot/noise remover, by StainlessS @ Doom9.   https://forum.doom9.org/showthread.php?t=181777
     Original idea from Didée post :-                                      https://forum.doom9.org/showthread.php?p=1402690#post1402690
     Req:- Pinterf MvTools2(), Pinterf Medianblur2() with MedianBlurTemporal rather than the MedianBlurT() from Didée post.
           With appropriate plugins, will be AVS+ colorspace and x64 compatible.
-          Fine using Avs+ Prefetch() so long as current Pinterf plugins, and Frame Accurate source.
+          Fine using Avs+ Prefetch() so long as current Pinterf plugins, and Frame Accurate source. RequestLinear() following the source filter might suffice as frame accurate source filter.
 
     NOT FOR cartoon/anime, live video only, sorry.
 
@@ -11,8 +11,11 @@
     v1.02, Add some stuff.
     v1.03, Frame size auto config of args removed (found instances where caused problems). Added Glob and bBlur args.
     v1.04, Script breaking changes, I guess is more flexible if can also set ThSAD, inserted ThSAD 3rd arg. RadT now default 1, was 2, dont over denoise unless requested.
+    v1.05, Additional checks on args.
+    v1.06, Glob Default true, Almost always better.
 
-    SpotLess(clip c,int "RadT"=1,int "ThSAD"=10000,int "ThSAD2"=ThSAD,int "pel"=2,bool "chroma"=true, int "BlkSz"=8,Int "Olap"=BlkSz/2,bool "tm"=true,Bool "glob"=Tm,Float "bBlur"=0.0)
+    SpotLess(clip c,int "RadT"=1,int "ThSAD"=10000,int "ThSAD2"=ThSAD,int "pel"=2,bool "chroma"=true, int "BlkSz"=8,Int "Olap"=BlkSz/2,
+            \ bool "tm"=true,Bool "glob"=True,Float "bBlur"=0.0)
 
     RadT, 1 or more, Default 1. Removes Spots on up to RadT [Temporal Radius] consecutive frames.
         RadT > 2 will usually be overkill. Setting too high could possibly result in blurring.
@@ -67,17 +70,18 @@
 
     Tm,      TrueMotion Default True. Some folk swear truemotion=false is better.
 
-    Glob,    Default Tm, Allow set MAnalyse(global) independently of TrueMotion.
+    Glob,    Default True (True v1.06, was same as Tm, true almost always better), Allow set MAnalyse(global) independently of TrueMotion.
              From MvTools2 docs for MAnalyse,
                global
                  Estimate global motion (at every level) and use it as an additional predictor.
                  Only pan shift is estimated (no zoom and rotation).
-                 Use false to disable, use true to enable. Default is like truemotion.
+                 Use false to disable, use true to enable.
 
     bBlur,   Default 0.0 [OFF]. If used, Suggest about 0.6, where MAnalyse create vectors is performed on denoised (blurred) super clip.
 */
 
 Function SpotLess(clip c,int "RadT",int "ThSAD",int "ThSAD2",int "pel",bool "chroma", int "BlkSz",Int "Olap",bool "tm",Bool "glob",Float "bBlur") {
+    myName = "SpotLess: "
     RadT     = Default(RadT,1)        # Temporal radius. (MCompensate arg)
     ThSAD    = Default(ThSAD,10000)   # SAD threshold at radius 1 (Default Nearly OFF).
     ThSAD2   = Default(ThSAD2,ThSAD)  # SAD threshold at radius RadT.
@@ -86,14 +90,16 @@ Function SpotLess(clip c,int "RadT",int "ThSAD",int "ThSAD2",int "pel",bool "chr
     BlkSz    = Default(BlkSz,8)       # Default 8. MAnalyse BlkSize. Bigger blksz quicker and perhaps  better, esp for HD clips. Maybe also better where BIG noise.
     OLap     = Default(OLap, BlkSz/2) # Default half of BlkSz.
     Tm       = Default(tm,True)       # TrueMotion, Some folk swear MAnalyse(truemotion=false) is better.
-    Glob     = Default(glob,Tm)       # Default Tm, Allow set MAnalyse(global) independently of TrueMotion.
+    Glob     = Default(glob,True)     # Default True, Allow set MAnalyse(global) independently of TrueMotion.
     Bblur    = Default(bblur,0.0)     # Default OFF
-    Assert(1 <= RadT,"SpotLess: 1 <= RadT")
+    Assert(1 <= RadT,myName + " 1 <= RadT")
+    Assert(0.0 <= bblur <= 1.58, myName + "0.0 <= bblur <= 1.58")
+    Assert(pel==1 || pel==2 || pel==4, myName + "pel==1 || pel==2 || pel==4")
     pad      = max(BlkSz,8)
     sup      = (bBlur<=0.0  ? c   : c.blur(bblur)).MSuper(hpad=pad,vpad=pad,pel=pel,sharp=2)
     sup_rend = (bBlur<=0.0) ? sup : c.MSuper(hpad=pad,vpad=pad,pel=pel,sharp=2,levels=1) # Only 1 Level required where not MAnalyse-ing.
-    MultiVec = sup.MAnalyse(multi=true, delta=RadT,blksize=BlkSz,overlap=OLap,search=4,chroma=Chroma,truemotion=Tm,global=Glob)
-    c.MCompensate(sup_rend,MultiVec,tr=RadT,thSad=ThSAD,thSad2=ThSAD2)
+    MultiVec = sup.MAnalyse(multi=true, delta=RadT,blksize=BlkSz,overlap=OLap,chroma=Chroma,truemotion=Tm,global=Glob)
+    c.MCompensate(sup_rend, MultiVec, tr=RadT, thSad=ThSAD, thSad2=ThSAD2)
     MedianBlurTemporal(radiusY=0,radiusU=0,radiusV=0,temporalradius=RadT)  # Temporal median blur only [not spatial]
     SelectEvery(RadT*2+1,RadT)                                             # Return middle frame
 }

@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Bokeh function of  manyPlus Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>Bokeh </h1></font>
+	 
+	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
+	  <BR>19 Dec 2020
+	  
+	  <p>Bokeh function operates in spatial domain. One can also use F2QBokeh function of this plugin,  which operates in frequency domain using a different princeple.</p> 
+	  <P> Photographs or videos of birds, animals, flowers etc; taken with high end cameras usually keep lesser depth of field so that the object is well in focus and background blurred beyond recognition. On the other hand most such videos taken by us do not look so good as background is only slightly blurred.<P>  
+	  <p>Bokeh function requires input image(clip) that is required to get Bokeh effect, and a clip containing heavily blurred version of this clip.It detects parts of image in focus and out of focus. The in focus parts are inserted into the blurred clip. Parameters grid and thresh distinguish  between focus and out of focus and need critical adjustments.</p>
+
+	 
+	 <P>Only RGB, Y and YUV444 ( no subsampling) formats are processed.  Preferably input be field seperated. RGB formats give better results than YUV</P>
+	 	
+	<br> SetFilterMTMode("Bokeh", MT_MULTI_INSTANCE).
+	<BR><BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip </td>
+       <td></td>
+       <td>clip</td>
+       <td>RGB, YUV444, Y</td>
+       <td>none</td>
+</tr>
+<tr>
+       <td>Heavily blurred clip </td>
+       <td></td>
+       <td>clip</td>
+       <td>identical format of input clip</td>
+       <td>none</td>
+</tr>
+<tr>
+       <td> circle with grid as radius to be used for detection</td>
+       <td>grid</td>
+       <td>integer</td>
+       <td>2 to 64</td>
+       <td>25</td>
+</tr>
+
+<tr>
+       <td>Threshold for distinguishing focus and out of focus</td>
+       <td>thresh</td>
+       <td>float</td>
+       <td>0 to 1.0</td>
+       <td>0.1</td>
+</tr>
+<tr>
+       <td> If rgb format input, planes to be considered</td>
+       <td>rgb</td>
+       <td>integer</td>
+       <td>1 to 7.Add as required with r = 4, g = 2, b = 1</td>
+       <td>7</td>
+</tr>
+<tr>
+       <td> If yuv format input, planes to be considered</td>
+       <td>yuv</td>
+       <td>integer</td>
+       <td>1 to 7. add as required with y = 4, u = 2, v = 1</td>
+       <td>7</td>
+</tr>
+
+</table>
+
+
+<BR># to get displayed image (parameters still to be optimized) following script was used:- 
+<pre>
+avisource  or imagereader etc;
+imagereader("c:\images\Rose.jpg",end = 100)
+converttoRGB24()
+# function does not check
+assumefieldbased()
+# uncomment any one of the next two lines
+#mb= F2QBlur(psf = "focus",x = 16)
+#mb = MBlur(a, x = 16, blur = "focus")
+#uncomment any one of the next two lines
+#bk = Bokeh(last,m, grid = 3, thresh = 0.0175, rgb = 4, yuv =1)
+#bk = F2QBokeh(last, mb,grid = 16, thresh = 0.4505)
+fs=subtract(bk, mb).Levels(127,1,129,0,255)
+s=subtract(bk, last).Levels(127,1,129,0,255)
+stackHorizontal(s,fs)
+b =stackHorizontal(bk,s)
+a=stackHorizontal(last,mb)
+stackVertical(a,b)
+convertbits(8)
+reduceby2()
+</pre>
+<img src="./bokeh0.png" width="900" height="720" border="0">
+
+<table>
+
+<tr>
+       <td>To my <a href="../manyPlus avisynth+ Plugin.html">index </a>page</td>
+	   <td>down load <a href="manyPlus.7z">plugin</a></td>
+       <td>To <a href="http://www.avisynth.nl">Avisynth</a> </td>
+</tr>
+</table>	
+</body>
+</html>
