@@ -4,4 +4,4 @@ plugins folders that work with avs 2.5 and up and winxp and up
 
 ### To-Do-List
 To-Do-List
-* use more more avsi wrapperes (since not all of them done yet)
+* use more avsi wrapperes (since not all of them done yet)
