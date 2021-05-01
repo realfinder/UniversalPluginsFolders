@@ -175,6 +175,7 @@ SetFilterMTMode("FTurnRight",           MT_NICE_FILTER)    #FTurn is deprecated 
 SetFilterMTMode("nnedi3ocl",            MT_MULTI_INSTANCE)
 SetFilterMTMode("IT", MT_SERIALIZED) 
 SetFilterMTMode("Yadif",                MT_MULTI_INSTANCE)
+SetFilterMTMode("SmoothUV",             MT_NICE_FILTER)
 #note1: Can't use mode 1 or 2 on any filters if encoding 1080i files(480i works perfectly fine).
 #FFVideoSource runs a few seconds, however, it always crashes.
 #As far as I know, the only workaround seems to be running a deinterlacer right after the video source and running it as "MT_SERIALIZED",
