@@ -18,7 +18,7 @@ GaussResizeMT
 SincResizeMT
 SinPowResizeMT (same parameters than Gauss, default param 2.5)
 SincLin2ResizeMT (same parameters than Sinc, default param 15)
-UserDefined2ResampleMT (Same parameters as BicubicResize)
+UserDefined2ResizeMT (Same parameters as BicubicResize)
   Control values are b and c as floats in range -50..250. 
   Default values are b=121, c=19. b and c parameters are 2 and 3 members of impulse response of filter defined at +-2 samples
   range. Middle (first) member = 1.0, i.e. 235 in 8bit video limited range encoding. To view how it contol sharpness and ringing
@@ -139,7 +139,7 @@ DeGaussResizeMT
 DeSincResizeMT
 DeSinSqrResizeMT (same parameters than DeGauss)
 DeSincLin2ResizeMT (same parameters than Sinc, default param 15)
-DeUserDefined2ResampleMT (Same parameters as BicubicResize)
+DeUserDefined2ResizeMT (Same parameters as BicubicResize)
 
 Parameters are identicals to the resampling functions, except there is two others parameters at the end.
 

@@ -1,4 +1,4 @@
-# ASTDR DeRainbow function v1.78
+# ASTDR DeRainbow function v1.81
  
   function ASTDR(clip input, float "strength", int "tempsoftth", int "tempsoftrad", int "tempsoftsc", float "blstr", int "tht", int "FluxStv", int "dcn", bool "edgem", bool "exmc", clip "edgemprefil", bool "nomask")
   {
@@ -23,7 +23,7 @@
   filtered_uv = !exmc ? inrainev.DeCross(ThresholdY=15, Noise=dcn, Margin=1) : inrainev
   filtered_uv = filtered_uv.FluxSmoothST(FluxStv,sisfield ? FluxStv/2 : FluxStv).Mergeluma(inrainev)
   filtered_uv = sisfield ? filtered_uv : filtered_uv.awarpsharp2(depth=4,chroma=6,cplace="MPEG2")
-  filtered_uv = (VersionNumber() < 2.60) && isyv12(input) ? filtered_uv.hqdn3d(ls=0,lt=0,cs=sisfield ? strn*2/5 : strn*3/5,ct=strn).temporalsoften(tschrrad,0,tschrth,tschrsc,2).blur(blstr).Mergeluma(inrainev) : filtered_uv.HQdn3d_2(ls=0,lt=0,cs=sisfield ? strn*2/5 : strn*3/5,ct=strn,y=2).temporalsoften(tschrrad,0,tschrth,tschrsc,2).blur(blstr).Mergeluma(inrainev)
+  filtered_uv = isyuy2(input) ? filtered_uv.HQdn3d_2(ls=0,lt=0,cs=sisfield ? strn*2/5 : strn*3/5,ct=strn,y=2).temporalsoften(tschrrad,0,tschrth,tschrsc,2).blur(blstr).Mergeluma(inrainev) : filtered_uv.hqdn3d(ls=0,lt=0,cs=sisfield ? strn*2/5 : strn*3/5,ct=strn).temporalsoften(tschrrad,0,tschrth,tschrsc,2).blur(blstr).Mergeluma(inrainev)
   filtered_uv = sisfield ? filtered_uv : filtered_uv.aWarpSharp2(depth=4,chroma=6,cplace="MPEG2")
   filtered_uv = filtered_uv.sneo_FFT3D(sigma=sisfield ? 0.7 : 1,sigma3=sisfield ? 3 : 4,y=2,degrid=1)
 
@@ -31,7 +31,7 @@
  filtered_uve = filtered_uv
   inputodd    = input.selectodd()
   filtered_uv = inputodd.DeCross(ThresholdY=15, Noise=dcn, Margin=1).FluxSmoothST(FluxStv,sisfield ? FluxStv/2 : FluxStv).Mergeluma(inputodd)
-  filtered_uv = (VersionNumber() < 2.60) && isyv12(input) ? filtered_uv.hqdn3d(ls=0,lt=0,cs=sisfield ? strn*2/5 : strn*3/5.0,ct=strn).temporalsoften(tschrrad,0,tschrth,tschrsc,2).blur(blstr).Mergeluma(inputodd) : filtered_uv.HQdn3d_2(ls=0,lt=0,cs=sisfield ? strn*2/5 : strn*3/5.0,ct=strn,y=2).temporalsoften(tschrrad,0,tschrth,tschrsc,2).blur(blstr).Mergeluma(inputodd)
+  filtered_uv = !(isyuy2(input)) ? filtered_uv.hqdn3d(ls=0,lt=0,cs=sisfield ? strn*2/5 : strn*3/5.0,ct=strn).temporalsoften(tschrrad,0,tschrth,tschrsc,2).blur(blstr).Mergeluma(inputodd) : filtered_uv.HQdn3d_2(ls=0,lt=0,cs=sisfield ? strn*2/5 : strn*3/5.0,ct=strn,y=2).temporalsoften(tschrrad,0,tschrth,tschrsc,2).blur(blstr).Mergeluma(inputodd)
   filtered_uv = filtered_uv.sneo_FFT3D(sigma=sisfield ? 0.7 : 1,sigma3=sisfield ? 3 : 4,y=2,degrid=1)
   filtered_uv = interleave(filtered_uve,filtered_uv)
                   """) : nop()
@@ -43,7 +43,7 @@
   edgem && !nomask ? mt_merge(input, last, edgemclip.mt_expand().mt_inflate(),y=2,u=3,v=3,luma=true) : last
   }
 
-# ASTDRmc DeRainbow function v1.77
+# ASTDRmc DeRainbow function v1.79
 
   function ASTDRmc(clip input, float "strength", int "tempsoftth", int "tempsoftrad", int "tempsoftsc", float "blstr", int "tht", int "FluxStv", int "dcn", bool "edgem", int "thSAD", clip "prefil", bool "chroma", clip "edgemprefil", bool "nomask")
   {
@@ -57,7 +57,7 @@ sisfield = input.IsFieldBased()
   edgem    = default(edgem, sisfield)
   chroma   = default(chroma, false)
 
-derbmask = sisfield || nomask ? nop() : (VersionNumber() < 2.60) ? input.tedgemask(threshY=2,u=0,v=0).mt_inflate() : input.TEMmod(threshY=2,chroma=0).mt_inflate()
+derbmask = sisfield || nomask ? nop() : (VersionNumber() < 2.60) ? input.tedgemask(threshY=2,u=0,v=0).mt_inflate() : input.vsTEdgeMask(threshY=2,u=1,v=1).mt_inflate()
 
 exprefil  = defined(prefil)
 prefil    = exprefil ? prefil : chroma ? sisfield ? input.MinBlur(3).mergeluma(input).Blur(1) : input.MinBlur(3,blurrep=true) : input.Blur(1.5)

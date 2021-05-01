@@ -1,7 +1,7 @@
                                                                                                     |
                                 nnedi3 for Avisynth by tritical                                     |
                                        modified by JPSDR                                            |
-                                     v0.9.4.52 (30/05/2019)                                         |
+                                     v0.9.4.58 (30/04/2021)                                         |
                                            HELP FILE                                                |
 -----------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------
@@ -410,6 +410,31 @@ nnedi3_rpow2 EXAMPLES:
 
 
 CHANGE LIST:
+   30/04/2021  v0.9.4.58
+       + Add new resampler in nnedi3_rpow2 internal resizers.
+       + Update to the new avisynth headers.
+       * Minor code change for threadpool update.
+
+   02/08/2020  v0.9.4.57
+       + Add new resamplers in nnedi3_rpow2 internal resizers.
+
+   17/07/2020  v0.9.4.56
+       * Fix issue in 4:2:0 when dh=false and height not mod 4.
+
+   05/05/2020  v0.9.4.55
+       * Fix issue introduced in previous version.
+
+   27/04/2020  v0.9.4.54
+       + Update to the new avisynth headers.
+       * Minor code change for threadpool update.
+       * Some cleanup.
+
+   31/05/2019  v0.9.4.53
+       * Minor code change for threadpool update.
+
+   30/05/2019  v0.9.4.52
+       + Update in the threadpool, add ThreadLevel parameter.
+
    27/05/2018  v0.9.4.51
        * Fix bug in asm PlanarFrame YUY2to422.
 
