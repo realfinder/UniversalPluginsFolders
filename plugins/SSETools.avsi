@@ -34,11 +34,11 @@ LoadPlugin(AviSynthPluginsDir + "25/SSE3Tools.dll")
         Quadruple(Clip, grey)
 }
 
-function ReduceFluctuations(Clip, int "limit", int "limitU", int "limitV", bool "reduceflicker")
-{
-LoadPlugin(AviSynthPluginsDir + "25/SSE3Tools.dll")
-        ReduceFluctuations(Clip, limit, limitU, limitV, reduceflicker)
-}
+#function ReduceFluctuations(Clip, int "limit", int "limitU", int "limitV", bool "reduceflicker")
+#{
+#LoadPlugin(AviSynthPluginsDir + "25/SSE3Tools.dll")
+#        ReduceFluctuations(Clip, limit, limitU, limitV, reduceflicker)
+#}
 
 function Shrinkby2(Clip, bool "grey")
 {

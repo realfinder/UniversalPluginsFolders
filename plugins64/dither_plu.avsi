@@ -10,12 +10,6 @@ LoadPlugin(AviSynthPlugins64Dir + "25/25b/dither.dll")
         SmoothGrad(clip, clsb, radius, thr, stacked, ref, elast, y, u, v)
 }
 
-function SmoothGrad(clip clip, clip "clsb", int "radius", float "thr", bool "stacked", clip "ref", float "elast", int "y", int "u", int "v" )
-{
-LoadPlugin(AviSynthPlugins64Dir + "25/25b/dither.dll")
-        SmoothGrad(clip, clsb, radius, thr, stacked, ref, elast, y, u, v)
-}
-
 function Dither_box_filter16(clip clip, int "radius", int "y", int "u", int "v")
 {
 LoadPlugin(AviSynthPlugins64Dir + "25/25b/dither.dll")
