@@ -2,18 +2,18 @@
 
 <html>
 <head>
-	<title>F1Quiver & F1QTest Functions for avisynth+  </title>
+	<title>F1Quiver & F1QTest Functions  </title>
 </head>
 
 <body>
 	   <font color="#cc0033"><h1>F1Quiver & F1QTest</h1></font>
 	 
 	  <BR><b>Author V. C. Mohan</b>
-	  <BR>Date  1 Oct 2020
+	  <BR>Date  May 2021
 	  <BR>EMail: <a href="mailto:mohanvc@gmail.com">mohanvc</a>
 	  
 
-<p>The F1Quiver filters the image row by row, in 1d frequency domain. <b>libfftw3f3.dll must be in path.</b> 
+<p>The freq domain filter functions require <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip">FFTw3f 32 bit dll</a> or for 64 bit <a href="<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip">FFTw3f 64</a> bit dll, to be in the path. The F1Quiver filters the image row by row, in one dimensional frequency domain. 
 Filters can be either Gaussian, 
 or Butterworth or custom designed in frequency domain. Noise that appears
 vertically or sub vertically aligned (noise really is  row wise) is filtered.</p>
@@ -32,19 +32,20 @@ frequency of notch  filter.
  and must be specified even if not relevant.</P>
 <BR>The fourth value if 0 then Gaussian Filter. Otherwise degree of sharpness of Butterworth filter.
 <P>Upto 15 X 4 such values can be specified. Each filter cascades over other </P>
-
+<P>In May 2021 added another filter type.
+If the first value is zero, then the second is freq1, the third is freq2, and the 4th value is by how much the amplitude is attenuated between freq1 and freq2. 0 means no attennuation, 1 is for 1/ 2, 2 for 1/ 3 and so on 12 is for 1/ 13.</P> 
 <P>Alternatively by opting for Custom, filter is specified by a sereis of 
 frequency and amplitude pairs . The first amplitude value is back ward propogated 
 upto zero freq, and the last pair amplitude is propogated up to the nyquist 
 frequency. The frequency values must increase monotonically. The custom filter is smoothed
 with 5 point average ..</P>
 
-<p>F1QTest function displays in one half of frame, the averaged power spectrum of specified 
+<p>F1QTest function displays in left half of frame, the averaged power spectrum of specified 
 row(s) in two panels, top one with gamma scale and specified filter profile. Lower panel shows unscaled (only normalized) version. 
-In the other half of frame  unfiltered right half of input image is displayed. 
- A  horizontal ruler with graduations (100s, 50s and 10s) assist in specifying frequency values is provided. </p>
+In the other half of frame  the remaining part of input image is shown.
+ A  horizontal ruler with graduations (100s, 50s and 10s) assist in specifying frequency values. </p>
 
-<P>The spectral display will be averaged spectra of starting row to end row.
+<P>The spectral display will be averaged spectrum of starting row to end row.
 This smmothes out a lot of noise and brings out persistent frequencies.</P>
  
 <p>Presence of sharp high amplitude objects (such as logos) can create severe
@@ -54,8 +55,7 @@ undesirable ringing. If possible cropping and re joining after processing may
 be useful in those cases.</p>
 
 <P>With the option 'morph'  set to true, homomorphic filtering can be done.</P>
-<p>F1QTest and F1QUiver accepts Only  Planar Y U V or packed RGB formats. F1QTest uses  Y of YUV or G of RGB formats for analysis. F1Quiver on the other hand filters all 3 colors of RGB and if opted Y, U, V of YUV444 formats. For other YUV formats only Y is filtered. Parameters for both functions are identical </p>
-<br> F1Quiver and F1QTest functions are thread safe. (MT_NICE_FILTER).
+<p>F1QTest and F1QUiver accepts Only  Planar Y U V or packed RGB formats. F1QTest uses  Y of YUV or G of RGB formats for analysis. F1Quiver on the other hand filters all 3 colors of RGB and if opted Y, U, V of YUV444 formats. For other YUV formats only Y is filtered. Parameters for both functions are identical (ignored by the functions if not needed, but will not raise error messages)so that just name change in script facilitates switching between these two functions seamlessly</p>
 <P> parameters </P>
 <BR>
 
@@ -139,13 +139,19 @@ F1QTest()
 #F1QTest(25,100,34,0,42,0, 54,100,row = 155, erow=250,custom = true,gamma =0.2)
 #F1Quiver(25,100,34,0,42,0, 54,100, custom = true)
 F1Quiver(5,39,200,1, uv = true)
+# After TurnLeft(),one of the two following script lines can be used to solve
+#the problem shown in thread <a href="https://forum.doom9.org/showthread.php?t=182712">stripes<a/>
+a =F1Quiver(0,21,28,12, 0, 70, 80, 6,0,120,130,4)
+b =F1Quiver(0,100,20,100,25,0,30,0,38,100,40,100,60,100,75,0,82,0,87,100,100,100, custom = true,morph = false)
 </PRE>
+in image on left is input, middle is F1Quiver output and right is F1QTest display. The spikes in frequencies are to be attenuated and shown in freq spectrum. The white lines are the attenuations applied at step a<BR>
 <img src="./F1Qtest0.png" width="1400" height="400" border="0">
+<img src="./F1Quiver0.png" width="800" height="400" border="0">
 
 <table>
 
 <tr>
-       <td><a href="../manyPlus avisynth+ Plugin.html">To my index page</a></td>
+       <td><a href="../manyPlus.html">To my index page</a></td>
 	   <td><a href="manyPlus.7z">down load plugin</a></td>
        <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
 </tr>

@@ -9,22 +9,21 @@
 	   <font color="#cc0033"><h1>F2Quiver & F2QTest</h1></font>
 	 
 	  <BR><b>Author V. C. Mohan</b>
-	  <BR>Date 1 Oct 2020
+	  <BR>Date May 2021
 	  
 	  <BR>EMail: <a href="mailto:mohanvc@gmail.com">mohanvc</a>
 	  
-	 
+<p>These functions operates in frequency domain and requires for 32 bit avisynth+ 
+	<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip"> FFTw3 32 bit dll</a>  or for 64 bit avisynth+  <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip"> FFTw3 64 bit dll.</a> As these dll s are not thread safe this function operates in MT_SERIALIZED state.
+	  </p>
 
-<p>F2Quiver ,  function  transform image into 2d frequency domain, applies filters 
+<p>F2QTest displays frequency spectra to enable deriving parameters to reduce undesirable regular noise. F2Quiver function  transform image into 2d frequency domain, applies filters 
 and transforms back into image domain.  Gaussian 
 or Butterworth  band stop, lowcut, high cut and notch filters are designed 
 with circular, or vertical, or horizontal, or point or line(fan) symmetry in frequency 
 domain.  All these filters are  available for HomoMorphic 
 proceesing option as well</p>
-
-<P>Filter radial length can be specified.  To avoid
-wrap around error, internally the transforms are in an extended frame size.</P> 
-<P> filter values specified must correspond to those seen in test display.Freq depending on type of filter correspond to center of notch freq, highest freq of low cut or lowest freq of high cut or lower freq of  band or lower angle of a fan filter, or xfreq of a point Similarly the second freq value corresponds to high freq end of  band, or higher angle of fan, or y freq of point. Even though disregarded by low cut, high cut or notch filters, a value must be specified at this position.  
+<P> filter values specified must correspond to those seen in F2Qtest display. Freq depending on type of filter correspond to center of notch freq, highest freq of low cut or lowest freq of high cut or lower freq of  band or lower angle of a fan filter, or xfreq of a point Similarly the second freq value corresponds to high freq end of  band, or higher angle of fan, or y freq of point. Even though disregarded by low cut, high cut or notch filters, a value must be specified at this position.  
 
 <P>Homomorphic filtering :- The input image can be considered as the multiplication of incident light
 and the reflectivity of objects. While incident light varies usually slowly, the reflectivity
@@ -46,7 +45,7 @@ in place of freq1 and freq2. The Fan must wholly lie within 1 to 89 degrees  or 
  the left half and if a filter is specified  (optional),it is shown in right half of screen.
  It should be noted that the horizontal and vertical frequencies
  must be related to the rulers provided. Depending on the readability considerations 
- ruler may have any of the graduations for frequency values of  100, 50( or 20) and 10.
+ ruler may have any of the graduations for frequency values of  100, 50 and 10 or 100 and 20. 100 has a long mark, 50 has a medium length mark, while 20 or 10 have short marks.
   </p>
  
 <p>Presence of sharp high amplitude objects (such as logos) may overwhelm the 
@@ -59,9 +58,9 @@ be useful in those cases.</p>
 <P>Rescale facility is available. But Avisynth has better scaling functions. 
 Where low frequencies and the value at origin is affected,  rescaling may be needed</P>
 
-<p>F2QTest and F2QUiver accepts Only  Planar Y U V or packed RGB formats. F2QTest uses  Y of YUV or G of RGB formats for analysis.   . F2Quiver on the other hand filters all 3 colors of RGB and if opted Y, U, V of YUV444 formats. For other YUV formats only Y is filtered. Parameters for both functions are identical </p>
+<p>F2QTest and F2Quiver accepts Only  Planar Y U V or packed RGB formats. F2QTest uses  Y of YUV or G of RGB formats for deriving frequency spectrum. F2Quiver on the other hand filters all 3 colors of RGB and if opted ( not recommended), YUV444  formats. For other YUV formats u and v are not processed.  Parameters for both functions are identical to facilitate easy switch over between these two. (parameters not used by a function are ignored and will not raise an error) </p>
  
-<br> F2Quiver and F2QTest are thread safe. ( MT_NICE_FILTER). 
+<br> F2Quiver uses library derived from fftw3.dll which is not thread safe, but uses its own threads. So These functions operate in MT_SERIALIZED manner.
 <BR>
 
 <table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
@@ -113,13 +112,7 @@ Where low frequencies and the value at origin is affected,  rescaling may be nee
        <td>1.0 is no scaling</td>
        <td>0.05</td>
 </tr>
-<tr>
-       <td>Filter radial length. Ignored by F2QTest </td>
-       <td>frad</td>
-       <td>integer</td>
-       <td>16 to 128 in steps of 4 and less than 1/8 of frame dimension</td>
-       <td>32</td>
-</tr>
+
 <tr>
        <td>Are u and v planes of YUV444 to be filtered? Ignored by F2QTest </td>
        <td>uv</td>
@@ -127,11 +120,21 @@ Where low frequencies and the value at origin is affected,  rescaling may be nee
        <td>true or false</td>
        <td>false</td>
 </tr>
-
-
-
+<tr>
+       <td>Is hamming needed? Ignored by F2QTest </td>
+       <td>ham</td>
+       <td>boolean</td>
+       <td>true or false</td>
+       <td>true</td>
+</tr>
+<tr>
+       <td>radius of filter in image domain as %age of frame smaller dimension </td>
+       <td>frad</td>
+       <td>float</td>
+       <td>10 to 50.0</td>
+       <td>30</td>
+</tr>
 </table>
-
 
 <BR>Usage examples:-
 <BR>
@@ -139,30 +142,23 @@ Where low frequencies and the value at origin is affected,  rescaling may be nee
 <Pre>
 # F2Quiver(5,5,60,-35,20,1,2,120,60,8,4,1,70,80,4,3,4,40,42,18,morph =false,gamma=0.04)
 #F2QTest(5,5,60,-35,20,1,2,120,60,8,4,1,70,80,4,3,4,40,42,18,morph =false,gamma=0.04)
-#F2QTest(4,5,105,160,14,frad=16)
-#F2QTest(3,5,105,120,1,frad=20)
-#F2QTest(2,2,105,100,4,frad=24)
-F2QTest(1,3,5,60,24,frad=32)
-#
+#F2QTest(4,5,105,160,14)
 
 </Pre>
 
-<br>test panels
-<BR>Input image<BR><img src="./FQInput0.png" width="700" height="400" border="0">
 
-<br>spectrum, filter  and output 
-<br><img src="./F2Qtest0.png" width="1400" height="400" border="0">
-<br>
-<br>
-F2QTest(1,1,35,20,1,2,4,60,68,20,3,5,60,1,14,5,2,80,100,18,4,4,100,104,2)
-<br>In this call first filter is circular lowcut,second is horizontal band reject, third is vertical notch, fourth is point symmetry and fifth is fan band reject filter. All are cascaded.The display is
-<br><img src="./F2QTestFreq.png" width="320" height="480" border="0">
+
+<br>types of filter in freq domain 
+<BR>Input image<BR><img src="./FQInput0.png" width="700" height="400" border="0">
+<br><img src="./F2QtestFreq.png" width="300" height="400" border="0">
+<br><img src="./F2QtestFreqM.png" width="300" height="400" border="0">
+
 <table>
 
 <tr>
-       <td>To my<a href="../manyPlus avisynth+ Plugin.html"> index page</a></td>
-	   <td>down load<a href="manyPlus.7z"> plugin</a></td>
-       <td>To <a href="http://www.avisynth.nl">Avisynth</a> </td>
+       <td><a href="../manyPlus.html">To my index page</a></td>
+	   <td><a href="manyPlus.7z">down load plugin</a></td>
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
 </tr>
 </table>
 </body>

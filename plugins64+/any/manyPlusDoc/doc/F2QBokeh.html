@@ -9,17 +9,17 @@
 	   <font color="#cc0033"><h1>F2QBokeh </h1></font>
 	 
 	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
-	  <BR>19 Dec 2020
+	  <BR>17 May 2021
 	  
-	  <p>F2QBokeh function operates in frequency domain and requires for avisynth+ 
-	<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip"> FFTw3f-3 32 bit dll</a>  or for 64 bit avisynth+ <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip"> FFTw3f-3 64 bit dll</a>, to be in the path. One can also use Bokeh function of this plugin,  which operates in spatial domain only for a similar application.</p> 
+	  <p>F2QBokeh function operates in frequency domain and requires for 32 bit avisynth+ 
+	<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip"> FFTw3 32 bit dll</a>  or for 64 bit avisynth+  <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip"> FFTw3 64 bit dll.</a> As these dll s are not thread safe this function operates in MT_SERIALIZED state.
+	  
+	  . One can also use Bokeh function of this plugin,  which operates in spatial domain only for a similar application.</p> 
 	  <P> Photographs or videos of birds, animals, flowers etc; taken with high end cameras usually keep lesser depth of field so that the object is well in focus and background blurred beyond recognition. On the other hand most such videos taken by us do not look so good as background is insufficiently blurred.<P>  
 	  <p>F2QBokeh function requires input image(clip) that is required to get Bokeh effect, and a clip containing heavily blurred version of first clip.It detects parts of image in focus and out of focus. The in focus parts are inserted into the blurred clip. Parameters grid and thresh distinguish  between focus and out of focus and need critical adjustments.</p>
 	  <P> for the image I  used, the values of grid and thresh which were near acceptable were 8: 0.15, 16: 0.45, 24: 0.6, 32: 0.75, 48: 0.8, 64: 0.85. Better to experiment using either script clip or animate or applyrange functions of avisynth+. As with other functions using grid, the border areas are left unprocessed. Suggest crop later.</P>
 	 
 	 <P>Only RGB, Y and YUV444 ( no subsampling) formats are processed.  Preferably input be field seperated. RGB formats give better results than YUV</P>
-	 	
-	<br> SetFilterMTMode("F2QBlur", MT_MULTI_INSTANCE).
 	<BR><BR>
 
 <table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
@@ -84,13 +84,14 @@ a=stackHorizontal(last,f2qb)
 stackVertical(a,b)
 convertbits(8)
 reduceby2()
+Left top Input, Right Top blurred input, Left bottom in focus parts retained, bottom right difference input - output.
 </pre>
 <img src="./f2qbokeh0.png" width="900" height="720" border="0">
 </pre>
 <table>
 
 <tr>
-       <td>To my <a href="../manyPlus avisynth+ Plugin.html">index </a>page</td>
+       <td>To my <a href="../manyPlus.html">index </a>page</td>
 	   <td>down load <a href="manyPlus.7z">plugin</a></td>
        <td>To <a href="http://www.avisynth.nl">Avisynth</a> </td>
 </tr>

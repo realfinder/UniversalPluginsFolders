@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>manyPlus avisynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>manyPlus </h1></font>
+	 
+	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
+	  <BR>Date 14 May 2021 	  
+	  <p>This plugin is a cosolidation of modPlus, movePlus, FQPlus, testInput  and Grid into one and the code has been updated. The freq domain filter functions use .lib derived from FFTW3 dll. As that dll is not thread safe, but creates its own threads, thse functions operate in MT_SERIALIZED state.</p> Rest of functions work in image space domain. It is better to seperate fields of interlaced video input. Not all functions check this, so left to users descretion. All these functions can be used for bit depths 8 to 16 as well as float formats.
+		Most (excepting freq domain) of these functions are thread safe (MT_NICE_FILTER and a few are MT_MULTI_INSTANCE).	  
+	  </p>
+		
+	  <BR> Functions which were part of modPlus
+	  <br><BR>1.
+	  <a href="./doc/GBlur.html"><b>GBlur</b></a> : Introduces Gaussian Blur on image.
+	  <br><BR>2.
+	  <a href="./doc/Fan.html"><b>Fan</b></a> : A  filter to attenuate regular frequency noise or (white or black) streaks ( corresponds to Fan Filter plugin of avisynth). 
+	  <br><BR>3.
+	  <a href="./doc/MBlur.html"><b>MBlur</b></a> : Introduces motion or focus blur on image.(F2QBlur of FQPlus operates in frequency domain while this is in 2D image domain). Corresponds to HBlur plugin of avisynth
+		<br><BR>4.
+		<a href="./doc/Median.html"><b>Median</b></a> : In a grid, size of which is changed depending on local statistics, noise is attenuated.( Corresponds to AdaptiveMedian of avisynth plugins).
+		  
+		<br><br>5.
+		<a href="./doc/minvar.html"><b>minvar </b></a>: By minimising variance noise is attenuated. ( corresponds to DeNoise plugin of avisynth)
+		<br><br>6.
+		<a href="./doc/Morph.html"><b>Morph </b></a>: Using morphology princeples image is 'dilate' or 'erode' or 'open' or 'close' or 'median' filtered ( corresponds to morph function of colorit plugin of avisynth 2.5. Now deprecated)
+		<br><br>7.
+		<a href="./doc/Neural.html"><b>Neural</b></a> : Given a target image derived from input, learns to process to get similar results.( corresponds to NeuralNetLN of NeuralNet  plugin of avisynth). 
+		<br><br>8.		
+		<a href="./doc/SaltPepper.html"><b>SaltPepper</b></a>	: Removes Salt and Pepper noise spikes from image. ( DeSaltPepper plugin of avisynth ).
+		<br><br> 9.
+		<a href="./doc/SegAmp.html"><b>SegAmp</b></a>	: Smooths and sharpens image using watershed algorithm for segmentation( SegmentedAmp plugin of avisynth ).
+		<br><br> 10.
+		<a href="./doc/TweakHist.html"><b>TweakHist</b></a> : Equalizes or matches Histogram. ( HistogramAdjust plugin of avisynth).
+		<br><br>11.
+		<a href="./doc/Veed.html"><b>Veed</b></a> : A gentle filter to remove either green or blue sheen seen in some videos ( corresponds to DeVeed plugin of avisynth).<br> 
+		<p> the following three functions are from movePlus plugin. As the name implies, these functions move or reposition pixels</P>
+		
+		<BR>1. <a href="./doc/Barrel.html"><b>Barrel</b></a> : Due to sphericity of the lenses used in cameras, either Barrel type or Pin cushion type distortions are often seen in images. This Function corrects these distortions.
+		<BR> 2. <a href="./doc/Reform.html"><b>Reform</b></a> : Converts a quadrilateral image into rectangular one or vice versa.
+	  <BR> 3. <a href="./doc/Turn.html"><b>Turn</b></a> : Turns the image through given angle in degrees about a specified fulcrum
+	  <P>The following 9 functions operate in frequency domain.. Many of these were part of FQPlus. The freq domain filter functions require <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zipFFTw3f"> 32 bit dll</a> or for 64 bit <a href="<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip">FFTw3f 64</a> bit dll, to be in the path.</P>
+	  <br>
+		
+		
+		1. <a href="./doc/F1Quiver.htm"><b>F1QTest</b></a> : Provides visual aid to estimate type and specifications of 1D filters needed.<br>
+		
+		2. <a href="./doc/F1Quiver.htm"><b>F1Quiver</b></a> : Filters input image with specified 1D filters<br>
+		3. <a href="./doc/F2Quiver.htm"><b>F2QTest</b></a> : Provides visual aid to estimate type and specifications of 2D filters needed<br>
+		
+		4. <a href="./doc/F2Quiver.htm"><b>F2Quiver</b></a> : Filters input image with specified 2D filters<br>
+		5. <a href="./doc/F2Qlimit.htm"><b>F2Qlimit</b></a> : Filters input image with specified 2D filters<br>
+		6. <a href="./doc/F2QBlur.html"><b>F2QBlur</b></a>	: produces either a motion blur or out of focus blur on an image.<br>
+		7. <a href="./doc/F2QCorrelation.html"><b>F2QCorrelation</b></a> : Cross correlates two image frames.<BR>
+		
+		8. <a href="./doc/F2QSharp.html"><b>F2QSharp</b></a> : Sharpens image by unblurring, given the blur estimate.<br>
+		<BR>
+		9. <a href="./doc/F2QBokeh.html"><b>F2QBokeh</b></a> : Detects sharp and blurred parts of image and blurrs. Similar to function   <a href="Bokeh.html"><b>Bokeh</b></a> .<br>
+		<BR>
+		<P>The following 4 functions are utilities and some were developed on specific request from academia.</P>
+		<BR>1. <a href="./doc/Bokeh.html"><b>Bokeh</b></a>. Accentuates "bokeh" effect on image similar to function  <a href="F2QBokeh.html"><b>F2QBokeh</b></a>
+		<BR>2. <a href="./doc/DeJitter.html"><b>DeJitter</b></a>. Removes Jitter  on input, seen in some VHS conversions.
+		 <BR>3. <a href="./doc/Grid.html"><b>Grid</b></a> creates a grid or rulers on frame to estimate coordinates correctly
+		<BR>4. <a href="./doc/Jitter.html"><b>Jitter</b></a>. Jitter introduces some Jitter on input, akin to what some VHS conversions have.			
+		<BR>5. <a href="./doc/Pattern.html"><b> Pattern</b></a>Pattern overlays some sinusoidal pattern which may be useful to test software during development. 	
+		<BR>6. <a href="./doc/StepFilter.html"><b> StepFilter</b></a> Regular noise which look like horizontal bars on image seen in some vhs conversions can be corrected. </p>	
+	   
+	  
+<BR>
+
+
+
+<table>
+
+<tr>
+       <td><a href="../index.html">To my index page</a></td>
+	   <td>down load<a href="manyPlus.7z">manyPlus </a>plugin</td>
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>	
+</body>
+</html>

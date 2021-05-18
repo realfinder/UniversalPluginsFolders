@@ -2,18 +2,18 @@
 
 <html>
 <head>
-	<title>F2QSharp function of  manyPlus Plugin</title>
+	<title>F2QSharp function </title>
 </head>
 
 <body>
 	   <font color="#cc0033"><h1>F2QSharp </h1></font>
 	 
 	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
-	  <BR> 29 Dec 2016
+	  <BR> 17 May 2021
 	  
-	  <p>F2QSharp function operates in frequency domain and requires 
-	for 32 bit avisynth+ 
-	<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip"> FFTw3 32 bit dll</a>  or for 64 bit avisynth+ <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip"> FFTw3 64 bit dll</a>, to be in the path.</p> 
+	  <p>F2QSharp function operates in frequency domain and requires for 32 bit avisynth+ 
+	<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip"> FFTw3 32 bit dll</a>  or for 64 bit avisynth+  <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip"> FFTw3 64 bit dll.</a> As these dll s are not thread safe this function operates in MT_SERIALIZED state.
+	  </p> 
 	    
 	  <p>Given the  estimate of blur present, F2QSharp function tries 
 	  to sharpen the image through frequency domain inversion.</p>
@@ -26,11 +26,9 @@
 		
 	<p>Inverting in frequency domain can lead to instabilities and to counter
 	this white noise is added, which while stabilising reduces  effectiveness and so need to experiment and compromised.
-	The radius of designed inversion filter in spatial domain can be specified. This 
-	can provide some desirable reduction of ringing. These two operators have
-	effect on processed amplitude of the image. Therefore it is essential to
-	experiment exhaustively to arrive at optimum scaling parameter for any particular
-	situation.</p>
+	The radius of designed inversion filter in spatial domain can be specified. This by using a hamming function 
+	reduces ringing at expense of sharpening. These two operators have
+	effect on processed amplitude of the image, experiment to arrive at optimum scaling parameter for any particular situation.</p>
 	
 	<p>For some situations for a particular set of parameters the result may be highly
 	focussing in parts and in other parts amplitudes may be zero. One such condition
@@ -41,9 +39,7 @@
 <br> As the exact blurring PSF was known in the examples, the results look good. In real life blurring PSF is not known and so inversion likely to fail.	
 	<p> The text file to read for user input psf must conform strictly to following :
 	<br> 1.Must have number 1 in first line.
-	<br>2. Second line first integer is number of values present in each row. The second value on this line is number of rows. A maximum of  16 X 16 rows and columns can only be specified, <br>Third line onwards PSF values in rows and columns. The values are separated by space. Entries are in floating point.</p> 	 
-		
-<br> F2QSharp is thread safe. SetFilterMTMode("F2QSharp", MT_NICE_FILTER).
+	<br>2. Second line first integer is number of values present in each row. The second value on this line is number of rows. A maximum of  16 X 16 rows and columns can only be specified, <br>Third line onwards PSF values in rows and columns. The values are separated by space. Entries are in floating point.</p> 7
 <BR><BR>
 
 <table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
@@ -106,12 +102,25 @@
 
 <tr>
        <td> Radius of filter in spatial domain, as %age of smaller of the frame dimensions</td>
-       <td>fr</td>    
-   	   <td>float</td>
-       <td>0.01 to  39.99</td>
-       <td>10</td>
+       <td>frad</td>    
+   	   <td>integer</td>
+       <td>10 to 50</td>
+       <td>30</td>
 </tr>
-
+<tr>
+       <td> Whether hamming function to be used</td>
+       <td>ham</td>    
+   	   <td>boolean</td>
+       <td>true / false</td>
+       <td>true</td>
+</tr>
+<tr>
+       <td> Whether u,v planes to be sharpened</td>
+       <td>uv</td>    
+   	   <td>boolean</td>
+       <td>true / false</td>
+       <td>false</td>
+</tr>
 
 <tr>
        <td>Full path and name of text file in which  PSF is given.</td> 
@@ -125,68 +134,17 @@
 </table>
 
 
-<BR>#Usage examples. These also demonstrate the artifacts produced and need to select proper scale value:- 
+<BR>#Usage examples. These also demonstrate the artifacts produced and need to select proper parameters:- 
 <pre>
-
 f2Qs = F2QSharp(F2Qb,psf = "file", x = 6, y = 2, uv = true,wn = 0.05,scale = 0.4, fr = 20, txt = "C:\avi_plugins\FQPlus\blurr.txt")
-### <b>effect of amount of motion blur</b>
-## using F2QBLUR as input
-F2QSharp()
-F2QSharp(line = true,x = 2, y = 2fr = 20,wn = 0.05,scale = 0.45)
-F2QSharp(line = true,x = 8, y = 4,fr = 30,wn = 0.05,scale = 0.375)
+#effect of using hamming window. Left top input, right blurred using
+F2QBlur(psf = "focus",x = 18,y =8, uv = true)
+#left bottom with 
+F2QSharp(F2Qb,psf = "focus",x = 18,y =8, uv = false,wn = 0.05,scale = 0.4, fr = 20, ham = true)
+#On bottom right with
+F2QSharp(F2Qb,psf = "focus",x = 18,y =8, uv = false,wn = 0.05,scale = 0.4, fr = 20, ham = false)</pre>
+<br><img src="./FQSharp0.png" border="0" height ="800" width = "1000" > 
 
-</pre><br><b>effect of amount of motion blur</b>
-<BR> below are results. Left is blurred image.  Right restored image 
-<BR><img src="./F2QSharp0.jpeg" border="0">
-<BR>
-<pre>###<b>effect of filter radius</b>
-F2QBlur( line = false, x=8,y = 0)
-F2QSharp(line = false,x = 8, y = 0,fr = 20,wn = 0.08,scale = 0.45)
-F2QSharp(line = false,x = 8, y = 0,fr = 39,wn = 0.08,scale = 0.45)
-F2QSharp(fqb8,line = false,x = 8, y = 0,fr = 60,wn = 0.08,scale = 0.45)
-FR8 = F2QSharp(fqb8,line = false,x = 8, y = 0,fr = 80,wn = 0.08,scale = 0.45)
-st1 = stackvertical(last, fr2,fr4)
-st2 = stackvertical(fqb8, fr6,fr8)
-stackhorizontal(st1,st2)</pre>
-
-<br><b>effect of filter radius</b>
-<BR> below are results. top Left is original. top Right blurred image used as input for all.
-note amplitude variation. 
-<BR><img src="./F2QSharp_Radius0.jpeg" border="0">
-<br>
-<pre># <b>Degree of defocus of input</b>
-fqb2 = F2QBlur( line = false, x=2,y = 0)
-fqb4 = F2QBlur( line = false, x=4,y = 0)
-fqb8 = F2QBlur( line = false, x=8,y = 0)
-fqb16 = F2QBlur( line = false, x=16,y = 0)
-
-FR2 = F2QSharp(fqb2,line = false,x = 2, y = 0,fr = 20,wn = 0.08,scale = 0.45)
-FR4 = F2QSharp(fqb4,line = false,x = 4, y = 0,fr = 20,wn = 0.08,scale = 0.45)
-FR8 = F2QSharp(fqb8,line = false,x = 8, y = 0,fr = 20,wn = 0.08,scale = 0.45)
-FR16 = F2QSharp(fqb16,line = false,x = 16, y = 0,fr = 20,wn = 0.08,scale = 0.45)
-
-st1 = stackvertical(fqb2,fqb4,fqb8, fqb16)
-st2 = stackvertical(fr2, fr4,fr8, fr16)
-stackhorizontal(st1,st2)</pre>
-
-<br><b>Degree of defocus of input</b>
-<br>Left input Right restored image. scale was kept constant 
-
-<br><img src="./F2QSharp_Focus0.jpeg" border="0">
-
-<pre>### <b>effect of white noise value wn</b>
- wn</b>
-<br>Top left Original, Top right blurred input, scale kept constant
-<br><img src="./F2QSharp_wn0.jpeg" border="0">
-
-
-<br>### example of an <b>unstable(?) situation</b>
-
-<br><b>unstable(?) situation</b>. Top large focus blurred input.Lower 3 processed
-with very small difference in parameter fr (Filter radius). Note to control amplitude
-scale value needed was highest for the central one.
-
-<br><img src="./F2QSharp_unstable0.jpeg" border="0"> 
 <pre>
 Example text file:
 1
@@ -201,9 +159,9 @@ Example text file:
 <table>
 
 <tr>
-       <td>To my <a href="../manyPlus avisynth+ Plugin.html">index</a> page</td>
-	   <td>down load <a href="manyPlus.7z">plugin</a></td>
-       <td>To<a href="http://www.avisynth.nl"> Avisynth</a> </td>
+       <td><a href="../manyPlus.html">To my index page</a></td>
+	   <td><a href="manyPlus.7z">down load plugin</a></td>
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
 </tr>
 </table>	
 </body>

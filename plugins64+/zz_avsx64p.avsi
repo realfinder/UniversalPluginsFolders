@@ -1,6 +1,6 @@
 LoadPlugin(AviSynthPlugins64PDir + "any/EffectsPlus.dll")
 LoadPlugin(AviSynthPlugins64PDir + "any/manyPlus.dll")
-LoadPlugin(AviSynthPlugins64PDir + "any/TxPlus.dll")
+#LoadPlugin(AviSynthPlugins64PDir + "any/TxPlus.dll")
 hashasalpha = InternalFunctionExists("hasalpha")
 hasIsVersionOrGreater = InternalFunctionExists("IsVersionOrGreater")
 hasIsVersionOrGreater ? IsVersionOrGreater(3,6) ? import(AviSynthPlugins64PDir + "36x/vsLGhost.avsi") : nop() : nop()

@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>StepFilter AviSynth+ manyPlus Plugin Function</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1><center>StepFilter </center></h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>Date   20 April 2021
+	  <BR>EMail: <a href="mailto:mohanvc@gmail.com">mohanvc</a>
+	 
+	  <P>This filter attenuates regular horizontal sinusoidal or step like additive noise seen in some vhs tape conversions. Can be used to correct images similar to  <a href="https://forum.doom9.org/attachment.php?attachmentid=17721&stc=1&d=1617841049"> image </a> in a doom9 forum thread</P>
+	  
+	  <P>works in YUY2, Planar and, RGB color spaces and for all bit depths supported by avisynth+. This is thread safe : MT_NICE_FILTER.
+	   
+	  </P> 
+	  
+	  <P>Horizontal and vertical moving window size for computing statistics can be specified. Whether the noise is addtive (mostly so) or multiplicative can also be specified. Some blurring may happen. Also some horizontal image segments may be affected.It is possible some high values were already clipped in input. In such case if clip is set true those values will not be corrected. Proper combination of boost, and  segment values yield satisfactory results.
+	  </P>	  
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip</td>
+       <td></td>
+       <td>clip</td>
+       <td>all color formats</td>
+       <td>none</td>
+</tr>
+<tr>
+       <td>Whether noise is additive</td>
+       <td>add</td>
+       <td>boolean</td>
+       <td>true or false</td>
+       <td>true</td>
+</tr>
+
+<tr>
+       <td>multiply reference amplitude by this factor</td>
+       <td>boost</td>
+       <td>float</td>
+       <td>0.5 to 5.0</td>
+       <td>1.0</td>
+</tr>
+<tr>
+       <td>horizontal segment size</td>
+       <td>segmenthor</td>
+       <td>integer</td>
+       <td>0 for full frame width or 16 to width / 2</td>
+       <td>64</td>
+</tr>
+
+<tr>
+       <td>vertical segment size</td>
+       <td>segmentvert</td>
+       <td>integer</td>
+       <td>0 for full frame height or 16 to height / 2</td>
+       <td>64</td>
+</tr>
+<tr>
+       <td>Whether high values were clipped</td>
+       <td>clip</td>
+       <td>boolean</td>
+       <td>true or false</td>
+       <td>true</td>
+</tr>
+
+</table>
+
+<BR>
+Usage examples
+<PRE>StepFilter()
+<BR>StepFilter(segmenthor = 128, segmentvert = 0)
+</PRE>
+
+<BR>
+<table>
+
+<tr>
+       <td>To my <a href="../index.html">index</a> page</td>
+	   <td<td>down load<a href="manyPlus.7z">manyPlus </a>plugin</td>
+       <td>To <a href="http://www.avisynth.nl">Avisynth</a> </td>
+</tr>
+</table>	
+  			
+		
+</body>
+</html>

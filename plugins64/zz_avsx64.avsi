@@ -14,7 +14,6 @@ Import(AviSynthPlugins64Dir + "25/ffms2.avsi")
 function avs25b64_A_SONY() {
 s26 = VersionNumber() < 2.60 ? false : true
 spl = IsAvsPlus
-LoadPlugin(AviSynthPlugins64Dir + "25/25b/dither.dll")
 spl ? nop() : Import(AviSynthPlugins64Dir + "25/DirectshowSource.avsi")
 s26 ? LoadPlugin(AviSynthPlugins64Dir + "26/masktools2.dll") : LoadPlugin(AviSynthPlugins64Dir + "25/mt_masktools-25.dll")
 Import(AviSynthPlugins64Dir + "25/25b/dither.avsi")

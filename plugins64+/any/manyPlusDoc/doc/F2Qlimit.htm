@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>F2Qlimit </title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>F2Qlimit</h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>Date May 2021
+	  
+	  <BR>EMail: <a href="mailto:mohanvc@gmail.com">mohanvc</a>
+	  
+	 
+
+<p>F2Qlimit function  transform image into 2d frequency domain, attenuates  at specified locations and transforms back into image domain.
+This is easier to use than the more daunting but powerful F2Quiver function. This function operates in frequency domain and requires for 32 bit avisynth+ 
+	<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip"> FFTw3 32 bit dll</a>  or for 64 bit avisynth+  <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip"> FFTw3 64 bit dll</a>  As these dlls are not thread safe this function operates in MT_SERIALIZED state.
+	  </p>
+	  
+<P> filter values specified must correspond to those seen in F2Qtest display. Filters are specified by sets of 3 integers:
+<BR> First Integer is Frequency along width x, second integer is frequency along height y. and third Integer is % age of retention. x should be positive. As spectrum is diagonally symmetrical specify corresponding frequency y ( plus or minus)
+ <BR> Up to 12 such sets can be specified and they will be cascaded. 
+<BR></P>
+<P> The function searches the maximum value around this point within -grid to + grid. Frequency values in a square of 'inner' are multiplied by %age / 100.
+ <br> Please note that all filters have diagonal quadrant symmetry as the power spectrum behaves such. ( First and third quadrants are similar so also 2nd and 4th Quadrants).
+  </p>
+ 
+
+<p>F2Qlimit accepts Only  Planar Y U V or packed RGB formats.  F2Qlimit on the other hand filters all 3 colors of RGB and  Y of YUV formats.   </p>
+
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top"><b>Details of parameters</b> </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip</td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Array of values</td>
+       <td></td>
+       <td>sets of 3 integers.  
+	   atleast one set must be specified. </td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>grid size </td>
+       <td>grid</td>
+       <td>int</td>
+       <td>1 to 40</td>
+       <td>10</td>
+</tr>
+
+<tr>
+       <td>inner size </td>
+       <td>inner</td>
+       <td>int</td>
+       <td>0 to 5</td>
+       <td>1</td>
+</tr>
+</table>
+
+<BR>Usage examples:-
+<BR>
+
+<Pre>
+# F2Qlimit(0,25,14, 0,75,15,0,140,16, grid = 10, inner = 4)
+</Pre>
+
+<tr>
+       <td><a href="../manyPlus.html">To my index page</a></td>
+	   <td><a href="manyPlus.7z">down load plugin</a></td>
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>
+</body>
+</html>

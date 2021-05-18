@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Mean Function for AviSynth+ Plugin</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>Mean</h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>Date  21 Oct 2020
+	 
+	  <p>Due to various causes noise is most often present on raw images. Averaging over a surrounding grid can attenuate noise at the cost of blurring. Some control to preserve edges is provided. All formats and bit depths are accepted. Option for not processing of U and V planes is included. 
+	  This can also be used as a preprocessed example for SegAmp function.</p> 
+	  
+	      
+
+ <BR>This is thread safe. MT_NICE_FILTER<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip to be smoothed</td>
+       <td></td>
+       <td>clip</td>
+       <td></td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>size of square grid </td>
+       <td>grid</td>
+       <td>integer</td>
+       <td>odd number between 3 to 15</td>
+       <td>5</td>
+</tr>
+<tr>
+       <td>tolerance</td>
+       <td>tol</td>
+       <td>float</td>
+       <td>more than 0 to 1.0</td>
+       <td>0.1</td>
+</tr>
+
+
+<tr>
+       <td>u and v plane smoothing</td>
+       <td>uv</td>
+       <td>boolean</td>
+       <td>true for yes, false for no</td>
+       <td>true</td>
+</tr>
+
+</table>
+
+
+<BR>Usage examples:-
+<BR>Mean()
+<BR>Mean(grid = 9,limit = 0.1, uv = false) 
+			
+<BR>
+
+<table>
+
+<tr>
+       <td>To my<a href="../index.html"> index </a>page</td>
+	   <td>down load<a href="manyPlus.7z">manyPlus </a>plugin</td>
+       <td>To<a href="http://www.avisynth.nl"> Avisynth</a> </td>
+</tr>
+</table>
+</body>
+</html>
