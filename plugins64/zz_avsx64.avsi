@@ -38,8 +38,8 @@ Import(AviSynthPlugins64Dir + "26/ffms2.avsi")
 Import(AviSynthPlugins64Dir + "26/HaloBuster.avsi")
 Import(AviSynthPlugins64Dir + "26/InpaintDelogo.avsi")
 Import(AviSynthPlugins64Dir + "26/JincResizeNR.avsi")
-#Import(AviSynthPlugins64Dir + "26/neo-f3kdb.avsi") #bug
-#Import(AviSynthPlugins64Dir + "26/neo-fft3d.avsi")
+Import(AviSynthPlugins64Dir + "26/neo-f3kdb.avsi")
+Import(AviSynthPlugins64Dir + "26/neo-fft3d.avsi")
 Import(AviSynthPlugins64Dir + "26/neo-vague-denoiser.avsi")
 Import(AviSynthPlugins64Dir + "26/nnchromaupsubsampling.avsi")
 #Import(AviSynthPlugins64Dir + "26/nnedi3.avsi")
@@ -79,7 +79,7 @@ function AVS_p_64_A_SONY() {
 AVS_2_6_64_A4_A_SONY()
 LoadPlugin(AviSynthPlugins64Dir + "26/GamMac.dll")
 AvsPlusVersionNumber > 2958 ? LoadPlugin(AviSynthPlugins64Dir + "26/GrunT.dll") : nop()
-#LoadPlugin(AviSynthPlugins64Dir + "26/neo-dfttest.dll")
+LoadPlugin(AviSynthPlugins64Dir + "26/neo-dfttest.dll")
 LoadPlugin(AviSynthPlugins64Dir + "26/TUnsharp.dll")
 }
 
@@ -108,6 +108,13 @@ LoadPlugin(AviSynthPlugins64Dir + "26/xNLMeans.dll")
 LoadPlugin(AviSynthPlugins64Dir + "26/YV12To422.dll")
 #Import(AviSynthPlugins64Dir + "26/MaskCrop.avsi")
 }
+
+VersionNumber() < 2.60 ? Import(AviSynthPlugins64Dir + "25/QTGMC.avsi") : Import(AviSynthPlugins64Dir + "26/QTGMC.avsi")
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/MasksPack.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/StabilizationToolsPack.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/GrainFactory3mod.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/LSFmod.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/stab.avsi") : nop()
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPlugins64Dir + "25/25b/avstp/avstp.dll")

@@ -9,7 +9,7 @@
 	   <font color="#cc0033"><h1>TxPlus </h1></font>
 	 
 	  <BR><b>Author V. C. Mohan</b>
-	  <BR>Date  Mar 2017
+	  <BR>Date  May 2021
 	  <BR>EMail: <a href="mailto:mohanvc@gmail.com">mohanvc</a>
 	  
 	
@@ -157,7 +157,7 @@ open or those made out of B Frame close revealing B Frame.
 (as Venetian blinds do) revealing B Frame. Instead of linear blinds, checks 
 or diamond pattern can also be opted. Pattern width can also be specified. 
 <BR>
-<BR><a href="docs/Weave.html"><b>Weave</b></a>: Interleaving together thin strips of B frame over the A 
+<BR><a href="docs/Weaving.html"><b>Weaving</b></a>: Interleaving together thin strips of B frame over the A 
 frame the transition occurs. The interleaving styles options are horizontal, 
 vertical, jigsaw puzzle and (basket) weave.
 <BR>
@@ -457,15 +457,15 @@ last ++ Venetianblinds(left,right,time,20,"vert",open = x)
 TVB = last.subtitle(" V E N E T I A N B L I N D S",text_color=0,align=5,size=32)
 TTT = TVB
 
-Weave(left,right,time,"jigsaw")
-last ++ Weave(left,right,time,"vert")
-last ++ Weave(left,right,time,"hor")
-last ++ Weave(left,right,time,"weave")
-last ++ Weave(left,right,time,"jigsaw", open = x)
-last ++ Weave(left,right,time,"vert",open = x)
-last ++ Weave(left,right,time,"hor",open = x)
-last ++ Weave(left,right,time,"weave",open = x)
-TWV= last.subtitle(" W E A V E",text_color=0,align=5,size=32)
+Weaving(left,right,time,"jigsaw")
+last ++ Weaving(left,right,time,"vert")
+last ++ Weaving(left,right,time,"hor")
+last ++ Weaving(left,right,time,"weave")
+last ++ Weaving(left,right,time,"jigsaw", open = x)
+last ++ Weaving(left,right,time,"vert",open = x)
+last ++ Weaving(left,right,time,"hor",open = x)
+last ++ Weaving(left,right,time,"Weaving",open = x)
+TWV= last.subtitle(" W E A V I N G ",text_color=0,align=5,size=32)
 TTT = TWV
 
 Wipe(left,right,time,dir = 0)

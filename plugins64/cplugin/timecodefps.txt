@@ -1,0 +1,74 @@
+Copyright (c) 2012, Nicholai Main
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of the <organization> nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+TimecodeFPS
+
+An avisynth plugin.
+
+Uses the C-Plugin interface; is known to work with avisynth 2.6 "alpha 3".
+
+LoadCPlugin ("timecodefps.dll")
+
+TimecodeFPS (clip, string timecodes="timecodes.txt", int fpsnum=25, int fpsden=1, bool report=false, float threshone=0.4, float threshmore=0.9)
+
+Converts clip from VFR to CFR.  Timing information from clip is discarded, and matroska v2 timecodes from the timecodes file are used instead.  Conversion is to any desired exact CFR framerate, as specified by fpsnum/fpsden.  With report=true, an alternate debug/analysis display and info is used.  Strictness of the conversion is controlled by the parameters threshone and threshmore.
+
+clip:
+Input clip.  Can be any avisynth supported colorspace.  Must have exactly the same number of frames as lines in timecodes.  Input FPS is discarded.  Audio, if it exists, is passed through untouched.
+
+timecodes: (default "timecodes.txt")
+Path to a matroska v2 timecodes file.  Only matroska v2 timecodes files are supported.  Specification for them: 
+http://www.bunkus.org/videotools/mkvtoolnix/doc/mkvmerge.html#mkvmerge.external_timecode_files
+Exactly one timecode is expected per frame, and it gives the start point of the frame.  (The end point of a frame is implictly the same as the start point of the next frame, except for the last frame, where a guess is made.)  The timecodes should be nonnegative and nondecreasing.  The first timecode need not be at time zero, but that will be used as the start point for the CFR stream, so a non-zero start time may cause the introduction of blank frame(s) before the first real frame.
+
+fpsnum: (default 25)
+fpsden: (default 1)
+An exact CFR framerate to convert to.  Any legal values are valid.  Choosing the "right" framerate for a source should be done with report mode; there is no automatic detection.
+
+report: (default false)
+If false, TimecodeFPS simply does the conversion as expected.  If true, an informative messagebox is shown on script load, and the returned frames are instead a timing track display.
+The informative messagebox shows fpsnum, fpsden, number of dups of input frames, number of drops of input frames, average timing error in ms, and threshone and threshmore.  Every drop is an input frame that is not sent to the output.  Every dup is an input frame being displayed more than once to keep timing straight.  The error value, in ms, is the average difference between original frame starts and the frame starts in the resulting stream.  In some cases it can be used to detect jitter and drift, but don't bank too much on it.
+
+The timing track display changes the video clip to 640x32 RGB32.  Two rows of boxes are shown, which are visual representations of timing of this frame and nearby frames in the original VFR track and the resulting CFR track.  The current frame in CFR is blue; the current frame in VFR is green.
+
+threshone: (default 0.4)
+threshmore: (default 0.9)
+Controls the thresholds for the VFR->CFR algorithm.  The algorithm is rather simple; it runs through the entire input track in sequence.  For each input frame, it computes how much "space" there is for the frame:  That is, the difference between the frame's VFR end time and the frame's CFR start time, the latter being determined by how many frames have been inserted into the output stream already.
+This absolute time delta is converted to a unitless number relative to the CFR framerate, so that 1.0 = room for exactly one frame at the specified CFR rate.  Then 0 or more copies of the input frame are inserted into the output track.  The first copy is inserted if the available space is greater than threshone, and additional copies are inserted as long as the available space is greater than threshmore.  (Available space decrements by 1.0 every time a frame is inserted).
+With these parameters, the "strictness" of the conversion is defined.  Threshone = threshmore = 0.5 will be the most accurate in preserving original timing.  The default settings allow for "frame preserving" operation:  A lower threshold for a first copy and a higher threshold for a second copy means timing can be sacrificed for the goal of getting each frame in the stream at least once.  Experimentation with the report tool is advised.
+
+
+
+Note: In order to get timing display along side output display, TimecodeFPS must be called twice with the same parameters, once with report on and once with report off.  Here is an example:
+
+clip1 = FFVideoSource ("foobar.mkv", timecodes="foobar.txt")
+
+clipout = TimecodeFPS (clip1, "foobar.txt", 60000, 1001, false, 0.3, 0.9)
+clippreview = TimecodeFPS (clip1, "foobar.txt", 60000, 1001, true, 0.3, 0.9)
+
+#this requires reconciling colorspace and size differences first
+StackVertical (clipout, clippreview)
+

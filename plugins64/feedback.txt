@@ -1,0 +1,57 @@
+Feedback
+========
+
+Feedback is a pair of filters that allow the output of a filter chain to be
+passed back as an input, further up the chain, to be used in outputting the next
+frame of the chain.
+
+For example, it can be used to fill in the empty areas of a stablised clip by
+compositing in the previous output frame (which itself will have been composited
+using Feedback).
+
+Usage
+=====
+
+FeedbackInput(
+  (clip),
+  (int) id
+)
+
+FeedbackOutput(
+  (clip),
+  (int) id
+)
+
+FeedbackInput will return frame 0 of its input clip as frame 0 of its output,
+but after that it returns frame n-1 of the associated FeedbackOutput clip.
+
+FeedbackOutput sets a clip as a source for a FeedbackInput clip.
+
+The id parameter is optional, but must be given unique values whenever there is
+more than one FeedbackInput/FeedbackOutput set in a script environment.
+
+Example
+=======
+
+Assume that you have a clip, with an alpha channel, that has been stabilised and
+so has a moving black border around the stabilised image. Then you can composite
+the stabilised clip on top of its previous frames by doing the following:
+
+    Layer(stab.FeedbackInput(), stab).FeedbackOutput()
+
+Frame 0 of the resulting clip will just be frame 0 of "stab" composited on itself.
+
+Frame 1 will be frame 1 of "stab" composited on the previously composited frame (0)
+
+Frame n will be frame n of "stab" composited on the previously composited frame (n-1)
+
+Caveats
+=======
+
+Linear access is fast - FeedbackOutput keeps a copy of the previously-output
+frame - but non-linear access will be slow as it will need to traverse all the
+way back to the beginning of the FeedbackOutput clip.
+
+Using Trim, or any other filter which changes the relative frame numbers of a
+clip (e.g. ChangeFps or SelectEven) is probably not a good idea and could lead
+to hangs or other strange behaviour.
