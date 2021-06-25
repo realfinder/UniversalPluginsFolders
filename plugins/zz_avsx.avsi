@@ -64,7 +64,7 @@ Import(AviSynthPluginsDir + "26/Resize8.avsi")
 Import(AviSynthPluginsDir + "26/ResizeX.avsi")
 Import(AviSynthPluginsDir + "26/Shader.avsi")
 Import(AviSynthPluginsDir + "26/scaled444tonative.avsi")
-Import(AviSynthPluginsDir + "26/SmoothUV2.avsi")
+Import(AviSynthPluginsDir + "26/SmoothUV.avsi")
 Import(AviSynthPluginsDir + "26/SpotLess.avsi")
 Import(AviSynthPluginsDir + "26/ssubsampling_convert.avsi")
 Import(AviSynthPluginsDir + "26/TEMmod.avsi")
@@ -128,6 +128,7 @@ AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/StabilizationTools
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/GrainFactory3mod.avsi") : Import(AviSynthPluginsDir + "avsplus/GrainFactory3mod.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/LSFmod.avsi") : Import(AviSynthPluginsDir + "avsplus/LSFmod.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/stab.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "26/SmoothUV2.avsi") : Import(AviSynthPluginsDir + "avsplus/SmoothUV2.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")
