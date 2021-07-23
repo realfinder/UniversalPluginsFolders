@@ -15,4 +15,3 @@ hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir +
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/Stabilization Tools Pack.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/GrainFactory3mod.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/LSFmod.avsi") : nop() : nop()
-hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/SmoothUV2.avsi") : nop() : nop()
