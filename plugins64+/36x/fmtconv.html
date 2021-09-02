@@ -1,0 +1,2021 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang='en' xml:lang='en' xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>fmtconv&nbsp;&mdash;&nbsp;format conversion tools for Vapoursynth and Avisynth+</title>
+<link rel="stylesheet" type="text/css" href="vapourdoc.css" />
+</head>
+
+<body><div class="global">
+
+<h1>fmtconv&nbsp;&mdash;&nbsp;format conversion tools for Vapoursynth and Avisynth+</h1>
+
+<h2>Abstract</h2>
+
+<table class="n">
+<tr><td class="n"><b>Authors:     </b></td><td class="n">&nbsp;</td><td class="n">Firesledge (aka Cretindesalpes)</td></tr>
+<tr><td class="n"><b>Version:     </b></td><td class="n">&nbsp;</td><td class="n">r24</td></tr>
+<tr><td class="n"><b>Download:    </b></td><td class="n">&nbsp;</td><td class="n"><a href="http://ldesoras.free.fr/prod.html#src_fmtconv">http://ldesoras.free.fr/prod.html</a></td></tr>
+<tr><td class="n"><b>Category:    </b></td><td class="n">&nbsp;</td><td class="n">Format tools</td></tr>
+<tr><td class="n"><b>Requirements:</b></td><td class="n">&nbsp;</td><td class="n"><a href="http://www.vapoursynth.com/">Vapoursynth</a> or <a href="https://avs-plus.net/">Avisynth+ 3.7.0</a></td></tr>
+<tr><td class="n"><b>License:     </b></td><td class="n">&nbsp;</td><td class="n"><a href="http://www.wtfpl.net/">WTFPL</a></td></tr>
+</table>
+
+
+
+<h2>Table of contents</h2>
+
+<ol style="list-style-type:upper-roman;">
+<li class="tcont"><a href="#intro">Introduction</a></li>
+<li class="tcont"><a href="#usage">Usage</a>
+	<ol style="list-style-type:armenian; margin-top:0.5em;">
+	<li><a href="#loading">Loading</a></li>
+	<li><a href="#examples">Examples for Vapoursynth</a></li>
+	<li><a href="#examples">Examples for Avisynth+</a></li>
+	<li><a href="#compiling">Compiling from the source code</a></li>
+	</ol>
+</li>
+<li class="tcont"><a href="#description">Filter description</a>
+	<ol style="list-style-type:armenian; margin-top:0.5em;">
+	<li><a href="#bitdepth">bitdepth</a></li>
+	<li><a href="#convert">convert</a></li>
+	<li><a href="#matrix">matrix</a></li>
+	<li><a href="#matrix2020cl">matrix2020cl</a></li>
+	<li><a href="#primaries">primaries</a></li>
+	<li><a href="#resample">resample</a></li>
+	<li><a href="#transfer">transfer</a></li>
+	<li><a href="#stack16tonative">stack16tonative, nativetostack16</a></li>
+	</ol>
+</li>
+<li class="tcont"><a href="#troubleshooting">Troubleshooting</a></li>
+<li class="tcont"><a href="#changelog">Changelog</a></li>
+</ol>
+
+
+
+<h2><a id="intro"></a>I) Introduction</h2>
+
+<p>Fmtconv is a format-conversion plug-in for the Vapoursynth and Avisynth+
+video processing engines.
+It does:</p>
+<ul>
+<li>Resizing.</li>
+<li>Bitdepth conversion with dithering.</li>
+<li>Colorspace conversion (matrix, transfer characteristics and chromatic adaptation).</li>
+</ul>
+
+<p>It supports:</p>
+<ul>
+<li>Pixel data types: 8-&ndash;12-, 14- and 16-bit integer, 32-bit float.</li>
+<li>Colorspaces: RGB, Y, YUV in 4:4:4, 4:2:2, 4:2:0, 4:1:1 and YCgCo with the same chroma subsampling factors.</li>
+<li>Progressive and interlaced content.</li>
+</ul>
+
+<p>Fmtconv is focussed primarily on quality and exactness rather than execution speed.
+This does not mean it is slow or unoptimized, but fmtconv is clearly not on par with the fastest equivalent 8-bit filters.</p>
+
+
+
+<h2><a id="usage"></a>II) Usage</h2>
+
+<h3><a id="loading"></a>Loading fmtconv</h3>
+
+<p>Using the Python 3.8 interface (or a higher version, it depends on your
+Vapoursynth version):</p>
+
+<pre class="src">import vapoursynth as vs
+core = vs.get_core ()
+core.std.LoadPlugin (path=r'C:\path\fmtconv.dll')</pre>
+
+<p>Of course you can avoid the <code>LoadPlugin</code> command by copying the
+plug-in file to the autoloading directory.
+Check the Vapoursynth manual for more information.</p>
+
+
+<h3><a id="examples-vs"></a>Examples for Vapoursynth</h3>
+
+<h4>A basic example</h4>
+
+<p>Requires <a href="http://code.google.com/p/ffmpegsource/">FFmpegSource2</a>:</p>
+
+<pre class="src"># Load Vapoursynth
+import vapoursynth as vs
+core = vs.get_core ()
+
+# Load the plug-ins
+core.std.LoadPlugin (path=r'C:\path\fmtconv.dll')
+core.std.LoadPlugin (path=r'C:\path\ffms2.dll')
+
+# Load the video clip into c using FFmpegSource
+c = core.ffms2.Source (source=r'C:\path\video.mkv')
+
+# Change the resolution. The output clip is now in 16 bits.
+c = core.fmtc.resample (clip=c, w=1280, h=720)
+
+# Dither the result, back to 8 bits
+c = core.fmtc.bitdepth (clip=c, bits=8)
+
+# Send the processed clip to the calling process
+c.set_output ()</pre>
+
+
+<h4>Resizing and chroma subsampling conversions</h4>
+
+<p>Simple resize with 16- or 32-bit output:</p>
+
+<pre class="src">c = core.fmtc.resample (clip=c, w=1280, h=720)</pre>
+
+<p>Bobbing an interlaced stream (here, Top Field First):</p>
+
+<pre class="src">c = core.std.SeparateFields (clip=c, tff=True)
+c = core.fmtc.resample (clip=c, scalev=2, kernel="cubic", interlaced=True, interlacedd=False)</pre>
+
+<p>Converting a progressive stream from YUV 4:2:2 to 4:2:0 and back to 8 bits:</p>
+
+<pre class="src">c = core.fmtc.resample (clip=c, css="420")
+c = core.fmtc.bitdepth (clip=c, bits=8)</pre>
+
+<p>Same as above, with interlaced content:</p>
+
+<pre class="src">tff = True
+c = core.std.SeparateFields (clip=c, tff=tff)
+c = core.fmtc.resample (clip=c, css="420", interlaced=True)
+c = core.fmtc.bitdepth (clip=c, bits=8)
+c = core.std.DoubleWeave (clip=c, tff=tff)
+c = core.std.SelectEvery (clip=c, cycle=2, offsets=0)</pre>
+
+
+<h4>Colorspace conversions</h4>
+
+<p>Y’Cb’Cr’ 4:2:0 to R’G’B’:</p>
+
+<pre class="src">c = core.fmtc.resample (clip=c, css="444")
+c = core.fmtc.matrix (clip=c, mat="601", col_fam=vs.RGB)
+c = core.fmtc.bitdepth (clip=c, bits=8)</pre>
+
+<p>R’G’B’ to Y’Cb’Cr’ 4:2:0:</p>
+
+<pre class="src">c = core.fmtc.matrix (clip=c, mat="601", col_fam=vs.YUV, bits=16)
+c = core.fmtc.resample (clip=c, css="420")
+c = core.fmtc.bitdepth (clip=c, bits=8)</pre>
+
+<p>Y’Cb’Cr colormatrix conversion from BT. 601 to BT. 709.
+For example to insert a PAL DVD content into an HDTV stream.
+Note that we need to convert the clip to 4:4:4 in an intermediate step
+because <code>matrix</code> can only process 4:4:4.</p>
+
+<pre class="src">c = core.fmtc.resample (clip=c, css="444")
+c = core.fmtc.matrix (clip=c, mats="601", matd="709")
+c = core.fmtc.resample (clip=c, css="420")
+c = core.fmtc.bitdepth (clip=c, bits=8)</pre>
+
+<p>Same as above, but with a 525-line content, requiring a gamut conversion.
+We have to insert an intermediate step in linear RGB.
+For this, we use the BT. 1886 transfer curve in both directions:</p>
+
+<pre class="src">c = core.fmtc.resample (clip=c, css="444")
+c = core.fmtc.matrix (clip=c, mats="601")
+c = core.fmtc.transfer (clip=c, transs="1886", transd="linear")
+c = core.fmtc.primaries (clip=c, prims="601-525", primd="709")
+c = core.fmtc.transfer (clip=clip, transs="linear", transd="1886")
+c = core.fmtc.matrix (clip=clip, mat="709")
+c = core.fmtc.resample (clip=c, css="420")
+c = core.fmtc.bitdepth (clip=c, bits=8)</pre>
+
+<p>Conversion from full range to TV-range:</p>
+
+<pre class="src">c = core.fmtc.bitdepth (clip=c, fulls=True, fulld=False)</pre>
+
+<p>Displaying an anamorphic 1440x1080 HDTV content on a standard computer
+display:</p>
+
+<pre class="src">c = core.fmtc.resample (clip=c, w=1920, h=1080, css="444")
+c = core.fmtc.matrix (clip=c, mat="709", col_fam=vs.RGB)
+c = core.fmtc.transfer (clip=c, transs="1886", transd="srgb")
+c = core.fmtc.bitdepth (clip=c, bits=8)</pre>
+
+<p>Displaying a UHDTV HDR content encoded with BT.2100 ICtCp-PQ on a standard
+computer display:</p>
+
+<pre class="src">c = core.fmtc.resample (clip=c, css="444")
+c = core.fmtc.matrix (clip=c, mats="ICtCp_PQ", matd="rgb")
+c = core.fmtc.transfer (clip=c, transs="2084", transd="linear")
+c = core.fmtc.matrix (clip=c, mats="lms", matd="rgb")
+c = core.fmtc.primaries (clip=c, prims="2100", primd="srgb")
+c = core.fmtc.transfer (clip=c, transs="linear", transd="srgb")
+c = core.fmtc.bitdepth (clip=c, bits=8)</pre>
+
+
+<h3><a id="examples-avs"></a>Examples for Avisynth+</h3>
+
+<p><em>Soon…</em></p>
+
+
+<h3><a id="compiling"></a>Compiling from the source code</h3>
+
+<h4>Visual C++</h4>
+
+<p>Visual Studio 2019 or later is required, previous versions are
+not supported anymore.
+Just load <code>build/win/fmtconv.sln</code> and run the compiler.</p>
+
+<p>You can also import all the <code>*.cpp</code>, <code>*.h</code> and
+<code>*.hpp</code> files located in the <code>src</code> directory and its
+subfolders. Then:
+
+<ul>
+<li>Add <code>.</code> (the <code>src</code> directory) as include path.</li>
+<li>For the whole project, enable the SS2 instruction set.</li>
+<li>Enable the AVX2 instruction set for the <code>*.cpp</code> files containing <code>avx2</code> in their name, and the AVX set for the <code>avx</code> files.</li>
+<li>Enable optimizations maximizing speed and “any suitable” functions for inlining.</li>
+</ul>
+
+<h4>GNU/Linux and other Unix-like systems</h4>
+
+<p>On Linux and similar GNU-based systems (including MSYS2 and Cygwin), the
+<code>build</code> directory contains autotools settings:</p>
+<pre class="src">cd build/unix
+./autogen.sh
+./configure
+make
+make install</pre>
+<p>You can add some options to the <code>configure</code> command:</p>
+<ul>
+<li><code>--enable-debug</code> to activate debugging code</li>
+<li><code>--enable-clang</code> to use Clang instead of the default compiler which is usually GCC</li>
+</ul>
+<p>Only the Vapoursynth plug-in can be built in the GNU-based environment.</p>
+
+
+<h2><a id="description"></a>III) Filters description</h2>
+
+<h3><a id="bitdepth"></a>bitdepth</h3>
+
+<table class="n" width="100%">
+<tr><th class="p">Vapoursynth</th><th class="p">Avisynth+</th></tr>
+<tr>
+<td class="n"><pre class="proto">
+fmtc.bitdepth (
+	clip       : clip      ;
+	csp        : int  : opt;
+	bits       : int  : opt;
+	flt        : int  : opt;
+	planes     : int[]: opt; (all)
+	fulls      : int  : opt; (depends)
+	fulld      : int  : opt; (fulls)
+	dmode      : int  : opt; (3)
+	ampo       : float: opt; (1)
+	ampn       : float: opt; (0)
+	dyn        : int  : opt; (False)
+	staticnoise: int  : opt; (False)
+	cpuopt     : int  : opt; (-1)
+	patsize    : int  : opt; (32)
+	tpdfo      : int  : opt; (0)
+	tpdfn      : int  : opt; (0)
+	corplane   : int  : opt; (0)
+)</pre></td>
+<td class="n"><pre class="proto">fmtc_bitdepth (
+	clip   c,
+
+	int    bits (-1),
+	bool   flt (undefined),
+	string planes ("all"),
+	bool   fulls (depends),
+	bool   fulld (fulls),
+	int    dmode (3),
+	float  ampo (1),
+	float  ampn (0),
+	bool   dyn (false),
+	bool   staticnoise (false),
+	int    cpuopt (-1),
+	int    patsize (32),
+	bool   tpdfo (false),
+	bool   tpdfn (false),
+	bool   corplane (false)
+)</pre></td>
+</tr>
+</table>
+
+<p>Bitdepth conversion with optional dithering.</p>
+
+<p>Dithering is performed when meeting at least one of these conditions:</p>
+<ul>
+<li>Reducing the bitdepth of integer data, or converting from float to integer.</li>
+<li>Doing a full-range ↔ TV-range conversion between integer formats, because the resulting values haven’t an exact representation.</li>
+</ul>
+
+<p>Video compression seems to retrain better pure ordered (Bayer) dithering.
+Therefore this is the recommended method to avoid color banding in 8 bit
+signals, unless you encode at high bitrates.
+If you don’t care about video compression, error diffusion, void and cluster
+and quasirandom sequence methods give the most accurate results.
+To avoid discontinuities between purely flat areas and dithered areas (also
+called noise modulation), you can add a bit of noise, ideally in triangular
+distribution.</p>
+
+<p>The internal noise generator is deterministic and will give the same result
+each run.</p>
+
+<p>The internal processing is done in floating point as soon as the input is
+floating point or a range conversion is detected.</p>
+
+<p>The <code>_ColorRange</code> frame property is set if at least one of the
+<var>fulls</var> or <var>fulld</var> parameter has been explicitely
+defined.</p>
+
+<h4>Parameters</h4>
+
+<p class="var">clip</p>
+<p>The input clip. Mandatory.
+Supported input formats:</p>
+<ul>
+<li>8-&ndash;12-, 14- and 16-bit integer.</li>
+<li>32-bit floating point.</li>
+<li>Any planar colorspace.</li>
+</ul>
+
+<p class="var">csp</p>
+<p><span class="host">Vapoursynth</span> The destination format, as
+a Vapoursynth constant.
+Can only change the bitdepth and the data type (integer or float).
+Supported destination colorspaces are the same as for the input clip.</p>
+
+<p class="var">bits</p>
+<p>Destination bitdepth.
+It’s sometimes more convenient to provide only the number of bits rather than
+the full format.
+When there is no ambiguity between bitdepth and data type, the data type is
+automatically selected depending on the bitdepth.
+For example, specifying 32 bits is enough to switch the output to float.</p>
+<p><span class="host">Avisynth+</span> A negative value means that the
+parameter is left undefined.</p>
+
+<p class="var">flt</p>
+<p>Set it to 1 to convert to float, and to 0 for integer data.
+As long as only 32-bit floating point data is supported, you don’t need to
+specify the bitdepth for a float conversion.</p>
+
+<p class="var">planes</p>
+<p>A list of planes to process.
+The content of an unprocessed plane should be considered as garbage.</p>
+<p><span class="host">Vapoursynth</span> Planes as index (0 to 2), in any order.</p>
+<p><span class="host">Avisynth+</span> This is a string made of concatenated
+substrings for each plane, in any order.
+The planes are identified by their index, as well as the following aliases:</p>
+<table>
+<tr><td><code>"0"</code>, <code>"y"</code>, <code>"r"</code></td><td>Y or red</td></tr>
+<tr><td><code>"1"</code>, <code>"u"</code>, <code>"g"</code></td><td>U or green</td></tr>
+<tr><td><code>"2"</code>, <code>"v"</code>, <code>"b"</code></td><td>V or blue</td></tr>
+<tr><td><code>"3"</code>, <code>"a"</code></td><td>Alpha channel</td></tr>
+<tr><td><code>"all"</code></td><td>All the planes</td></tr>
+</table>
+
+<p class="var">fulls, fulld</p>
+<p>Indicates if the clip is full-range (True) or TV-range (False).
+<var>fulls</var> is for input, <var>fulld</var> for output.
+Reference black and white have different values depending on the range.
+In 8 bits, pixel values scale from 0 to 255 in full range, and 16 to 235
+in TV-range (16 to 240 for the YUV chroma planes).
+This value has no meaning for float data.</p>
+<p>The default value depends on the colorspace.
+For example, full-range is assumed for RGB and YCgCo colorspaces.
+Others are assumed TV-range.
+These parameters are mainly intended to guide conversions between integer
+and floating-point data.
+They can also be used for range conversions.
+Pixel values are not clipped during a conversion between two TV-range
+formats.</p>
+<p><span class="host">Avisynth+</span> Alpha planes are always processed
+as full-range.<p>
+
+<p class="var">dmode</p>
+<p>Dithering mode, when applicable.</p>
+<table>
+<tr><td><b>0</b></td><td>Ordered dithering (Bayer matrix).</td></tr>
+<tr><td><b>1</b></td><td>No dither, round to the closest value.</td></tr>
+<tr><td><b>2</b></td><td>Round, may be a bit faster but possibly less accurate.</td></tr>
+<tr><td><b>3</b></td><td>Sierra-2-4A error diffusion, aka “Filter Lite”. Quick and excellent quality, similar to Floyd-Steinberg.</td></tr>
+<tr><td><b>4</b></td><td>Stucki error diffusion. Preserves delicate edges better but distorts gradients.</td></tr>
+<tr><td><b>5</b></td><td>Atkinson error diffusion. Generates distinct patterns but keeps clean the flat areas (noise modulation).</td></tr>
+<tr><td><b>6</b></td><td>Classic Floyd-Steinberg error diffusion, modified for serpentine scan (avoids worm artefacts).</td></tr>
+<tr><td><b>7</b></td><td><a href="http://www.iro.umontreal.ca/~ostrom/publications/publications_abstracts.html#SIGGRAPH01_VarcoeffED">Ostromoukhov error diffusion</a>. Slow, available only for integer input at the moment. Avoids usual F-S artefacts.</td></tr>
+<tr><td><b>8</b></td><td>Void and cluster halftone dithering. This is a way to generate blue-noise dither and has a much better visual aspect than ordered dithering.</td></tr>
+<tr><td><b>9</b></td><td>Dither using <a href="http://extremelearning.com.au/unreasonable-effectiveness-of-quasirandom-sequences/">quasirandom sequences</a>. Good intermediated between Void and cluster and error diffusion algorithms.</td></tr>
+</table>
+
+<p>When using error-diffusion dithering on interlaced content, you should
+separate the fields first before converting them.</p>
+
+<p class="var">ampo</p>
+<p>The ordered dither peak-to-peak amplitude, depends on the target bitdepth.
+&ge; 0.
+On error diffusion algorithms, it increases the collected error amount,
+helping to extend the range of the dithering while preserving its
+natural pattern (especially Atkinson’s).
+This gives a better looking result than just adding noise.</p>
+
+<p class="var">ampn</p>
+<p>The noise peak-to-peak amplitude, depends on the target bitdepth.
+&ge; 0.
+Currently, the maximum value is 4.
+The noise is added before dithering.
+It reduces the SNR but a small amount may give a better, more uniform
+visual appearance.</p>
+
+<p class="var">dyn</p>
+<p>Indicates if the ordered dither pattern is dynamic (True) or static (False).
+If dynamic, the pattern is changed or rotated each frame.</p>
+
+<p class="var">staticnoise</p>
+<p>If set to 1, the noise generated with <var>ampn</var> is static
+and remains the same every frame.</p>
+
+<p class="var">cpuopt</p>
+<p>Limits the CPU instruction set.
+&minus;1: automatic (no limitation),
+0: default instruction set only (depends on the compilation settings),
+1: limit to SSE2,
+10: limit to AVX2.</p>
+
+<p class="var">patsize</p>
+<p>Width of the pattern used in the Void and cluster algorithm.
+The only valid values are 4, 8, 16 and 32.</p>
+
+<p class="var">tpdfo</p>
+<p>Set it to 1 to enable the triangular probability distribution function
+(TPDF) for halftone-based dithering algorithms.
+It has no effect on error diffusion methods.
+0 is the standard rectangular distribution (RPDF).
+Note that when triangular distribution is enabled, the maximum halftone
+amplitude is multiplied by 1.414 at constant <var>ampo</var>.</p>
+
+<p class="var">tpdfn</p>
+<p>Same as <var>tpdfo</var>, but for the additive noise part.
+TPDF noise looks more natural than RPDF noise, and is a crude approximation of
+a gaussian noise, with a bounded amplitude.
+Maximum noise amplitude is multiplied by 1.414 at constant <var>ampn</var>,
+so the introduced noise power is kept approximately constant.</p>
+
+<p class="var">corplane</p>
+<p>Set it to 1 to keep the dither and noise patterns correlated for all the
+planes.
+When processing a RGB picture, it helps to prevent colored noise on grey
+features.</p>
+
+
+
+<h3><a id="convert"></a>convert</h3>
+
+<div style="width: 0; height: 0; visibility:hidden; display:none; overflow:hidden;">
+<pre class="proto">fmtc.convert (
+	# Input
+	clip       : clip        ;
+
+	# Resizing/resampling
+	w          : int    : opt;
+	h          : int    : opt;
+	sx         : float[]: opt; (0)
+	sy         : float[]: opt; (0)
+	sw         : float[]: opt; (0)
+	sh         : float[]: opt; (0)
+	scale      : float  : opt; (0)
+	scaleh     : float  : opt; (0)
+	scalev     : float  : opt; (0)
+	kernel     : data[] : opt; ("spline36")
+	kernelh    : data[] : opt; (kernel)
+	kernelv    : data[] : opt; (kernel)
+	impulse    : float[]: opt;
+	impulseh   : float[]: opt; (impulse)
+	impulsev   : float[]: opt; (impulse)
+	taps       : int[]  : opt; (4)
+	tapsh      : int[]  : opt; (taps)
+	tapsh      : int[]  : opt; (taps)
+	a1         : float[]: opt;
+	a2         : float[]: opt;
+	a3         : float[]: opt;
+	kovrspl    : int[]  : opt; (1)
+	fh         : float[]: opt; (1)
+	fv         : float[]: opt; (1)
+	cnorm      : int[]  : opt; (True)
+	totalh     : float[]: opt; (0)
+	totalv     : float[]: opt; (0)
+	invks      : int[]  : opt; (False)
+	invksh     : int[]  : opt; (invks)
+	invksv     : int[]  : opt; (invks)
+	invkstaps  : int[]  : opt; (4)
+	invkstapsh : int[]  : opt; (invkstaps)
+	invkstapsv : int[]  : opt; (invkstaps)
+	center     : int[]  : opt; (True)
+
+	# Output clip format
+	csp        : int    : opt;
+	css        : data   : opt;
+	col_fam    : int    : opt;
+	bits       : int    : opt;
+	flt        : int    : opt;
+
+	# Output dithering
+	dmode      : int    : opt; (3)
+	ampo       : float  : opt; (1)
+	ampn       : float  : opt; (0)
+	dyn        : int    : opt; (False)
+	staticnoise: int    : opt; (False)
+
+	# Common sub-format spec
+	cplace     : data   : opt; ("mpeg2")
+	mat        : data   : opt;
+	coef       : float[]: opt;
+	interlaced : int    : opt; (2)
+	tff        : int    : opt; (2)
+	useflt     : int    : opt; (False)
+
+	# Input clip sub-format spec
+	fulls      : int    : opt; (depends on the colorspace)
+	cplaces    : data   : opt; (cplace)
+	mats       : data   : opt;
+
+	# Output clip sub-format spec
+	fulld      : int    : opt; (fulls)
+	cplaced    : data   : opt; (cplace)
+	matd       : data   : opt;
+
+	# Transfer curve parameters
+	transs     : data[] : opt;
+	transd     : data[] : opt;
+	cont       : float  : opt;
+	gcor       : float  : opt;
+
+	cpuopt     : int    : opt; (-1)
+)</pre>
+</div>
+
+<p>Multi-purpose conversion function.</p>
+
+<p><em>Not available yet.</em></p>
+
+
+<h3><a id="matrix"></a>matrix</h3>
+
+<table class="n" width="100%">
+<tr>
+<td class="n"><pre class="proto">fmtc.matrix (
+	clip     : clip        ;
+	mat      : data   : opt;
+	mats     : data   : opt;
+	matd     : data   : opt;
+	fulls    : int    : opt; (depends)
+	fulld    : int    : opt; (depends)
+	coef     : float[]: opt;
+	csp      : int    : opt;
+	col_fam  : int    : opt;
+	bits     : int    : opt;
+	singleout: int    : opt; (-1)
+	cpuopt   : int    : opt; (-1)
+)</pre></td>
+<td class="n"><pre class="proto">fmtc_matrix (
+	clip   c,
+	string mat (undefined),
+	string mats (undefined),
+	string matd (undefined),
+	bool   fulls (depends),
+	bool   fulld (depends),
+	arrayf coef (undefined),
+	string csp (undefined),
+	string col_fam (undefined),
+	int    bits (undefined),
+	int    singleout (-1),
+	int    cpuopt (-1)
+)</pre></td>
+</tr>
+</table>
+
+<p>Colorspace conversion or simple cross-plane matrix.</p>
+
+<p>For Y’Cb’Cr’ and Y’Cg’Co’ colorspaces, 4:4:4 is required (no chroma subsampling).
+To process a subsampled colorspace, you must convert it to 4:4:4 first.</p>
+
+<p>The output is not dithered, therefore you should output at a higher bitdepth
+than the input and dither afterward with <code>bitdepth</code> to avoid
+potential banding.</p>
+
+<p>When the destination color family (R’G’B’, Y’Cb’Cr’ or Y’Cg’Co’) is not
+specified (via <var>col_fam</var> or <var>csp</var>), the function tries to
+deduce it from the matrix settings and the source color family.
+If it cannot be deduced, the color family remains unchanged.</p>
+
+<p>Please note that this function doesn’t do conversions based on the color
+primaries.
+The R’G’B’ data are always releative to their specified standard.
+For example, converting Y’Cb’Cr’ data straight from BT.2020 to BT.709 doesn’t
+make sense as these colorspaces are defined with different primaries.
+For meaningful results, convert to R’G’B’ then to linear RGB and use
+</code>primaries</code> to perform the intermediary conversion.</p>
+
+<p>The <code>_ColorRange</code> frame property is set if the <var>fulld</var>
+parameter has been explicitely defined.
+If the destination colorspace is a standardized one (as deduced from the
+specified matrix), the <code>_Matrix</code> and <code>_ColorSpace</code>
+properties are set, otherwise they are deleted from the frame.</p>
+
+<p><span class="host">Avisynth+</span>If an alpha channel is present in
+both the source and destination colorspaces, it is copied and its bitdepth is
+possibly adapted to the destination format.
+If there is no alpha channel in the source, full opacity is assumed.
+If there is no alpha channel in the destination, the plane is lost.<p>
+
+<h4>Parameters</h4>
+
+<p class="var">clip</p>
+<p>The input clip. Mandatory.
+Supported input formats:</p>
+<ul>
+<li>8-, 10-, 12-, 14- and 16-bit integer.</li>
+<li>32-bit floating point.</li>
+<li>Any planar colorspace with 3 planes.</li>
+</ul>
+<p><span class="host">Vapoursynth</span> 9-bit integer data is supported too.<p>
+<p><span class="host">Avisynth+</span>  Colorspaces with an alpha channel are
+supported too.<p>
+
+<p class="var">mat</p>
+<p>Predefined matrix for conversions to and from R’G’B’.
+The direction is deduced from the specified input and output colorspaces.
+Possible values are:</p>
+<table>
+<tr><td><b><code>"601"</code></b></td><td>ITU-R BT.601 / ITU-R BT.470-2 / SMPTE 170M. For Standard Definition content.</td></tr>
+<tr><td><b><code>"709"</code></b></td><td>ITU-R BT.709. For High Definition content.</td></tr>
+<tr><td><b><code>"2020"</code></b></td><td>ITU-R BT.2020, non constant luminance mode. For UHDTV content.</td></tr>
+<tr><td><b><code>"240"</code></b></td><td>SMPTE 240M</td></tr>
+<tr><td><b><code>"FCC"</code></b></td><td>FCC</td></tr>
+<tr><td><b><code>"YCgCo"</code></b></td><td>Y’Cg’Co’</td></tr>
+<tr><td><b><code>"YDzDx"</code></b></td><td>Y’D’<sub>Z</sub>D’<sub>X</sub>, SMPTE ST 2085</td></tr>
+<tr><td><b><code>"RGB"</code></b></td><td>R’G’B’. Identity, no cross-plane calculations.</td></tr>
+</table>
+
+<p class="var">mats, matd</p>
+<p>Source and destinations matrices for YUV.
+Use both when you want to do a conversion between BT.601 and BT.709.
+Values are the same as <var>mat</var>, with the addition of:</p>
+<table>
+<tr><td><b><code>"LMS"</code></b></td><td>Intermediate colorspace for IC<sub>T</sub>C<sub>P</sub> transforms. The LMS colorspace is conveyed on RGB planes.</td></tr>
+<tr><td><b><code>"ICtCp_PQ"</code></b></td><td>ITU-R BT.2100-2 IC<sub>T</sub>C<sub>P</sub> with perceptual quantization (PQ).</td></tr>
+<tr><td><b><code>"ICtCp_HLG"</code></b></td><td>ITU-R BT.2100-2 IC<sub>T</sub>C<sub>P</sub> with hybrid log-gamma transfer function (HLG).</td></tr>
+</table>
+<p>When using one of these additional values, make sure to set the other <var>mats</var> or <var>matd</var> with <code>"rgb"</code> to clarify the conversion direction.
+IC<sub>T</sub>C<sub>P</sub> transforms from R’G’B’ require the following steps:</p>
+<ul>
+<li>Convert from R’G’B’ to linear BT.2100 RGB with <code>transfer</code> then possibly <code>primaries</code>.</li>
+<li>Convert from linear BT.2100 RGB to linear LMS using <code>matrix</code> with <code>"LMS"</code>.</li>
+<li>Convert from linear LMS to L’M’S’ using <code>transfer</code> with <code>"2084"</code> or <code>"hlg"</code>.</li>
+<li>Convert from L’M’S’ to IC<sub>T</sub>C<sub>P</sub> using <code>matrix</code> with <code>"ICtCp_PQ"</code> or <code>"ICtCp_HLG"</code>, respectively.</li>
+</ul>
+<p>For the inverse conversion, reverse the steps.</p>
+
+<p class="var">fulls, fulld</p>
+<p>Indicates if the clip is full-range (True) or TV-range (False).
+<var>fulls</var> is for input, <var>fulld</var> for output.
+Reference black and white have different values depending on the range.
+In 8 bits, pixel values scale from 0 to 255 in full range, and 16 to 235
+in TV-range (16 to 240 for the YUV chroma planes).
+This value has no meaning for float data.</p>
+<p>The default value depends on the colorspace.
+For example, full-range is assumed for R’G’B’ and Y’Cg’Co’ colorspaces.
+Others are assumed TV-range.
+These parameters are mainly intended to guide conversions between integer
+and floating-point data.
+They can also be used for range conversions.
+Pixel values are not clipped during a conversion between two TV-range
+formats.</p>
+
+<p class="var">coef</p>
+<p>A list of 12 coefficients for a custom matrix.
+The coefficients should be scaled assuming the input is floating point,
+even if the actual input is integer.
+This means luma and R’G’B’ signals range from 0 to 1, and chroma signals from
+&minus;0.5 to &plus;0.5.
+Coefficients are listed by rows.
+Each row is terminated with a fourth coefficient, the additive constant
+(still in floating-point range).
+This means the matrix is actually 4&times;3 and during the multiplication,
+the input column-vector has an implicit 1 appended to its end.
+For example, with an R’G’B’ input:</p>
+
+<center><table>
+<tr>
+<td class="n" style="vertical-align:middle;"><table class="m">
+	<tr><td class="m7"></td>
+		<td class="m">Y</td>
+	<td class="m9"></td></tr>
+	<tr><td class="m4"></td>
+		<td class="m">Cb</td>
+	<td class="m6"></td></tr>
+	<tr><td class="m1"></td>
+		<td class="m">Cr</td>
+	<td class="m3"></td></tr>
+</table></td>
+<td class="m" style="vertical-align:middle;">=</td>
+<td class="n" style="vertical-align:middle;"><table class="m">
+	<tr><td class="m7"></td>
+		<td class="m">c<sub>0</sub></td>
+		<td class="m">c<sub>1</sub></td>
+		<td class="m">c<sub>2</sub></td>
+		<td class="m">c<sub>3</sub></td>
+	<td class="m9"></td></tr>
+	<tr><td class="m4"></td>
+		<td class="m">c<sub>4</sub></td>
+		<td class="m">c<sub>5</sub></td>
+		<td class="m">c<sub>6</sub></td>
+		<td class="m">c<sub>7</sub></td>
+	<td class="m6"></td></tr>
+	<tr><td class="m1"></td>
+		<td class="m">c<sub>8</sub></td>
+		<td class="m">c<sub>9</sub></td>
+		<td class="m">c<sub>10</sub></td>
+		<td class="m">c<sub>11</sub></td>
+	<td class="m3"></td></tr>
+</table></td>
+<td class="m" style="vertical-align:middle;">&times;</td>
+<td class="n" style="vertical-align:middle;"><table class="m">
+	<tr><td class="m7"></td>
+		<td class="m">R</td>
+	<td class="m9"></td></tr>
+	<tr><td class="m4"></td>
+		<td class="m">G</td>
+	<td class="m6"></td></tr>
+	<tr><td class="m4"></td>
+		<td class="m">B</td>
+	<td class="m6"></td></tr>
+	<tr><td class="m1"></td>
+		<td class="m">1</td>
+	<td class="m3"></td></tr>
+</table></td>
+<td class="n" style="vertical-align:middle;"><table class="m">
+	<tr><td class="m" rowspan="3" style="padding-left:2em;"></td>
+		<td class="m">Y</td>
+		<td class="m">=</td>
+		<td class="m" style="text-align:left">R&nbsp;&times;&nbsp;c<sub>0</sub>&nbsp;+&nbsp;G&nbsp;&times;&nbsp;c<sub>1</sub>&nbsp;+&nbsp;B&nbsp;&times;&nbsp;c<sub>2</sub>&nbsp;+&nbsp;c<sub>3</sub>&nbsp;</td>
+	</tr>
+	<tr>
+		<td class="m">Cb</td>
+		<td class="m">=</td>
+		<td class="m" style="text-align:left">R&nbsp;&times;&nbsp;c<sub>4</sub>&nbsp;+&nbsp;G&nbsp;&times;&nbsp;c<sub>5</sub>&nbsp;+&nbsp;B&nbsp;&times;&nbsp;c<sub>6</sub>&nbsp;+&nbsp;c<sub>7</sub>&nbsp;</td>
+	</tr>
+	<tr>
+		<td class="m">Cr</td>
+		<td class="m">=</td>
+		<td class="m" style="text-align:left">R&nbsp;&times;&nbsp;c<sub>8</sub>&nbsp;+&nbsp;G&nbsp;&times;&nbsp;c<sub>9</sub>&nbsp;+&nbsp;B&nbsp;&times;&nbsp;c<sub>10</sub>&nbsp;+&nbsp;c<sub>11</sub>&nbsp;</td>
+	</tr>
+</table></td>
+</tr>
+</table></center>
+
+<p><span class="host">Vapoursynth</span> List is a regular array.<p>
+<p><span class="host">Avisynth+</span>  List can be an array of float
+values if supported by the scripting language, or a string containing the
+values printed and separated with spaces.<p>
+
+<p class="var">csp</p>
+<p>The destination format.
+It cannot change the data type (integer or float) nor the chroma
+subsampling.
+If the colorspace family is set to GRAY (or Y), single-plane processing is
+enabled.
+The output plane is selected with <var>singleout</var> (0 if not
+specified).
+Only planar colorspaces are allowed.</p>
+<p><span class="host">Vapoursynth</span> The format is a Vapoursynth
+built-in constant.</p>
+<p><span class="host">Avisynth+</span> The format is a string with the
+same kind of content as the result from <code>BuildPixelType</code> or the
+<var>pixel_type</var> parameter from <code>BlankClip</code>.
+For example: <code>"RGBP48"</code>, <code>"YV12"</code>,
+<code>"YUV444PS"</code>…</p>
+
+<p class="var">col_fam</p>
+<p>Explicit specification of the destination color family, as Vapoursynth
+constant.
+Supersedes the color family from <var>csp</var>.
+You can only specify colorspace with the same number of planes as the
+input clip.</p>
+
+<p class="var">bits</p>
+<p>Explicit specification of the destination bitdepth.
+The only allowed values are 8, 10, 12, 14, 16 and 32.
+However you cannot reduce the bitdepth, only keep it constant or increase it.
+Supersedes the bitdepth from <var>csp</var>.</p>
+<p><span class="host">Vapoursynth</span> 9 bits is allowed too.</p>
+
+<p class="var">singleout</p>
+<p>Enable single-plane processing.
+This is useful to obtain only the luma from an R’G’B’ input, for example.
+The parameter is the plane index, ranging from 0 to 2.
+A negative value specifies that all planes should be processed.
+If <var>singleout</var> is &ge;&nbsp;0, it supersedes the colorspace
+family specified in <var>csp</var>.</p>
+<p>Note: when extracting a chroma plane, results between int with TV range and
+float data type may slightly differ.
+This is because in float, a neutral chroma (0%) is converted to the exact
+value of a medium gray (50%).
+In integer, the chroma output value is mapped 1&ndash;1 to the luma channel.
+However in TV-range, medium gray is not located exactly at the half of the
+data range, it lies slightly below.</p>
+
+<p class="var">cpuopt</p>
+<p>Limits the CPU instruction set.
+&minus;1: automatic (no limitation),
+0: default instruction set only (depends on the compilation settings),
+1: limit to SSE2,
+7: limit to AVX,
+10: limit to AVX2.</p>
+
+
+
+<h3><a id="matrix2020cl"></a>matrix2020cl</h3>
+
+<table class="n" width="100%">
+<tr>
+<td class="n"><pre class="proto">fmtc.matrix2020cl (
+	clip    : clip      ;
+	full    : int  : opt; (False)
+	csp     : int  : opt;
+	bits    : int  : opt;
+	cpuopt  : int  : opt; (-1)
+)</pre></td>
+<td class="n"><pre class="proto">fmtc_matrix2020cl (
+	clip   c,
+	bool   full (false),
+	string csp (undefined),
+	int    bits (undefined),
+	int    cpuopt (-1)
+)</pre></td>
+</tr>
+</table>
+
+<p>Colorspace conversion using the ITU-R BT.2020 constant luminance matrix.</p>
+
+<p>The function converts between <em>linear</em> RGB and Y’Cb’Cr’ colorspaces.
+This conversion cannot be achieve with a classic linear matrix.
+The output colorspace, hence the direction of the conversion, is automatically
+deduced from the input colorspace.</p>
+
+<p>For Y’Cb’Cr’ colorspaces, 4:4:4 is required (no chroma subsampling).
+To process a subsampled colorspace, you must convert it to 4:4:4 first.</p>
+
+<p>The RGB colorspace is always 16 bits when using integers, or 32 bits
+in float. The output is not dithered, therefore you should output at a higher
+bitdepth than the input and dither afterward with <code>bitdepth</code> to
+avoid potential banding.</p>
+
+<p>Please note that the RGB content is always assumed to be linear light.
+The BT.2020 gamma curve is used in both directions.
+When operating on floating point data, the function uses the 12-bit variant
+of the scaling coefficients.</p>
+
+<p>The <code>_Matrix</code>, <code>_ColorSpace</code> and <code>_Transfer</code>
+frame properties are set according to the transformation.
+The <code>_ColorRange</code> property is set if the <var>full</var>
+parameter has been explicitely defined.</p>
+
+<p><span class="host">Avisynth+</span>If an alpha channel is present in
+both the source and destination colorspaces, it is copied and its bitdepth is
+possibly adapted to the destination format.
+If there is no alpha channel in the source, full opacity is assumed.
+If there is no alpha channel in the destination, the plane is lost.<p>
+
+<h4>Parameters</h4>
+
+<p class="var">clip</p>
+<p>The input clip. Mandatory.
+Supported input formats:</p>
+<ul>
+<li>8-, 10-, 12-, 14- and 16-bit integer for Y’Cb’Cr’, 16-bit integer for RGB.</li>
+<li>32-bit floating point.</li>
+<li>YUV and RGB colorspaces.</li>
+</ul>
+<p><span class="host">Vapoursynth</span> 9-bit integer data is supported too.<p>
+<p><span class="host">Avisynth+</span>  Colorspaces with an alpha channel are
+supported too.<p>
+
+<p class="var">full</p>
+<p>Indicates if the Y’Cb’Cr’ clip is full-range (True) or TV-range (False).
+Reference black and white have different values depending on the range.
+In 8 bits, pixel values scale from 0 to 255 in full range, and 16 to 235
+in TV-range (16 to 240 for the YUV chroma planes).
+This value has no meaning for float data.</p>
+
+<p class="var">csp</p>
+<p>It must be compatible with what is logically expected as output (RGB or YUV).
+It cannot change the data type (integer or float) nor the chroma subsampling.
+If the output is integer RGB, the bitdepth must be 16.
+Only planar colorspaces are allowed.</p>
+<p><span class="host">Vapoursynth</span> The format is a Vapoursynth
+built-in constant.</p>
+<p><span class="host">Avisynth+</span> The format is a string with the
+same kind of content as the result from <code>BuildPixelType</code> or the
+<var>pixel_type</var> parameter from <code>BlankClip</code>.
+For example: <code>"RGBP48"</code>, <code>"YV12"</code>,
+<code>"YUV444PS"</code>…</p>
+
+<p class="var">bits</p>
+<p>Explicit specification of the destination bitdepth.
+The only allowed values are 8, 10, 12, 14, 16 and 32.
+They are restricted by the output data type and format
+(16 bits for integer RGB).
+Supersedes the bitdepth from <var>csp</var>.</p>
+<p><span class="host">Vapoursynth</span> 9 bits is allowed too.</p>
+
+<p class="var">cpuopt</p>
+<p>Limits the CPU instruction set.
+&minus;1: automatic (no limitation),
+0: default instruction set only (depends on the compilation settings).</p>
+
+
+
+<h3><a id="primaries"></a>primaries</h3>
+
+<table class="n" width="100%">
+<tr>
+<td class="n"><pre class="proto">fmtc.primaries (
+	clip  : clip        ;
+	rs    : float[]: opt;
+	gs    : float[]: opt;
+	bs    : float[]: opt;
+	ws    : float[]: opt;
+	rd    : float[]: opt;
+	gd    : float[]: opt;
+	bd    : float[]: opt;
+	wd    : float[]: opt;
+	prims : data   : opt;
+	primd : data   : opt;
+	cpuopt: int    : opt; (-1)
+)</pre></td>
+<td class="n"><pre class="proto">fmtc_primaries (
+	clip   c,
+	arrayf rs (undefined),
+	arrayf gs (undefined),
+	arrayf bs (undefined),
+	arrayf ws (undefined),
+	arrayf rd (undefined),
+	arrayf gd (undefined),
+	arrayf bd (undefined),
+	arrayf wd (undefined),
+	string prims (undefined),
+	string primd (undefined),
+	int    cpuopt (-1)
+)</pre></td>
+</tr>
+</table>
+
+<p>Performs a gamut conversion given a set of three primary colors and
+a reference white to another set of primary colors and a target reference
+white.
+Illuminant conversions are done using the Bradford method.</p>
+
+<p>Pixel values are left intact after the transform, they are not bound
+to the target gamut and could be invalid colors.
+However, when using 16-bit unsigned integer they are clipped to representable
+data values.</p>
+
+<p>All colors are given in xyY colorspace, with their x and y coordinates.</p>
+
+<p>You must supply the full description of the original and target gamuts,
+with the built-in presets or by setting individual components.</p>
+
+<p>Please note that this function does not work at the same level as
+<code>matrix</code>.
+The latter converts between  gamma-compressed RGB and YUV-like colorspaces,
+while <code>primaries</code> operates on linear RGB colorspaces exclusively,
+whose specifications are given by the primaries.
+For more details, see Charles Poynton, <i>A Guided Tour of Color Space</i>,
+1997.</p>
+
+<p>The <code>_Primaries</code> frame property is set or deleted, depending
+on the target gamut.</p>
+
+<h4>Parameters</h4>
+
+<p class="var">clip</p>
+<p>The input clip. Mandatory.
+Supported colorspaces are 16-bit int or 32-bit float <em>linear</em> RGB.
+You should use the <code>transfer</code> function to convert between linear
+RGB and gamma-compressed R’G’B ’colorspaces.</p>
+
+<p class="var">rs, gs, bs, ws</p>
+<p>Primaries for the source colorspace as red, green, blue and reference
+white.
+Each variable contains two components, x and y, in this order.
+The y value cannot be null.</p>
+<p><span class="host">Vapoursynth</span> Parameters are regular arrays.<p>
+<p><span class="host">Avisynth+</span>  Parameters can be arrays of two float
+values if supported by the scripting language, or strings containing both
+values printed and separated with a space.<p>
+
+<p class="var">rd, gd, bd, wd</p>
+<p>Primaries for the target colorspace.
+If not specified, the value is copied from the source colorspace.</p>
+
+<p class="var">prims, primd</p>
+<p>Primaries presets for the source and destination colorspaces.
+Superseded by individual r, g, b and w settings.
+Possible values are:</p>
+<table>
+<tr><th>Value</th><th>Primary</th><th>x</th><th>y</th><th>Description</th></tr>
+<tr><td><b><code>"709"</code></b> or<br /><b><code>"1361"</code></b> or<br /><b><code>"61966-2-1"</code></b> or<br /><b><code>"61966-2-4"</code></b> or<br /><b><code>"hdtv"</code></b> or<br /><b><code>"srgb"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.640,<br />0.300,<br />0.150,<br />0.3127,</td><td>0.330<br />0.600<br />0.060<br />0.3290</td><td>ITU-R BT.709-5<br />ITU-R BT.1361<br />IEC 61966-2-1 (sRGB or sYCC)<br />IEC 61966-2-4<br />Annex B of SMPTE RP 177 (1993)</td></tr>
+<tr><td><b><code>"470m"</code></b> or<br /><b><code>"ntsc"</code></b></td><td>R<br />G<br />B<br />W (C)</td><td>0.670,<br />0.210,<br />0.140,<br />0.3100,</td><td>0.330<br />0.710<br />0.080<br />0.3160</td><td>ITU-R BT.470-6 System M (historical)<br />NTSC (1953)<br />FCC</td></tr>
+<tr><td><b><code>"470m93"</code></b> or<br /><b><code>"ntscj"</code></b></td><td>R<br />G<br />B<br />W (9305K)</td><td>0.670,<br />0.210,<br />0.140,<br />0.2848,</td><td>0.330<br />0.710<br />0.080<br />0.2932</td><td>ITU-R BT.470-6 System M — Japan (NTSC-J)</td></tr>
+<tr><td><b><code>"470bg"</code></b> or<br /><b><code>"601-625"</code></b> or<br /><b><code>"1358-625"</code></b> or<br /><b><code>"1700-625"</code></b> or<br /><b><code>"pal"</code></b> or<br /><b><code>"secam"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.640,<br />0.290,<br />0.150,<br />0.3127,</td><td>0.330<br />0.600<br />0.060<br />0.3290</td><td>ITU-R BT.470-6 System B, G (historical)<br />ITU-R BT.601-6 625<br />ITU-R BT.1358 625<br />ITU-R BT.1700 625 PAL and 625 SECAM</td></tr>
+<tr><td><b><code>"170m"</code></b> or<br /><b><code>"240m"</code></b> or<br /><b><code>"601-525"</code></b> or<br /><b><code>"1358-525"</code></b> or<br /><b><code>"1700-525"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.630,<br />0.310,<br />0.155,<br />0.3127</td><td>0.340<br />0.595<br />0.070<br />0.3290</td><td>SMPTE 170M (2004)<br />SMPTE 240M (1999)<br />ITU-R BT.601-6 525<br />ITU-R BT.1358 525<br />ITU-R BT.1700 NTSC</td></tr>
+<tr><td><b><code>"filmc"</code></b></td><td>R&nbsp;(Wratten&nbsp;25)<br />G&nbsp;(Wratten&nbsp;58)<br />B&nbsp;(Wratten&nbsp;47)<br />W (C)</td><td>0.681,<br />0.243,<br />0.145,<br />0.3100,</td><td>0.319<br />0.692<br />0.049<br />0.3160</td><td>Generic film (colour filters using Illuminant C)</td></tr>
+<tr><td><b><code>"2020"</code></b> or<br /><b><code>"2100"</code></b> or<br /><b><code>"uhdtv"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.70792,<br />0.17024,<br />0.13137,<br />0.31271</td><td>0.29203<br />0.79652<br />0.04588<br />0.32902</td><td>ITU-R BT.2020<br />ITU-R BT.2100</td></tr>
+<tr><td><b><code>"61966-2-2"</code></b> or<br /><b><code>"scrgb"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.640,<br />0.300,<br />0.150,<br />0.31271</td><td>0.330<br />0.600<br />0.060<br />0.32902</td><td>IEC 61966-2-4 (scRGB)</td></tr>
+<tr><td><b><code>"adobe98"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.640,<br />0.210,<br />0.150,<br />0.31271</td><td>0.330<br />0.710<br />0.060<br />0.32902</td><td>Adobe RGB (1998)</td></tr>
+<tr><td><b><code>"adobewide"</code></b></td><td>R<br />G<br />B<br />W (D50)</td><td>0.73469,<br />0.11416,<br />0.15664,<br />0.34567</td><td>0.26531<br />0.82621<br />0.01770<br />0.35850</td><td>Adobe Wide Gamut RGB</td></tr>
+<tr><td><b><code>"apple"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.625,<br />0.280,<br />0.155,<br />0.31271</td><td>0.265<br />0.826<br />0.018<br />0.32902</td><td>Apple RGB</td></tr>
+<tr><td><b><code>"photopro"</code></b> or<br /><b><code>"romm"</code></b></td><td>R<br />G<br />B<br />W (D50)</td><td>0.7347,<br />0.1596,<br />0.0366,<br />0.34567</td><td>0.2653<br />0.8404<br />0.0001<br />0.35850</td><td>PhotoPro<br />ROMM</td></tr>
+<tr><td><b><code>"ciergb"</code></b></td><td>R<br />G<br />B<br />W (E)</td><td>0.7347,<br />0.2738,<br />0.1666,<br />1 / 3</td><td>0.2653<br />0.7174<br />0.0089<br />1 / 3</td><td>CIE RGB (1931)</td></tr>
+<tr><td><b><code>"ciexyz"</code></b></td><td>R<br />G<br />B<br />W (E)</td><td>1.0,<br />0.0,<br />0.0,<br />1 / 3</td><td>0.0<br />1.0<br />0.0<br />1 / 3</td><td>CIE XYZ (1931)</td></tr>
+<tr><td><b><code>"p3dci"</code></b></td><td>R<br />G<br />B<br />W</td><td>0.680,<br />0.265,<br />0.150,<br />0.314</td><td>0.320<br />0.690<br />0.060<br />0.351</td><td>SMPTE ST 2113 P3-DCI<br />SMPTE RP 431-2</td></tr>
+<tr><td><b><code>"p3d65"</code></b> or<br /><b><code>"dcip3"</code></b>&nbsp;(deprecated)</td><td>R<br />G<br />B<br />W (D65)</td><td>0.680,<br />0.265,<br />0.150,<br />0.3127</td><td>0.320<br />0.690<br />0.060<br />0.3290</td><td>SMPTE ST 2113 P3-D65<br />SMPTE EG 432-1</td></tr>
+<tr><td><b><code>"p3d60"</code></b></td><td>R<br />G<br />B<br />W (D60)</td><td>0.680,<br />0.265,<br />0.150,<br />0.32168</td><td>0.320<br />0.690<br />0.060<br />0.33767</td><td>ACES P3-D60</td></tr>
+<tr><td><b><code>"3213"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.630,<br />0.295,<br />0.155,<br />0.3127</td><td>0.340<br />0.605<br />0.077<br />0.3290</td><td>EBU Tech. 3213-E</td></tr>
+<tr><td><b><code>"aces"</code></b></td><td>R<br />G<br />B<br />W (D60)</td><td>0.7347,<br />0.0,<br />0.0001,<br />0.32168,</td><td>0.2653<br />1.0<br />-0.077<br />0.33767</td><td>ACES<br />SMPTE ST 2065-1</td></tr>
+<tr><td><b><code>"ap1"</code></b></td><td>R<br />G<br />B<br />W (D60)</td><td>0.713,<br />0.165,<br />0.128,<br />0.32168,</td><td>0.293<br />0.830<br />-0.044<br />0.33767</td><td>ACEScc/ACESproxy AP1</td></tr>
+<tr><td><b><code>"sgamut"</code></b> or<br /><b><code>"sgamut3"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.730,<br />0.140,<br />0.100,<br />0.3127</td><td>0.280<br />0.855<br />-0.050<br />0.3290</td><td>Sony S-Gamut<br />Sony S-Gamut3</td></tr>
+<tr><td><b><code>"sgamut3cine"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.766,<br />0.225,<br />0.089,<br />0.3127</td><td>0.275<br />0.800<br />-0.087<br />0.3290</td><td>Sony S-Gamut3.Cine</td></tr>
+<tr><td><b><code>"alexa"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.6840,<br />0.2210,<br />0.0861,<br />0.3127</td><td>0.3130<br />0.8480<br />-0.1020<br />0.3290</td><td>Arri ALEXA</td></tr>
+<tr><td><b><code>"vgamut"</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.730,<br />0.165,<br />0.100,<br />0.3127</td><td>0.280<br />0.840<br />-0.03<br />0.3290</td><td>Panasonic V-Gamut</td></tr>
+</table>
+
+<p class="var">cpuopt</p>
+<p>Limits the CPU instruction set.
+&minus;1: automatic (no limitation),
+0: default instruction set only (depends on the compilation settings),
+1: limit to SSE2,
+7: limit to AVX,
+10: limit to AVX2.</p>
+
+
+
+<h3><a id="resample"></a>resample</h3>
+
+<table class="n" width="100%">
+<tr>
+<td class="n"><pre class="proto">fmtc.resample (
+	clip       : clip        ;
+	w          : int    : opt;
+	h          : int    : opt;
+	sx         : float[]: opt; (0)
+	sy         : float[]: opt; (0)
+	sw         : float[]: opt; (0)
+	sh         : float[]: opt; (0)
+	scale      : float  : opt; (0)
+	scaleh     : float  : opt; (0)
+	scalev     : float  : opt; (0)
+	kernel     : data[] : opt; ("spline36")
+	kernelh    : data[] : opt; (kernel)
+	kernelv    : data[] : opt; (kernel)
+	impulse    : float[]: opt;
+	impulseh   : float[]: opt; (impulse)
+	impulsev   : float[]: opt; (impulse)
+	taps       : int[]  : opt; (4)
+	tapsh      : int[]  : opt; (taps)
+	tapsv      : int[]  : opt; (taps)
+	a1         : float[]: opt;
+	a2         : float[]: opt;
+	a3         : float[]: opt;
+	a1h        : float[]: opt; (a1)
+	a2h        : float[]: opt; (a2)
+	a3h        : float[]: opt; (a3)
+	a1v        : float[]: opt; (a1)
+	a2v        : float[]: opt; (a2)
+	a3v        : float[]: opt; (a3)
+	kovrspl    : int[]  : opt; (1)
+	fh         : float[]: opt; (1)
+	fv         : float[]: opt; (1)
+	cnorm      : int[]  : opt; (True)
+	total      : float[]: opt; (0)
+	totalh     : float[]: opt; (total)
+	totalv     : float[]: opt; (total)
+	invks      : int[]  : opt; (False)
+	invksh     : int[]  : opt; (invks)
+	invksv     : int[]  : opt; (invks)
+	invkstaps  : int[]  : opt; (4)
+	invkstapsh : int[]  : opt; (invkstaps)
+	invkstapsv : int[]  : opt; (invkstaps)
+	csp        : int    : opt;
+	css        : data   : opt;
+	planes     : float[]: opt; (3)
+	fulls      : int    : opt; (depends)
+	fulld      : int    : opt; (fulls)
+	center     : int[]  : opt; (True)
+	cplace     : data   : opt; ("mpeg2")
+	cplaces    : data   : opt; (cplace)
+	cplaced    : data   : opt; (cplace)
+	interlaced : int    : opt; (2)
+	interlacedd: int    : opt; (interlaced)
+	tff        : int    : opt; (2)
+	tffd       : int    : opt; (tff)
+	flt        : int    : opt; (False)
+	cpuopt     : int    : opt; (-1)
+)</pre></td>
+<td class="n"><pre class="proto">fmtc_resample (
+	clip   c,
+	int    w (undefined),
+	int    h (undefined),
+	arrayf sx (0),
+	arrayf sy (0),
+	arrayf sw (0),
+	arrayf sh (0),
+	float  scale  (0),
+	float  scaleh (0),
+	float  scalev (0),
+	string kernel  ("spline36"),
+	string kernelh (kernel),
+	string kernelv (kernel),
+	arrayf impulse  (undefined),
+	arrayf impulseh (impulse),
+	arrayf impulsev (impulse),
+	arrayi taps (4),
+	arrayi tapsh (taps),
+	arrayi tapsv (taps),
+	arrayf a1 (undefined),
+	arrayf a2 (undefined),
+	arrayf a3 (undefined),
+	arrayf a1h (a1),
+	arrayf a2h (a2),
+	arrayf a3h (a3),
+	arrayf a1v (a1),
+	arrayf a2v (a2),
+	arrayf a3v (a3),
+	int    kovrspl (1),
+	arrayf fh (1),
+	arrayf fv (1),
+	bool   cnorm (true),
+	arrayf total (0),
+	arrayf totalh (total),
+	arrayf totalv (total),
+	arrayb invks  (false),
+	arrayb invksh (invks),
+	arrayb invksv (invks),
+	arrayi invkstaps  (4),
+	arrayi invkstapsh (invkstaps),
+	arrayi invkstapsv (invkstaps),
+	string csp (undefined),
+	string css (undefined),
+	arrayf planes (3),
+	int    fulls (depends),
+	int    fulld (fulls),
+	arrayb center (true),
+	string cplace  ("mpeg2"),
+	string cplaces (cplace),
+	string cplaced (cplace),
+	int    interlaced (2),
+	int    interlacedd (interlaced),
+	int    tff (2),
+	int    tffd (ttf),
+	bool   flt (false),
+	int    cpuopt (-1)
+)</pre></td>
+</tr>
+</table>
+
+<p>Resizes the planes of a clip.
+This function can change the chroma subsampling.</p>
+
+<p>Output is always 16-bit integer (default for integer input) or 32-bit float.
+Use <code>fmtc.bitdepth</code> to convert the result to a lower bitdepth.
+It is possible to select the internal precision: float, or 16-bit integers with
+a 32-bit accumulator for the convolution.
+Internal conversion from float or 32-bit integers to 16 bits is done by quick
+rounding (no dithering).
+The integer operation path is available only when input and output formats are
+integer too.</p>
+
+<p>The function can resize interlaced content, but only if presented
+as separated, interleaved fields.
+It uses the <code>_Field</code> and <code>_FieldBased</code> frame properties
+to detect interlaced content and field parity, maintaining the correct chroma
+and luma relative positions.
+If this automatic detection is not desired, you can specify manually
+the <var>interlaced</var> and <var>tff</var> parameters.
+Simple intra-field deinterlacing (“bob”) can be achieved this way, by
+specifying <var>scalev=2</var>.</p>
+
+<p>Excepted <var>impulse*</var>, array parameters allow to specify
+plane-specific values.
+When specifying less than 3 values, the last specified value will be reused
+for the next planes.
+However <var>planes</var> works slightly differently, check the related
+paragraph for details.</p>
+<p><span class="host">Avisynth+</span> Arrays can be specified as values
+printed in a string and separated with spaces.</p>
+
+<p>Note: field resizing is not always the best way to handle interlaced content,
+especially for upscales.
+You’ll probably have better results by using a “smart” deinterlacer (making use
+of temporal information and anti-aliasing), resizing the progressive content at
+double rate then reinterlacing.
+Simple field resampling is more or less equivalent to this method, using a
+naive bob.</p>
+
+<p>The function can also be used to compute horizontal and vertical 
+convolutions.
+If you do so, don’t forget to set:</p>
+
+<ul>
+	<li><var>fh</var> or <var>fv</var> to &minus;1 to make sure the clip is
+processed even if its size doesn’t change,</li>
+	<li><var>cnorm</var> to false to avoid automatic kernel
+normalisation if your impulse is already normalised, or specify
+<var>total</var> if the normalisation factor is not the sum of the impulse</li>
+	<li>and <var>center</var> to False to keep the desired spacing
+between the sampling points.</li>
+</ul>
+
+<p>The function handles the following frame properties:</p>
+<table>
+<tr><th>Property</th><th>Read condition</th><th>Write condition</th></tr>
+<tr><td><b><code>_FieldBased</code></b></td><td>Automatic interlacing detection</td><td rowspan="2">Interlaced<br />content</td></tr>
+<tr><td><b><code>_Field</code></b></td><td>Interlaced content</td></tr>
+<tr><td><b><code>_ChromaLocation</code></b></td><td></td><td>Depends on <var>cplace</var> parameters</td></tr>
+<tr><td><b><code>_ColorRange</code></b></td><td></td><td><var>fulld</var> is explicitly set</td></tr>
+</table>
+
+<h4>Parameters</h4>
+
+<p class="var">clip</p>
+<p>Clip to be resized. Mandatory.
+Supported input formats:</p>
+<ul>
+<li>8-, 9-, 10-, 12-, 16- and 16-bit integer.</li>
+<li>32-bit floating point.</li>
+<li>Any planar colorspace.</li>
+</ul>
+
+<p class="var">w, h</p>
+<p>New picture width and height in pixels, > 0.
+If not specified, it will keep the original dimensions.
+The dimensions must be compatible with the destination chroma subsampling.
+They take precedence over the <var>scale</var>, <var>scaleh</var> and
+<var>scalev</var> parameters.</p>
+
+<p class="var">sx, sy</p>
+<p>Coordinate of the top-left corner of the picture sub-area used as source
+for the resizing.
+They can be fractional.
+If negative, the picture is extended by replicating the left pixel column.</p>
+<p>These parameters are arrays, so it’s possible to specify a different
+value for each plane.
+The last value is used for the unspecified planes.
+The coordinates are always related to the pixel dimensions, you don’t need
+to scale them with the chroma subsampling.</p>
+
+<p class="var">sw, sh</p>
+<p>Size in pixels of the sub-area to resize.
+They can be fractional.
+If 0, the area has the same size as the source clip.
+If negative, they define coordinates relative to the bottom-right corner, in
+a <code>Crop</code>-like manner.
+These parameters are arrays like <var>sx</var> and <var>sy</var>.</p>
+
+<p class="var">scale, scaleh, scalev</p>
+<p>Use these parameters to set relative dimensions, > 0.
+For example <var>scale=0.5</var> will halve the picture size.
+The computed dimensions will be compatible with the destination chroma
+subsampling.
+Zero is ignored.</p>
+
+<p class="var">kernel</p>
+<p>Kernel used by the resizer.
+Possible values are:</p>
+<table>
+<tr><td><b><code>"point"</code></b></td><td>Nearest neighbour interpolation. Same as Avisynth’s <code>PointResize</code>.</td></tr>
+<tr><td><b><code>"rect"</code></b> or <b><code>"box"</code></b></td><td>Box filter.</td></tr>
+<tr><td><b><code>"linear"</code></b> or<br /><b><code>"bilinear"</code></b></td><td>Bilinear interpolation. Same as Avisynth’s <code>BilinearResize</code>.</td></tr>
+<tr><td><b><code>"cubic"</code></b> or<br /><b><code>"bicubic"</code></b></td><td>Bicubic interpolation. Same as <code>BicubicResize</code>. The b and c variables are mapped on <var>a1</var> and <var>a2</var> and are both set to 1/3 by default.</td></tr>
+<tr><td><b><code>"lanczos"</code></b></td><td>Sinc function windowed by the central lobe of a sinc. Use <var>taps</var> to specify its impulse length. Same as <code>LanczosResize</code>.</td></tr>
+<tr><td><b><code>"blackman"</code></b></td><td>Blackman-Harris windowed sinc. Use <var>taps</var> to control its length. Same as <code>BlackmanResize</code>.</td></tr>
+<tr><td><b><code>"blackmanminlobe"</code></b></td><td>Another kind of Blackman windowed sinc, with a bit less ringing. Use <var>taps</var> for you know what.</td></tr>
+<tr><td><b><code>"spline16"</code></b></td><td>Standard cubic spline based kernel, 4 sample points. Same as <code>Spline16Resize</code>.</td></tr>
+<tr><td><b><code>"spline36"</code></b></td><td>Spline, 6 sample points. Same as <code>Spline36Resize</code>.</td></tr>
+<tr><td><b><code>"spline64"</code></b></td><td>Spline, 8 sample points. Same as <code>Spline64Resize</code>.</td></tr>
+<tr><td><b><code>"spline"</code></b></td><td>Generic <em>natural</em> cubic splines, number of sample points is twice the <var>taps</var> parameter, so you can use <var>taps&nbsp;= 6</var> to get a more or less <code>Spline144Resize</code> equivalent.</td></tr>
+<tr><td><b><code>"gauss"</code></b> or<br /><b><code>"gaussian"</code></b></td><td>Gaussian kernel. The p parameter is mapped on <var>a1</var> and controls the curve width. The higher p, the sharper. It is set to 30 by default. This resizer is the same as <code>GaussResize</code>, but <var>taps</var> offers a control on the filter impulse length. For low p values (soft and blurry), it’s better to increase the number of taps to avoid truncating the gaussian curve too early and creating artifacts.</td></tr>
+<tr><td><b><code>"sinc"</code></b></td><td>Truncated sinc function. Use <var>taps</var> to control its length. Same as <code>SincResize</code>.</td></tr>
+</table>
+
+<p class="var">impulse, impulseh, impulsev</p>
+<p>Offers the possibility to create your own kernel (useful for convolutions).
+Add your coefficents in the array.
+The number of coefficients must be odd.
+The curve is linearly interpolated between the provided points.
+You can oversample the impulse by setting <var>kovrspl</var> to a value &gt; 1.</p>
+
+<p class="var">taps, tapsh, tapsv</p>
+<p>Some kernels have a variable number of sample points, given by this
+parameter.
+Actually this counts half the number of lobes (or equivalent); in case
+of downscaling, the actual number of sample points may be greater than the
+specified value.
+Range: 1&ndash;128</p>
+
+<p class="var">a1, a2, a3,&emsp;a1h, a2h, a3h,&emsp;a1v, a2v, a3v</p>
+<p>Specific parameters, depending on the selected kernel.</p>
+
+<p class="var">kovrspl</p>
+<p>Specifies here how many times the kernel is oversampled when you provide a
+custom impluse response. &ge; 1.</p>
+
+<p class="var">fh, fv</p>
+<p>Horizontal and vertical frequency factors, also known as inverse kernel
+support.
+They are multipliers on the theoretical kernel cutoff frequency in both
+directions.
+Values below 1.0 spatially expand the kernel and blur the picture.
+Values over 1.0 shrink the kernel and let higher frequencies pass.
+The result will look sharper but more aliased.
+The multiplicator is applied after the kernel scaling in case of downsizing.
+Negative values force the processing, even if the horizontal size doesn’t
+change.
+The filter will use the absolute parameter value.</p>
+
+<p class="var">cnorm</p>
+<p>If set to <code>true</code>, the impulse sum is normalised to 1 for each
+pixel.
+This is the normal behaviour when resizing, to make sure the energy is
+constant for all pixels.
+If you use the resizer as a convolution engine, it is advised to disable the
+normalisation.</p>
+
+<p class="var">total, totalh, totalv</p>
+<p>When <var>cnorm</var> is activated, these parameters specify the
+normalisation value for the corresponding kernel.
+0 means that the normalisation value is the sum of the coefficients.
+The Masktools’<code>mt_convolution</code> function has a single parameter
+for this use: <var>total</var>&nbsp;= <var>totalh</var> &times; <var>totalv</var>.
+Because the convolution is computed with floating point data, there is no
+saturation of intermediate results, therefore the balance between
+<var>totalh</var> and <var>totalv</var> is not important, only their product
+will be taken into account.
+Note that because kernels are single-dimention, the “parent” <var>total</var>
+parameter here is the sum of the coefficients for each direction, not the
+product of <var>totalh</var> and <var>totalv</var>.</p>
+
+<p class="var">invks, invksh, invksv</p>
+<p>Set these parameter to True to activate the kernel inversion mode for the
+specified direction (use <var>invks</var> for both).
+Inverting the kernel allows to &ldquo;undo&rdquo; a previous upsizing by
+compensating the loss in high frequencies, giving a sharper and more accurate
+output than classic kernels, closer to the original.
+This is particularly useful for clips upscaled with a bilinear kernel.
+All the kernel-related parameters specify the kernel to undo.
+The target resolution must be as close as possible to the initial
+resolution.
+The kernel inversion is mainly intended to downsize an upscaled picture.
+Using it for upsizing will not restore details but will give a sligthly
+sharper look, at the cost of a bit of aliasing and ringing.
+This mode is somewhat equivalent to the <code>debilinear</code>
+plug-in but works with a different principle.</p>
+
+<p class="var">invkstaps, invkstapsh, invkstapsv</p>
+<p>In kernel inversion mode (<var>invks=True</var>), this parameter sets the number
+of taps for the inverted kernel.
+Use it as a tradeof between softness and ringing.
+Range: 1&ndash;128</p>
+
+<p class="var">csp</p>
+<p>Can only change the bitdepth and the data type (integer or float).
+Only 16-bit integer (xxxP16) and 32-bit float data types are allowed.</p>
+<p><span class="host">Vapoursynth</span> The format is a Vapoursynth
+built-in constant.</p>
+<p><span class="host">Avisynth+</span> The format is a string with the
+same kind of content as the result from <code>BuildPixelType</code> or the
+<var>pixel_type</var> parameter from <code>BlankClip</code>.</p>
+
+<p class="var">css</p>
+<p>Destination chroma subsampling, for YUV (and YCgCo) colorspaces.
+Supersedes the chroma subsampling from <var>csp</var>.
+You can also specify the subsampling with the predefined values
+or with a two-digit string.
+The first digit for the horizontal subsampling,
+and the second for the vertical subsampling.
+Only power-of-2 numbers are allowed.
+For example <code>&quot;41&quot;</code> is equivalent to 4:1:1
+and <code>&quot;22&quot;</code> to 4:2:0.</p>
+<p>The predefined values are:</p>
+<table>
+<tr><td><b><code>&quot;444&quot;</code></b> or <b><code>&quot;4:4:4&quot;</code></b></td><td>4:4:4, no chroma subsampling.</td></tr>
+<tr><td><b><code>&quot;422&quot;</code></b> or <b><code>&quot;4:2:2&quot;</code></b></td><td>4:2:2, horizontal 2x chroma subsampling.</td></tr>
+<tr><td><b><code>&quot;420&quot;</code></b> or <b><code>&quot;4:2:0&quot;</code></b></td><td>4:2:0, horizontal and vertical 2x chroma subsampling.</td></tr>
+<tr><td><b><code>&quot;411&quot;</code></b> or <b><code>&quot;4:1:1&quot;</code></b></td><td>4:1:1, horizontal 4x chroma subsampling.</td></tr>
+</table>
+<p></p>
+
+<p class="var">planes</p>
+<p>This array decribes how each plane should be processed.
+It’s similar to the <var>y</var>, <var>u</var> and <var>v</var> parameters
+in Masktools 2.</p>
+<table>
+<tr><td><b>&minus;65535</b><br />to <b>&plus;0.5</b></td><td>All the pixels of the plane will be set to &minus;x (the opposite of the specified value). The range depends on the output data type. Remember, in floating-point YUV, the chroma planes range from &minus;0.5 to &plus;0.5.</td></tr>
+<tr><td><b>1</b></td><td>The plane will not be processed. This means that the content of the output plane is pure garbage.</td></tr>
+<tr><td><b>2</b></td><td>The plane of the input clip will be copied and possibly cropped. Areas out of the input picture are left unprocessed (garbage). Range (full or TV) conversions are ignored.</td></tr>
+<tr><td><b>3</b></td><td>The plane will be processed.</td></tr>
+</table>
+
+<p class="var">fulls, fulld</p>
+<p>Indicates if the clip is full-range (True) or TV-range (False).
+<var>fulls</var> is for input, <var>fulld</var> for output.
+Reference black and white have different values depending on the range.
+In 8 bits, pixel values scale from 0 to 255 in full range, and 16 to 235
+in TV-range (16 to 240 for the Y’Cb’Cr’ chroma planes).
+This value has no meaning for float data.</p>
+<p>The default value depends on the colorspace.
+For example, full-range is assumed for RGB and YCgCo colorspaces.
+Others are assumed TV-range.
+These parameters are mainly intended to guide conversions between integer
+and floating-point data.
+They can also be used for range conversions.
+Pixel values are not clipped during a conversion between two TV-range
+formats.</p>
+
+<p class="var">center</p>
+<p>Like the Avisynth standard resizers, this resizer preserves the position of
+the picture center.
+Disable this parameter if you may want to resize by preserving the top-left
+corner position.
+Similarly, if you are convolving without resizing, setting it to
+<code>false</code> ensures you that the same kernel will be applied to all
+pixels.</p>
+
+<p class="var">cplace, cplaces, cplaced</p>
+<p>Placement of the chroma samples.
+<var>cplaces</var> specifies the source clip only, <var>cplaced</var> the
+destination clip.
+Can be one of these strings:</p>
+<table>
+<tr><td><b><code>&quot;MPEG1&quot;</code></b></td><td>4:2:0 subsampling used in MPEG-1 and JPEG. Chroma samples are located on the center of each group of 4 pixels.</td></tr>
+<tr><td><b><code>&quot;MPEG2&quot;</code></b></td><td>Subsampling used in MPEG-2 4:2:x and most other formats. Chroma samples are located on the left pixel column of the group.</td></tr>
+<tr><td><b><code>&quot;DV&quot;</code></b></td><td>For 4:2:0 modes, it’s like MPEG-2 but U and V channels are &ldquo;co-sited&rdquo; vertically: V on the top row, and U on the bottom row. For 4:1:1, chroma is located on the leftmost column.</td></tr>
+</table>
+<p>The chroma placement is ignored when <var>center</var> is set to
+<code>False</code> or <var>kernel</var> to <code>&quot;point&quot;</code>.
+You’ll find below an overview of common chroma placement and subsampling
+combinations:</p>
+
+<!-- Avisynth source code:
+StackVertical (
+\	StackHorizontal (
+\		show_chroma_ss ("Y8",    "MPEG2", "4:0:0",         false, 0),
+\		show_chroma_ss ("YV24",  "MPEG2", "4:4:4",         false, 0)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV12",  "MPEG1", "4:2:0 MPEG-1",  false, 0),
+\		show_chroma_ss ("YV12",  "MPEG2", "4:2:0 MPEG-2",  false, 0)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV12",  "MPEG2", "4:2:0 MPEG-2",  true,  0),
+\		show_chroma_ss ("YV12",  "MPEG2", "4:2:0 MPEG-2",  true,  1)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV12",  "DV",    "4:2:0 DV-PAL",  true,  0),
+\		show_chroma_ss ("YV12",  "DV",    "4:2:0 DV-PAL",  true,  1)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV411", "DV",    "4:1:1 DV-NTSC", true,  0),
+\		show_chroma_ss ("YV411", "DV",    "4:1:1 DV-NTSC", true,  1)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV411", "DV",    "4:1:1 DV-NTSC", false, 0),
+\		show_chroma_ss ("YV16",  "MPEG2", "4:2:2",         false, 0)
+\	),
+\	StackHorizontal (
+\		show_chroma_ss ("YV16",  "MPEG2", "4:2:2",         true,  0),
+\		show_chroma_ss ("YV16",  "MPEG2", "4:2:2",         true,  1)
+\	)
+\ )
+
+Function show_chroma_ss (string colorspace, string cplace, string dispname, bool itl, int field)
+{
+	scale = 24
+	bkg   = $FFFFFF
+	shrp  = true
+
+	Y = (itl)                                           ? "  y 2 / floor  " : "y"
+	X = (itl && colorspace == "YV12" && cplace == "DV") ? "x y 2 / floor +" : "x"
+	BlankClip (pixel_type=colorspace, length=1, color_yuv=$EB8080, width=64, height=64, fps=1)
+	cy = ConvertToYV12 ()
+	cy = cy.mt_lutspa (relative=false, expr="x "+Y+" + 2 % 128 * 64 +")
+	try
+	{
+		cu = UToY ().ConvertToYV12 ()
+		cv = VToY ().ConvertToYV12 ()
+		cu = cu.mt_lutspa (relative=false, expr=X+"        2 %  80 * 88 +")
+		cv = cv.mt_lutspa (relative=false, expr=Y+"        2 %  80 * 88 +")
+		YToUV (cu, cv, cy)
+	}
+	catch (e)
+	{
+		cy.ConvertToY8 ()
+	}
+	Crop (0, 0, 8, 8)
+	bor = 4
+	AddBorders (bor, bor, bor, bor, bkg)
+	w = Width ()
+	h = Height ()
+	Dither_convert_8_to_16 ()
+	(itl) ? AssumeFrameBased ().AssumeTFF ().SeparateFields () : last
+	fx = (shrp) ? 8 : 1
+	Dither_resize16 (w * scale, h * scale, kernel="gaussian", a1=80, fh=fx, fv=fx, cplace=cplace)
+	(itl) ? SelectEvery (2, field) : last
+	Dither_convert_yuv_to_rgb (lsb_in=true, mode=0, ampn=0, chromak="point")
+	bs = bor * scale
+	mask = Crop (bs, bs, -bs, -bs)
+	mask = mask.BlankClip (color=$000000)
+	bf = (scale + 31) / 32
+	mask = mask.AddBorders (bf, bf, bf, bf, $FFFFFF)
+	bsf = bs - bf
+	mask = mask.AddBorders (bsf, bsf, bsf, bsf, $000000)
+	Overlay (last.BlankClip (), mask=mask)
+	b2s = (bor - 2) * scale
+	Crop (b2s, b2s, -b2s, -b2s)
+	ftx = (field == 1) ? "bottom" : "top"
+	Subtitle (
+\		dispname + (itl ? ", " + ftx + " field" : ""),
+\		text_color=$00000000, halo_color=$FF000000, align=8, size=scale*0.85
+\	)
+}
+-->
+<p style="text-align: center;"><img src="colorspace-subsampling.png" alt="Chroma placement" /></p>
+
+<p class="var">interlaced, interlacedd</p>
+<p>Specifies if the clip is made of frames or fields.
+<var>interlacedd</var> overrides <var>interlaced</var> for output.</p>
+<table>
+<tr><td><b>0</b></td><td>Frames are progressive content.</td></tr>
+<tr><td><b>1</b></td><td>Frames are actually the separated fields of an interlaced stream. Specify <var>tff</var> or provide the <code>_Field</code> property in all the frames.</td></tr>
+<tr><td><b>2</b></td><td>Automatic detection, depends on the <code>_FieldBased</code> frame property. If not found, the frame is considered progressive.</td></tr>
+</table>
+
+<p class="var">tff, tffd</p>
+<p>When processing interlaced content, specifies the field parity.
+<var>tffd</var> overrides <var>tff</var> for output.</p>
+<table>
+<tr><td><b>0</b></td><td>Bottom field first (BFF). This means all even fields are top, and all odd fields are bottom.</td></tr>
+<tr><td><b>1</b></td><td>Top field first (TFF). This means all even fields are bottom, and all odd fields are top.</td></tr>
+<tr><td><b>2</b></td><td>Automatic detection, depends on the <code>_Field</code> frame property. If not found, the frame is considered progressive.</td></tr>
+</table>
+
+<p class="var">flt</p>
+<p>Flag to force floating point operations.
+When set to False, integer operations are used, but only if both input and output formats are integer.
+If it’s not the case, floating point operations are silently used as fallback.</p>
+
+<p class="var">cpuopt</p>
+<p>Limits the CPU instruction set.
+&minus;1: automatic (no limitation),
+0: default instruction set only (depends on the compilation settings),
+1: limit to SSE2,
+10: limit to AVX2.</p>
+
+
+
+<h3><a id="transfer"></a>transfer</h3>
+
+<table class="n" width="100%">
+<tr>
+<td class="n"><pre class="proto">fmtc.transfer (
+	clip       : clip        ;
+	transs     : data[] : opt;
+	transd     : data[] : opt;
+	cont       : float  : opt;
+	gcor       : float  : opt;
+	bits       : int    : opt;
+	flt        : int    : opt;
+	fulls      : int    : opt; (True)
+	fulld      : int    : opt; (True)
+	logceis    : int    : opt; (800)
+	logceid    : int    : opt; (800)
+	cpuopt     : int    : opt; (-1)
+	blacklvl   : float  : opt; (0)
+	planes     : float[]: opt; (3)
+)</pre></td>
+<td class="n"><pre class="proto">fmtc_transfer (
+	clip   c,
+	string transs (undefined),
+	string transd (undefined),
+	float  cont (1),
+	float  gcor (1),
+	int    bits (undefined),
+	bool   flt (undefined),
+	bool   fulls (true),
+	bool   fulld (true),
+	int    logceis (800),
+	int    logceid (800),
+	int    cpuopt (-1),
+	float  blacklvl (0),
+	arrayf planes (3)
+)</pre></td>
+</tr>
+</table>
+
+<p>Applies electro-optical and opto-electrical transfer characteristics to the
+video signal to convert between linear and gamma-corrected modes.</p>
+<p>The function offers four conversions in a row; all are optional:</p>
+<ul>
+<li>an electro-optical transfer function (EOTF) or an inverse opto-electrical transfer function (OETF<sup>&minus;1</sup>) converting the signal to linear,</li>
+<li>a contrast adjustement,</li>
+<li>a gamma correction operating on the linear signal,</li>
+<li>and an opto-electrical transfer function (OETF) or an inverse electro-optical transfer function (EOTF<sup>&minus;1</sup>) to encode the signal back to a non-linear
+domain.</li>
+</ul>
+<p>As input, the function accepts only RGB and grayscale colorspaces.</p>
+<p>As output, the data type can be changed while the colorspace is kept.
+Only 16-bit integer and 32-bit float are supported.
+Use <code>bitdepth</code> to properly convert the output to a lower
+bitdepth.</p>
+<p>The signal is clipped depending on the transfer specification or the domain
+requirement of the functions.</p>
+<p>The function sets the <code>_ColorRange</code> and <code>_Transfer</code>
+frame properties.</p>
+<p><span class="host">Avisynth+</span>  Colorspaces with an alpha channel are
+supported too, but the channel is left untouched.<p>
+
+<h4>Parameters</h4>
+
+<p class="var">clip</p>
+<p>The input clip.
+Supported input formats:</p>
+<ul>
+<li>8- to 16-bit integer.</li>
+<li>32-bit floating point.</li>
+<li>RGB or grayscale.</li>
+</ul>
+
+<p class="var">transs, transd</p>
+<p>Transfer characteristics for input and output, respectively.
+The characteristic may be an OETF (opto-electronic transfer function), an
+EOTF (eletro-optical transfer function), or just remain unspecified.
+It is direct or inverted according to where it is applied, output or input.
+The intermediate state is assumed linear light.
+The curve set is the same as the list in ISO/IEC 23008-2 (HEVC), with a few
+additions from various camera manufacturers or NLE systems.</p>
+<p>Most curves map their value from the 0–1 range to 0–1, but some are for
+high dynamic range or wide gamut signals and locate their value for peak white
+much higher.</p>
+<table>
+<tr><th>Value</th><th>Linear range</th><th>Type</th><th>Description</th></tr>
+<tr><td><b><code>&quot;709&quot;       </code></b></td><td>0&hellip;1</td><td>OETF</td><td>ITU-R BT.709</td></tr>
+<tr><td><b><code>&quot;470m&quot;      </code></b></td><td>0&hellip;1</td><td></td><td>ITU-R BT.470-6 System M, FCC (assumed display gamma 2.2)<br />Actually uses the same curve as IEC 61966-2-1.</td></tr>
+<tr><td><b><code>&quot;470bg&quot;     </code></b></td><td>0&hellip;1</td><td></td><td>ITU-R BT.470-6 System B, G (assumed display gamma 2.8)</td></tr>
+<tr><td><b><code>&quot;601&quot;       </code></b></td><td>0&hellip;1</td><td>OETF</td><td>ITU-R BT.601</td></tr>
+<tr><td><b><code>&quot;240&quot;       </code></b></td><td>0&hellip;1</td><td></td><td>SMPTE 240M</td></tr>
+<tr><td><b><code>&quot;linear&quot;<br />&quot;&quot;</code></b></td><td>Unspecified</td><td></td><td>Linear (bypass)</td></tr>
+<tr><td><b><code>&quot;log100&quot;    </code></b></td><td>0&hellip;1</td><td></td><td>Logarithmic transfer characteristic (100:1 range)</td></tr>
+<tr><td><b><code>&quot;log316&quot;    </code></b></td><td>0&hellip;1</td><td></td><td>Logarithmic transfer characteristic (100*Sqrt(10):1 range)</td></tr>
+<tr><td><b><code>&quot;61966-2-4&quot; </code></b></td><td>Unspecified</td><td>OETF</td><td>IEC 61966-2-4, xvYCC. Same as BT.709, but with an extended range, including negative values.</td></tr>
+<tr><td><b><code>&quot;1361&quot;      </code></b></td><td>&minus;0.25&hellip;1.33</td><td></td><td>ITU-R BT.1361 extended colour gamut system</td></tr>
+<tr><td><b><code>&quot;61966-2-1&quot;<br />&quot;srgb&quot;<br />&quot;sycc&quot;</code></b></td><td>0&hellip;1</td><td>EOTF</td><td>IEC 61966-2-1, sRGB or sYCC</td></tr>
+<tr><td><b><code>&quot;2020_10&quot;   </code></b></td><td>0&hellip;1</td><td></td><td>ITU-R BT.2020 for 10-bit system</td></tr>
+<tr><td><b><code>&quot;2020_12&quot;<br />&quot;2020&quot;</code></b></td><td>0&hellip;1</td><td></td><td>ITU-R BT.2020 for 12-bit system</td></tr>
+<tr><td><b><code>&quot;2084&quot;      </code></b></td><td>0&hellip;1</td><td>EOTF</td><td>SMPTE ST 2084 for 10, 12, 14 and 16-bit systems<br />ITU-R BT.2100-2 PQ (perceptual quantization)<br />Linear 1.0 is peak white and corresponds to a display luminance level of 10&nbsp;000 cd/m<sup>2</sup>.</td></tr>
+<tr><td><b><code>&quot;428&quot;       </code></b></td><td>0&hellip;1</td><td></td><td>SMPTE ST 428-1<br />Linear 1.0 is peak white and corresponds to a display luminance level of 48 cd/m<sup>2</sup>.</td></tr>
+<tr><td><b><code>&quot;hlg&quot;       </code></b></td><td>0&hellip;1</td><td>OETF</td><td>ITU-R BT.2100 HLG (hybrid log-gamma), ARIB STD-B67</td></tr>
+<tr><td><b><code>&quot;1886&quot;      </code></b></td><td>0&hellip;1</td><td>EOTF</td><td>ITU-R BT.1886. Intended to mimicing a CRT display curve.</td></tr>
+<tr><td><b><code>&quot;1886a&quot;     </code></b></td><td>0&hellip;1</td><td>EOTF</td><td>ITU-R BT.1886, alternative approximation</td></tr>
+<tr><td><b><code>&quot;filmstream&quot;</code></b></td><td>0&hellip;1</td><td>OETF?</td><td>Thomson FilmStream<br />Linear 1.0 is the sensor clipping level, corresponding to 3840 on a linear 12-bit scale.</td></tr>
+<tr><td><b><code>&quot;slog&quot;      </code></b></td><td>&minus;0.006&hellip;10</td><td>OETF?</td><td>Sony S-Log<br />Linear 1.0 is the reference white, peak white is at 10.0.</td></tr>
+<tr><td><b><code>&quot;slog2&quot;      </code></b></td><td>&minus;0.0085&hellip;14.13</td><td>OETF?</td><td>Sony S-Log 2<br />Linear 1.0 is the reference white, peak white is at 14.13.</td></tr>
+<tr><td><b><code>&quot;slog3&quot;     </code></b></td><td>0&hellip;38.421</td><td>OETF?</td><td>Sony S-Log3.</td></tr>
+<tr><td><b><code>&quot;logc2&quot;     </code></b></td><td>Unspecified</td><td>OETF?</td><td>Arri Log C Alexa 2.x, linear scene exposure<br />Peak white is 57.45 linear. The negative part of the range allows coding sensor noise. <var>logceis</var> and <var>logceid</var> set the Exposure Index (EI).</td></tr>
+<tr><td><b><code>&quot;logc3&quot;     </code></b></td><td>Unspecified</td><td>OETF?</td><td>Arri Log C Alexa 3.x, linear scene exposure<br />Peak white is 55.08 linear. The negative part of the range allows coding sensor noise. <var>logceis</var> and <var>logceid</var> set the Exposure Index (EI).</td></tr>
+<tr><td><b><code>&quot;canonlog&quot;  </code></b></td><td>0&hellip;8.00903</td><td>OETF</td><td>Canon-Log<br />Peak white is 8.00903 in linear scale and 1.08676 in compressed scale.</td></tr>
+<tr><td><b><code>&quot;adobergb&quot;  </code></b></td><td>0&hellip;1</td><td></td><td>Adobe RGB (1998 and Wide Gamut)</td></tr>
+<tr><td><b><code>&quot;romm&quot;      </code></b></td><td>0&hellip;1</td><td></td><td>ProPhoto, ROMM</td></tr>
+<tr><td><b><code>&quot;acescc&quot;    </code></b></td><td>&minus;65504&hellip;65504</td><td></td><td>ACEScc. Values are actually bounded to the ACES 16-bit float range.</td></tr>
+<tr><td><b><code>&quot;erimm&quot;     </code></b></td><td>0&hellip;316.2</td><td>OETF</td><td>ERIMM</td></tr>
+<tr><td><b><code>&quot;vlog&quot;     </code></b></td><td>0&hellip;1</td><td></td><td>Panasonic V-Log</td></tr>
+</table>
+
+<p class="var">cont</p>
+<p>Optional contrast adjustment to apply to the linear signal.
+This is a multiplicative value, 1 is neutral.
+Contrast is modified before the gamma correction.
+This parameter is useful to match the reference or peak white
+points between transfer functions which have not the same
+reference.</p>
+
+<p class="var">gcor</p>
+<p>Optional gamma correction to apply to the linear signal.
+This is a power value, 1 is neutral.
+Comes after contrast adjustment.</p>
+
+<p class="var">bits</p>
+<p>Sets the output bitdepth.
+Currently only 16-bit integer and 32-bit float are supported.
+The data type is adapted automatically if required.
+This parameter shouldn’t conflict with flt.</p>
+
+<p class="var">flt</p>
+<p>Set it to 0 to convert the output to integer,
+or to 1 to convert to floating point data.</p>
+
+<p class="var">fulls, fulld</p>
+<p>Indicates if the clip is full-range (True) or TV-range (False).
+<var>fulls</var> is for input, <var>fulld</var> for output.
+Reference black and white have different values depending on the range.
+In 8 bits, pixel values scale from 0 to 255 in full range, and 16 to 235
+in TV-range (16 to 240 for the Y’Cb’Cr’ chroma planes).
+This value has no meaning for float data.</p>
+
+<p class="var">logceis, logceid</p>
+<p>Exposure index (EI) for the Arri Log C Alexa 2.x and 3.x curves.
+Allowed values are:
+160, 200, 250, 320, 400, 500, 640, 800 (default), 1000, 1280 and 1600.<p>
+
+<p class="var">cpuopt</p>
+<p>Limits the CPU instruction set.
+&minus;1: automatic (no limitation),
+0: default instruction set only (depends on the compilation settings),
+1: limit to SSE2,
+10: limit to AVX2.</p>
+
+<p class="var">blacklvl</p>
+<p>Black level value (linear range) for the electro-optical transfer function.
+It shifts and stretches the transfer curve in order to make the black value in
+gamma-encoded range match the specified level in linear range.
+Raising the black level is equivalent to increasing the brightness setting
+combined with a slight contrast reduction not to alter the white.
+The parameter should be &ge; 0.
+There is no specific unit, it’s just a value from the target linear range,
+generally in 0–1.</p>
+
+<p class="var">planes</p>
+<p>This array decribes how each plane should be processed.
+It’s similar to the <var>y</var>, <var>u</var> and <var>v</var> parameters
+in Masktools 2.</p>
+<table>
+<tr><td><b>&minus;65535</b><br />to <b>&plus;0.5</b></td><td>All the pixels of the plane will be set to &minus;x (the opposite of the specified value). The range depends on the output data type. Remember, in floating-point YUV, the chroma planes range from &minus;0.5 to &plus;0.5.</td></tr>
+<tr><td><b>1</b></td><td>The plane will not be processed. This means that the content of the output plane is pure garbage.</td></tr>
+<tr><td><b>2</b></td><td>The plane of the input clip will be copied and possibly cropped. Range (full or TV) conversions are ignored.</td></tr>
+<tr><td><b>3</b></td><td>The plane will be processed.</td></tr>
+</table>
+<p><span class="host">Avisynth+</span>  The alpha channel processing is
+disabled and replaced with a straight copy from the source.
+The parameter value can also be a string, like in the
+<code>fmtc_bitdepth</code> function: <code>"all"</code>, <code>""</code>, or a
+combination of <code>"0"</code>, <code>"1"</code>, <code>"2"</code>,
+<code>"r"</code>, <code>"g"</code> and <code>"b"</code>.<p>
+
+
+
+<h3><a id="stack16tonative"></a>stack16tonative, nativetostack16</h3>
+
+<table class="n" width="100%">
+<tr>
+<td class="n"><pre class="proto">fmtc.stack16tonative (
+	clip: clip;
+)</pre></td>
+<td class="n"><pre class="proto">fmtc.nativetostack16 (
+	clip: clip;
+)</pre></td>
+</tr>
+</table>
+
+<p>Converts between 16-bit clips and stack16 clips.
+A stack16 clip is a 8-bit clip containing the picture made
+of the most significant byte of each pixel, stacked on the top of a picture
+made of their least significant byte.
+These functions are meant to offer interoperability with Avisynth plug-ins
+using this format.</p>
+
+<h4>Parameters</h4>
+
+<p class="var">clip</p>
+<p>The input clip. Mandatory.
+Can be only 8-bit integer for <code>stack16tonative</code>
+and 16-bit integer for <code>nativetostack16</code>.</p>
+
+
+
+<h2><a id="troubleshooting"></a>IV) Troubleshooting</h2>
+
+<p>I’m <a href="https://forum.doom9.org/showthread.php?t=166504">waiting</a> for your complaints.</p>
+
+
+
+<h2><a id="changelog"></a>V) Changelog</h2>
+
+<p><b>r24, 2021-08-16</b></p>
+<ul>
+<li><code>bitdepth</code>: added dithering <var>mode</var> 9: quasirandom sequences.</li>
+<li><code>bitdepth</code>: added a triangular probability distribution function (TPDF) for the dithering patterns and noises, along with the associated parameters <var>tpdfo</var> and <var>tpdfn</var>.</li>
+<li><code>bitdepth</code>: added <var>corplane</var> parameter to prevent colored noise in RGB processing.</li>
+<li><code>bitdepth</code>: fixed crash when trying to change the range (full or TV) without reducing the bitdepth.</li>
+<li><code>matrix</code>: deletes the <code>_Matrix</code> and <code>_ColorSpace</code> properties if a non-standard matrix is used.</li>
+<li><code>matrix2020cl</code>: sets the <code>_Matrix</code> and <code>_Transfer</code> frame properties.</li>
+<li><code>matrix2020cl</code>: fixed hideous colors with slightly out-of-colorspace values when converting from integer Y’Cb’Cr’ to integer linear RGB.</li>
+<li><code>resample</code>: <var>totalh</var> and <var>totalv</var> are now correctly taken into account, added <var>total</var> parameter too.</li>
+<li><code>resample</code>: added a <var>planes</var> parameter.</li>
+<li><code>transfer</code>: sYCC curve (similar to sRGB) now supports signed values.</li>
+<li><code>transfer</code>: added a <var>planes</var> parameter.</li>
+<li>Added support for Avisynth+</li>
+<li>Added information on functions reading and writing frame properties.</li>
+<li>Added support for 14-bit data.</li>
+<li>Vapoursynth: still uses API v3.6 but can use Python constants from API v4.0.</li>
+</ul>
+
+<p><b>r23, 2021-07-14</b></p>
+<ul>
+<li><code>transfer</code>: added an Exposure Index (EI) parameter for the Arri Log C Alexa 2.x and 3.x curves.</li>
+<li><code>bitdepth</code>: properly sets the <code>_ColorRange</code> attribute.</li>
+<li>Doesn’t output a debug message when AVSTP is not found.</li>
+<li>Fixed a concurrency issue by using a more recent toolkit when compiling with MSVC.</li>
+<li>Windows XP is not supported any more.</li>
+</ul>
+
+<p><b>r22, 2019-12-11</b></p>
+<ul>
+<li><code>bitdepth</code>: upconversions for full range data now scale to the maximum value instead of shifting bits. Thanks to Z4ST1N for the report.</li>
+<li><code>matrix</code>: added support for the YDzDx, ICtCp-PQ and ICtCp-HLG colorspaces.</li>
+<li><code>matrix</code>: fixed a case issue for matrix identifiers.</li>
+<li><code>primaries</code>: added support for P3-DCI, P3-D65 and P3-D60. The old DCI-P3 was actually P3-D65. The code "dcip3" remains for backward compatibility but is deprecated.</li>
+<li><code>primaries</code>: added support for the EBU 3213-E colorspace.</li>
+<li><code>primaries</code>: added a "2100" alias for the BT.2020/BT.2100 colorspace.</li>
+<li><code>primaries</code>: fixed a divide-by-0 crash when using CIEXYZ as destination colorspace</li>
+<li><code>primaries</code>: fixed a bug preventing to use the "uhdtv" string for BT.2020 primaries</li>
+<li><code>transfer</code>: added support for hybrid log-gamma (HLG) curves.</li>
+<li><code>transfer</code>: for the SMPTE SM 2084 curve, the specific value of 0 now gives a true 0 in both directions (minor change).</li>
+<li><code>transfer</code>: BT.2020 curve for 12-bit data now uses exact values giving a continuous derivative (minor change).
+<li><code>transfer</code>: now uses more accurate constants for the sRGB curve, giving a better derivative continuity (minor change).</li>
+<li><code>transfer</code>: fixed a bug with the alternate formula for BT.1886 curve.</li>
+<li>Should now build correctly on FreeBSD (patch by jbeich)</li>
+<li>Fixed compilation for Linux on ARM or aarch64. Binaries not tested yet.</li>
+</ul>
+
+<p><b>r21, 2019-12-08</b></p>
+<ul>
+<li><code>transfer</code>: fixed highlight clipping for several high dynamic range transfer curves, thanks to groucho86 for the report.</li>
+</ul>
+
+<p><b>r20, 2016-03-25</b></p>
+<ul>
+<li><code>primaries</code>: fixed a bug preventing to set all primaries individually without specifying any preset.</li>
+<li><code>primaries</code>: fixed a bug in the color conversion, thanks to J1Man for having spotted it.</li>
+</ul>
+
+<p><b>r19, 2016-03-19</b></p>
+<ul>
+<li><code>primaries</code>: refined the values for the Adobe Wide gamut and BT.2020 primaries.</li>
+<li><code>primaries</code>: added DCI-P3, ACES AP0/AP1, S-Gamut, S-Gamut3.Cine, ALEXA and V-Gamut presets.</li>
+<li><code>transfer</code>: added ACEScc, ERIMM, S-Log2, S-Log3 and V-Log curves.</li>
+</ul>
+
+<p><b>r18, 2016-03-08</b></p>
+<ul>
+<li>Added the <code>primaries</code> function to convert between gamuts.</li>
+<li>The “full” range is now closer to what is specified in the standards.</li>
+<li>A recent Vapoursynth is now required because API headers were updated to version 3.1.4.</li>
+<li><code>transfer</code>: added the Adobe RGB and ProPhoto / ROMM curves.</li>
+</ul>
+
+<p><b>r17, 2015-07-08</b></p>
+<ul>
+<li><code>bitdepth</code>: added “Void and cluster” dithering method and its <var>patsize</var> parameter.</li>
+<li><code>bitdepth</code>: added floating point implementation for the Ostromoukhov dithering</li>
+<li><code>bitdepth</code>: added SSE2 optimizations for halftone modes (0, 1 and 8).</li>
+<li><code>bitdepth</code>: fixed incorrect conversion from float to 8-bit integer using the “fast” modes with SSE2 instruction set.</li>
+</ul>
+
+<p><b>r16, 2015-07-01</b></p>
+<ul>
+<li><code>bitdepth</code>: added support for 11-bit and 14-bit integer input.</li>
+<li><code>bitdepth</code>: fixed a slight plane inconsistency when dithering grey multi-plane pictures using an error diffusion algorithm.</li>
+<li><code>matrix2020cl</code>: added SSE2 optimisations for the floating point path.</li>
+<li><code>resample</code>: <var>sx</var>, <var>sy</var>, <var>sw</var> and <var>sh</var> parameters passed as arrays are now correctly taken into account. Thanks to mawen1250 for the bug report.</li>
+<li><code>transfer</code>: added the <var>blacklvl</var> parameter.</li>
+</ul>
+
+<p><b>r15, 2015-05-22</b></p>
+<ul>
+<li><code>resample</code> and <code>bitdepth</code>: fixed a bug creating dark lines or weird patterns. Was introduced in r13 while trying to fix the buffer overflow problem. Thanks to feisty2 for spotting it.</li>
+<li><code>resample</code>: fixed the non-SIMD code path, causing crashes.</li>
+</ul>
+
+<p><b>r14, 2015-05-20</b></p>
+<ul>
+<li><code>matrix</code>: fixed a bug introducing wrong offsets in custom matrix coefficients, thanks to mawen1250 for the report.</li>
+</ul>
+
+<p><b>r13, 2015-05-18</b></p>
+<ul>
+<li><code>matrix</code>: optimized the SSE2 and AVX2 paths for integer data.</li>
+<li>Added <var>cpuopt</var> to some functions, to manually limit the instruction set optimizations.</li>
+<li>Added build files for the unix-like systems, thanks to jackoneill.</li>
+<li>Fixed a buffer overflow bug in the SSE2 and AVX2 code of <code>bitdepth</code> and <code>resample</code>, thanks to jackoneill for reporting it.</li>
+<li>Removed the <code>int16tofloat</code> and <code>floattoint16</code> temporary functions.</li>
+</ul>
+
+<p><b>r12, 2015-05-08</b></p>
+<ul>
+<li><code>resample</code>: fixed a crash in the AVX2 code path, thanks to HolyWu for spotting it.</li>
+</ul>
+
+<p><b>r11, 2015-05-07</b></p>
+<ul>
+<li><code>transfer</code>: fixed a bug in the SSE2 code path.</li>
+</ul>
+
+<p><b>r10, 2015-05-06</b></p>
+<ul>
+<li>fmtconv is compatible with the older Vapoursynth versions again until API 3.2 is out.</li>
+<li>Source code: fixed compilation problems.</li>
+</ul>
+
+<p><b>r9, 2015-05-06</b></p>
+<ul>
+<li>Added the <code>transfer</code> function.</li>
+<li><code>resample</code>: Most kernel-related parameters are now arrays, allowing to specify different values for each plane.</li>
+<li><code>resample</code>: Allows horizontal and vertical values for <var>taps</var> and <var>invkstap</var>.</li>
+<li><code>resample</code>: AVX2 optimizations.</li>
+<li><code>matrix</code>: Tries to deduce the target colorspace from simple matrix settings, sets the new <code>_Matrix</code> frame property, AVX2 optimizations.</li>
+<li><code>bitdepth</code>: SSE2 optimizations for the “fast” algorithm.</li>
+</ul>
+
+<p><b>r8, 2013-11-30</b></p>
+<ul>
+	<li><code>resample</code>: Fixed bugs introduced in r7.</li>
+	<li>Fixed a range conversion issue in “plane copy” modes with source and destination formats are the same.</li>
+</ul>
+
+<p><b>r7, 2013-11-27</b></p>
+<ul>
+<li>64-bit windows version.</li>
+<li><code>resample</code>: A few optimizations for special cases.</li>
+<li><code>resample</code>: fixed the coefficients used in integer resizing, whose sum was sometimes off by a few units.</li>
+</ul>
+
+<p><b>r6, 2013-08-24</b></p>
+<ul>
+	<li><code>matrix</code>: single-plane output now works correctly.</li>
+</ul>
+
+<p><b>r5, 2013-08-18</b></p>
+<ul>
+<li>Added 12-bit support for all the functions.</li>
+<li>Added <code>matrix2020cl</code> to convert between linear RGB and Y’Cb’Cr’ colorspaces using the BT.2020 constant luminance matrix.</li>
+<li><code>matrix</code>: Added the BT.2020 matrix, non constant luminance mode only.</li>
+<li><code>matrix</code>: Added single-plane output with the <var>singleout</var> parameter.</li>
+<li><code>resample</code>: allows x:y:z form for specifying the colorspace subsampling <var>css</var>.</li>
+<li><code>resample</code>: added SSE2 integer calculations for slight speed improvement. Activated by default, use <var>flt=1</var> to compute everything in float (previous operating mode).</li>
+</ul>
+
+<p><b>r4, 2012-12-09</b></p>
+<ul>
+<li>Added a documentation.</li>
+<li>Filters now write some frame properties when known.</li>
+<li>Fixed the code so it can be compiled on Linux. Thanks to Jackoneill/Nodame for testing.</li>
+<li><code>bitdepth</code>: no need to specify any bitdepth or colorspace (for simple range conversions).</li>
+<li><code>matrix</code>: Added SSE2 implementation for integer processing.</li>
+<li><code>matrix</code>: Allows the destination bitdepth to be higher than the input (added the <var>bits</var> parameter).</li>
+<li><code>matrix</code>: <var>col_fam</var> completes <var>csp</var> instead of replacing it.</li>
+<li><code>resample</code>: Added <var>interlacedd</var> to specify if output is interlaced (allows simple bobbing).</li>
+<li><code>resample</code>: Added <var>tff</var> and <var>tffd</var> to specify field parity.</li>
+<li><code>resample</code>: Added <var>scale</var>, <var>scaleh</var> and <var>scalev</var> for easier magnification.</li>
+<li><code>resample</code>: Added a two-digit mode to <var>css</var>.</li>
+<li><code>resample</code>: Fixed a typo preventing to select 4:1:1 chroma subsampling.</li>
+<li>Added <code>nativetostack16</code>.</li>
+</ul>
+
+<p><b>r3, 2012-11-23</b></p>
+<ul>
+<li><code>bitdepth</code>: changed the <var>bitdepth</var> parameter to <var>bits</var>.</li>
+<li><code>bitdepth</code>: added SSE2 optimizations for upconversions.</li>
+<li><code>resample</code>: added interlaced resizing (<var>interlaced</var> parameter).</li>
+<li><code>resample</code>: now sets <code>_ColorRange</code> and <code>_ChromaLocation</code> properties when known.</li>
+<li><code>resample</code>: fixed the <var>planes</var> parameter previously interpreted as 0 (black or green screen).</li>
+</ul>
+
+<p><b>r2, 2012-11-18</b></p>
+<ul>
+<li><code>bitdepth</code>: implemented fast dither mode (but not in SSE2 yet).</li>
+<li><code>bitdepth</code>: optimized float-to-integer path.</li>
+<li><code>bitdepth</code>: faster dithering when <var>ampo = 1</var> and <var>ampn = 0</var>.</li>
+<li><code>matrix</code>: enabled the SSE path for float operations.</li>
+<li><code>resample</code>: optimized paths involving float input or output.</li>
+<li><code>resample</code>: fixed white/magenta screen with 8-bit input and float output.</li>
+</ul>
+
+<p><b>r1, 2012-11-16</b></p>
+<ul>
+<li>Initial release.</li>
+</ul>
+
+
+
+<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>
+
+</div></body>
+</html>
+
+
