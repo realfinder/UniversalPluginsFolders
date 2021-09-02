@@ -1,4 +1,4 @@
-Function fmtc_bitdepth(clip c, int "bits", bool "flt", val "planes", bool "fulls", bool "fulld", int "dmode", float "ampo", float "ampn", bool "dyn", bool "staticnoise", int "cpuopt", int "patsize", bool "tpdfo", bool "tpdfn", bool "corplane")
+Function fmtc_bitdepth(clip c, int "bits", bool "flt", string "planes", bool "fulls", bool "fulld", int "dmode", float "ampo", float "ampn", bool "dyn", bool "staticnoise", int "cpuopt", int "patsize", bool "tpdfo", bool "tpdfn", bool "corplane")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/fmtcavs.dll")
         fmtc_bitdepth(c, bits, flt, planes, fulls, fulld, dmode, ampo, ampn, dyn, staticnoise, cpuopt, patsize, tpdfo, tpdfn, corplane)
