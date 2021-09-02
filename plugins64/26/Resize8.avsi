@@ -1,393 +1,770 @@
-###### Resize8 v1.2        ######        by mawen1250        ######       2015.02.23       ######
-###### Requirements: AviSynth v2.6+, RgTools 0.92.1 or Repair v1.0pre                      ######
-###### Accept Y8, YV12, YV16, YV24, RGB24, RGB32 input, use AviSynth resizers for scaling  ######
-###### Resize8() is the same as normal resizer with some extra features.                   ######
-######     Chroma placement is correctly handled by it, while AviSynth resizers doesn't.   ######
-###### Resize8_Separate() processes each plane's source position separately,               ######
-######     mainly designed for fixing center shift caused by nnedi3, eedi3, eedi2, etc.    ######
-######     Note that it doesn't correct chroma placement, so usually the result should be  ######
-######     resized back to the original size, such as what many AA functions do.           ######
-###### Adaptive anti-ringing algorithm is supported                                        ######
-###### Scaling kernel for luma and chroma can be adjusted separately                       ######
-######
-###### All the parameters with "_c" represents U/V plane in YV12/YV16/YV24 or Alpha plane in RGB32.
-###### The ones without "_c" represents Y plane in Y8/YV12/YV16/YV24 or R/G/B plane in RGB24/RGB32.
+# ===============================================================================
+# ===============================================================================
+# ===============================================================================
+#
+#   Updated by Hello_Hello 2021.08.06
+#   https://forum.doom9.org/showthread.php?t=183057
+#
+#   Resize8 by mawen1250 2015.02.23
+#   http://avisynth.nl/index.php/Resize8
+#
+# ===============================================================================
+#
+#   Supports all Avisynth+ colorspaces, bit depths & native resizing kernels.
+#   It should support any resizer with the same width, height and named
+#   cropping arguments as the native Aviynth resizers.
+#
+#   Therefore the following could be described as "known" resizers
+#   rather than "supported" as such.
+#
+#   ResampleMT (multithreaded).
+#   https://github.com/jpsdr/ResampleMT
+#   JincResize (multithreaded)
+#   http://avisynth.nl/index.php/JincResize
+#   SplineResize (limited to 8 bit video, not multithreaded)
+#   http://avisynth.nl/index.php/External_filters#Resizers
+#
+#   Requirements for the updated version:
+#
+#   AviSynth+ Revision > 2294 for HBD and YUVA support.
+#   AviSynth+ Revision <= 2294 without HBD and YUVA support.
+#   AviSynth 2.60 or 2.61 without HBD and YUVA support.
+#   RgTools http://avisynth.nl/index.php/RgTools
+#
+# ===============================================================================
+# ===============================================================================
+# ===============================================================================
 
-
-Function Resize8(clip input, int "target_width", int "target_height", float "src_left", float "src_top",
-\                float "src_width", float "src_height",
+function Resize8(clip source, int "target_width", int "target_height",
+\                float "src_left", float "src_top", float "src_width", float "src_height",
 \                string "kernel", string "kernel_c", float "a1", float "a2", float "a1_c", float "a2_c",
-\                val "noring", val "noring_c", string "cplace", bool "Y", bool "U", bool "V", bool "Alpha")
-{
-    # Properties of input clip
-    sCSP     = input.GetCSP()
-    IsY8     = sCSP == "Y8"
-    IsRGB    = LeftStr(sCSP, 3) == "RGB"
-    oCSP     = IsY8 || IsRGB ? "YV24" : sCSP
-    Assert(sCSP=="Y8" || sCSP=="YV12" || sCSP=="YV16" || sCSP=="YV24" || sCSP=="RGB24" || sCSP=="RGB32", """Resize8: only accept Y8, YV12, YV16, YV24, RGB24, RGB32 input""")
-    
-    sw       = input.Width ()
-    sh       = input.Height()
-    swc      = oCSP=="YV24" ? sw   : sw/2
-    shc      = oCSP=="YV12" ? sh/2 : sh
-    
-    
-    # Parameters for size transform
-    ow       = Default(target_width,  sw)
-    oh       = Default(target_height, sh)
-    owc      = oCSP=="YV24" ? ow   : ow/2
-    ohc      = oCSP=="YV12" ? oh/2 : oh
-    Assert(!(oCSP=="YV16" && ow!=owc*2), """Resize8: width  of YV16 output clip must be MOD2!""")
-    Assert(!(oCSP=="YV12" && ow!=owc*2), """Resize8: width  of YV12 output clip must be MOD2!""")
-    Assert(!(oCSP=="YV12" && oh!=ohc*2), """Resize8: height of YV12 output clip must be MOD2!""")
-    
-    src_l    = Default(src_left,   0    )
-    src_t    = Default(src_top,    0    )
-    src_w    = Default(src_width,  sw   )
-    src_h    = Default(src_height, sh   )
-    
-    src_w    = src_w<=0 ? sw-src_l+src_w : src_w
-    src_h    = src_h<=0 ? sh-src_t+src_h : src_h
-    src_lc   = oCSP=="YV24" ? src_l    : src_l/2.
-    src_tc   = oCSP=="YV12" ? src_t/2. : src_t
-    src_wc   = oCSP=="YV24" ? src_w    : src_w/2.
-    src_hc   = oCSP=="YV12" ? src_h/2. : src_h
-    
-    
-    # Process
-    return Resize8_main(input, ow, oh, owc, ohc, src_l, src_t, src_lc, src_tc, src_w, src_h, src_wc, src_hc,
-    \                   kernel, kernel_c, a1, a2, a1_c, a2_c, noring, noring_c, cplace, Y, U, V, Alpha)
-}
+\                val "noring", val "noring_c", string "cplace", bool "Y", bool "U", bool "V", bool "alpha",
+\                bool "chroma", string "rstr", string "rstr_c", bool "separate", bool "show")  {
 
+# ===============================================================================
 
-Function Resize8_Separate(clip input, int "target_width", int "target_height", float "src_left", float "src_top",
-\                float "src_width", float "src_height",
-\                string "kernel", string "kernel_c", float "a1", float "a2", float "a1_c", float "a2_c",
-\                val "noring", val "noring_c", bool "Y", bool "U", bool "V", bool "Alpha")
-{
-    # Properties of input clip
-    sCSP     = input.GetCSP()
-    IsY8     = sCSP == "Y8"
-    IsRGB    = LeftStr(sCSP, 3) == "RGB"
-    oCSP     = IsY8 || IsRGB ? "YV24" : sCSP
-    Assert(sCSP=="Y8" || sCSP=="YV12" || sCSP=="YV16" || sCSP=="YV24" || sCSP=="RGB24" || sCSP=="RGB32", """Resize8: only accept Y8, YV12, YV16, YV24, RGB24, RGB32 input""")
-    
-    sw       = input.Width ()
-    sh       = input.Height()
-    swc      = oCSP=="YV24" ? sw   : sw/2
-    shc      = oCSP=="YV12" ? sh/2 : sh
-    
-    
-    # Parameters for size transform
-    ow       = Default(target_width,  sw)
-    oh       = Default(target_height, sh)
-    owc      = oCSP=="YV24" ? ow   : ow/2
-    ohc      = oCSP=="YV12" ? oh/2 : oh
-    Assert(!(oCSP=="YV16" && ow!=owc*2), """Resize8: width  of YV16 output clip must be MOD2!""")
-    Assert(!(oCSP=="YV12" && ow!=owc*2), """Resize8: width  of YV12 output clip must be MOD2!""")
-    Assert(!(oCSP=="YV12" && oh!=ohc*2), """Resize8: height of YV12 output clip must be MOD2!""")
-    
-    src_l    = Default(src_left,   0    )
-    src_t    = Default(src_top,    0    )
-    src_w    = Default(src_width,  sw   )
-    src_h    = Default(src_height, sh   )
-    
-    src_w    = src_w<=0 ? sw-src_l+src_w : src_w
-    src_h    = src_h<=0 ? sh-src_t+src_h : src_h
-    src_r    = sw - src_w - src_l
-    src_b    = sh - src_h - src_t
-    src_lc   = src_l
-    src_tc   = src_t
-    src_wc   = swc - src_l - src_r
-    src_hc   = shc - src_t - src_b
-    
-    
-    # Process
-    return Resize8_main(input, ow, oh, owc, ohc, src_l, src_t, src_lc, src_tc, src_w, src_h, src_wc, src_hc,
-    \                   kernel, kernel_c, a1, a2, a1_c, a2_c, noring, noring_c, "MPEG1", Y, U, V, Alpha)
-}
+    AvsVerStrLC = LCase(VersionString())
+    IsAvsPlus   = (FindStr(AvsVerStrLC, "avisynth+") > 0)
+    IsAvsNeo    = (FindStr(AvsVerStrLC, "avisynth neo") > 0)
+    AvsStrNumA  = IsAvsPlus || IsAvsNeo ? FindStr(AvsVerStrLC, "(r") + 2 : 0
+    AvsStrNumB  = IsAvsPlus || IsAvsNeo ? FindStr(AvsVerStrLC, ",") : 0
+    AvsStrNumC  = (AvsStrNumB > AvsStrNumA) ? AvsStrNumB - AvsStrNumA : undefined()
+    AvsBuildNum = (AvsStrNumA > 2) ? int(value(MidStr(AvsVerStrLC, AvsStrNumA, AvsStrNumC))) : 0
+    IsAvsHBD    = (AvsBuildNum > 2294)
 
+    R_8   = " Resize8 " + chr(10)
 
-Function Resize8_main(clip input, int "ow", int "oh", int "owc", int "ohc",
-\                float "src_l", float "src_t", float "src_lc", float "src_tc",
-\                float "src_w", float "src_h", float "src_wc", float "src_hc",
-\                string "kernel", string "kernel_c", float "a1", float "a2", float "a1_c", float "a2_c",
-\                val "noring", val "noring_c", string "cplace", bool "Y", bool "U", bool "V", bool "Alpha")
-{
-    # All the parameters with "_c" affects U/V plane in YV12/YV16/YV24 or Alpha plane in RGB32.
-    # The ones without "_c" affects Y plane in Y8/YV12/YV16/YV24 or R/G/B plane in RGB24/RGB32.
-    
-    # Properties of input clip
-    sCSP     = input.GetCSP()
-    IsY8     = sCSP == "Y8"
-    IsRGB    = LeftStr(sCSP, 3) == "RGB"
-    oCSP     = IsY8 || IsRGB ? "YV24" : sCSP
-    Assert(sCSP=="Y8" || sCSP=="YV12" || sCSP=="YV16" || sCSP=="YV24" || sCSP=="RGB24" || sCSP=="RGB32", """Resize8: only accept Y8, YV12, YV16, YV24, RGB24, RGB32 input""")
-    
-    sw       = input.Width ()
-    sh       = input.Height()
-    swc      = oCSP=="YV24" ? sw   : sw/2
-    shc      = oCSP=="YV12" ? sh/2 : sh
-    
-    
-    # Parameters for resampler
-    yhratio  = float(ow ) / float(src_w )
-    yvratio  = float(oh ) / float(src_h )
-    chratio  = float(owc) / float(src_wc)
-    cvratio  = float(ohc) / float(src_hc)
-    yup      = yhratio * yvratio>1
-    cup      = chratio * cvratio>1
-    
-    kernel   = Default(kernel,   yup ? "Lanczos4" : "Spline36")
-    kernel_c = Default(kernel_c, cup ? "Lanczos"  : "Spline36")
-    # "kernel" sets resizing kernel for luma, "kernel_c" sets resizing kernel for chroma
-    # Supported kernels: Bicubic, Catmull-Rom, Hermite, Mitchell-Netravali, Robidoux, SoftCubic, SoftCubicXX (XX represents softness:[50-100])
-    #                    Point, Bilinear, Gauss/Gaussian, Sinc
-    #                    Blankman, Blankman2, Blankman3, Blankman4
-    #                    Lanczos, Lanczos2, Lanczos3, Lanczos4
-    #                    Spline16, Spline36, Spline64
-    # By default, "Lanczos4" is set for luma upscaling, "Lanczos" is set for chroma upscaling, "Spline36" is set for luma/chroma downscaling.
-    kernel   = RightStr(kernel  , 6) == "Resize" ? LeftStr(kernel  , StrLen(kernel  )-6) : kernel
-    kernel_c = RightStr(kernel_c, 6) == "Resize" ? LeftStr(kernel_c, StrLen(kernel_c)-6) : kernel_c
-    
-    defa1    = Defined(a1)
-    defa2    = Defined(a2)
-    a1       = defa1 ? a1 : Resize8_undef()
-    a2       = defa2 ? a2 : Resize8_undef()
-    a1_c     = Defined(a1_c) ? a1_c : defa1 && kernel==kernel_c ? a1 : Resize8_undef()
-    a2_c     = Defined(a2_c) ? a2_c : defa2 && kernel==kernel_c ? a2 : Resize8_undef()
-    # "a1",   "a2",  sets parameters for resizer used in luma
-    # "a1_c", "a2_c" sets parameters for resizer used in chroma
-    # "a1" represents "b" and "a2" represents "c" for kernel "Bicubic"   (default: b = 1/3.,     c = 1/3.)
-    # "a1" represents "taps" and "a2" do nothing  for kernel "Blackman"  (default: taps=4,   1<=taps<=100)
-    # "a1" represents "taps" and "a2" do nothing  for kernel "Lanczos"   (default: taps=3,   1<=taps<=100)
-    # "a1" represents "taps" and "a2" do nothing  for kernel "Sinc"      (default: taps=4,   1<=taps<= 20)
-    # "a1" represents "p"    and "a2" do nothing  for kernel "Gauss"     (default:   p=30,   1<=  p <=100)
-    # "a1" represents "soft" and "a2" do nothing  for kernel "SoftCubic" (default: soft=75, 50<=soft<=100)
-    # for kernel "SoftCubicXX", "XX" represents "soft" and "a1"/"a2" do nothing
-    # "a1" do nothing and "a2" do nothing for the rest kernels supported by Resize8:
-    # "Catmull-Rom", "Hermite", "Mitchell-Netravali", "Robidoux", "Bilinear", "Point", "Spline16", "Spline36", "Spline64"
-    
-    
-    # Parameters for anti-ringing algorithm
-    nrkn     = kernel   == "Point" || kernel   == "Bilinear" || kernel   == "Gauss" || kernel   == "Gaussian" || kernel   == "Hermite" || LeftStr(kernel  , 9) == "SoftCubic"
-    nrkn_c   = kernel_c == "Point" || kernel_c == "Bilinear" || kernel_c == "Gauss" || kernel_c == "Gaussian" || kernel_c == "Hermite" || LeftStr(kernel_c, 9) == "SoftCubic"
-    noring   = Default(noring,   nrkn   ? False : True  )
-    noring_c = Default(noring_c, nrkn_c ? False : noring)
-    # "noring" & "noring_c" can be Bool or Float
-    # By default, we don't use anti-ringing algorithm for kernels "Point","Bilinear","Gauss"/"Gaussian","Hermite","SoftCubic".
-    # When "noring" or "noring_c" is True, adaptive anti-ringing is enabled, when no upscaling is applied, anti-ringing is also automatically disabled.
-    # For the default kernel of   upscaling, kernel="Lanczos4"+noring=True is applied for luma, kernel_c="Lanczos"+noring_c=True is applied for chroma.
-    # For the default kernel of downscaling, kernel="Spline36"+noring=True is applied for luma/chroma, but the adaptive anti-ringing will turn off anti-ringing.
-    #
-    # Use repair to remove ringing introduced from resizer
-    # noring >= 1          : completely use non-ringing repaired clip
-    # 0 < noring < 1       : noring is the weight of non-ringing repaired clip for merging with normally upscaled clip
-    # noring <= 0 or False : do not use non-ringing repaired clip
-    # noring == True       : adapt the weight of non-ringing repaired clip according to input and output resolution
-    Assert(IsFloat(noring  ) || IsBool(noring  ), """Resize8: "noring"   should be either bool or float!""")
-    Assert(IsFloat(noring_c) || IsBool(noring_c), """Resize8: "noring_c" should be either bool or float!""")
-    
-    
-    # Parameters for colorspace
-    cplace   = Default(cplace,   "MPEG2")
-    # Placement of the chroma subsamples. Can be one of these strings:
-    # "MPEG1": 4:2:0 subsampling used in MPEG-1. Chroma samples are located on the center of each group of 4 pixels.
-    # "MPEG2": Subsampling used in MPEG-2 4:2:x. Chroma samples are located on the left pixel column of the group.
-    
-    Yt       = Default(Y,        True   )
-    Ut       = Default(U,        True   )
-    Vt       = Default(V,        True   )
-    At       = Default(Alpha,    True   )
-    # Control whether to process Y/U/V plane(or R/G/B/A plane for RGB24/RGB32 input)
-    Ut       = IsY8 ? False : Ut
-    Vt       = IsY8 ? False : Vt
-    At       = sCSP=="RGB32" ? At : False
-    
-    
-    # Chroma placement of MPEG-2 YV12(4:2:0) and YV16(4:2:2) is left-aligned,
-    #     thus center-aligned resizer can cause chroma shift after scaling.
-    # Positive value means left-shift/top-shift, negetive value means right-shift/bottom-shift.
-    # chshifta = oCSP=="YV24" || cplace=="MPEG1" ? 0 : 0.25-0.25*chratio # Chroma horizontal shift after scaling
-    # cvshifta = oCSP=="YV24" || cplace=="MPEG1" ? 0 : 0                 # Chroma vertical   shift after scaling
-    # chshiftb = oCSP=="YV24" || cplace=="MPEG1" ? 0 : 0.25/chratio-0.25 # Chroma horizontal shift before scaling equivalent to that after scaling
-    # cvshiftb = oCSP=="YV24" || cplace=="MPEG1" ? 0 : 0                 # Chroma vertical   shift before scaling equivalent to that after scaling
-    
-    # So we apply shift before scaling to fix the chroma shift
-    chfix    = oCSP=="YV24" || cplace=="MPEG1" ? 0 : 0.25-0.25/chratio # Chroma horizontal shift fixing before scaling
-    cvfix    = oCSP=="YV24" || cplace=="MPEG1" ? 0 : 0                 # Chroma vertical   shift fixing before scaling
-    
-    
-    # Weight calculation of adaptive anti-ringing algorithm
-    res_mul   = yhratio * yvratio
-    res_mul   = min(max(res_mul  , 1), 2.25)
-    nr_wght   = IsFloat(noring  ) ? noring
-    \         : noring   == True  ? Spline(res_mul  , 1, 0, 2.25, 1, 3.5, 0, True)
-    \         :                     0
-    nr_wght   = min(max(nr_wght  , 0), 1)
-    
-    res_mul_c = chratio * cvratio
-    res_mul_c = min(max(res_mul_c, 1), 2.25)
-    nr_wght_c = IsFloat(noring_c) ? noring_c
-    \         : noring_c == True  ? Spline(res_mul_c, 1, 0, 2.25, 1, 3.5, 0, True)
-    \         :                     0
-    nr_wght_c = min(max(nr_wght_c, 0), 1)
-    
-    
-    # Apply resize
-    IsY8 ? \
-    Eval("""
-        Ys   = input
-        
-        Yo   = Yt                   ? Ys."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , kernel  , a1  , a2  )+""" : NOP()
-        
-        Yg   = Yt && nr_wght   >  0 ? Ys."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , "Gauss" , 100       )+""" : NOP()
-        
-        Yr   = Yt && nr_wght   >  0 ? Yo.Resize8_Repair(Yg, 1, -1) : NOP()
-        
-        Ym   = Yt ?  nr_wght   == 1 ? Yr : nr_wght   >  0 ? Yo.Merge(Yr, nr_wght  ) : Yo : Ys.BlankClip(width=ow , height=oh , color_yuv=$808080)
-        
-        res  = Ym
-    """) : \
-    IsRGB ? \
-    Eval("""
-        As   = At ? input.ShowAlpha("Y8") : NOP()
-        Rs   = input.ShowRed  ("Y8")
-        Gs   = input.ShowGreen("Y8")
-        Bs   = input.ShowBlue ("Y8")
-        
-        Ao   = At                   ? As."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , kernel_c, a1_c, a2_c)+""" : NOP()
-        Ro   = Yt                   ? Rs."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , kernel  , a1  , a2  )+""" : NOP()
-        Go   = Ut                   ? Gs."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , kernel  , a1  , a2  )+""" : NOP()
-        Bo   = Vt                   ? Bs."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , kernel  , a1  , a2  )+""" : NOP()
-        
-        Ag   = At && nr_wght_c >  0 ? As."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , "Gauss" , 100       )+""" : NOP()
-        Rg   = Yt && nr_wght   >  0 ? Rs."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , "Gauss" , 100       )+""" : NOP()
-        Gg   = Ut && nr_wght   >  0 ? Gs."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , "Gauss" , 100       )+""" : NOP()
-        Bg   = Vt && nr_wght   >  0 ? Bs."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , "Gauss" , 100       )+""" : NOP()
-        
-        Ar   = At && nr_wght_c >  0 ? Ao.Resize8_Repair(Ag, 1, -1) : NOP()
-        Rr   = Yt && nr_wght   >  0 ? Ro.Resize8_Repair(Rg, 1, -1) : NOP()
-        Gr   = Ut && nr_wght   >  0 ? Go.Resize8_Repair(Gg, 1, -1) : NOP()
-        Br   = Vt && nr_wght   >  0 ? Bo.Resize8_Repair(Bg, 1, -1) : NOP()
-        
-        Am   = At ?  nr_wght_c == 1 ? Ar : nr_wght_c >  0 ? Ao.Merge(Ar, nr_wght_c) : Ao : NOP()
-        Rm   = Yt ?  nr_wght   == 1 ? Rr : nr_wght   >  0 ? Ro.Merge(Rr, nr_wght  ) : Ro : Rs.BlankClip(width=ow , height=oh , color_yuv=$008080)
-        Gm   = Ut ?  nr_wght   == 1 ? Gr : nr_wght   >  0 ? Go.Merge(Gr, nr_wght  ) : Go : Gs.BlankClip(width=ow , height=oh , color_yuv=$008080)
-        Bm   = Vt ?  nr_wght   == 1 ? Br : nr_wght   >  0 ? Bo.Merge(Br, nr_wght  ) : Bo : Bs.BlankClip(width=ow , height=oh , color_yuv=$008080)
-        
-        res  = At ? MergeARGB(Am, Rm, Gm, Bm) : MergeRGB(Rm, Gm, Bm, sCSP)
-    """) : \
-    Eval("""
-        Ys   = input.ConvertToY8()
-        Us   = input.UtoY8()
-        Vs   = input.VtoY8()
-        
-        Yo   = Yt                   ? Ys."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , kernel  , a1  , a2  )+""" : NOP()
-        Uo   = Ut                   ? Us."""+Resize8_resstr(owc, ohc, src_lc+chfix, src_tc+cvfix, src_wc, src_hc, kernel_c, a1_c, a2_c)+""" : NOP()
-        Vo   = Vt                   ? Vs."""+Resize8_resstr(owc, ohc, src_lc+chfix, src_tc+cvfix, src_wc, src_hc, kernel_c, a1_c, a2_c)+""" : NOP()
-        
-        Yg   = Yt && nr_wght   >  0 ? Ys."""+Resize8_resstr(ow , oh , src_l       , src_t       , src_w , src_h , "Gauss" , 100       )+""" : NOP()
-        Ug   = Ut && nr_wght_c >  0 ? Us."""+Resize8_resstr(owc, ohc, src_lc+chfix, src_tc+cvfix, src_wc, src_hc, "Gauss" , 100       )+""" : NOP()
-        Vg   = Vt && nr_wght_c >  0 ? Vs."""+Resize8_resstr(owc, ohc, src_lc+chfix, src_tc+cvfix, src_wc, src_hc, "Gauss" , 100       )+""" : NOP()
-        
-        Yr   = Yt && nr_wght   >  0 ? Yo.Resize8_Repair(Yg, 1, -1) : NOP()
-        Ur   = Ut && nr_wght_c >  0 ? Uo.Resize8_Repair(Ug, 1, -1) : NOP()
-        Vr   = Vt && nr_wght_c >  0 ? Vo.Resize8_Repair(Vg, 1, -1) : NOP()
-        
-        Ym   = Yt ?  nr_wght   == 1 ? Yr : nr_wght   >  0 ? Yo.Merge(Yr, nr_wght  ) : Yo : Ys.BlankClip(width=ow , height=oh , color_yuv=$808080)
-        Um   = Ut ?  nr_wght_c == 1 ? Ur : nr_wght_c >  0 ? Uo.Merge(Ur, nr_wght_c) : Uo : Us.BlankClip(width=owc, height=ohc, color_yuv=$808080)
-        Vm   = Vt ?  nr_wght_c == 1 ? Vr : nr_wght_c >  0 ? Vo.Merge(Vr, nr_wght_c) : Vo : Vs.BlankClip(width=owc, height=ohc, color_yuv=$808080)
-        
-        res  = YtoUV(Um, Vm, Ym)
+# ===============================================================================
+#   Properties of source
+# ===============================================================================
+
+    pixtype = PixelType(source)
+    SourceBits = IsAvsHBD ? BitsPerComponent(source) : 8
+
+    sCSP = IsYUY2(source)  ? "YUY2" :
+    \      IsYV411(source) ? "411"  :
+    \      (IsAvsHBD && IsY(source))   || IsY8(source)   ? "000" :
+    \      (IsAvsHBD && Is420(source)) || IsYV12(source) ? "420" :
+    \      (IsAvsHBD && Is422(source)) || IsYV16(source) ? "422" :
+    \      (IsAvsHBD && Is444(source)) || IsYV24(source) ? "444" :
+    \      IsRGB24(source) ? "RGB24" :
+    \      IsRGB32(source) ? "RGB32" :
+    \      IsAvsHBD && IsRGB48(source) ? "RGB48" :
+    \      IsAvsHBD && IsRGB64(source) ? "RGB64" :
+    \      IsAvsHBD && IsPlanarRGB(source)  ? "RGBP"  :
+    \      IsAvsHBD && IsPlanarRGBA(source) ? "RGBAP" :
+    \      assert(false, R_8 + """ """" + pixtype + """" +
+    \             is an unsupported color format """ + chr(10))
+
+    IsAlpha = (IsAvsHBD && HasAlpha(source)) || (sCSP == "RGB32")
+    IsRGBSource = (LeftStr(sCSP, 3) == "RGB")
+    Sub444 = (sCSP == "444") || IsRGBSource     || (sCSP == "000")
+    Sub42x = (sCSP == "422") || (sCSP == "420") || (sCSP == "YUY2")
+    Sub420 = (sCSP == "420")
+    Sub411 = (sCSP == "411")
+    Sub000 = (sCSP == "000")
+
+    sw  = width(source)
+    sh  = height(source)
+    swc = Sub444 ? sw : sw / (Sub42x ? 2 : 4)
+    shc = Sub420 ? sh / 2 : sh
+
+    src_l = default(src_left, 0)
+    src_t = default(src_top, 0)
+    src_w = default(src_width, sw)
+    src_h = default(src_height, sh)
+    src_w = (src_w <= 0) ? sw - src_l + src_w : src_w
+    src_h = (src_h <= 0) ? sh - src_t + src_h : src_h
+
+# ===============================================================================
+#   Parameters for resizing
+# ===============================================================================
+
+    separate = default(separate, false)
+
+    ow = default(target_width, sw)
+    oh = default(target_height, sh)
+    owc = Sub444 ? ow : ow / (Sub42x ? 2 : 4)
+    ohc = Sub420 ? oh / 2 : oh
+
+    assert(!Sub411 || (ow == (owc * 4)),
+    \     R_8 + " " + pixtype + " output width must be MOD4 " + chr(10))
+    assert(!Sub42x || (ow == (owc * 2)),
+    \     R_8 + " " + pixtype + " output width must be MOD2 " + chr(10))
+    assert(!Sub420 || (oh == (ohc * 2)),
+    \     R_8 + " " + pixtype + " output height must be MOD2 " + chr(10))
+
+    !Separate ? Eval("""
+
+    src_lc = Sub444 ? src_l : src_l / (Sub42x ? 2 : 4)
+    src_tc = Sub420 ? src_t / 2 : src_t
+    src_wc = Sub444 ? src_w : src_w / (Sub42x ? 2 : 4)
+    src_hc = Sub420 ? src_h / 2 : src_h
+
+    """) : Eval("""
+
+    src_r  = sw - src_w - src_l
+    src_b  = sh - src_h - src_t
+    src_lc = src_l
+    src_tc = src_t
+    src_wc = swc - src_l - src_r
+    src_hc = shc - src_t - src_b
+
     """)
-    
-    
-    return res
-}
 
+    ratio_w  = float(ow) / float(src_w)
+    ratio_h  = float(oh) / float(src_h)
+    ratio_wc = float(owc) / float(src_wc)
+    ratio_hc = float(ohc) / float(src_hc)
+    IsLup    = ((ratio_w * ratio_h) >= 1)
+    IsCup    = ((ratio_wc * ratio_hc) >= 1)
 
-Function Resize8_resstr(int "ow", int "oh", float "src_l", float "src_t", float "src_w", float "src_h",
-\                      string "kernel", float "a1", float "a2")
-{
-    ow       = string(ow)
-    oh       = string(oh)
-    src_l    = string(src_l)
-    src_t    = string(src_t)
-    src_w    = string(src_w)
-    src_h    = string(src_h)
-    
-    
-    resstr   = kernel == "Catmull-Rom"           ? "BicubicResize ("+ow+", "+oh+", 0.0   , 0.5   , "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "Hermite"               ? "BicubicResize ("+ow+", "+oh+", 0.0   , 0.0   , "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "Mitchell-Netravali"    ? "BicubicResize ("+ow+", "+oh+", 1/3.  , 1/3.  , "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "Robidoux"              ? "BicubicResize ("+ow+", "+oh+", 0.3782, 0.3109, "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "Bicubic"               ? "BicubicResize ("+ow+", "+oh+", "+string(Default(a1, 1/3.))+", "+string(Default(a2, 1/3.))+", "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "SoftCubic"             ? "BicubicResize ("+ow+", "+oh+", "+string(Default(a1/100., 0.75))+", "+string(Default(1-a1/100., 0.25))+", "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "SoftCubic100"          ? "BicubicResize ("+ow+", "+oh+", 1.0   , 0.0   , "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : LeftStr(kernel, 9) == "SoftCubic" ? "BicubicResize ("+ow+", "+oh+", "+RightStr(kernel, 2)+"/100., 1-"+RightStr(kernel, 2)+"/100., "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "Bilinear"              ? "BilinearResize("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "Blankman"              ? "BlackmanResize("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+", "+string(int(Default(a1,  4)))+")"
-    \        : kernel == "Blankman2"             ? "BlackmanResize("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+", 2)"
-    \        : kernel == "Blankman3"             ? "BlackmanResize("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+", 3)"
-    \        : kernel == "Blankman4"             ? "BlackmanResize("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+", 4)"
-    \        : kernel == "Gauss"                 ? "GaussResize   ("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+", "+string(int(Default(a1, 30)))+")"
-    \        : kernel == "Gaussian"              ? "GaussResize   ("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+", "+string(int(Default(a1, 30)))+")"
-    \        : kernel == "Lanczos"               ? "LanczosResize ("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+", "+string(int(Default(a1,  3)))+")"
-    \        : kernel == "Lanczos2"              ? "LanczosResize ("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+", 2)"
-    \        : kernel == "Lanczos3"              ? "LanczosResize ("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+", 3)"
-    \        : kernel == "Lanczos4"              ? "Lanczos4Resize("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "Point"                 ? "PointResize   ("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "Sinc"                  ? "SincResize    ("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+", "+string(int(Default(a1,  4)))+")"
-    \        : kernel == "Spline16"              ? "Spline16Resize("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "Spline36"              ? "Spline36Resize("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        : kernel == "Spline64"              ? "Spline64Resize("+ow+", "+oh+", "+src_l+", "+src_t+", "+src_w+", "+src_h+")"
-    \        :                                     "Unknown Kernel"
-    Assert(resstr!="Unknown Kernel", """Resize8: Unsupported "kernel" or "kernel_c"!""")
-    
-    
-    return resstr
-}
+# ===============================================================================
+#   Determine the resizing kernel
+# ===============================================================================
 
+    Try{ LumaU = R8_Luma_UpScale()     }catch(err){ LumaU = "Lanczos4" }
+    Try{ LumaD = R8_Luma_DownScale()   }catch(err){ LumaD = "Spline36" }
+    Try{ ChroU = R8_Chroma_UpScale()   }catch(err){ ChroU = "Lanczos"  }
+    Try{ ChroD = R8_Chroma_DownScale() }catch(err){ ChroD = "Spline36" }
 
-Function Resize8_Repair(clip input, clip source, int "mode", int "modeU", int "modeV")
-{
-    try
-    {
-        return input.Repair(source, mode, modeU, modeV)
+    IsKl = defined(kernel)
+    IsKc = defined(kernel_c)
+    Kl = default(kernel, IsLup ? LumaU : LumaD)
+    Kc = default(kernel_c, IsKl ? kernel : IsCup ? ChroU : ChroD)
+
+    original_Kl = Kl
+    original_Kc = Kc
+
+    HasResizeMT_Kl = (RightStr(Kl, 8) == "ResizeMT") || (RightStr(Kl, 8) == "MTResize")
+    HasResizeMT_Kc = (RightStr(Kc, 8) == "ResizeMT") || (RightStr(Kc, 8) == "MTResize")
+    HasMT_Kl       = !HasResizeMT_Kl && (RightStr(Kl, 2) == "MT")
+    HasMT_Kc       = !HasResizeMT_Kc && (RightStr(Kc, 2) == "MT")
+
+    Kl = HasResizeMT_Kl ? LeftStr(Kl, StrLen(Kl) - 8) :
+    \    (RightStr(Kl, 6) == "Resize") ? LeftStr(Kl, StrLen(Kl) - 6) :
+    \    HasMT_Kl ? LeftStr(Kl, StrLen(Kl) - 2) : Kl
+    Kc = HasResizeMT_Kc ? LeftStr(Kc, StrLen(Kc) - 8) :
+    \    (RightStr(Kc, 6) == "Resize") ? LeftStr(Kc, StrLen(Kc) - 6) :
+    \    HasMT_Kc ? LeftStr(Kc, StrLen(Kc) - 2) : Kc
+
+    assert((((LeftStr(Kl, 9) != "SoftCubic") || (StrLen(Kl) < 10) || (Kl == "SoftCubicXX") ||
+    \      (Kl == "SoftCubic100") || (Kl == "SoftCubicMT")) ||
+    \      (0 < value(RightStr(Kl, StrLen(Kl) - 9)) <= 100)) &&
+    \      (((LeftStr(Kc, 9) != "SoftCubic") || (StrLen(Kc) < 10) || (Kc == "SoftCubicXX") ||
+    \      (Kc == "SoftCubic100") || (Kc == "SoftCubicMT")) ||
+    \      (0 < value(RightStr(Kc, StrLen(Kc) - 9)) <= 100)),
+    \      R_8 + """ When replacing "XX" in SoftCubicXX with an integer """ + chr(10) +
+    \      """ "XX" must be greater than zero, & less than or equal to 100 """ + chr(10))
+
+# ===============================================================================
+#   Add the appropriate resizer arguments
+# ===============================================================================
+
+    IsA1  = defined(a1)
+    IsA1c = defined(a1_c)
+    IsA2  = defined(a2)
+    IsA2c = defined(a2_c)
+
+    arg1_Kl = (Kl == "Catmull-Rom")        ? ", b=0.0, c=0.5" :
+    \         (Kl == "Hermite")            ? ", b=0.0, c=0.0" :
+    \         (Kl == "Mitchell-Netravali") ? ", b=1.0/3.0, c=1.0/3.0" :
+    \         (Kl == "Robidoux")           ? ", b=0.3782, c=0.3109" :
+    \         (Kl == "SoftCubic")          ? ", b="+string(default(a1,75)/100.0) +
+    \                                        ", c="+string(1.0-(default(a1,75)/100.0)) :
+    \         (Kl == "SoftCubic100")       ? ", b=1.0, c=0.0" :
+    \         (Kl == "SoftCubicXX")        ? ", b=0.75, c=0.25" :
+    \         (LeftStr(Kl,9)=="SoftCubic") ? ", b="+RightStr(Kl,StrLen(Kl)-9)+"/100.0" +
+    \                                        ", c=1.0-("+RightStr(Kl,StrLen(Kl)-9)+"/100.0)" :
+    \         (Kl == "Bicubic")            ? (IsA1?", b="+string(a1):"") :
+    \         (Kl == "Bilinear")           ? "" :
+    \         (Kl == "Blankman")           ? (IsA1?", taps="+string(int(a1)):"") :
+    \         (Kl == "Blankman2")          ? ", taps=2" :
+    \         (Kl == "Blankman3")          ? ", taps=3" :
+    \         (Kl == "Blankman4")          ? ", taps=4" :
+    \         (Kl == "Gauss")              ? (IsA1?", p="+string(a1):"") :
+    \         (Kl == "Jinc")               ? (IsA1?", tap="+string(int(a1)):"") :
+    \         (Kl == "Jinc36")             ? "" :
+    \         (Kl == "Jinc64")             ? "" :
+    \         (Kl == "Jinc144")            ? "" :
+    \         (Kl == "Jinc256")            ? "" :
+    \         (Kl == "Lanczos")            ? (IsA1?", taps="+string(int(a1)):"") :
+    \         (Kl == "Lanczos2")           ? ", taps=2" :
+    \         (Kl == "Lanczos3")           ? ", taps=3" :
+    \         (Kl == "Lanczos4")           ? "" :
+    \         (Kl == "Point")              ? "" :
+    \         (Kl == "Sinc")               ? (IsA1?", taps="+string(int(a1)):"") :
+    \         (Kl == "SinPow")             ? (IsA1?", p="+string(a1):"") :
+    \         (Kl == "SincLin2")           ? (IsA1?", taps="+string(int(a1)):"") :
+    \         (Kl == "Spline")             ? (IsA1?", taps="+string(int(a1)):"") :
+    \         (Kl == "Spline16")           ? "" :
+    \         (Kl == "Spline36")           ? "" :
+    \         (Kl == "Spline64")           ? "" :
+    \         (Kl == "Spline100")          ? "" :
+    \         (Kl == "Spline144")          ? "" :
+    \         (Kl == "UserDefined2")       ? (IsA1?", b="+string(a1):"") :
+    \         "unKnown"
+
+    arg2_Kl = (Kl == "Bicubic")            ? (IsA2?", c="+string(a2):"") :
+    \         (Kl == "Jinc")               ? (IsA2?", blur="+string(a2):"") :
+    \         (Kl == "UserDefined2")       ? (IsA2?", c="+string(a2):"") : ""
+
+# -------------------------------------------------------------------------------
+
+    arg1_Kc = !IsA1c && IsA1 && (Kl == Kc) ? arg1_Kl :
+    \         (Kc == "Catmull-Rom")        ? ", b=0.0, c=0.5" :
+    \         (Kc == "Hermite")            ? ", b=0.0, c=0.0" :
+    \         (Kc == "Mitchell-Netravali") ? ", b=1.0/3.0, c=1.0/3.0" :
+    \         (Kc == "Robidoux")           ? ", b=0.3782, c=0.3109" :
+    \         (Kc == "SoftCubic")          ? ", b="+string(default(a1_c,75)/100.0) +
+    \                                        ", c="+string(1.0-(default(a1_c,75)/100.0)) :
+    \         (Kc == "SoftCubic100")       ? ", b=1.0, c=0.0" :
+    \         (Kc == "SoftCubicXX")        ? ", b=0.75, c=0.25" :
+    \         (LeftStr(Kc,9)=="SoftCubic") ? ", b="+RightStr(Kc,StrLen(Kc)-9)+"/100.0" +
+    \                                        ", c=1.0-("+RightStr(Kc,StrLen(Kc)-9)+"/100.0)" :
+    \         (Kc == "Bicubic")            ? (IsA1c?", b="+string(a1_c):"") :
+    \         (Kc == "Bilinear")           ? "" :
+    \         (Kc == "Blankman")           ? (IsA1c?", taps="+string(int(a1_c)):"") :
+    \         (Kc == "Blankman2")          ? ", taps=2" :
+    \         (Kc == "Blankman3")          ? ", taps=3" :
+    \         (Kc == "Blankman4")          ? ", taps=4" :
+    \         (Kc == "Gauss")              ? (IsA1c?", p="+string(a1_c):"") :
+    \         (Kc == "Jinc")               ? (IsA1c?", tap="+string(int(a1_c)):"") :
+    \         (Kc == "Jinc36")             ? "" :
+    \         (Kc == "Jinc64")             ? "" :
+    \         (Kc == "Jinc144")            ? "" :
+    \         (Kc == "Jinc256")            ? "" :
+    \         (Kc == "Lanczos")            ? (IsA1c?", taps="+string(int(a1_c)):"") :
+    \         (Kc == "Lanczos2")           ? ", taps=2" :
+    \         (Kc == "Lanczos3")           ? ", taps=3" :
+    \         (Kc == "Lanczos4")           ? "" :
+    \         (Kc == "Point")              ? "" :
+    \         (Kc == "Sinc")               ? (IsA1c?", taps="+string(int(a1_c)):"") :
+    \         (Kc == "SinPow")             ? (IsA1c?", p="+string(a1_c):"") :
+    \         (Kc == "SincLin2")           ? (IsA1c?", taps="+string(int(a1_c)):"") :
+    \         (Kc == "Spline")             ? (IsA1c?", taps="+string(int(a1_c)):"") :
+    \         (Kc == "Spline16")           ? "" :
+    \         (Kc == "Spline36")           ? "" :
+    \         (Kc == "Spline64")           ? "" :
+    \         (Kc == "Spline100")          ? "" :
+    \         (Kc == "Spline144")          ? "" :
+    \         (Kc == "UserDefined2")       ? (IsA1c?", b="+string(a1_c):"") :
+    \         "unKnown"
+
+    arg2_Kc = !IsA2c && IsA2 && (Kl == Kc) ? arg2_Kl :
+    \         (Kc == "Bicubic")            ? (IsA2c?", c="+string(a2_c):"") :
+    \         (Kc == "Jinc")               ? (IsA2c?", blur="+string(a2_c):"") :
+    \         (Kc == "UserDefined2")       ? (IsA2c?", c="+string(a2_c):"") : ""
+
+    unKnown_Kl = (arg1_Kl == "unKnown")
+    unKnown_Kc = (arg1_Kc == "unKnown")
+    arg1_Kl = (arg1_Kl == "unKnown") ? "" : (arg1_Kl != "") ? arg1_Kl : ""
+    arg1_Kc = (arg1_Kc == "unKnown") ? "" : (arg1_Kc != "") ? arg1_Kc : ""
+
+# ===============================================================================
+#   Restore full resizer names
+# ===============================================================================
+
+    Kl = (Kl == "Catmull-Rom") || (Kl == "Hermite") || (Kl == "Mitchell-Netravali") ||
+    \    (Kl == "Robidoux") || (LeftStr(Kl, 9) == "SoftCubic") ? "Bicubic" :
+    \    (LeftStr(Kl, 8) == "Blackman") ? "Blackman" :
+    \    (Kl == "Lanczos2") || (Kl == "Lanczos3") ? "Lanczos" : Kl
+
+    Kc = (Kc == "Catmull-Rom") || (Kc == "Hermite") || (Kc == "Mitchell-Netravali") ||
+    \    (Kc == "Robidoux") || (LeftStr(Kc, 9) == "SoftCubic") ? "Bicubic" :
+    \    (LeftStr(Kc, 8) == "Blackman") ? "Blackman" :
+    \    (Kc == "Lanczos2") || (Kc == "Lanczos3") ? "Lanczos" : Kc
+
+    resizer_Kl = unKnown_Kl ? original_Kl : 
+    \            Kl + (!HasResizeMT_Kl && !HasMT_Kl ? "Resize" : "ResizeMT")
+    resizer_Kc = unKnown_Kc ? original_Kc :
+    \            Kc + (!HasResizeMT_Kc && !HasMT_Kc ? "Resize" : "ResizeMT")
+
+# ===============================================================================
+#   Configure rstr & rstr_c
+# ===============================================================================
+
+    Try{ strLumaU = R8_Luma_UpScale_rstr()     }catch(err){ strLumaU = "" }
+    Try{ strLumaD = R8_Luma_DownScale_rstr()   }catch(err){ strLumaD = "" }
+    Try{ StrChroU = R8_Chroma_UpScale_rstr()   }catch(err){ strChroU = "" }
+    Try{ strChroD = R8_Chroma_DownScale_rstr() }catch(err){ strChroD = "" }
+
+    strLumaU = IsKl ? "" : strLumaU
+    strLumaD = IsKl ? "" : strLumaD
+    strChroU = IsKl || IsKc ? "" : strChroU
+    strChroD = IsKl || IsKc ? "" : strChroD
+
+    IsRstr = defined(rstr)
+    rstr   = IsRstr ? rstr : IsLup ? strLumaU : strLumaD
+
+    IsRstr_c = defined(rstr_c)
+    rstr_c   = IsRstr_c ? rstr_c : IsRstr && (resizer_Kl == resizer_Kc) ? rstr :
+    \          IsCup ? strChroU : strChroD
+
+    rstr   = (rstr != "") ? ", " + rstr : ""
+    rstr_c = (rstr_c != "") ? ", " + rstr_c : ""
+
+# ===============================================================================
+#   Chroma crop before scaling to prevent shift
+# ===============================================================================
+
+    cplace = default(cplace, !separate ? "mpeg2" : "mpeg1")
+    IsM1 = (cplace == "mpeg1")
+
+    # Chroma placement of MPEG2-YV12(4:2:0), YUY2(4:2:2), YV16(4:2:2) and
+    # YV11(4:1:1) is left-aligned, thus center-aligned resizer can cause
+    # chroma shift after scaling.
+    # Positive value means left-shift / top-shift
+    # Negetive value means right-shift / bottom-shift.
+    #
+    # Chroma horizontal shift after scaling.
+    # chshifta = Sub444 || IsM1 ? 0.0 :
+    # \          Sub42x ? 0.25 - (0.25 * (owc / src_wc)) :
+    # \          Sub411 ? 0.375 - (0.375 * (owc / src_wc)) : 0.0
+    # Chroma horizontal shift before scaling equivalent to that after scaling.
+    # chshiftb = Sub444 || IsM1 ? 0.0 :
+    # chshiftb = Sub42x ? (0.25 / (owc / src_wc)) - 0.25 :
+    # \          Sub411 ? (0.375 / (owc / src_wc)) - 0.375 : 0.0
+
+    assert((cplace == "mpeg2") || IsM1,
+    \      R_8 + """ cplace must be "mpeg2" or "mpeg1" """ + chr(10))
+    assert(!separate || IsM1,
+    \ R_8 + """ When separate=true, cplace defaults to "mpeg1" and can't be changed """ +
+    \ """ (For separate=false, "mpeg2" is the default, but it can be changed) """ + chr(10))
+
+    chfix = Sub444 || IsM1 || Separate? 0.0 :
+    \       Sub42x ? 0.25  - (float(src_wc) * 0.25 /  float(owc)) :
+    \       Sub411 ? 0.375 - (float(src_wc) * 0.375 / float(owc)) : 0.0
+
+    src_lf = src_lc + chfix
+
+# ===============================================================================
+#   Create strings for resizing
+# ===============================================================================
+
+    whstr   = "(" + string(ow)  + ", " + string(oh)
+    whstr_c = "(" + string(owc) + ", " + string(ohc)
+
+    srcstr   = ", src_left="  + string(src_l)  + ", src_top="    + string(src_t) +
+    \          ", src_width=" + string(src_w)  + ", src_height=" + string(src_h)
+    srcstr_c = ", src_left="  + string(src_lf) + ", src_top="    + string(src_tc) +
+    \          ", src_width=" + string(src_wc) + ", src_height=" + string(src_hc)
+
+    resizeA = resizer_Kc + whstr   + srcstr   + arg1_Kc + arg2_Kc + rstr_c + ")"
+    resizeY = resizer_Kl + whstr   + srcstr   + arg1_Kl + arg2_Kl + rstr   + ")"
+    resizeC = resizer_Kc + whstr_c + srcstr_c + arg1_Kc + arg2_Kc + rstr_c + ")"
+
+    IsAvsHBD ?
+    \ eval(""" IsMTGauss=FunctionExists("GaussResizeMT" )     """) :
+    \ eval(""" try{ source.GaussResizeMT(640,480) IsMTGauss=true }
+                                catch(err){ IsMTGauss=false } """)
+
+    gaussY = !IsMTGauss ? "GaussResize"   + whstr   + srcstr   + ",p=100)" :
+    \                     "GaussResizeMT" + whstr   + srcstr   + ",p=100)"
+    gaussC = !IsMTGauss ? "GaussResize"   + whstr_c + srcstr_c + ",p=100)" :
+    \                     "GaussResizeMT" + whstr_c + srcstr_c + ",p=100)"
+
+    BlankY   = "BlankClip(width=ow,  height=oh, color=$808080)"
+    BlankC   = "BlankClip(width=owc, height=ohc,color=$828282)"
+    BlankRGB = "BlankClip(width=owc, height=ohc,color=$000000)"
+
+# ===============================================================================
+#   Use RgTools/repair plugin to repair ringing
+# ===============================================================================
+
+    # Disable ringing repair for these kernels by default
+
+    nrkn   = (Kl == "Point") || (Kl == "Bilinear") || (Kl == "Gauss") ||
+    \        (Kl == "Hermite") || (Kl == "SinPow") || (Kl == "SincLin2") ||
+    \        (Kl == "UserDefined2") || (LeftStr(Kl, 9) == "SoftCubic") || unKnown_Kl
+
+    nrkn_c = (Kc == "Point") || (Kc == "Bilinear") || (Kc == "Gauss") ||
+    \        (Kc == "Hermite") || (Kc == "SinPow") || (Kc == "SincLin2") ||
+    \        (Kc == "UserDefined2") || (LeftStr(Kc, 9) == "SoftCubic") || unKnown_Kc
+ 
+    IsNoring   = defined(noring)
+    IsNoring_c = defined(noring_c)
+    noring     = default(noring, nrkn || !IsLup ? false : true)
+    noring_c   = default(noring_c, IsNoring && (Kl == Kc) ? noring : nrkn_c || !IsCup ? false : true)
+
+    assert((IsBool(noring) || IsFloat(noring)) && (IsBool(noring_c) || IsFloat(noring_c)),
+    \      R_8 + """ "noring" must be bool, integer or float """ + chr(10))
+    assert((IsBool(noring) || (0 <= noring <= 1)) && (IsBool(noring_c) || (0 <= noring_c <= 1)),
+    \      R_8 + """ when "noring" is an integer or float """ + chr(10) +
+    \      " the allowed range is 0 to 1 " + chr(10))
+
+# ===============================================================================
+#   Weight calculation of adaptive anti-ringing algorithm
+# ===============================================================================
+
+    res_mul = IsLup ? float(ow) * float(oh) / float(src_h) / float(src_w) :
+    \         float(src_w) * float(src_h) / float(oh) / float(ow)
+    res_mul = min(max(res_mul, 1), 2.25)
+    nr_wght = IsFloat(noring) ? noring :
+    \         (noring == true) ? Spline(res_mul, 1, 0, 2.25, 1, 3.5, 0, true) : 0
+    nr_wght = min(max(nr_wght, 0), 1)
+
+    res_mul_c = IsCup ? float(owc) * float(ohc) / float(src_hc) / float(src_wc) :
+    \           float(src_wc) * float(src_hc) / float(ohc) / float(owc)
+    res_mul_c = min(max(res_mul_c, 1), 2.25)
+    nr_wght_c = IsFloat(noring_c) ? noring_c :
+    \           (noring_c == true) ? Spline(res_mul_c, 1, 0, 2.25, 1, 3.5, 0, true) : 0
+    nr_wght_c   = min(max(nr_wght_c, 0), 1)
+
+# ===============================================================================
+#   Control whether to process Y/U/V/A or R/G/B/A planes
+# ===============================================================================
+
+    show = default(show, false)
+    chroma = default(chroma, true)
+    alpha = default(alpha, IsAlpha ? true : false)
+    AddAlpha = alpha && !IsAlpha
+    At = alpha && IsAlpha && (IsRGBSource || (!IsRGBSource && IsAvsHBD))
+    Yt = default(Y, true)
+    Ut = default(U, chroma) && !Sub000
+    Vt = default(V, chroma) && !Sub000
+    Rt = default(Y, true)
+    Gt = default(U, true)
+    Bt = default(V, true)
+
+    assert(IsAvsHBD || ((!alpha || IsAlpha) || IsRGBSource),
+    \      R_8 + " AviSynth+ Revision > 2294 required for YUVA support " + chr(10))
+    assert((!alpha || IsAlpha) || ((sCSP != "YUY2") && !Sub411 && !Sub000),
+    \      R_8 + " An alpha plane can't be added to " + pixtype + " " + chr(10))
+    assert(chroma || !IsRGBSource,
+    \      R_8 + " chroma=false only applies to YUV sources " + chr(10))
+    assert(((Kl != "Spline") && (Kl != "Spline100") && (Kl != "Spline144") &&
+    \      (Kc != "Spline") && (Kc != "Spline100") && (Kc != "Spline144")) ||
+    \      (SourceBits == 8), R_8 + 
+    \      " The SplineResize plugin only supports 8 bit video " + chr(10))
+
+# ===============================================================================
+#   YUV Resize 
+# ===============================================================================
+
+    !IsRGBSource && !show ? Eval("""
+
+    As = At ? ExtractA(source) : nop()
+    Ys = !Sub000 ? (IsAvsHBD ? ExtractY(source) : ConvertToY8(source)) : source
+    Us = !Sub000 ? (IsAvsHBD ? ExtractU(source) : UtoY8(source)) : nop()
+    Vs = !Sub000 ? (IsAvsHBD ? ExtractV(source) : VtoY8(source)) : nop()
+
+    Try{
+
+    Ao = At ? As.Eval(resizeY) : nop()
+    Yo = Yt ? Ys.Eval(resizeY) : nop()
+    Uo = Ut ? Us.Eval(resizeC) : nop()
+    Vo = Vt ? Vs.Eval(resizeC) : nop()
+
+    }catch(err){
+
+    Ao = At ? ConvertToYUV420(As).Eval(resizeY) : nop()
+    Yo = Yt ? (IsAvsHBD ? ConvertToYUV420(Ys) : ConvertToYV12(Ys)).Eval(resizeY) : nop()
+    Uo = Ut ? (IsAvsHBD ? ConvertToYUV420(Us) : ConvertToYV12(Us)).Eval(resizeC) : nop()
+    Vo = Vt ? (IsAvsHBD ? ConvertToYUV420(Vs) : ConvertToYV12(Vs)).Eval(resizeC) : nop()
+
+    Ao = At ? ConvertToY(Ao) : nop()
+    Yo = Yt ? (IsAvsHBD ? ConvertToY(Yo) : ConvertToY8(Yo)) : nop()
+    Uo = Ut ? (IsAvsHBD ? ConvertToY(Uo) : ConvertToY8(Uo)) : nop()
+    Vo = Vt ? (IsAvsHBD ? ConvertToY(Vo) : ConvertToY8(Vo)) : nop()
+
     }
-    catch(error_msg)
-    {
-        return input.ConvertToYV12().Repair(source.ConvertToYV12(), mode, modeU, modeV).ConvertToY8()
+
+    Ag = At && (nr_wght > 0) ? As.Eval(gaussY) : nop()
+    Yg = Yt && (nr_wght > 0) ? Ys.Eval(gaussY) : nop()
+    Ug = Ut && (nr_wght_c>0) ? Us.Eval(gaussC) : nop()
+    Vg = Vt && (nr_wght_c>0) ? Vs.Eval(gaussC) : nop()
+
+    Ar = At && (nr_wght > 0) ? Ao.Repair(Ag, 1, -1) : nop()
+    Yr = Yt && (nr_wght > 0) ? Yo.Repair(Yg, 1, -1) : nop()
+    Ur = Ut && (nr_wght_c>0) ? Uo.Repair(Ug, 1, -1) : nop()
+    Vr = Vt && (nr_wght_c>0) ? Vo.Repair(Vg, 1, -1) : nop()
+
+    Am = At ? ((nr_wght == 1) ? Ar : (nr_wght > 0) ? Ao.Merge(Ar, nr_wght)  : Ao) : nop()
+    Ym = Yt ? ((nr_wght == 1) ? Yr : (nr_wght > 0) ? Yo.Merge(Yr, nr_wght)  : Yo) : Eval("Ys."+BlankY)
+    Um = Ut ? ((nr_wght_c==1) ? Ur : (nr_wght_c>0) ? Uo.Merge(Ur, nr_wght_c): Uo) : Eval("Us."+BlankC)
+    Vm = Vt ? ((nr_wght_c==1) ? Vr : (nr_wght_c>0) ? Vo.Merge(Vr, nr_wght_c): Vo) : Eval("Vs."+BlankC)
+
+    cspace = Sub444 ? 444 : Sub42x && !Sub420 ? 422 : 420
+    ptype = !IsAvsHBD || (!IsAlpha && !AddAlpha) ? pixtype :
+    \       BuildPixelType(family=IsAlpha? "YUV" : "YUVA", bits=SourceBits, chroma=cspace)
+
+    res = Sub000 ? Ym :
+    \     IsAvsHBD && (sCSP != "YUY2") && !Sub411 ? (At ?
+    \     CombinePlanes(Ym, Um, Vm, Am, planes="YUVA", source_planes="YYYY", pixel_type=pixtype) :
+    \     CombinePlanes(Ym, Um, Vm, planes="YUV", source_planes="YYY", pixel_type=ptype)) :
+    \     (sCSP != "YUY2") ? YtoUV(Um, Vm, Ym) : YtoUV(Um, Vm, Ym).ConvertToYUY2()
+
+    """, "Resize YUV Eval") : !show ? Eval("""
+
+# ===============================================================================
+#   RGB Resize
+# ===============================================================================
+
+    As = At ? (IsAvsHBD ? ExtractA(source) : ShowAlpha(source, "Y8")) : nop()
+    Rs = IsAvsHBD ? ExtractR(source) : ShowRed(source, "Y8")
+    Gs = IsAvsHBD ? ExtractG(source) : ShowGreen(source, "Y8")
+    Bs = IsAvsHBD ? ExtractB(source) : ShowBlue(source, "Y8")
+
+    Try{
+
+    Ao = At ? As.Eval(resizeA) : nop()
+    Ro = Rt ? Rs.Eval(resizeY) : nop()
+    Go = Gt ? Gs.Eval(resizeY) : nop()
+    Bo = Bt ? Bs.Eval(resizeY) : nop()
+
+    }catch(err){
+
+    Ao = At ? (IsAvsHBD ? ConvertToYUV420(As) : ConvertToYV12(As)).Eval(resizeA) : nop()
+    Ro = Rt ? (IsAvsHBD ? ConvertToYUV420(Rs) : ConvertToYV12(Rs)).Eval(resizeY) : nop()
+    Go = Gt ? (IsAvsHBD ? ConvertToYUV420(Gs) : ConvertToYV12(Gs)).Eval(resizeY) : nop()
+    Bo = Bt ? (IsAvsHBD ? ConvertToYUV420(Bs) : ConvertToYV12(Bs)).Eval(resizeY) : nop()
+
+    Ao = At ? (IsAvsHBD ? ConvertToY(Ao) : ConvertToY8(Ao)) : nop()
+    Ro = Rt ? (IsAvsHBD ? ConvertToY(Ro) : ConvertToY8(Ro)) : nop()
+    Go = Gt ? (IsAvsHBD ? ConvertToY(Go) : ConvertToY8(Go)) : nop()
+    Bo = Bt ? (IsAvsHBD ? ConvertToY(Bo) : ConvertToY8(Bo)) : nop()
+
     }
-}
 
+    Ag = At && (nr_wght_c>0) ? As.Eval(gaussY) : nop()
+    Rg = Rt && (nr_wght > 0) ? Rs.Eval(gaussY) : nop()
+    Gg = Gt && (nr_wght > 0) ? Gs.Eval(gaussY) : nop()
+    Bg = Bt && (nr_wght > 0) ? Bs.Eval(gaussY) : nop()
 
-Function Resize8_undef() {}
+    Ar = At && (nr_wght_c>0) ? Ao.Repair(Ag, 1, -1) : nop()
+    Rr = Rt && (nr_wght > 0) ? Ro.Repair(Rg, 1, -1) : nop()
+    Gr = Gt && (nr_wght > 0) ? Go.Repair(Gg, 1, -1) : nop()
+    Br = Bt && (nr_wght > 0) ? Bo.Repair(Bg, 1, -1) : nop()
 
+    Am = At ? ((nr_wght_c==1) ? Ar : (nr_wght_c>0) ? Ao.Merge(Ar, nr_wght_c): Ao) : nop()
+    Rm = Rt ? ((nr_wght == 1) ? Rr : (nr_wght > 0) ? Ro.Merge(Rr, nr_wght)  : Ro) : Eval("Rs."+BlankRGB)
+    Gm = Gt ? ((nr_wght == 1) ? Gr : (nr_wght > 0) ? Go.Merge(Gr, nr_wght)  : Go) : Eval("Gs."+BlankRGB)
+    Bm = Bt ? ((nr_wght == 1) ? Br : (nr_wght > 0) ? Bo.Merge(Br, nr_wght)  : Bo) : Eval("Bs."+BlankRGB)
 
-Function GetCSP(clip c)
-{
-    return c.IsPlanar ? c.IsYV12 ? "YV12" :
-    \                   c.IsYV16 ? "YV16" :
-    \                   c.IsYV24 ? "YV24" : c.GetCSP_Y8_YV411() :
-    \      c.IsYUY2   ? "YUY2"   :
-    \      c.IsRGB32  ? "RGB32"  :
-    \      c.IsRGB24  ? "RGB24"  : "Unknown"
-    
-    
-    Function GetCSP_Y8_YV411(clip c)
-    {
-        try
-        {
-            c.UtoY()
-            csp = "YV411"
-        }
-        catch ( error_msg )
-        {
-            csp = "Y8"
-        }
-        
-        return csp
-    }
-}
+    cspace = !IsAlpha && !AddAlpha ? sCSP :
+    \        IsAlpha ? ((sCSP == "RGB32") ? "RGB24" : "RGB48") :
+    \        (sCSP == "RGB24") ? "RGB32" : "RGB64"
+
+    ptype = !IsAlpha && !AddAlpha ? pixtype :
+    \       (sCSP == "RGBAP") || (sCSP == "RGBP") ?
+    \       BuildPixelType(family=IsAlpha ? "RGB" : "RGBA", bits=SourceBits) : nop()
+
+    res = (sCSP == "RGBAP") && At ?
+    \     CombinePlanes(Rm, Gm, Bm, Am, planes="RGBA", source_planes="YYYY", pixel_type=pixtype) :
+    \     (sCSP == "RGBAP") || (sCSP == "RGBP") ?
+    \     CombinePlanes(Rm, Gm, Bm, planes="RGB", source_planes="YYY", pixel_type=ptype) :
+    \     At ? MergeARGB(Am, Rm, Gm, Bm) : MergeRGB(Rm, Gm, Bm, cspace)
+
+    """, "Resize RGB Eval") : show ? Eval("""
+
+# ===============================================================================
+#   Display resizing strings using a blank clip
+# ===============================================================================
+
+    src_r = (src_w <= 0) ? src_w : -sw + src_w + src_l
+    src_b = (src_h <= 0) ? src_h : -sh + src_h + src_t
+    src_rc = !Separate ? Sub444 ? src_r : (src_r / (Sub42x ? 2 : 4)) :
+    \        -swc + src_l + src_wc
+    src_rf = src_rc + chfix
+    src_bc = !Separate ? (Sub420 ? src_b / 2 : src_b) : -shc + src_t + src_hc
+
+    srxl  = R8_RZs(src_l)
+    srxt  = R8_RZs(src_t)
+    srxw  = R8_RZs(src_w)
+    srxh  = R8_RZs(src_h)
+    srxr  = R8_RZs(src_r)
+    srxb  = R8_RZs(src_b)
+    srxlf = R8_RZs(src_lf)
+    srxtc = R8_RZs(src_tc)
+    srxwc = R8_RZs(src_wc)
+    srxhc = R8_RZs(src_hc)
+    srxrf = R8_RZs(src_rf)
+    srxbc = R8_RZs(src_bc)
+    cfx   = R8_RZs(chfix)
+    nwl   = R8_RZs(nr_wght,1)
+    nwc   = R8_RZs(nr_wght_c,1)
+
+    b1 = "("
+    b2 = ")"
+    Q  = ", "
+    dl = ", src_left="
+    dt = ", src_top="
+    dw = ", src_width="
+    dh = ", src_height="
+
+    srxstr   = dl + srxl  + dt + srxt  + dw + srxw  + dh + srxh
+    srxstr_c = dl + srxlf + dt + srxtc + dw + srxwc + dh + srxhc
+
+    ltwh  = b1 + srxl  + Q + srxt  + Q + srxw  + Q + srxh  + b2
+    ltrb  = b1 + srxl  + Q + srxt  + Q + srxr  + Q + srxb  + b2
+    ltwhc = b1 + srxlf + Q + srxtc + Q + srxwc + Q + srxhc + b2
+    ltrbc = b1 + srxlf + Q + srxtc + Q + srxrf + Q + srxbc + b2
+
+    resizestrA = resizer_Kc + whstr   + srxstr   + arg1_Kc + arg2_Kc + rstr_c + b2 
+    resizestrY = resizer_Kl + whstr   + srxstr   + arg1_Kl + arg2_Kl + rstr   + b2
+    resizestrC = resizer_Kc + WHstr_c + srxstr_c + arg1_Kc + arg2_Kc + rstr_c + b2
+
+    formatted = true
+    resizestrA = Formatted ? resizestrA :resizeA
+    resizestrY = Formatted ? resizestrY :resizeY
+    resizestrC = Formatted ? resizestrC :resizeC
+
+    Do_nwKc = !Sub000 && (IsNoring_c || (noring != noring_c))
+    Do_textC = !Sub000 && !IsRGBSource && (Ut || Vt) 
+
+    nwKl = (IsRGBSource && Do_nwKc ? "\n" : "") + (!IsNoring && !noring ?
+    \      "  Ringing repair disabled by default " +
+    \      (!IsLup ? "unless upscaling" : "for " + resizer_Kl) :
+    \      !noring ? "  Ringing repair disabled" : "  Weight of " +
+    \      (!Do_nwKc ? "" : Kl + " ") + "ringing repair  " + nwl)
+
+    nwKc = !Do_nwKc ? "" : (!IsRGBSource ? "\n" : "") + 
+    \      (!IsNoring_c && !noring_c ?
+    \      "  Ringing repair disabled by default " +
+    \      (!IsCup ? "unless upscaling" : "for " + resizer_Kc) :
+    \      !noring_c ? "  Ringing repair disabled" : "  Weight of " +
+    \      (!Do_nwKc ? "" : Kc + " ") + "ringing repair  " + nwc)
+
+    textQ = "  Luma  left, top, width, height  " + ltwh +
+    \       "\n  Luma  left, top, right, bottom  " + ltrb
+
+    textR = Sub000 || (IsRGBSource && (!IsAlpha || !AT)) ? "" :
+    \       "  Chroma  left, top, width, height  " + ltwhc +
+    \           "\n  Chroma  left, top, right, bottom  " + ltrbc
+
+    textS = "  Source" + string(SourceBits,"  %.0f bit  ") + pixtype
+
+    textA = Sub000 ? "" : "\n  " + (AddAlpha ? "Adding Alpha Plane" :
+    \       !IsAlpha ? "No Alpha Plane" : !At ? "Alpha Plane Disabled" :
+    \       "Alpha Plane\n  " + (!IsRGBSource ? resizestrY : resizestrA))
+
+    textY = !IsRGBSource && !Yt ? "\n  Y Plane Disabled" :
+    \       (!Rt && !Gt && !Bt) ? "\n  All RGB Planes Disabled" :
+    \       (!IsRGBSource ? "  Y Plane\n  " : "  RGB Planes\n  ") + resizestrY
+
+    textC = !Do_textC ? "" :
+    \       "  UV Planes\n  " + resizestrC + (Sub42x && !IsM1 ?
+    \       "\n\n  Extra UV left crop to prevent chroma shift  " + cfx : "")
+
+    ts = 17.5
+    tr = ts * 0.85
+    tc = ts * 0.9
+    ya = AddAlpha || !IsAlpha || !At ? ts : 0.0
+    yr = ya + (tr * (Do_textC && Sub42x ? 0.0 : Do_textC ? 3.0 : 6.0))
+
+    scolor1 = AddAlpha || !IsAlpha || !At ? $FFFFFF : !IsRGBSource ? $F0FFFF : $FFFFE0
+    scolor2 = Do_nwKc ? $F0FFFF : $FFFFFF
+
+    showstr = BlankClip(width=1280, height=480, pixel_type=pixtype).KillAudio()
+             \.subtitle(textQ, size=tc, text_color=$F0FFFF, y=ts,        lsp=20)
+             \.subtitle(textR, size=tc, text_color=$FFFFE0, y=(ts*3.5),  lsp=20)
+             \.subtitle(textS, size=ts, text_color=$FFFFFF, y=(ts*8),    lsp=20)
+             \.subtitle(textA, size=ts, text_color=scolor1, y=(ts*10),   lsp=20)
+             \.subtitle(textY, size=ts, text_color=$F0FFFF, y=(ts*14)-ya,lsp=20)
+             \.subtitle(textC, size=ts, text_color=$FFFFE0, y=(ts*17)-ya,lsp=20)
+             \.subtitle(nwKl,  size=tr, text_color=scolor2, y=(ts*24)-yr,lsp=20)
+             \.subtitle(nwKc,  size=tr, text_color=$FFFFE0, y=(ts*24)-yr,lsp=20)
+
+    """, "Show Eval") : nop()
+
+# ===============================================================================
+#   Resize8 out
+# ===============================================================================
+
+    return !show ? res : showstr }
+
+# ===============================================================================
+# ===============================================================================
+#   Remove trailing zeros for show=true
+# ===============================================================================
+# ===============================================================================
+
+function R8_RZs(float f, int "keep1", int "limit")  {
+
+    keep = (default(Keep1, 0) > 0)
+    lim  = (default(limit, 1) > 0)
+    Isd  = (abs(round(f) - f) > 0.0005)
+
+    s = !Isd ? string(f,"%.0f") : lim ? string(f,"%.4f") : string(f,"%.6f")
+    sl = strlen(s)
+    d = FindStr(s, ".")
+    ls = Isd ? LeftStr(s, d) : s
+    rs = Isd ? RightStr(s, sl - d) : ""
+    rsl = StrLen(rs)
+    rx = rs + "x"
+
+    del = (FindStr(rx, "000000x") > 0) ? 6 :
+    \     (FindStr(rx, "00000x") > 0)  ? 5 :
+    \     (FindStr(rx, "0000x") > 0)   ? 4 :
+    \     (FindStr(rx, "000x") > 0)    ? 3 :
+    \     (FindStr(rx, "00x") > 0)     ? 2 :
+    \     (FindStr(rx, "0x") > 0)      ? 1 : 0
+
+    return ls + midStr(rs, 1, rsl - del) + (!Isd && keep ? ".0" : "")  }
+
+# ===============================================================================
+# ===============================================================================
+#   Default resizer and string functions
+# ===============================================================================
+# ===============================================================================
+#
+#   Change the default resizers by modifying the kernel names in the appropriate function.
+#
+#   None of these resizers will be applied when a resizer is specified via the Resize8 kernel argument,
+#   as it's used for upscaling and downscaling luma and chroma unless a kernel is also specified for
+#   chroma resizing.
+#
+#   If a chroma resizer is specified via the kernel_c argument, it's used for upscaling and downscaling
+#   chroma and the chroma resizers below will be ignored.
+#
+# -------------------------------------------------------------------------------
+
+    function R8_Luma_UpScale()     {  return  "Lanczos4ResizeMT"  }
+    function R8_Luma_DownScale()   {  return  "Spline36ResizeMT"  }
+    function R8_Chroma_UpScale()   {  return  "LanczosResizeMT"   }
+    function R8_Chroma_DownScale() {  return  "Spline36ResizeMT"  }
+
+# -------------------------------------------------------------------------------
+#
+#   Default strings for the resizing kernels can be added to the following functions.
+#
+#   The strings below are completely ignored when a kernel is specified via the Resize8 kernel argument.
+#   When a kernel for chroma is specified via the kernel_c argument, the two chroma strings are ignored.
+#
+#   These strings can be changed using the "rstr" and rstr_c" arguments.
+#   The "rstr" argument would replace all four strings below when rstr_c is unspecified and
+#   kernel equals kernel_c. rstr="" would clear them all.
+#
+#   The "rstr_c" argument would replace the two chroma strings below. rstr_c="" would clear them.
+#
+# -------------------------------------------------------------------------------
+
+    function R8_Luma_UpScale_rstr()     { return  ""  }
+    function R8_Luma_DownScale_rstr()   { return  ""  }
+    function R8_Chroma_UpScale_rstr()   { return  ""  }
+    function R8_Chroma_DownScale_rstr() { return  ""  }
+
+# ===============================================================================
+# ===============================================================================
+# ===============================================================================

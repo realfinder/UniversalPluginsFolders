@@ -122,12 +122,15 @@ Import(AviSynthPluginsDir + "avsplus/MtModes.avsi")
 }
 
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/Utils-r41.avsi")
-VersionNumber() < 2.60 ? Import(AviSynthPluginsDir + "25/QTGMC.avsi") : Import(AviSynthPluginsDir + "26/QTGMC.avsi")
+AvsPlusVersionNumber < 3382 ? VersionNumber() < 2.60 ? Import(AviSynthPluginsDir + "25/QTGMC.avsi") : Import(AviSynthPluginsDir + "26/QTGMC.avsi") : Import(AviSynthPluginsDir + "avsplus/QTGMC.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/MasksPack.avsi") : Import(AviSynthPluginsDir + "avsplus/MasksPack.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/StabilizationToolsPack.avsi") : Import(AviSynthPluginsDir + "avsplus/Stabilization Tools Pack.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/GrainFactory3mod.avsi") : Import(AviSynthPluginsDir + "avsplus/GrainFactory3mod.avsi")
-AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/LSFmod.avsi") : Import(AviSynthPluginsDir + "avsplus/LSFmod.avsi")
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/LSFmod.avsi") : Import(AviSynthPluginsDir + "avsplus/SharpenersPack.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/stab.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/Spresso.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/LSharpAAF.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/FastLineDarkenMOD.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "26/SmoothUV2.avsi") : Import(AviSynthPluginsDir + "avsplus/SmoothUV2.avsi")
 
 function AVSTP_A_SONY() {
