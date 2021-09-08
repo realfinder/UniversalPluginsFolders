@@ -117,6 +117,11 @@ AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/stab.avsi") : no
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/Spresso.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/LSharpAAF.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/FastLineDarkenMOD.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/seesaw.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/FineSharp.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/blah.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/MedSharp.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/ResizersPack.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPlugins64Dir + "26/SmoothUV2.avsi")
 AvsPlusVersionNumber < 3276 ? VersionNumber() < 2.60 ? Import(AviSynthPlugins64Dir + "25/VSFilter.avsi") : Import(AviSynthPlugins64Dir + "26/VSFilter.avsi") : nop()
 

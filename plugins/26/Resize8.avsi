@@ -2,7 +2,7 @@
 # ===============================================================================
 # ===============================================================================
 #
-#   Updated by Hello_Hello 2021.08.06
+#   Updated by Hello_Hello 2021.09.07
 #   https://forum.doom9.org/showthread.php?t=183057
 #
 #   Resize8 by mawen1250 2015.02.23
@@ -12,7 +12,7 @@
 #
 #   Supports all Avisynth+ colorspaces, bit depths & native resizing kernels.
 #   It should support any resizer with the same width, height and named
-#   cropping arguments as the native Aviynth resizers.
+#   cropping arguments as the native AviSynth resizers.
 #
 #   Therefore the following could be described as "known" resizers
 #   rather than "supported" as such.
@@ -55,7 +55,7 @@ function Resize8(clip source, int "target_width", int "target_height",
     R_8   = " Resize8 " + chr(10)
 
 # ===============================================================================
-#   Properties of source
+#   Source properties
 # ===============================================================================
 
     pixtype = PixelType(source)
@@ -143,10 +143,17 @@ function Resize8(clip source, int "target_width", int "target_height",
 #   Determine the resizing kernel
 # ===============================================================================
 
-    Try{ LumaU = R8_Luma_UpScale()     }catch(err){ LumaU = "Lanczos4" }
-    Try{ LumaD = R8_Luma_DownScale()   }catch(err){ LumaD = "Spline36" }
-    Try{ ChroU = R8_Chroma_UpScale()   }catch(err){ ChroU = "Lanczos"  }
-    Try{ ChroD = R8_Chroma_DownScale() }catch(err){ ChroD = "Spline36" }
+    IsAvsHBD ? eval(""" IsMTResize=FunctionExists("Spline36ResizeMT") """) : eval("""
+    try{ test=source.Spline36ResizeMT(640,480) IsMTResize=true }catch(err){ IsMTResize=false } """)
+
+    LumaU = (R8_Luma_UpScale() == "") ?
+    \       (IsMTResize ? "Lanczos4ResizeMT" : "Lanczos4Resize") : R8_Luma_UpScale()
+    LumaD = (R8_Luma_DownScale() == "") ?
+    \       (IsMTResize ? "Spline36ResizeMT" : "Spline36Resize") : R8_Luma_DownScale()
+    ChroU = (R8_Chroma_UpScale() == "") ?
+    \       (IsMTResize ? "LanczosResizeMT"  : "LanczosResize")  : R8_Chroma_UpScale()
+    ChroD = (R8_Chroma_DownScale() == "") ?
+    \       (IsMTResize ? "Spline36ResizeMT" : "Spline36Resize") : R8_Chroma_DownScale()
 
     IsKl = defined(kernel)
     IsKc = defined(kernel_c)
@@ -182,8 +189,8 @@ function Resize8(clip source, int "target_width", int "target_height",
 # ===============================================================================
 
     IsA1  = defined(a1)
-    IsA1c = defined(a1_c)
     IsA2  = defined(a2)
+    IsA1c = defined(a1_c)
     IsA2c = defined(a2_c)
 
     arg1_Kl = (Kl == "Catmull-Rom")        ? ", b=0.0, c=0.5" :
@@ -304,24 +311,18 @@ function Resize8(clip source, int "target_width", int "target_height",
 #   Configure rstr & rstr_c
 # ===============================================================================
 
-    Try{ strLumaU = R8_Luma_UpScale_rstr()     }catch(err){ strLumaU = "" }
-    Try{ strLumaD = R8_Luma_DownScale_rstr()   }catch(err){ strLumaD = "" }
-    Try{ StrChroU = R8_Chroma_UpScale_rstr()   }catch(err){ strChroU = "" }
-    Try{ strChroD = R8_Chroma_DownScale_rstr() }catch(err){ strChroD = "" }
-
-    strLumaU = IsKl ? "" : strLumaU
-    strLumaD = IsKl ? "" : strLumaD
-    strChroU = IsKl || IsKc ? "" : strChroU
-    strChroD = IsKl || IsKc ? "" : strChroD
+    strLumaU = IsKl ? "" : R8_Luma_UpScale_rstr()
+    strLumaD = IsKl ? "" : R8_Luma_DownScale_rstr()
+    strChroU = IsKl || IsKc ? "" : R8_Chroma_UpScale_rstr()
+    strChroD = IsKl || IsKc ? "" : R8_Chroma_DownScale_rstr()
 
     IsRstr = defined(rstr)
-    rstr   = IsRstr ? rstr : IsLup ? strLumaU : strLumaD
+    rstr   = default(rstr, IsLup ? strLumaU : strLumaD)
 
-    IsRstr_c = defined(rstr_c)
-    rstr_c   = IsRstr_c ? rstr_c : IsRstr && (resizer_Kl == resizer_Kc) ? rstr :
-    \          IsCup ? strChroU : strChroD
+    rstr_c = default(rstr_c, IsRstr && (resizer_Kl == resizer_Kc) ? rstr :
+    \        IsCup ? strChroU : strChroD)
 
-    rstr   = (rstr != "") ? ", " + rstr : ""
+    rstr   = (rstr != "")   ? ", " + rstr   : ""
     rstr_c = (rstr_c != "") ? ", " + rstr_c : ""
 
 # ===============================================================================
@@ -374,15 +375,10 @@ function Resize8(clip source, int "target_width", int "target_height",
     resizeY = resizer_Kl + whstr   + srcstr   + arg1_Kl + arg2_Kl + rstr   + ")"
     resizeC = resizer_Kc + whstr_c + srcstr_c + arg1_Kc + arg2_Kc + rstr_c + ")"
 
-    IsAvsHBD ?
-    \ eval(""" IsMTGauss=FunctionExists("GaussResizeMT" )     """) :
-    \ eval(""" try{ source.GaussResizeMT(640,480) IsMTGauss=true }
-                                catch(err){ IsMTGauss=false } """)
-
-    gaussY = !IsMTGauss ? "GaussResize"   + whstr   + srcstr   + ",p=100)" :
-    \                     "GaussResizeMT" + whstr   + srcstr   + ",p=100)"
-    gaussC = !IsMTGauss ? "GaussResize"   + whstr_c + srcstr_c + ",p=100)" :
-    \                     "GaussResizeMT" + whstr_c + srcstr_c + ",p=100)"
+    gaussY = IsMTResize ? "GaussResizeMT" + whstr   + srcstr   + ",p=100)" :
+    \                     "GaussResize"   + whstr   + srcstr   + ",p=100)"
+    gaussC = IsMTResize ? "GaussResizeMT" + whstr_c + srcstr_c + ",p=100)" :
+    \                     "GaussResize"   + whstr_c + srcstr_c + ",p=100)"
 
     BlankY   = "BlankClip(width=ow,  height=oh, color=$808080)"
     BlankC   = "BlankClip(width=owc, height=ohc,color=$828282)"
@@ -582,37 +578,23 @@ function Resize8(clip source, int "target_width", int "target_height",
 #   Display resizing strings using a blank clip
 # ===============================================================================
 
-    src_r = (src_w <= 0) ? src_w : -sw + src_w + src_l
-    src_b = (src_h <= 0) ? src_h : -sh + src_h + src_t
-    src_rc = !Separate ? Sub444 ? src_r : (src_r / (Sub42x ? 2 : 4)) :
+    src_r  = (src_w <= 0) ? src_w : -sw + src_w + src_l
+    src_b  = (src_h <= 0) ? src_h : -sh + src_h + src_t
+    src_rc = !Separate ? (Sub444 ? src_r : (src_r / (Sub42x ? 2 : 4))) :
     \        -swc + src_l + src_wc
     src_rf = src_rc + chfix
     src_bc = !Separate ? (Sub420 ? src_b / 2 : src_b) : -shc + src_t + src_hc
 
-    srxl  = R8_RZs(src_l)
-    srxt  = R8_RZs(src_t)
-    srxw  = R8_RZs(src_w)
-    srxh  = R8_RZs(src_h)
-    srxr  = R8_RZs(src_r)
-    srxb  = R8_RZs(src_b)
-    srxlf = R8_RZs(src_lf)
-    srxtc = R8_RZs(src_tc)
-    srxwc = R8_RZs(src_wc)
-    srxhc = R8_RZs(src_hc)
-    srxrf = R8_RZs(src_rf)
-    srxbc = R8_RZs(src_bc)
-    cfx   = R8_RZs(chfix)
-    nwl   = R8_RZs(nr_wght,1)
-    nwc   = R8_RZs(nr_wght_c,1)
+    srxl=R8_FS(src_l)       srxt=R8_FS(src_t)       srxw=R8_FS(src_w)
+    srxh=R8_FS(src_h)       srxr=R8_FS(src_r)       srxb=R8_FS(src_b)
+    srxlf=R8_FS(src_lf)     srxtc=R8_FS(src_tc)     srxwc=R8_FS(src_wc)
+    srxhc=R8_FS(src_hc)     srxrf=R8_FS(src_rf)     srxbc=R8_FS(src_bc)
+    cfx=R8_FS(chfix)        nwl=R8_FS(nr_wght,1)    nwc=R8_FS(nr_wght_c,1)
 
-    b1 = "("
-    b2 = ")"
-    Q  = ", "
-    dl = ", src_left="
-    dt = ", src_top="
-    dw = ", src_width="
-    dh = ", src_height="
-
+    dl=", src_left="         dt=", src_top="
+    dw=", src_width="        dh=", src_height="
+    b1="("                   b2=")"                   Q=",  " 
+       
     srxstr   = dl + srxl  + dt + srxt  + dw + srxw  + dh + srxh
     srxstr_c = dl + srxlf + dt + srxtc + dw + srxwc + dh + srxhc
 
@@ -667,9 +649,8 @@ function Resize8(clip source, int "target_width", int "target_height",
     \       "  UV Planes\n  " + resizestrC + (Sub42x && !IsM1 ?
     \       "\n\n  Extra UV left crop to prevent chroma shift  " + cfx : "")
 
-    ts = 17.5
-    tr = ts * 0.85
-    tc = ts * 0.9
+    ts=17.5                  tr=ts*0.85               tc=ts*0.9
+
     ya = AddAlpha || !IsAlpha || !At ? ts : 0.0
     yr = ya + (tr * (Do_textC && Sub42x ? 0.0 : Do_textC ? 3.0 : 6.0))
 
@@ -692,22 +673,22 @@ function Resize8(clip source, int "target_width", int "target_height",
 #   Resize8 out
 # ===============================================================================
 
-    return !show ? res : showstr }
+    return !show ? res : showstr  }
 
 # ===============================================================================
 # ===============================================================================
-#   Remove trailing zeros for show=true
+#   Format string function (remove zeros)
 # ===============================================================================
 # ===============================================================================
 
-function R8_RZs(float f, int "keep1", int "limit")  {
+function R8_FS(float f, int "keep1", int "limit")  {
 
     keep = (default(Keep1, 0) > 0)
     lim  = (default(limit, 1) > 0)
     Isd  = (abs(round(f) - f) > 0.0005)
 
     s = !Isd ? string(f,"%.0f") : lim ? string(f,"%.4f") : string(f,"%.6f")
-    sl = strlen(s)
+    sl = StrLen(s)
     d = FindStr(s, ".")
     ls = Isd ? LeftStr(s, d) : s
     rs = Isd ? RightStr(s, sl - d) : ""
@@ -721,7 +702,7 @@ function R8_RZs(float f, int "keep1", int "limit")  {
     \     (FindStr(rx, "00x") > 0)     ? 2 :
     \     (FindStr(rx, "0x") > 0)      ? 1 : 0
 
-    return ls + midStr(rs, 1, rsl - del) + (!Isd && keep ? ".0" : "")  }
+    return ls + MidStr(rs, 1, rsl - del) + (!Isd && keep ? ".0" : "")  }
 
 # ===============================================================================
 # ===============================================================================
@@ -729,7 +710,11 @@ function R8_RZs(float f, int "keep1", int "limit")  {
 # ===============================================================================
 # ===============================================================================
 #
-#   Change the default resizers by modifying the kernel names in the appropriate function.
+#   The functions below cannot be commented out.
+#
+#   Change the default resizers by modifying the strings in the appropriate function.
+#   For example:
+#   function R8_Luma_UpScale() { return "BicubicResizeMT" }
 #
 #   None of these resizers will be applied when a resizer is specified via the Resize8 kernel argument,
 #   as it's used for upscaling and downscaling luma and chroma unless a kernel is also specified for
@@ -740,14 +725,18 @@ function R8_RZs(float f, int "keep1", int "limit")  {
 #
 # -------------------------------------------------------------------------------
 
-    function R8_Luma_UpScale()     {  return  "Lanczos4ResizeMT"  }
-    function R8_Luma_DownScale()   {  return  "Spline36ResizeMT"  }
-    function R8_Chroma_UpScale()   {  return  "LanczosResizeMT"   }
-    function R8_Chroma_DownScale() {  return  "Spline36ResizeMT"  }
+    function R8_Luma_UpScale()     { return "" }
+    function R8_Luma_DownScale()   { return "" }
+    function R8_Chroma_UpScale()   { return "" }
+    function R8_Chroma_DownScale() { return "" }
 
 # -------------------------------------------------------------------------------
 #
+#   The functions below cannot be commented out.
+#
 #   Default strings for the resizing kernels can be added to the following functions.
+#   For example:
+#   function R8_Luma_UpScale_rstr() { return "b=0.5, c=0.25" }
 #
 #   The strings below are completely ignored when a kernel is specified via the Resize8 kernel argument.
 #   When a kernel for chroma is specified via the kernel_c argument, the two chroma strings are ignored.
@@ -760,10 +749,10 @@ function R8_RZs(float f, int "keep1", int "limit")  {
 #
 # -------------------------------------------------------------------------------
 
-    function R8_Luma_UpScale_rstr()     { return  ""  }
-    function R8_Luma_DownScale_rstr()   { return  ""  }
-    function R8_Chroma_UpScale_rstr()   { return  ""  }
-    function R8_Chroma_DownScale_rstr() { return  ""  }
+    function R8_Luma_UpScale_rstr()     { return "" }
+    function R8_Luma_DownScale_rstr()   { return "" }
+    function R8_Chroma_UpScale_rstr()   { return "" }
+    function R8_Chroma_DownScale_rstr() { return "" }
 
 # ===============================================================================
 # ===============================================================================
