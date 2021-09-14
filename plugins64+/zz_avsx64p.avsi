@@ -27,3 +27,4 @@ hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir +
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/SmoothUV2.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/BM3D.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/crt_display.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,6) ? import(AviSynthPlugins64PDir + "36x/Retinex.avsi") : nop() : nop()

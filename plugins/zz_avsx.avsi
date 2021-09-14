@@ -67,6 +67,7 @@ Import(AviSynthPluginsDir + "26/scaled444tonative.avsi")
 Import(AviSynthPluginsDir + "26/SmoothUV.avsi")
 Import(AviSynthPluginsDir + "26/SpotLess.avsi")
 Import(AviSynthPluginsDir + "26/ssubsampling_convert.avsi")
+Import(AviSynthPluginsDir + "26/STGMC.avsi")
 Import(AviSynthPluginsDir + "26/TEMmod.avsi")
 Import(AviSynthPluginsDir + "26/TMM2.avsi")
 Import(AviSynthPluginsDir + "26/vsCnr2.avsi")
@@ -118,6 +119,8 @@ function AVS_P_MT_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "avsplus/RawSourcePlus.dll")
 AvsPlusVersionNumber > 2958 ? LoadPlugin(AviSynthPluginsDir + "26/GRunT_26.dll") : nop()
 AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/vsLGhost.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : import(AviSynthPluginsDir + "avsplus/BM3D.avsi")
+AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/Retinex.avsi")
 Import(AviSynthPluginsDir + "avsplus/MtModes.avsi")
 }
 
@@ -129,6 +132,7 @@ AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/GrainFactory3mod.a
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/LSFmod.avsi") : Import(AviSynthPluginsDir + "avsplus/LSFmod.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/SharpenersPack.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/stab.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "26/stab3.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/Spresso.avsi") : Import(AviSynthPluginsDir + "avsplus/Spresso.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/LSharpAAF.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/FastLineDarkenMOD.avsi") : nop()
@@ -137,6 +141,7 @@ AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/FineSharp.avsi") :
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/blah.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/MedSharp.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/ResizersPack.avsi") : Import(AviSynthPluginsDir + "avsplus/ResizersPack.avsi")
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/YAHR.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "26/SmoothUV2.avsi") : Import(AviSynthPluginsDir + "avsplus/SmoothUV2.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/crt_display.avsi")
 
