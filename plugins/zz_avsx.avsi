@@ -118,9 +118,9 @@ function AVS_P_MT_A_SONY() {
 !SI_IsWinXP ? Import(AviSynthPluginsDir + "avsplus/avsresize.avsi") : nop()
 LoadPlugin(AviSynthPluginsDir + "avsplus/RawSourcePlus.dll")
 AvsPlusVersionNumber > 2958 ? LoadPlugin(AviSynthPluginsDir + "26/GRunT_26.dll") : nop()
-AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/vsLGhost.avsi")
-AvsPlusVersionNumber < 3382 ? nop() : import(AviSynthPluginsDir + "avsplus/BM3D.avsi")
-AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/Retinex.avsi")
+AvsPlusVersionNumber < 3442 ? AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/vsLGhost70.avsi") : import(AviSynthPluginsDir + "avsplus/vsLGhost.avsi")
+AvsPlusVersionNumber < 3442 ? AvsPlusVersionNumber < 3382 ? nop() : import(AviSynthPluginsDir + "avsplus/BM3D70.avsi") : import(AviSynthPluginsDir + "avsplus/BM3D.avsi")
+AvsPlusVersionNumber < 3442 ? AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/Retinex70.avsi") : import(AviSynthPluginsDir + "avsplus/Retinex.avsi")
 Import(AviSynthPluginsDir + "avsplus/MtModes.avsi")
 }
 
