@@ -48,7 +48,6 @@ Import(AviSynthPluginsDir + "26/edi_rpow2.avsi")
 Import(AviSynthPluginsDir + "26/eedi3_resize16.avsi")
 Import(AviSynthPluginsDir + "26/ffms2.avsi")
 Import(AviSynthPluginsDir + "26/HaloBuster.avsi")
-Import(AviSynthPluginsDir + "26/InpaintDelogo.avsi")
 Import(AviSynthPluginsDir + "26/JincResizeNR.avsi")
 #Import(AviSynthPluginsDir + "26/neo-f3kdb.avsi") #bug
 #Import(AviSynthPluginsDir + "26/neo-fft3d.avsi")
@@ -121,6 +120,8 @@ AvsPlusVersionNumber > 2958 ? LoadPlugin(AviSynthPluginsDir + "26/GRunT_26.dll")
 AvsPlusVersionNumber < 3442 ? AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/vsLGhost70.avsi") : import(AviSynthPluginsDir + "avsplus/vsLGhost.avsi")
 AvsPlusVersionNumber < 3442 ? AvsPlusVersionNumber < 3382 ? nop() : import(AviSynthPluginsDir + "avsplus/BM3D70.avsi") : import(AviSynthPluginsDir + "avsplus/BM3D.avsi")
 AvsPlusVersionNumber < 3442 ? AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/Retinex70.avsi") : import(AviSynthPluginsDir + "avsplus/Retinex.avsi")
+AvsPlusVersionNumber < 3442 ? AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/fmtcavs70.avsi") : import(AviSynthPluginsDir + "avsplus/fmtcavs.avsi")
+AvsPlusVersionNumber < 3442 ? AvsPlusVersionNumber < 3276 ? nop() : import(AviSynthPluginsDir + "avsplus/fmtc_resamplenr70.avsi") : import(AviSynthPluginsDir + "avsplus/fmtc_resamplenr.avsi")
 Import(AviSynthPluginsDir + "avsplus/MtModes.avsi")
 }
 
@@ -144,6 +145,9 @@ AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/ResizersPack.avsi"
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/YAHR.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "26/SmoothUV2.avsi") : Import(AviSynthPluginsDir + "avsplus/SmoothUV2.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/crt_display.avsi")
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "26/InpaintDelogo.avsi") : Import(AviSynthPluginsDir + "avsplus/InpaintDelogo.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/DeblockPack.avsi")
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/Deblock_QED_MT2.avsi") : nop()
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")

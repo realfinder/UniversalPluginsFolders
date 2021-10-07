@@ -28,3 +28,8 @@ hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir +
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? IsVersionOrGreater(3,7,1) ? import(AviSynthPlugins64PDir + "36x/BM3D.avsi") : import(AviSynthPlugins64PDir + "36x/BM3D70.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/crt_display.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,6) ? IsVersionOrGreater(3,7,1) ? import(AviSynthPlugins64PDir + "36x/Retinex.avsi") : import(AviSynthPlugins64PDir + "36x/Retinex70.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/timecodefps.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/InpaintDelogo.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? IsVersionOrGreater(3,7,1) ? import(AviSynthPlugins64PDir + "36x/fmtcavs.avsi") : import(AviSynthPlugins64PDir + "36x/fmtcavs70.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? IsVersionOrGreater(3,7,1) ? import(AviSynthPlugins64PDir + "36x/fmtc_resamplenr.avsi") : import(AviSynthPlugins64PDir + "36x/fmtc_resamplenr70.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/DeblockPack.avsi") : nop() : nop()
