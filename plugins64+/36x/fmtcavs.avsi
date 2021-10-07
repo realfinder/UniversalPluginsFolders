@@ -4,10 +4,10 @@ LoadPlugin(AviSynthPlugins64PDir + "36x/fmtcavs.dll")
         fmtc_bitdepth(c, bits, flt, planes, fulls, fulld, dmode, ampo, ampn, dyn, staticnoise, cpuopt, patsize, tpdfo, tpdfn, corplane)
 }
 
-Function fmtc_matrix(clip c, string "mat", string "mats", string "matd", bool "fulls", bool "fulld", val_array_nz "coef", string "csp", string "col_fam", int "bits", int "singleout", int "cpuop")
+Function fmtc_matrix(clip c, string "mat", string "mats", string "matd", bool "fulls", bool "fulld", val_array_nz "coef", string "csp", string "col_fam", int "bits", int "singleout", int "cpuopt")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/fmtcavs.dll")
-        fmtc_matrix(c, mat, mats, matd, fulls, fulld, coef=coef, csp=csp, col_fam=col_fam, bits=bits, singleout=singleout, cpuop=cpuop)
+        fmtc_matrix(c, mat, mats, matd, fulls, fulld, coef=coef, csp=csp, col_fam=col_fam, bits=bits, singleout=singleout, cpuopt=cpuopt)
 }
 
 Function fmtc_matrix2020cl(clip c, bool "full", string "csp", int "bits", int "cpuopt")
