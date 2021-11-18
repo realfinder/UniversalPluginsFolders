@@ -20,45 +20,59 @@
 
 
 ##================================================================================================##
-#   Version: 1.34                                                                                  #
+#   Version: 1.45                                                                                  #
 ##================================================================================================##
 
 
 # Author       : VoodooFX
 
-# Link         : https://forum.doom9.org/showthread.php?p=1883832
+# Doom9 link   : https://forum.doom9.org/showthread.php?p=1883832
+# GitHub link  : https://github.com/Purfview/InpaintDelogo
 
-# Version 1.11 : 2019/08/31.  First public release.
-# Version 1.12 : 2019/09/06.  Various tweaks. New parameters. "Inflate" and "Deep" changed.
-# Version 1.13 : 2019/12/08.  Allow -ve LogoX,LogoY, and +ve LogoW,LogoH in Loc string (by StainlessS).
-# Version 1.14 : [non public] "Fr1"/"Fr2" are renamed to "FrB"/"FrW". "GrainPP" is off by default.
-# Version 1.15 : [non public] New mode for "InterpM", (-1) takes mask from new "iTune" parameter.
-# Version 1.16 : [non public] New "diPP" & "diPPm" parameters.
-# Version 1.17 : [non public] New "iTinflate" & "oTinflate" parameters. Interp/iTune mask to "mShow".
-# Version 1.18 : [non public] New "EdgePP", "EdgePos" & "EdgeWide" parameters. EdgeMask to "mShow".
-# Version 1.19 : [non public] New "IntSpd" parameter for "Interp" & the slow modes for "EdgePP".
-# Version 1.20 : [non public] "Turbo" presets moved from soft to hard. iTune & Edge masks to "Show".
-# Version 1.21 : [non public] Added support for the mask clips and a dynamic mask.
-#                             Added basic auto generation of a dynamic mask (aka "DynMask=2").
-#                             New parameters: "DynMask", "DynInflate", "DynTune", "KillNoise", "maskPatch".
-# Version 1.22 : [non public] Optimized speed for a dynamic mask, MaskTools2 required.
-# Version 1.23 : [non public] Added auto generation of a dynamic mask with ClipBlend (aka "DynMask=3").
-#                             New parameters: "Dyn3Seq", "ClpBlend", "DynPostTune", "Dyn3buffer".
-# Version 1.24 : 2020/11/28.  Various tweaks. "Show" 3 & 4. Updated the manual with the new stuff.
-# Version 1.25 : 2021/08/13.  Fixed/expanded "DynTune".
-# Version 1.26 : 2021/08/13.  "DynInflate" up to 4px.
-# Version 1.27 : 2021/08/13.  "Show" 5 outputs full size Dynamic PP mask.
-# Version 1.28 : 2021/08/13.  Changed "Dyn3Seq" & "ClpBlend" range limit. "Interp" 4.
-# Version 1.29 : 2021/08/13.  "mShow" 9.
-# Version 1.30 : 2021/08/13.  Fixed TV levels in "Show" 5 mask.
-# Version 1.31 : 2021/08/22.  New: "KillBlobs", "preBlobs", "RePass". Updated: "DynInflate", "KillNoise".
-# Version 1.32 : 2021/08/25.  Fixed illogical Y8/YV12 conversions in the dynamic mask routines. ~20% faster.
-#                             External dynamic mask expected to be Y8.
-# Version 1.33 : 2021/08/31.  New: "DynMask3H", "ModeSH", "TuneH1", TuneH2", "TuneH3", "KillNoiseH, "rePassH".
-#                             Updated: "Show", "DynTune".
+
+# Version 1.45 : 2021/11/07.  Fixed: Automask wasn't working if coords were "0,0,0,0".
+# Version 1.44 : 2021/11/05.  Refactored multipass deblending code.
+# Version 1.43 : 2021/11/03.  Fixed: One pass Deblend didn't see A/C masks from multi pass. Changed: "Deep".
+# Version 1.42 : 2021/11/03.  Fixed: A/C masks file name if coord is "-0".
+# Version 1.41 : 2021/11/03.  Fixed: "Show=1" was broken with "Deblend" since v1.18.
+# Version 1.40 : 2021/10/28.  Some speed optimizations. AvsInpaint v1.3 is required.
+# Version 1.39 : 2021/10/23.  Various improvements.
+# Version 1.38 : 2021/10/22.  Fixed: Bug with "SubSuspect" parameter.
+# Version 1.37 : 2021/10/07.  New: "DynMaskUp" parameter.
+# Version 1.36 : 2021/10/04.  Added auto generation of the dynamic mask for subtitles with halo (aka "DynMask=4").
+#                             Updated: "KillNoise", and some other tweaks.
+# Version 1.35 : 2021/09/23.  Fixed: Bug with "TuneH1".
 # Version 1.34 : 2021/09/21.  New: "Extract" parameter to extract subtitles to images for OCR.
 #                             New: 'SubsMask2Img()' func (mod of StainlessS's 'DetSub_Extract()').
 #                             Note: This version needs AviSynth+.
+# Version 1.33 : 2021/08/31.  New: "DynMask3H", "ModeSH", "TuneH1", TuneH2", "TuneH3", "KillNoiseH, "rePassH".
+#                             Updated: "Show", "DynTune".
+# Version 1.32 : 2021/08/25.  Fixed illogical Y8/YV12 conversions in the dynamic mask routines. ~20% faster.
+#                             External dynamic mask expected to be Y8.
+# Version 1.31 : 2021/08/22.  New: "KillBlobs", "preBlobs", "RePass". Updated: "DynInflate", "KillNoise".
+# Version 1.30 : 2021/08/13.  Fixed TV levels in "Show" 5 mask.
+# Version 1.29 : 2021/08/13.  "mShow" 9.
+# Version 1.28 : 2021/08/13.  Changed "Dyn3Seq" & "ClpBlend" range limit. "Interp" 4.
+# Version 1.27 : 2021/08/13.  "Show" 5 outputs full size Dynamic PP mask.
+# Version 1.26 : 2021/08/13.  "DynInflate" up to 4px.
+# Version 1.25 : 2021/08/13.  Fixed/expanded "DynTune".
+# Version 1.24 : 2020/11/28.  Various tweaks. "Show" 3 & 4. Updated the manual with the new stuff.
+# Version 1.23 : [non public] Added auto generation of a dynamic mask with ClipBlend (aka "DynMask=3").
+#                             New parameters: "Dyn3Seq", "ClpBlend", "DynPostTune", "Dyn3buffer".
+# Version 1.22 : [non public] Optimized speed for a dynamic mask, MaskTools2 required.
+# Version 1.21 : [non public] Added support for the mask clips and a dynamic mask.
+#                             Added basic auto generation of a dynamic mask (aka "DynMask=2").
+#                             New parameters: "DynMask", "DynInflate", "DynTune", "KillNoise", "maskPatch".
+# Version 1.20 : [non public] "Turbo" presets moved from soft to hard. iTune & Edge masks to "Show".
+# Version 1.19 : [non public] New "IntSpd" parameter for "Interp" & the slow modes for "EdgePP".
+# Version 1.18 : [non public] New "EdgePP", "EdgePos" & "EdgeWide" parameters. EdgeMask to "mShow".
+# Version 1.17 : [non public] New "iTinflate" & "oTinflate" parameters. Interp/iTune mask to "mShow".
+# Version 1.16 : [non public] New "diPP" & "diPPm" parameters.
+# Version 1.15 : [non public] New mode for "InterpM", (-1) takes mask from new "iTune" parameter.
+# Version 1.14 : [non public] "Fr1"/"Fr2" are renamed to "FrB"/"FrW". "GrainPP" is off by default.
+# Version 1.13 : 2019/12/08.  Allow -ve LogoX,LogoY, and +ve LogoW,LogoH in Loc string (by StainlessS).
+# Version 1.12 : 2019/09/06.  Various tweaks. New parameters. "Inflate" and "Deep" changed.
+# Version 1.11 : 2019/08/31.  First public release.
 
 
 ##================================================================================================##
@@ -66,22 +80,20 @@
 ##================================================================================================##
 
 
-# Requirements   : AviSynth+ ( https://github.com/AviSynth/AviSynthPlus ) or AviSynth v2.6.
-#                  AvsInpaint ( https://github.com/pinterf/AvsInpaint ).
-#
-# Optional requirements:
-#                : GrainFactory3 (for "GrainPP", http://avisynth.nl/index.php/GrainFactory3 ).
-#                : MaskTools2    (for "DynMask>0", https://github.com/pinterf/masktools ).
-#                : ClipBlend     (for "DynMask=3", http://avisynth.nl/index.php/ClipBlend ).
-#                : RequestLinear (for "DynMask=3", http://avisynth.nl/index.php/TIVTC ).
-#                : RgTools       (for "KillNoise", https://github.com/pinterf/RgTools ).
-#
-# 'Extract / SubsMask2Img()' requirements:
-#                : RT_Stats ( http://avisynth.nl/index.php/RT_Stats ).
-#                : GScript  ( http://avisynth.nl/index.php/GScript ).
-#                : GRunT    ( http://avisynth.nl/index.php/GRunT ).
-#                : MaskTools2
-#                : ClipBlend
+# Core requirements:
+#  AviSynth+ v3.6.2 or later ( https://github.com/AviSynth/AviSynthPlus ).
+#  AvsInpaint v1.3 or later  ( https://github.com/pinterf/AvsInpaint ).
+
+# Other requirements:
+#  MaskTools2    ( https://github.com/pinterf/masktools ).
+#  RgTools       ( https://github.com/pinterf/RgTools ).
+#  GrainFactory3 ( http://avisynth.nl/index.php/GrainFactory3 ).
+#  ClipBlend     ( http://avisynth.nl/index.php/ClipBlend ).
+#  RequestLinear ( http://avisynth.nl/index.php/TIVTC ).
+#  RT_Stats      ( http://avisynth.nl/index.php/RT_Stats ).
+#  GScript       ( http://avisynth.nl/index.php/GScript ).
+#  GRunT         ( http://avisynth.nl/index.php/GRunT ).
+
 
 ##================================================================================================##
 #   InpaintLoc() manual:                                                                           #
@@ -140,6 +152,7 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 #                     Spaces are not allowed in "Loc" parameter.
 #                     Use even(mod2) numbers.
 #                     Include 10(no less) - ~16 pixel borders around logo!
+#                     Black borders shouldn't be present in the "Loc" area.
 
 
 # val "mask"        : File based mask:
@@ -212,8 +225,8 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 #                         These two frames must be set with "FrB" & "FrW" parameters and optional "FrS".
 #
 #                     4 -   Manual analysis. Good (in most cases) for the basemask generation with "Automask".
-#                          For delogo not good, use only if there is no white/bright frame in video and
-#                          method "1" is worse. Will not deblend colored parts of the logo.
+#                          For delogo it's not good, use only if there is no white/bright frame in video and method "1" is worse.
+#                          Use only on white logos, will not deblend colored parts of the logo.
 #                          Setup is similar as method "3", just without "FrW" (it will be ignored).
 
 
@@ -227,11 +240,11 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 #                     Reduce discoloration artifacts, less logo remnants.
 #                     Less transparent logo - bigger effect, sometimes no effect at all.
 #
-#                     0 - Disabled.
-#                     1 - 2-pass.
-#                     2 - 3-pass (default).
-#                     3 - 4-pass.
-#                     4 - 5-pass.
+#                     1 - Disabled (1-pass).
+#                     2 - 2-pass.
+#                     3 - 3-pass (default).
+#                     4 - 4-pass.
+#                     5 - 5-pass.
 
 
 # Int "FrB"        : Frame number of the black/dark frame for manual "Analyze" (default: 0).
@@ -333,6 +346,8 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 #                        Start looking at the ~last frame with logo in a location before adjusting things in "Show=3",
 #                        because at other places a logo mask should/may disappear (down the chain those are merged in).
 #                        Read about "Dyn3buffer" and parameters mentioned above!
+#
+#                    4 - Auto generation of the dynamic mask for subtitles with halo. Only for "Inpaint".
 
 
 # Int "DynInflate"  :  Inflates the dynamic mask. Last in the chain (before "maskPatch" and "oPP").
@@ -345,15 +360,17 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 #                     4 - Inflate by 4 pixels.
 
 
-# Int "DynTune"     :  Tunes up a dynamic mask for "DynMask=2 & 3". Binarization threshold. (from 128 to 254; default: 200).
+# Int "DynTune"     :  Tunes up a dynamic mask for "DynMask=2/3/4". Binarization threshold. (from 128 to 254; default: 200).
 #                     Lower values -> mask expands more into the darker areas of video.
+#                     Set highest where logo/subtitle is still visible.
 
 
 # String "maskPatch":  Full path to a patch image, a B/W picture in size of a "loc" area.
 #                     Patches a dynamic mask with a custom static mask. Applies after "DynInflate".
 
 
-# Int "KillNoise"   :  Undot, and eliminate up to 2px thick artifacts from the dynamic mask.
+# Int "KillNoise"   :  Undot, and eliminate up to 2px thick artifacts from the dynamic mask (from -5 to 5; default: 0).
+#                     Negative pre-adds expand>inpand to reduce sponginess of a mask.
 #                     It's after "KillBlobs" in the chain.
 #
 #                     0 - Disabled  (default).
@@ -364,7 +381,7 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 #                     5 - Two pass Undot + Hysteresis.
 
 
-# Int "KillBlobs"   :  Removes thicker than logo/subs artifacts. (from -7 to 7; default: 0).
+# Int "KillBlobs"   :  Removes thicker than logo/subs artifacts (from -7 to 7; default: 0).
 #                     Minus sign is to indicate a method.
 #                     Two methods: Negative -> mt_inpand>mt_hysteresis,
 #                                  Positive -> mt_inpand>mt_expand.
@@ -392,14 +409,14 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 # Int "Extract"     :  Extracts subtitles to images from a dynamic mask with SubsMask2Img() function (0 - Disabled, 1 - Enabled; default: 0).
 #                     Works only with "DynMask" through "Show=4".
 #                     When enabled the script will work till extraction is done, so use only after a dynamic mask is all set.
-#                     Makes stuff work in one go, but it's much slower, see SubsMask2Img() manual somewhere bellow!
+#                     Makes stuff work in one go, but it's much slower, see SubsMask2Img() manual somewhere below!
 
 
                  #   DynMask=3:   #
                  #================#
 
-# Int "Dyn3Seq"     :  Parameter for "DynMask=3".  (from 10 to 9999, default: 12)
-#                     Sets how many frames the logo is in a location.
+# Int "Dyn3Seq"     :  Parameter for "DynMask=3".
+#                     Sets how many frames the logo is in a location (from 10 to 9999, default: 12).
 #                     For subtitles set duration of the shortest subtitle or shorter subs will disappear from the mask.
 
 
@@ -442,7 +459,7 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
                  #   DynMask3H>0: #
                  #================#
 
-# Int "DynMask3H"   :  Parameter for "DynMask=3".
+# Int "DynMask3H"   :  Parameter for "DynMask=3". [Maybe better look at "DynMask=4" method]
 #                     If subs has dark full halo then it can be used to remove artifacts. Binarization threshold (from 0 to 128; default: 0 - Disabled).
 #                     This mask is used to refine a final "DynMask=3" mask using hysteresis.
 #                     Is using "Dyn3Seq"/"ClpBlend" settings (don't change).
@@ -452,7 +469,7 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 #
 #                     Use "Show=6" to finetune it, parameters are chained in sequence as they are in this help (except "ModeSH").
 #                     At this step when "ModeSH=1 & TuneH1=0" - mask is shown pre-construct inverted, actual spatial mask is constructed when "TuneH1" is set.
-#                     Select lowest where halo masking is clear.
+#                     Set lowest where the subtitle halo masking is visible and clear.
 #                     0 - Disabled  (default).
 
 
@@ -473,6 +490,7 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 #                     Pre-diff expands (visibly after diff looks like inpands). (from 0 to 4; default: 0 - Disabled).
 #                     Increase to reduce halo remnants from the mask, up to where it doesn't affect letters.
 
+
 # Int "TuneH3"      :  Parameter for "DynMask3H".
 #                     Post-diff inpands. (from 0 to 3; default: 0 - Disabled).
 #                     Increase up to where letters doesn't disappear completely.
@@ -490,6 +508,24 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 # Int "rePassH"     :  Parameter for "DynMask3H".
 #                     Re-pass/pass temporal+KillNoiseH routines to reduce artifacts in "DynMask3H" mask. (0 - Disabled, 1 - Enabled; default: 0).
 #                     Wasn't found useful in the final result (on the short sample).
+
+
+                 #   DynMask=4:   #
+                 #================#
+
+# NOTES:            :  For subtitles with a dark halo.
+#                     You can use "DynMask=2" to finetune "DynTune" if you want to see its pure effect (without "DynMask4H" effect).
+
+# Int "DynMask4H"   :  Parameter for "DynMask=4".
+#                     Binarization threshold for the subtitles halo (from 1 to 128; default: 60).
+#                     Set lowest where the subtitle halo masking is visible and clear. If too low then some letters can disappear.
+#                     Use "Show=6" to finetune it.
+
+# Int "DynMaskUp"   :  Parameter for "DynMask=4".
+#                     Only to get a neat upsized subtitles mask on Show=4 output. (from -4 to 4; default: 0).
+#                     Resolution is multiplied by parameter (-1/0/1 - Disabled).
+#                     Positive: First set everything without this parameter as all filtering is done on a not-upsized mask, which is used to do hysteresis into the upsized mask.
+#                     Negative: Does filtering on the upsized mask (experimental, WIP).
 
 
                  #==================#
@@ -580,7 +616,7 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 #                     3 - Only for "DynMask=3". For fine tuning. Pre TrimergageFX(). No resizing.
 #                     4 - Outputs the DynamicMask (Loc area). No resizing.
 #                     5 - Outputs full sized Dynamic PP mask in Y8. No resizing.
-#                     6 - Outputs the "DynMask3H" mask. For fine tuning.
+#                     6 - Outputs the "DynMask3H" & "DynMask4H" mask. For fine tuning.
 
 
 # Int "mShow"       :  Shows you selected mask. Overlays "black hole" over clip.
@@ -678,7 +714,7 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 ##================================================================================================##
 
 
-# NOTE              : The subs detection looks only at the middle of video (5% width x 50% height)!
+# NOTE              : The subs detection looks only at the middle of video (10% width x 55% height)!
 #                     Clip expected to be full range Y8 or will be converted.
 
 
@@ -694,30 +730,30 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 # String "ImgDir"   :  Path to directory where output images are to be written. MUST be set to existing directory.
 
 
-# Float "CorrTh"    :  Correlation threshold to detect where subtitles in adjacent frames are the same (from 0.65 to 0.95; default: 0.8).
+# Float "CorrTh"    :  Correlation threshold to detect where subtitles in adjacent frames are the same (from 0.5 to 0.95; default: 0.8).
 #                     Used to detect where to split apart non similar subs.
 #                     Higher - detection more sensitive to the changes in the frames.
 #                     Probably no need to touch it.
 
 
-# Int "SubTune"     :  Post-blend binarization threshold [subtitle range to a single frame] (from 200 to 254; default: 210).
+# Int "SubTune"     :  Post-blend binarization threshold [subtitle range to a single frame] (from 100 to 254; default: 235).
 #                     Max = maximum artifacts reduction, if there are, but parts of the letters can disappear too.
 #                     Probably no need to touch it.
 
 
 # Int "SubMinDur"   :  Minimum subtitle duration threshold in frames (from 1 to 20; default = "Dyn3Seq" or 12).
-#                     Stuff from the bellow ranges won't be extracted.
+#                     Stuff from the below ranges won't be extracted.
 
 
 # Int "SubSuspect"  :  Suspicious subtitle duration threshold in frames (from 0 to 40; default: 0).
-#                     Extracted images from the bellow or equal ranges will have "_" prefix in the filenames.
+#                     Extracted images from the below or equal ranges will have "_" prefix in the filenames.
 #                     For fast examination of the extracted images.
 #                     Recommended setting: 3 frames lower than FPS of video.
 
 
 # Int "ImgType"     :  Image type to write ("png" or "tif"; default: "png").
 
-# Int "ImgInflate"  :  Inflate sub mask by 1 pixel. (from 0 to 1; default: 0).
+# Int "ImgInflate"  :  Inflate sub mask by 1 pixel (goes after upsize). (from 0 to 1; default: 0).
 
 # Int "ImgInvert"   :  Invert images. (from 0 to 1; default: 0).
 
@@ -783,7 +819,7 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 InpaintDelogo( mask="c:\test\mymask.bmp",
 \ Automask=0, aMix=0, Loc="100,100,-100,-100",
 \ Mode="Inpaint", Analyze=1, FrB=0, FrW=0, FrS=0,
-\ Inflate=1, Deep=2, ReAnalyze=0,
+\ Inflate=1, Deep=3, ReAnalyze=0,
 \ Interp=2, IntSpd=1, InterpM=0, iTune=0, iTinflate=0,
 \ dPP=3, dPPm=3,
 \ oPP=5, oPPm=3,
@@ -794,13 +830,14 @@ InpaintDelogo( mask="c:\test\mymask.bmp",
 \ KillBlobs=0, preBlobs=0, KillNoise=0, rePass=0,
 \ Dyn3Seq=12, ClpBlend=0, DynPostTune=0, Dyn3buffer=1,
 \ DynMask3H=0, ModeSH=1, TuneH1=0, TuneH2=0, TuneH3=0, KillNoiseH=0, rePassH=0,
+\ DynMask4H=60, DynMaskUp=0,
 \ Extract=0,
 \ GrainPP=0,
 \ Sharpness=45, PreBlur=6.5, PostBlur=4.0, Radius=8.0,
 \ Show=0, mShow=0, rSize=4)
 
 
-SubsMask2Img(ImgDir="", CorrTh=0.8, SubTune=210, SubMinDur=12, SubSuspect=0, ImgType="png", ImgInflate=0, ImgInvert=0, ImgSize=1)
+SubsMask2Img( ImgDir="", CorrTh=0.8, SubTune=235, SubMinDur=12, SubSuspect=0, ImgType="png", ImgInflate=0, ImgInvert=0, ImgSize=1 )
 
 */
 
@@ -821,6 +858,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
 \                        int "ClpBlend", int "DynPostTune", int "Dyn3Seq", int "Dyn3buffer",
 \                        int "KillBlobs", int "preBlobs", int "rePass",
 \                        int "DynMask3H", int "ModeSH", int "TuneH1", int "TuneH2", int "TuneH3", int "rePassH", int "KillNoiseH",
+\                        int "DynMask4H", int "DynMaskUp",
 \                        int "Extract", String "ImgDir", Float "CorrTh", Int "SubTune", Int "SubMinDur", Int "SubSuspect", String "ImgType", Int "ImgInflate", Int "ImgInvert", Int "ImgSize")
 
 {
@@ -850,7 +888,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     loc         = default (loc       , ""  )
     mode        = default (mode , "inpaint")
     analyze     = default (analyze     , 1 )
-    deep        = default (deep        , 2 )
+    deep        = default (deep        , 3 )
     FrB         = default (FrB         , 0 )
     FrW         = default (FrW         , 0 )
     frs         = default (frs         , 0 )
@@ -877,6 +915,8 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     tuneh1      = default (tuneh1      , 0 )
     tuneh2      = default (tuneh2      , 0 )
     tuneh3      = default (tuneh3      , 0 )
+    dynmask4h   = default (dynmask4h  , 60 )
+    dynmaskup   = default (dynmaskup   , 0 )
     killnoiseh  = default (killnoiseh  , 0 )
     repassh     = default (repassh     , 0 )
     prepp       = default (prepp       , 0 )
@@ -907,7 +947,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
 
     Extract     = Default(Extract     ,    0)
     CorrTh      = Default(CorrTh      ,  0.8)
-    SubTune     = Default(SubTune     ,  210)
+    SubTune     = Default(SubTune     ,  235)
     SubMinDur   = Default(SubMinDur   , Dyn3Seq)
     SubSuspect  = Default(SubSuspect  ,    0)
     ImgType     = Default(ImgType     ,"png")
@@ -925,7 +965,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     bugloc2     = (loc          == "100,100,-100,-100"  ) ? true : false
     buganalyze  = (analyze      < 1 || analyze      >  4) ? true : false
     bugreanalyze= (reanalyze    < 0 || reanalyze    >  1) ? true : false
-    bugdeep     = (deep         < 0 || deep         >  4) ? true : false
+    bugdeep     = (deep         < 1 || deep         >  5) ? true : false
     bugfrs      = (frs          < 0 || frs          >  3) ? true : false
     buginterp   = (interp       < 0 || interp       >  4) ? true : false
     buginterpm  = (interpm     < -1 || interpm      >  2) ? true : false
@@ -936,7 +976,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     bugdppm     = (dppm         < 1 || dppm         >  3) ? true : false
     bugdippm    = (dippm        < 0 || dippm        >  3) ? true : false
     bugoppm     = (oppm         < 0 || oppm         >  3) ? true : false
-    bugdynmask  = (dynmask      < 0 || dynmask      >  3) ? true : false
+    bugdynmask  = (dynmask      < 0 || dynmask      >  4) ? true : false
     bugdyntune  = (dyntune    < 128 || dyntune     > 254) ? true : false
     bugdynflate = (dyninflate  < -1 || dyninflate   >  4) ? true : false
     buggrainpp  = (grainpp      < 0 || grainpp      >  3) ? true : false
@@ -951,7 +991,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     bugrsize    = (rsize        < 1 || rsize        >  9) ? true : false
     bugautomask = (automask     < 0 || automask     >  1) ? true : false
     bugkillshape= (killshape    < 0 || killshape    >  1) ? true : false
-    bugkillnoise= (killnoise    < 0 || killnoise    >  5) ? true : false
+    bugkillnoise= (killnoise   < -5 || killnoise    >  5) ? true : false
     bugkillblobs= (killblobs   < -7 || killblobs    >  7) ? true : false
     bugpreblobs = (preblobs    < -2 || preblobs     >  2) ? true : false
     bugrepass   = (repass       < 0 || repass       >  2) ? true : false
@@ -962,6 +1002,8 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     bugtuneh3   = (tuneh3       < 0 || tuneh3       >  3) ? true : false
     bugkillnoiseh= (killnoiseh  < 0 || killnoiseh   >  2) ? true : false
     bugrepassh  = (repassh      < 0 || repassh      >  1) ? true : false
+    bugdynmask4h= (dynmask4h    < 1 || dynmask4h  >  128) ? true : false
+    bugdynmaskup= (dynmaskup   < -4 || dynmaskup    >  4) ? true : false
     bugturbo    = (turbo        < 0 || turbo        >  3) ? true : false
     bugedgepp   = (edgepp       < 0 || edgepp       >  3) ? true : false
     bugedgepos  = (edgepos     < -1 || edgepos      >  1) ? true : false
@@ -976,7 +1018,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     bugcombo6   = (ClpBlend   == 0 && show != 3 && dynmask == 3 || DynPostTune == 0 && show != 3 && dynmask == 3) ? true : false
     bugcombo7   = (mode   == "inpaint" && edgePP  !=  0        ) ? true : false
     bugcombo8   = (dynmask   != 3      && repass  !=  0        ) ? true : false
-    bugcombo9   = (dynmask3h == 0      && show    ==  6        ) ? true : false
+    bugcombo9   = (dynmask3h == 0 && dynmask != 4  && show == 6) ? true : false
     bugcombo10  = (dynmask3h != 0      && dynmask !=  3        ) ? true : false
     bugcombo11  = (Extract   == 1      && show    !=  4        ) ? true : false
     bugDyn3Seq     = (Dyn3Seq     < 10 || Dyn3Seq  >       9999) ? true : false
@@ -998,12 +1040,12 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     assert        ( bugcombo3         == false  , """"KillShape" parameter is only for "Inpaint" mode.""")
     assert        ( bugcombo7         == false  , """"EdgePP" parameter is not for "Inpaint" mode.""")
     assert        ( bugcombo8         == false  , """"RePass" parameter is only for "DynMask=3" method.""")
-    assert        ( bugcombo9         == false   , """"Show=6" parameter is only for "DynMask3H" mask.""")
+    assert        ( bugcombo9         == false   , """"Show=6" parameter is only for "DynMask3H" & "DynMask=4" mask.""")
     assert        ( bugcombo10        == false   , """"DynMask3H" parameter is only for "DynMask=3" method.""")
     assert        ( bugcombo11        == false   , """Subtitles extraction works only with "Show=4" parameter.""")
     assert        ( buganalyze        == false  , """"Analyze" value must be between 1 and 4.""")
     assert        ( bugreanalyze      == false  , """"ReAnalyze" value must be between 0 and 1.""")
-    assert        ( bugdeep           == false  , """"Deep" value must be between 0 and 4.""")
+    assert        ( bugdeep           == false  , """"Deep" value must be between 1 and 5.""")
     assert        ( bugfrs            == false  , """"FrS" value must be between 0 and 3.""")
     assert        ( buginterp         == false  , """"Interp" value must be between 0 and 4.""")
     assert        ( buginterpm        == false  , """"InterpM" value must be between -1 and 2.""")
@@ -1014,7 +1056,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     assert        ( bugdppm           == false  , """"dPPm" value must be between 1 and 3.""")
     assert        ( bugdippm          == false  , """"diPPm" value must be between 0 and 3.""")
     assert        ( bugoppm           == false  , """"oPPm" value must be between 0 and 3.""")
-    assert        ( bugdynmask        == false  , """"DynMask" value must be between 0 and 3.""")
+    assert        ( bugdynmask        == false  , """"DynMask" value must be between 0 and 4.""")
     assert        ( bugdyntune        == false  , """"DynTune" value must be between 128 and 254.""")
     assert        ( bugdynflate       == false  , """"DynInflate" value must be between -1 and 4.""")
     assert        ( buggrainpp        == false  , """"GrainPP" value must be between 0 and 3.""")
@@ -1029,7 +1071,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     assert        ( bugrsize          == false  , """"rSize" value must be between 1 and 9.""")
     assert        ( bugautomask       == false  , """"Automask" value must be between 0 and 1.""")
     assert        ( bugkillshape      == false  , """"KillShape" value must be between 0 and 1.""")
-    assert        ( bugkillnoise      == false  , """"KillNoise" value must be between 0 and 5.""")
+    assert        ( bugkillnoise      == false  , """"KillNoise" value must be between -5 and 5.""")
     assert        ( bugkillblobs      == false  , """"KillBlobs" value must be between -7 and 7.""")
     assert        ( bugpreblobs       == false  , """"preBlobs" value must be between -2 and 2.""")
     assert        ( bugrepass         == false  , """"RePass" value must be between 0 and 2.""")
@@ -1040,6 +1082,8 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     assert        ( bugtuneh3         == false  , """"TuneH3" value must be between 0 and 3.""")
     assert        ( bugkillnoiseh     == false  , """"KillNoiseH" value must be between 0 and 2.""")
     assert        ( bugrepassh        == false  , """"RePassH" value must be between 0 and 1.""")
+    assert        ( bugdynmask4h      == false  , """"DynMask4H" value must be between 1 and 128.""")
+    assert        ( bugdynmaskup      == false  , """"DynMaskUp" value must be between -4 and 4.""")
     assert        ( bugturbo          == false  , """"Turbo" value must be between 0 and 3.""")
     assert        ( bugedgepp         == false  , """"EdgePP" value must be between 0 and 3.""")
     assert        ( bugedgepos        == false  , """"EdgePos" value must be between -1 and 1.""")
@@ -1075,7 +1119,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     # Hard overrides:
     reanalyze   = (Automask == 1                      ) ? 1 : reanalyze
     reanalyze   = (mode  == "inpaint" && dynmask  != 0) ? 1 : reanalyze
-    deep        = (mode  == "inpaint" || automask == 1) ? 0 : deep
+    deep        = (mode  == "inpaint" || automask == 1) ? 1 : deep
     dynmask     = (mode  == "deblend"                 ) ? 0 : dynmask
     analyze     = (mode  == "inpaint" && automask != 1) ? 0 : analyze
     interp      = (mode  == "inpaint"                 ) ? 0 : interp
@@ -1089,13 +1133,18 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     prepp       = (prepp   !=  0                      ) ? 3 : prepp
 
     # DynMask:
-    KillNoise   = (killnoise == 1                     ) ? 81 :
-    \             (killnoise == 2                     ) ? 82 :
-    \             (killnoise == 3                     ) ? 83 :
-    \             (killnoise == 4                     ) ? 84 :
-    \             (killnoise == 5                     ) ? 85 : killnoise
-    KillNoiseH  = (killnoiseH == 1                    ) ? 81 :
-    \             (killnoiseH == 2                    ) ? 82 : KillNoiseH
+    KillNoise   = (killnoise ==  1                    ) ?  81 :
+    \             (killnoise ==  2                    ) ?  82 :
+    \             (killnoise ==  3                    ) ?  83 :
+    \             (killnoise ==  4                    ) ?  84 :
+    \             (killnoise ==  5                    ) ?  85 :
+    \             (killnoise == -1                    ) ? -81 :
+    \             (killnoise == -2                    ) ? -82 :
+    \             (killnoise == -3                    ) ? -83 :
+    \             (killnoise == -4                    ) ? -84 :
+    \             (killnoise == -5                    ) ? -85 : killnoise
+    KillNoiseH  = (killnoiseH == 1                    ) ?  81 :
+    \             (killnoiseH == 2                    ) ?  82 : KillNoiseH
 
     # DynMask 3:
     DynPostTune = (ClpBlend ==  0                     ) ? 0 : DynPostTune
@@ -1144,7 +1193,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     Assert (a%2 == 0 && b%2 == 0 && c%2 == 0 && d%2 == 0,"""Use even numbers for "Loc".""")
 
     inYV12      = clp.Crop(a,b,c,d).ConvertToYV12
-    inYV12Grey  = inYV12.Greyscale
+    inY8        = clp.Crop(a,b,c,d).ConvertToY8
     inRGB24     = clp.Crop(a,b,c,d).ConvertToRGB24(matrix=matrixID)
     inRGB32     = clp.Crop(a,b,c,d).ConvertToRGB32(matrix=matrixID)
 
@@ -1174,20 +1223,23 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
 
                   AutoID    = LeftStr(mask,int(StrLen(mask)-4))
 
-                  Blackclp  = BlankClip(clp,length=1).ConvertToRGB24
-                  Whitecrop = BlankClip(clp,color=$FFFFFF,length=1).ConvertToRGB24.Crop(a,b,c,d)
-                  Merge     = Blackclp.Overlay(Whitecrop,x=a,y=b).ConvertToRGB32
-                  Merge     = Merge.Mask(Merge)
-                  Merge     = Merge.balloonPX(-7).Crop(a,b,c,d)
+                  bAutoClp  = BlankClip(clp,length=1).ConvertToRGB24
+                  wAutoClp  = (Loc == "0,0,-0,-0" || Loc == "0,0,0,0") ? BlankClip(clp,color=$FFFFFF,length=1).ConvertToRGB24.Crop(1,1,-1,-1) :
+                  \                                                      BlankClip(clp,color=$FFFFFF,length=1).ConvertToRGB24.Crop(a,b,c,d)
+                  aMerge    = (Loc == "0,0,-0,-0" || Loc == "0,0,0,0") ? bAutoClp.Overlay(wAutoClp,x=a+1,y=b+1).ConvertToRGB32 :
+                  \                                                      bAutoClp.Overlay(wAutoClp,x=a,y=b).ConvertToRGB32
+                  aMerge    = (Loc == "0,0,-0,-0" || Loc == "0,0,0,0") ? aMerge.ConvertToY8(matrix="PC.709").MTballoon2PX(-6).ConvertToRGB32(matrix="PC.709") :
+                  \                                                      aMerge.ConvertToY8(matrix="PC.709").MTballoon2PX(-7).ConvertToRGB32(matrix="PC.709")
+                  aMerge    = aMerge.Mask(aMerge).Crop(a,b,c,d)
 
-                  Method.analyzelogo(Merge).Trim(0,-1).ConvertToRGB32
+                  Method.analyzelogo(aMerge).Trim(0,-1).ConvertToRGB32
                   Crop(0,last.Height/2,0,0)
-                  ImageWriter(AutoID  + "_temp%.0d.bmp",0,-1,"bmp")
+                  ImageWriter(AutoID  + "_temp%.0d.bmp",0,-1,"bmp").RT_YankChain(n=0)
 
-                  Blackclp.Overlay(last,x=a,y=b).ConvertToRGB32
+                  bAutoClp.Overlay(last,x=a,y=b).ConvertToRGB32
 
                   Levels(amixlow,1,amixhigh,0,255, coring=false)
-                  ImageWriter(AutoID  + "%.0d.bmp",0,-1,"bmp")
+                  ImageWriter(AutoID  + "%.0d.bmp",0,-1,"bmp").RT_YankChain(n=0)
 
                   return Last """) : nop
 
@@ -1247,300 +1299,27 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     MskName     = (IsString(mask)) ? mask : "Clip"
     MskName     = (mode == "inpaint") ? "Dummy" : MskName
 
-    IDXadapt    = string(int(deep+1))
-
-    DeepID1     = (analyze <= 2) ? MskName+"_InpaintDelogo_"+ string(a)+"-"+string(b)+string(c)+string(d)+"_A"+string(analyze)+"_Deep1" :
-    \             (analyze >= 3) ? MskName+"_InpaintDelogo_"+ string(a)+"-"+string(b)+string(c)+string(d)+"_A"+string(analyze)+"_Deep1"+"_"+string(FrB)+"-"+string(FrW)+"-"+string(frs) : nop
-    DeepID2     = (analyze <= 2) ? MskName+"_InpaintDelogo_"+ string(a)+"-"+string(b)+string(c)+string(d)+"_A"+string(analyze)+"_Deep2" :
-    \             (analyze >= 3) ? MskName+"_InpaintDelogo_"+ string(a)+"-"+string(b)+string(c)+string(d)+"_A"+string(analyze)+"_Deep2"+"_"+string(FrB)+"-"+string(FrW)+"-"+string(frs) : nop
-    DeepID3     = (analyze <= 2) ? MskName+"_InpaintDelogo_"+ string(a)+"-"+string(b)+string(c)+string(d)+"_A"+string(analyze)+"_Deep3" :
-    \             (analyze >= 3) ? MskName+"_InpaintDelogo_"+ string(a)+"-"+string(b)+string(c)+string(d)+"_A"+string(analyze)+"_Deep3"+"_"+string(FrB)+"-"+string(FrW)+"-"+string(frs) : nop
-    DeepID4     = (analyze <= 2) ? MskName+"_InpaintDelogo_"+ string(a)+"-"+string(b)+string(c)+string(d)+"_A"+string(analyze)+"_Deep4" :
-    \             (analyze >= 3) ? MskName+"_InpaintDelogo_"+ string(a)+"-"+string(b)+string(c)+string(d)+"_A"+string(analyze)+"_Deep4"+"_"+string(FrB)+"-"+string(FrW)+"-"+string(frs) : nop
-    DeepIDX     = (analyze <= 2) ? MskName+"_InpaintDelogo_"+ string(a)+"-"+string(b)+string(c)+string(d)+"_A"+string(analyze)+"_Deep"+string(IDXadapt) :
-    \             (analyze >= 3) ? MskName+"_InpaintDelogo_"+ string(a)+"-"+string(b)+string(c)+string(d)+"_A"+string(analyze)+"_Deep"+string(IDXadapt)+"_"+string(FrB)+"-"+string(FrW)+"-"+string(frs) : nop
-
-
-    inDeep1     = (deep >= 1 && reanalyze == 1) ? eval("""
-
-                  # Pass 1 #
-                  #========#
-
-                  Method.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(DeepID1 + "%.0d.ebmp",0,-1,"ebmp")
-
-                  LogoColor1 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha1 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha1 = LogoAlpha1.Mask(LogoAlpha1)
-
-                  inRGB24.DeblendLogo(LogoColor1, LogoAlpha1)
-
-
-                  """) : (deep >= 1 && reanalyze == 0) ? eval("""
-
-                  try
-                  {ImageSource(DeepID1 + "%.0d.ebmp",0,0)
-
-                  LogoColor1 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha1 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha1 = LogoAlpha1.Mask(LogoAlpha1)
-
-                  inRGB24.DeblendLogo(LogoColor1, LogoAlpha1)}
-                  catch(dummy)
-
-                  {Method.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(DeepID1 + "%.0d.ebmp",0,-1,"ebmp")
-
-                  LogoColor1 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha1 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha1 = LogoAlpha1.Mask(LogoAlpha1)
-                  inRGB24.DeblendLogo(LogoColor1, LogoAlpha1)}""") : nop
-
-
-    inDeep2     = (deep >= 2 && reanalyze == 1) ? eval("""
-
-                  # Pass 2 #
-                  #========#
-
-                  TrimFix1   = (analyze == 3 ) ? inDeep1.Trim(FrB,frx)+inDeep1.Trim(FrW,frx) :
-                  \                              inDeep1.Trim(FrB,frx)+blankwht.Trim(0,frx)
-
-                  Fix1       = (FrS == 0) ? TrimFix1.Loop(200) : (FrS == 1) ? TrimFix1.Loop(150) : (FrS == 2) ? TrimFix1.Loop(80) : TrimFix1.Loop(40)
-
-                  Method1    = (analyze == 1 ) ? inDeep1.SelectRangeEvery(every=33, length=1) :
-                  \            (analyze == 2 ) ? inDeep1                                      : Fix1
-
-                  Method1.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(DeepID2 + "%.0d.ebmp",0,-1,"ebmp")
-
-                  LogoColor2 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha2 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha2 = LogoAlpha2.Mask(LogoAlpha2)
-
-                  inDeep1.DeblendLogo(LogoColor2, LogoAlpha2)
-
-
-                  """) : (deep >= 2 && reanalyze == 0) ? eval("""
-
-                  try
-                  {TrimFix1   = (analyze == 3 ) ? inDeep1.Trim(FrB,frx)+inDeep1.Trim(FrW,frx) :
-                  \                               inDeep1.Trim(FrB,frx)+blankwht.Trim(0,frx)
-
-                  Fix1       = (FrS == 0) ? TrimFix1.Loop(200) : (FrS == 1) ? TrimFix1.Loop(150) : (FrS == 2) ? TrimFix1.Loop(80) : TrimFix1.Loop(40)
-
-                  Method1    = (analyze == 1 ) ? inDeep1.SelectRangeEvery(every=33, length=1) :
-                  \            (analyze == 2 ) ? inDeep1                                      : Fix1
-
-                  ImageSource(DeepID2 + "%.0d.ebmp",0,0)
-
-                  LogoColor2 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha2 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha2 = LogoAlpha2.Mask(LogoAlpha2)
-
-                  inDeep1.DeblendLogo(LogoColor2, LogoAlpha2)}
-                  catch(dummy)
-
-                  {TrimFix1   = (analyze == 3 ) ? inDeep1.Trim(FrB,frx)+inDeep1.Trim(FrW,frx) :
-                  \                               inDeep1.Trim(FrB,frx)+blankwht.Trim(0,frx)
-
-                  Fix1       = (FrS == 0) ? TrimFix1.Loop(200) : (FrS == 1) ? TrimFix1.Loop(150) : (FrS == 2) ? TrimFix1.Loop(80) : TrimFix1.Loop(40)
-
-                  Method1    = (analyze == 1 ) ? inDeep1.SelectRangeEvery(every=33, length=1) :
-                  \            (analyze == 2 ) ? inDeep1                                      : Fix1
-
-                  Method1.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(DeepID2 + "%.0d.ebmp",0,-1,"ebmp")
-
-                  LogoColor2 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha2 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha2 = LogoAlpha2.Mask(LogoAlpha2)
-
-                  inDeep1.DeblendLogo(LogoColor2, LogoAlpha2)} """) : nop
-
-
-    inDeep3     = (deep >= 3 && reanalyze == 1) ? eval("""
-
-                  # Pass 3 #
-                  #========#
-
-                  TrimFix2   = (analyze == 3 ) ? inDeep2.Trim(FrB,frx)+inDeep2.Trim(FrW,frx) :
-                  \                              inDeep2.Trim(FrB,frx)+blankwht.Trim(0,frx)
-
-                  Fix2       = (FrS == 0) ? TrimFix2.Loop(200) : (FrS == 1) ? TrimFix2.Loop(150) : (FrS == 2) ? TrimFix2.Loop(80) : TrimFix2.Loop(40)
-
-                  Method2    = (analyze == 1 ) ? inDeep2.SelectRangeEvery(every=33, length=1) :
-                  \            (analyze == 2 ) ? inDeep2                                      : Fix2
-
-                  Method2.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(DeepID3 + "%.0d.ebmp",0,-1,"ebmp")
-
-                  LogoColor3 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha3 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha3 = LogoAlpha3.Mask(LogoAlpha3)
-
-                  inDeep2.DeblendLogo(LogoColor3, LogoAlpha3)
-
-
-                  """) : (deep >= 3 && reanalyze == 0) ? eval("""
-
-                  try
-                  {TrimFix2   = (analyze == 3 ) ? inDeep2.Trim(FrB,frx)+inDeep2.Trim(FrW,frx) :
-                  \                               inDeep2.Trim(FrB,frx)+blankwht.Trim(0,frx)
-
-                  Fix2       = (FrS == 0) ? TrimFix2.Loop(200) : (FrS == 1) ? TrimFix2.Loop(150) : (FrS == 2) ? TrimFix2.Loop(80) : TrimFix2.Loop(40)
-
-                  Method2    = (analyze == 1 ) ? inDeep2.SelectRangeEvery(every=33, length=1) :
-                  \            (analyze == 2 ) ? inDeep2                                      : Fix2
-
-                  ImageSource(DeepID3 + "%.0d.ebmp",0,0)
-
-                  LogoColor3 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha3 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha3 = LogoAlpha3.Mask(LogoAlpha3)
-
-                  inDeep2.DeblendLogo(LogoColor3, LogoAlpha3)}
-                  catch(dummy)
-
-                  {TrimFix2   = (analyze == 3 ) ? inDeep2.Trim(FrB,frx)+inDeep2.Trim(FrW,frx) :
-                  \                               inDeep2.Trim(FrB,frx)+blankwht.Trim(0,frx)
-
-                  Fix2       = (FrS == 0) ? TrimFix2.Loop(200) : (FrS == 1) ? TrimFix2.Loop(150) : (FrS == 2) ? TrimFix2.Loop(80) : TrimFix2.Loop(40)
-
-                  Method2    = (analyze == 1 ) ? inDeep2.SelectRangeEvery(every=33, length=1) :
-                  \            (analyze == 2 ) ? inDeep2                                      : Fix2
-
-                  Method2.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(DeepID3 + "%.0d.ebmp",0,-1,"ebmp")
-
-                  LogoColor3 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha3 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha3 = LogoAlpha3.Mask(LogoAlpha3)
-
-                  inDeep2.DeblendLogo(LogoColor3, LogoAlpha3)}""") : nop
-
-
-    inDeep4     = (deep >= 4 && reanalyze == 1) ? eval("""
-
-                  # Pass 4 #
-                  #========#
-
-                  TrimFix3   = (analyze == 3 ) ? inDeep3.Trim(FrB,frx)+inDeep3.Trim(FrW,frx) :
-                  \                              inDeep3.Trim(FrB,frx)+blankwht.Trim(0,frx)
-
-                  Fix3       = (FrS == 0) ? TrimFix3.Loop(200) : (FrS == 1) ? TrimFix3.Loop(150) : (FrS == 2) ? TrimFix3.Loop(80) : TrimFix3.Loop(40)
-
-                  Method3    = (analyze == 1 ) ? inDeep3.SelectRangeEvery(every=33, length=1) :
-                  \            (analyze == 2 ) ? inDeep3                                      : Fix3
-
-                  Method3.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(DeepID4 + "%.0d.ebmp",0,-1,"ebmp")
-
-                  LogoColor4 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha4 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha4 = LogoAlpha4.Mask(LogoAlpha4)
-
-                  inDeep3.DeblendLogo(LogoColor4, LogoAlpha4)
-
-
-                  """) : (deep >= 4 && reanalyze == 0) ? eval("""
-
-                  try
-                  {TrimFix3   = (analyze == 3 ) ? inDeep3.Trim(FrB,frx)+inDeep3.Trim(FrW,frx) :
-                  \                               inDeep3.Trim(FrB,frx)+blankwht.Trim(0,frx)
-
-                  Fix3       = (FrS == 0) ? TrimFix3.Loop(200) : (FrS == 1) ? TrimFix3.Loop(150) : (FrS == 2) ? TrimFix3.Loop(80) : TrimFix3.Loop(40)
-
-                  Method3    = (analyze == 1 ) ? inDeep3.SelectRangeEvery(every=33, length=1) :
-                  \            (analyze == 2 ) ? inDeep3                                      : Fix3
-
-                  ImageSource(DeepID4 + "%.0d.ebmp",0,0)
-
-                  LogoColor4 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha4 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha4 = LogoAlpha4.Mask(LogoAlpha4)
-
-                  inDeep3.DeblendLogo(LogoColor4, LogoAlpha4)}
-                  catch(dummy)
-
-                  {TrimFix3   = (analyze == 3 ) ? inDeep3.Trim(FrB,frx)+inDeep3.Trim(FrW,frx) :
-                  \                              inDeep3.Trim(FrB,frx)+blankwht.Trim(0,frx)
-
-                  Fix3       = (FrS == 0) ? TrimFix3.Loop(200) : (FrS == 1) ? TrimFix3.Loop(150) : (FrS == 2) ? TrimFix3.Loop(80) : TrimFix3.Loop(40)
-
-                  Method3    = (analyze == 1 ) ? inDeep3.SelectRangeEvery(every=33, length=1) :
-                  \            (analyze == 2 ) ? inDeep3                                      : Fix3
-
-                  Method3.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(DeepID4 + "%.0d.ebmp",0,-1,"ebmp")
-
-                  LogoColor4 = Crop(0,0,0,last.Height/2).ConvertToRGB24
-                  LogoAlpha4 = Crop(0,last.Height/2,0,0)
-                  LogoAlpha4 = LogoAlpha4.Mask(LogoAlpha4)
-
-                  inDeep3.DeblendLogo(LogoColor4, LogoAlpha4)}""") : nop
+    DeepID      = (analyze <= 2) ? MskName+"_InpaintDelogo_"+string(a)+"-"+string(b)+"-"+string(abs(c))+"-"+string(abs(d))+"_A"+string(analyze)+"_Deep1" :
+    \             (analyze >= 3) ? MskName+"_InpaintDelogo_"+string(a)+"-"+string(b)+"-"+string(abs(c))+"-"+string(abs(d))+"_A"+string(analyze)+"_Deep1"+"_"+string(FrB)+"-"+string(FrW)+"-"+string(frs) : nop
 
 
     # Analyze process (Color & Alpha masks creation). #
     #=================================================#
 
 
-    ID          = (analyze <= 2) ? MskName + "_InpaintDelogo_"+string(a)+"-"+string(b)+string(c)+string(d)+"_A"+ string(analyze) :
-    \             (analyze >= 3) ? MskName + "_InpaintDelogo_"+string(a)+"-"+string(b)+string(c)+string(d)+"_A"+ string(analyze)+"_"+string(FrB)+"-"+string(FrW)+"-"+string(frs) : nop
-
-    inDeepX     = (deep == 1) ? inDeep1 : (deep == 2) ? inDeep2 : (deep == 3) ? inDeep3 : (deep == 4) ? inDeep4 : nop
-
-    Logo        = (deep != 0 && reanalyze == 1) ? eval("""
-
-                  # Pass X #
-                  #========#
-
-                  TrimFix5   = (analyze == 3 ) ? inDeepX.Trim(FrB,frx)+inDeepX.Trim(FrW,frx) :
-                  \                              inDeepX.Trim(FrB,frx)+blankwht.Trim(0,frx)
-
-                  Fix5       = (FrS == 0) ? TrimFix5.Loop(200) : (FrS == 1) ? TrimFix5.Loop(150) : (FrS == 2) ? TrimFix5.Loop(80) : TrimFix5.Loop(40)
-
-                  Method5    = (analyze == 1 ) ? inDeepX.SelectRangeEvery(every=33, length=1) :
-                  \            (analyze == 2 ) ? inDeepX                                      : Fix5
-
-                  Method5.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(DeepIDX + "%.0d.ebmp",0,-1,"ebmp")
-
-
-                  """) : (deep != 0 && reanalyze == 0) ? eval("""
-
-                  try
-                  {ImageSource(DeepIDX + "%.0d.ebmp",0,0)}
-                  catch(dummy)
-
-                  {TrimFix5   = (analyze == 3 ) ? inDeepX.Trim(FrB,frx)+inDeepX.Trim(FrW,frx) :
-                  \                               inDeepX.Trim(FrB,frx)+blankwht.Trim(0,frx)
-
-                  Fix5       = (FrS == 0) ? TrimFix5.Loop(200) : (FrS == 1) ? TrimFix5.Loop(150) : (FrS == 2) ? TrimFix5.Loop(80) : TrimFix5.Loop(40)
-
-                  Method5    = (analyze == 1 ) ? inDeepX.SelectRangeEvery(every=33, length=1) :
-                  \            (analyze == 2 ) ? inDeepX                                      : Fix5
-
-                  Method5.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(DeepIDX + "%.0d.ebmp",0,-1,"ebmp")}
-
-
-                  # Analyze (Deep=0) #
-                  #==================#
-
-                  """) : (deep == 0 && reanalyze == 1) ? eval("""
+    Logo        = (reanalyze == 1) ? eval("""
 
                   Method.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(ID +"%.0d.ebmp",0,-1,"ebmp")
+                  ImageWriter(DeepID +"%.0d.ebmp",0,-1,"ebmp")
 
-
-                  """) : (deep == 0 && reanalyze == 0) ? eval("""
+                  """) : (reanalyze == 0) ? eval("""
 
                   try
-                  {ImageSource(ID + "%.0d.ebmp",0,0)}
-                  catch(dummy)
+                  {ImageSource(DeepID + "%.0d.ebmp",0,0)}
 
+                  catch(dummy)
                   {Method.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
-                  ImageWriter(ID + "%.0d.ebmp",0,-1,"ebmp")}""") : nop
+                  ImageWriter(DeepID + "%.0d.ebmp",0,-1,"ebmp")}""") : nop
 
 
     # Have you weared your mask today? #
@@ -1549,21 +1328,14 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
 
     InterpMask  = Basemask.balloonPX(interpmInfl)
 
-    Phase1Logo  = (deep != 0) ? eval("""ImageSource(DeepID1 + "%.0d.ebmp",0,0)""") : nop
-    Phase1Color = (deep != 0) ? Phase1Logo.Crop(0,0,0,Phase1Logo.Height/2).ConvertToRGB24 : nop
-    Phase1Alpha = (deep != 0) ? Phase1Logo.Crop(0,Phase1Logo.Height/2,0,0) : nop
-    Phase1Alpha = (deep != 0) ? Phase1Alpha.Mask(Phase1Alpha) : nop
-
     LogoColor   = Logo.Crop(0,0,0,Logo.Height/2).ConvertToRGB24
     LogoAlpha   = Logo.Crop(0,Logo.Height/2,0,0)
     LogoAlpha   = LogoAlpha.Mask(LogoAlpha)
 
-    OpaqueTune  = (deep != 0) ? Phase1Alpha.Levels(tunelow,1,tunehigh,0,255) :
-    \                           LogoAlpha.  Levels(tunelow,1,tunehigh,0,255)
+    OpaqueTune  = LogoAlpha.Levels(tunelow,1,tunehigh,0,255)
     OpaqueTune  = OpaqueTune.balloonPX(oTinflate)
 
-    InterpTuneP = (deep != 0) ? Phase1Alpha.Levels(itunelow,1,itunehigh,0,255) :
-    \                           LogoAlpha.  Levels(itunelow,1,itunehigh,0,255)
+    InterpTuneP = LogoAlpha.Levels(itunelow,1,itunehigh,0,255)
     InterpTune  = InterpTuneP.balloonPX(iTinflate)
 
     InterpMask  = (interpm == -1) ? InterpTune :
@@ -1596,9 +1368,9 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     #==================================#
 
 
-    LogoDeblend = (automask == 0 && mode != "inpaint") ? eval("""
+    LogoDeblend = (automask == 0 && mode != "inpaint" && Show < 3) ? eval("""
 
-                  LogoDeblPre = (deep != 0   ) ? inDeepX.DeblendLogo(Logocolor,LogoAlpha).ConvertToYV12(matrix=matrixID) :
+                  LogoDeblPre = (deep != 1   ) ? MultiPassDeblendFX(inRGB24,Basemask,blankwht,a,b,c,d,MskName,Deep,FrB,FrW,frs,frx,Analyze,Reanalyze,0).ConvertToYV12(matrix=matrixID) :
                   \                              inRGB24.DeblendLogo(Logocolor,LogoAlpha).ConvertToYV12(matrix=matrixID)
 
                   LogoInpaPre = (interpm == -1 && intspd == 1) ? LogoDeblPre.InpaintLogo(InterpMask, sharpness=1.5,preblur=  0,postblur=0,radius=2) :
@@ -1614,7 +1386,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
 
 
     DynamicMsk3 = (automask == 0 && DynMask == 3 && mode == "inpaint") ? eval("""
-                  DynamicMsk3 = inYV12Grey.mt_binarize(threshold=DynTune).ConvertToY8
+                  DynamicMsk3 = inY8.mt_binarize(threshold=DynTune)
 
                   DynamicMsk3 = (ClpBlend    == 0) ? DynamicMsk3 :
                   \             (DynPostTune == 0) ? DynamicMsk3.ClipBlend(ClpBlend) :
@@ -1625,17 +1397,44 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
                   return DynamicMsk3 """) : nop
 
 
+    DynamicMsk4 = (automask == 0 && DynMask == 4 && mode == "inpaint" && DynMaskUp > -2) ? eval("""
+                  wMsk4       = inY8.mt_binarize(DynTune)
+                  bMsk4       = inY8.mt_binarize(DynMask4H).mt_inpand(mode="square").mt_expand(mode="both")  # inp/exp to destroy corner connections between background and text
+                  bBoxMsk4    = BlankClip(inY8, width=inY8.width-16, height=inY8.height-16, Color_yuv=$000000).AddBorders(8,8,8,8,$FFFFFF)
+                  bMsk4Cln1   = bBoxMsk4.mt_hysteresis(bMsk4)
+                  DynamicMsk4 = (Show == 6) ? bMsk4 : wMsk4.mt_makediff(bMsk4Cln1).mt_binarize()
+                  return DynamicMsk4 """) : nop
+
+
+    DynamicMsk4u = (automask == 0 && DynMask == 4 && mode == "inpaint" && DynMaskUp > 1) ? eval("""
+                  DynamicMsk4u = inY8.SincResize(inY8.width*DynMaskUp, inY8.height*DynMaskUp, taps=2).mt_binarize(DynTune)
+                  DynamicMsk4u = DynamicMsk4u.mt_expand(mode="both").mt_expand(mode="both").mt_inpand(mode="both").mt_inpand(mode="both")
+                  return DynamicMsk4u """) : nop
+
+
+    DynamicMsk4uf = (automask == 0 && DynMask == 4 && mode == "inpaint" && DynMaskUp < -1) ? eval("""
+                  inSyncMsk4uf1  = inY8. SincResize(inY8.width*Abs(DynMaskUp), inY8.height*Abs(DynMaskUp), taps=2)
+                  inSyncMsk4uf2  = inSyncMsk4uf1.mt_binarize(DynTune).mt_expand(mode="both").mt_inpand(mode="both")
+                  inSplineMsk4uf = inY8.RemoveGrain(2).RemoveGrain(2).Spline16Resize(inY8.width*Abs(DynMaskUp), inY8.height*Abs(DynMaskUp)).mt_binarize(DynTune).RemoveGrain(2).RemoveGrain(2).mt_inpand(mode="both").mt_inpand(mode="square")
+                  wMsk4uf        = inSplineMsk4uf.mt_hysteresis(inSyncMsk4uf2)
+                  bMsk4uf        = inSyncMsk4uf1.mt_binarize(DynMask4H)
+                  bBoxMsk4uf     = BlankClip(inSyncMsk4uf1, width=inSyncMsk4uf1.width-32, height=inSyncMsk4uf1.height-32, Color_yuv=$000000).AddBorders(16,16,16,16,$FFFFFF)
+                  bMsk4Cln1uf    = bBoxMsk4uf.mt_hysteresis(bMsk4uf)
+                  DynamicMsk4uf  = (Show == 6) ? bMsk4uf : wMsk4uf.mt_makediff(bMsk4Cln1uf).mt_binarize().mt_expand(mode="square").mt_expand(mode="square").mt_inpand(mode="square").mt_inpand(mode="square")
+                  return DynamicMsk4uf """) : nop
+
+
     dMsk3HaloS  = (automask == 0 && DynMask == 3 && mode == "inpaint" && DynMask3H != 0 && ModeSH == 1) ? eval("""
-                  wMsk       = inYV12Grey.mt_binarize(DynTune).ConvertToY8.MTballoonPX(TuneH1)
-                  bMsk       = inYV12Grey.mt_binarize(DynMask3H).ConvertToY8.invert
-                  halo       = bMsk.mt_logic(wMsk, mode="and")
-                  white      = BlankClip(inYV12,color=$FFFFFF, pixel_type="Y8").ColorYUV(levels="tv->pc")
-                  dMsk3HaloS = (TuneH1 == 0) ? bMsk : halo.mt_logic(white, mode="xor")
+                  wMsk3HS    = inY8.mt_binarize(DynTune).MTballoon2PX(TuneH1)
+                  bMsk3HS    = inY8.mt_binarize(DynMask3H).Invert
+                  halo3HS    = bMsk3HS.mt_logic(wMsk3HS, mode="and")
+                  white3HS   = BlankClip(inY8, Color_yuv=$FFFFFF)
+                  dMsk3HaloS = (TuneH1 == 0) ? bMsk3HS : halo3HS.mt_logic(white3HS, mode="xor")
                   return dMsk3HaloS """) : nop
 
 
     dMsk3Halo   = (automask == 0 && DynMask == 3 && mode == "inpaint" && DynMask3H != 0) ? eval("""
-                  dMsk3Halo = (ModeSH     == 1) ? dMsk3HaloS : inYV12Grey.mt_binarize(threshold= DynMask3H).ConvertToY8.ClipBlend(ClpBlend).mt_binarize(254).TrimergageFX(Seq=Dyn3Seq, ClpBlend=ClpBlend)
+                  dMsk3Halo = (ModeSH     == 1) ? dMsk3HaloS : inY8.mt_binarize(threshold= DynMask3H).ClipBlend(ClpBlend).mt_binarize(254).TrimergageFX(Seq=Dyn3Seq, ClpBlend=ClpBlend)
                   dMsk3Halo = (TuneH1     != 0) ? dMsk3Halo.KillBalloonFX(TuneH1, 0, TuneH2, TuneH3) : dMsk3Halo
                   dMsk3Halo = (KillNoiseH != 0) ? dMsk3Halo.MTballoonPX(KillNoiseH) : dMsk3Halo
                   dMsk3Halo = (RePassH    == 1) ? dMsk3Halo.DynRePassFX(Dyn3Seq, ClpBlend, KillNoiseH) : dMsk3Halo
@@ -1643,10 +1442,12 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
 
 
     DynamicMask = (automask == 0 && DynMask  != 0) ? eval("""
-                  DynamicMask = (mode == "inpaint" && DynMask == 1) ? Clipmask :
-                  \             (mode == "both"    && DynMask == 2) ? LogoDeblend.Greyscale.mt_binarize(threshold=DynTune).ConvertToY8  :
-                  \             (mode == "inpaint" && DynMask == 2) ? inYV12     .Greyscale.mt_binarize(threshold=DynTune).ConvertToY8  :
-                  \             (mode == "inpaint" && DynMask == 3) ? DynamicMsk3.TrimergageFX(Seq=Dyn3Seq, ClpBlend=ClpBlend) : nop
+                  DynamicMask = (mode == "inpaint" && DynMask == 1                  ) ? Clipmask :
+                  \             (mode == "both"    && DynMask == 2                  ) ? LogoDeblend.Greyscale.mt_binarize(threshold=DynTune).ConvertToY8  :
+                  \             (mode == "inpaint" && DynMask == 2                  ) ? inYV12     .Greyscale.mt_binarize(threshold=DynTune).ConvertToY8  :
+                  \             (mode == "inpaint" && DynMask == 3                  ) ? DynamicMsk3.TrimergageFX(Seq=Dyn3Seq, ClpBlend=ClpBlend) :
+                  \             (mode == "inpaint" && DynMask == 4 && DynMaskUp > -2) ? DynamicMsk4 :
+                  \             (mode == "inpaint" && DynMask == 4 && DynMaskUp < -1) ? DynamicMsk4uf : nop
                   DynamicMask = (KillBlobs  != 0) ? DynamicMask.KillBalloonFX(KillBlobs, preBlobs) : DynamicMask
                   DynamicMask = (KillNoise  != 0) ? DynamicMask.MTballoonPX(KillNoise) : DynamicMask
                   DynamicMask = (RePass     == 1 && DynMask == 3) ? DynamicMask.DynRePassFX(Dyn3Seq, ClpBlend, KillNoise) : DynamicMask
@@ -1654,28 +1455,30 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
                   DynamicMask = (DynMask3H  != 0 && DynMask == 3) ? dMsk3Halo.mt_hysteresis(DynamicMask).DynRePassFX(Dyn3Seq, ClpBlend) : DynamicMask
                   DynamicMask = (Killshape  == 1) ? DynamicMask.MTballoonPX(99) : DynamicMask
                   DynamicMask = (DynInflate != 0) ? DynamicMask.MTballoonPX(dyninflate) : DynamicMask
-                  DynamicMask = (MskPatch   == 1) ? DynamicMask.PatchFuncFX(maskPatch) : DynamicMask
+                  DynamicMask = (MskPatch   == 1) ? DynamicMask.PatchFuncFX(maskPatch)  : DynamicMask
+
+                  DynamicMask = (DynMaskUp   > 1 && DynMask == 4) ? DynamicMask.PointResize(inY8.width*Abs(DynMaskUp), inY8.height*Abs(DynMaskUp)).mt_hysteresis(DynamicMsk4u) : DynamicMask
                   return DynamicMask """) : nop
 
 
-    InpaintMpp  = (automask == 0 && DynMask != 0) ? eval("""
+    InpaintMpp  = (automask == 0 && DynMask != 0 && Show != 4 && Show != 6) ? eval("""
                   InpaintMpp  = DynamicMask.MTballoonGR(oppm)
                   return InpaintMpp """) : InpaintMpp
 
 
-    LogoBoth    = (automask == 0 && mode != "inpaint") ? eval("""
-                  LogoBoth    = (DynMask != 0) ? LogoDeblend.InpaintLogo(DynamicMask.ConvertToYV12, radius=radius,sharpness=sharpness,preblur=preblur,postblur=postblur) :
+    LogoBoth    = (automask == 0 && mode != "inpaint" && Show < 3) ? eval("""
+                  LogoBoth    = (DynMask != 0) ? LogoDeblend.InpaintLogo(DynamicMask, radius=radius,sharpness=sharpness,preblur=preblur,postblur=postblur) :
                   \                              LogoDeblend.InpaintLogo(OpaqueMask , radius=radius,sharpness=sharpness,preblur=preblur,postblur=postblur)
                   return LogoBoth """) : nop
 
 
-    LogoInpaint = (automask == 0 && mode == "inpaint") ? eval("""
-                  LogoInpaint = (DynMask != 0) ? inYV12.ppFX(prePP).InpaintLogo(DynamicMask.ConvertToYV12, radius=radius,sharpness=sharpness,preblur=preblur,postblur=postblur) :
+    LogoInpaint = (automask == 0 && mode == "inpaint" && Show < 3) ? eval("""
+                  LogoInpaint = (DynMask != 0) ? inYV12.ppFX(prePP).InpaintLogo(DynamicMask, radius=radius,sharpness=sharpness,preblur=preblur,postblur=postblur) :
                   \                              inYV12.ppFX(prePP).InpaintLogo(OpaqueMask , radius=radius,sharpness=sharpness,preblur=preblur,postblur=postblur)
                   return LogoInpaint """) : nop
 
 
-    delogo      = (automask == 0) ? eval("""
+    delogo      = (automask == 0 && Show < 3) ? eval("""
                   delogo      = (mode == "inpaint") ? LogoInpaint :
                   \             (mode == "deblend") ? LogoDeblend :
                   \             (mode == "both"   ) ? LogoBoth    : nop
@@ -1687,7 +1490,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
 
 
     # EdgePP:
-    delogopp2   = (automask == 0) ? eval("""
+    delogopp2   = (automask == 0 && Show != 4 && Show != 6) ? eval("""
                   delogopp2 =  (edgePP == 1 ) ? delogo.InpaintLogo(EdgeMask, sharpness= 1.5,preblur=0  ,postblur=0,radius=2 ) :
                   \            (edgePP == 2 ) ? delogo.InpaintLogo(EdgeMask, sharpness= 1.5,preblur=0  ,postblur=0,radius=6 ) :
                   \            (edgePP == 3 ) ? delogo.InpaintLogo(EdgeMask, sharpness=45  ,preBlur=6.5,postBlur=4,radius=8 ) :
@@ -1695,7 +1498,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
                   return delogopp2  """) : nop
 
     # dPP/oPP:
-    delogopp3   = (automask == 0) ? eval("""
+    delogopp3   = (automask == 0 && Show != 4 && Show != 6) ? eval("""
                   delogopp3 = (mode == "inpaint"            ) ? inYV12.Overlay(delogo   .ppFX(opp), Mask=InpaintMpp.ConvertToY8(matrix="PC.709")) :
                   \           (mode != "inpaint" && dPP != 0) ? inYV12.Overlay(delogopp2.ppFX(dpp), Mask=DeblendMpp.ConvertToY8(matrix="PC.709")) :
                   \           (dPPm != 0         && dPP == 0) ? inYV12.Overlay(delogopp2,           Mask=DeblendMpp.ConvertToY8(matrix="PC.709")) :
@@ -1703,19 +1506,19 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
                   return delogopp3  """) : nop
 
     # iTune PP:
-    delogopp4   = (automask == 0) ? eval("""
+    delogopp4   = (automask == 0 && Show != 4 && Show != 6) ? eval("""
                   delogopp4 = (mode == "deblend" && InterpM == -1 && diPP != 0) ? delogopp3.Overlay(delogopp3.ppFX(dipp), Mask=iTunepp.ConvertToY8(matrix="PC.709")) :
                   \                                                               delogopp3
                   return delogopp4 """) : nop
 
     # Both/oTune PP:
-    delogopp5   = (automask == 0) ? eval("""
+    delogopp5   = (automask == 0 && Show != 4 && Show != 6) ? eval("""
                   delogopp5 = (mode == "both" && oPP != 0) ? delogopp4.Overlay(delogopp4.ppFX(opp), Mask=InpaintMpp.ConvertToY8(matrix="PC.709")) :
                   \                                          delogopp4
                   return delogopp5 """) : nop
 
     # Grain PP:
-    delogopp9   = (automask == 0) ? eval("""
+    delogopp9   = (automask == 0 && Show != 4 && Show != 6) ? eval("""
                   delogopp9 = (grainpp == 1) ? delogopp5.Overlay(delogopp5.Grainfactory3(1,0,0,temp_avg=60), Mask=GrainMaskpp.ConvertToY8(matrix="PC.709")) :
                   \           (grainpp == 2) ? delogopp5.Overlay(delogopp5.Grainfactory3(2,1,1,temp_avg=60), Mask=GrainMaskpp.ConvertToY8(matrix="PC.709")) :
                   \           (grainpp == 3) ? delogopp5.Overlay(delogopp5.Grainfactory3(2,2,2,temp_avg=60), Mask=GrainMaskpp.ConvertToY8(matrix="PC.709")) :
@@ -1727,7 +1530,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
     #=========#
 
 
-    helper      = (automask == 0) ? eval("""
+    helper      = (automask == 0 && Show < 3) ? eval("""
                   helper = (mshow == 0) ? delogopp9 :
                   \        (mshow == 1) ? delogopp9.Overlay(blankblk, Mask=OpaqueMask.ConvertToY8(matrix="PC.709")) :
                   \        (mshow == 2) ? delogopp9.Overlay(blankblk, Mask=InpaintMpp.ConvertToY8(matrix="PC.709")) :
@@ -1776,9 +1579,6 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
                   Delogo    = delogo.ConvertToRGB32   .Subtitle("delogo"   )
                   Delogopp  = delogopp9.ConvertToRGB32.Subtitle("delogo pp")
 
-                  Logoalpha = (deep == 0) ? Logoalpha : Phase1Alpha
-                  Logocolor = (deep == 0) ? Logocolor : Phase1color
-
                   mask1     = (mode == "inpaint") ? Imgmask   .Subtitle("base mask" ) :
                   \                                 Logoalpha .Subtitle("logo alpha")
 
@@ -1799,7 +1599,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
 
                   mask6     = (mode == "both" && DynMask == 0) ? OpaqueMask                            .Subtitle("otune mask"  ) :
                   \           (mode == "both" && DynMask != 0) ? DynamicMask.ConvertToY8.ConvertToRGB32.Subtitle("dynamic mask") :
-                  \           (mode == "deblend"             ) ? edgemask                              .Subtitle("edge pp"     ) :
+                  \           (EdgePP != 0                   ) ? edgemask                              .Subtitle("edge pp"     ) :
                   \                                              blankblk                              .Subtitle("disabled"    )
 
                   mask7     = blankblk.Subtitle("disabled")
@@ -1861,7 +1661,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
                   # "Show" 5 #
                   #==========#
 
-                  BlackClip = BlankClip(clp, pixel_type="Y8").ColorYUV(levels="tv->pc")
+                  BlackClip = BlankClip(clp, Color_yuv=$000000, pixel_type="Y8")
                   show5 = InpaintMpp.ConvertToY8
                   show5out = (Loc == "-0,-0,-0,-0" || Loc == "0,0,-0,-0") ? show5 : BlackClip.Overlay(show5,x=a,y=b)
                   return show5out
@@ -1872,7 +1672,7 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
                   # "Show" 6 #
                   #==========#
 
-                  dMsk3Halo
+                  (DynMask == 4) ? DynamicMsk4 : dMsk3Halo
 
                   """) : Eval("""
 
@@ -1882,9 +1682,46 @@ function InpaintDelogo ( clip clp, val "mask", string "Loc", string "Mode", int 
 
                   finalout = (Loc == "-0,-0,-0,-0" || Loc == "0,0,-0,-0") ? helper : clp.Overlay(helper,x=a,y=b)
                   return finalout """)
-
 }
 
+
+##================================================================================================##
+#   MultiPassDeblendFX:                                                                            #
+##================================================================================================##
+
+
+function MultiPassDeblendFX(clip inRGB24, clip Basemask, clip blankwht, int a, int b, int c, int d, string MskName, int Deep, int FrB, int FrW, int frs, int frx, int Analyze, int Reanalyze, int Pass) {
+    Pass = Pass +1
+
+    TrimFix = (analyze == 3 ) ? inRGB24.Trim(FrB,frx)+inRGB24.Trim(FrW,frx) :
+    \                           inRGB24.Trim(FrB,frx)+blankwht.Trim(0,frx)
+
+    Fix = (FrS == 0) ? TrimFix.Loop(200) : (FrS == 1) ? TrimFix.Loop(150) : (FrS == 2) ? TrimFix.Loop(80) : TrimFix.Loop(40)
+
+    Method = (analyze == 1 ) ? inRGB24.SelectRangeEvery(every=33, length=1) :
+    \        (analyze == 2 ) ? inRGB24                                      : Fix
+
+    DeepID = (Analyze <= 2) ? MskName+"_InpaintDelogo_"+string(a)+"-"+string(b)+"-"+string(abs(c))+"-"+string(abs(d))+"_A"+string(Analyze)+"_Deep"+string(Pass) :
+    \        (Analyze >= 3) ? MskName+"_InpaintDelogo_"+string(a)+"-"+string(b)+"-"+string(abs(c))+"-"+string(abs(d))+"_A"+string(Analyze)+"_Deep"+string(Pass)+"_"+string(FrB)+"-"+string(FrW)+"-"+string(frs) : nop
+    ACmaskfile = DeepID + ".ebmp"
+
+    if(Reanalyze == 0 && Exist(ACmaskfile)) {
+        ImageSource(DeepID + "%.0d.ebmp",0,0)
+        LogoColor = Crop(0,0,0,last.Height/2).ConvertToRGB24
+        LogoAlpha = Crop(0,last.Height/2,0,0)
+        LogoAlpha = LogoAlpha.Mask(LogoAlpha)
+        inRGB24.DeblendLogo(LogoColor, LogoAlpha)
+    } else {
+        Method.analyzelogo(Basemask,DeviationWeight=0.5).Trim(0,-1).ConvertToRGB32
+        ImageWriter(DeepID + "%.0d.ebmp",0,-1,"ebmp")
+        LogoColor = Crop(0,0,0,last.Height/2).ConvertToRGB24
+        LogoAlpha = Crop(0,last.Height/2,0,0)
+        LogoAlpha = LogoAlpha.Mask(LogoAlpha)
+        inRGB24.DeblendLogo(LogoColor, LogoAlpha)
+    }
+    out  = (Pass == Deep) ? Last : MultiPassDeblendFX(Last, Basemask, blankwht, a, b, c, d, MskName, Deep, FrB, FrW, frs, frx, Analyze, Reanalyze, Pass)
+    return out
+}
 
 
 ##================================================================================================##
@@ -1905,7 +1742,6 @@ function TrimergageFX(clip clp, int "Seq", int "ClpBlend", int "left") {
     trm     = clp.Trim(trimy, 999999)
     merged  = clp.MergeLuma(trm, 0.5).mt_binarize(threshold=20)
     final   = (left > 0 ) ? merged.TrimergageFX(Seq=trimy*2, left=left) : merged
-
     return final
 }
 
@@ -1919,9 +1755,8 @@ function PatchFuncFX(clip clp, string "patch") {
     patch       = default (patch, "")
 
     ImgmaskFX   = ImageSource(patch,0,0).Levels(127,1,128,0,255).ConvertToY8(matrix="PC.709")
-    WhiteClip   = BlankClip(clp,color=$FFFFFF, pixel_type="Y8").ColorYUV(levels="tv->pc")
+    WhiteClip   = BlankClip(clp, Color_yuv=$FFFFFF, pixel_type="Y8")
     PatchFX     = clp.mt_merge(WhiteClip, ImgmaskFX, chroma="none")
-
     return PatchFX
 }
 
@@ -1944,7 +1779,6 @@ function MTballoonGR(clip clp, int "mode") {
     \                              .mt_inflate().mt_inflate().mt_inflate().mt_inflate()
     \                              .mt_inflate().mt_inflate().mt_inflate().mt_inflate()
     \                              .mt_inflate().mt_inflate().mt_inflate().mt_inflate() : clp
-
     return balloon
 }
 
@@ -1955,44 +1789,83 @@ function MTballoonGR(clip clp, int "mode") {
 
 
 function MTballoonPX(clip clp, int "mode") {
-    mode        = default (mode, 0)
+    mode  = default (mode, 0)
 
-    px0         = clp.mt_expand(mode="both",  chroma="none")
-    px1         = clp.mt_expand(mode="square",chroma="none")
-    px2         = px1.mt_expand(mode="both",  chroma="none")
-    px3         = px2.mt_expand(mode="both",  chroma="none")
-    px4         = px3.mt_expand(mode="square",chroma="none")
+    clp   = (mode < -1) ? clp.mt_expand(mode="both").mt_inpand(mode="both") : clp
 
-    mpx0        = clp .mt_inpand(mode="both",  chroma="none")
-    mpx1        = clp .mt_inpand(mode="square",chroma="none")
-    mpx2        = mpx1.mt_inpand(mode="both",  chroma="none")
-    mpx3        = mpx2.mt_inpand(mode="both",  chroma="none")
-    mpx4        = mpx3.mt_inpand(mode="square",chroma="none")
+    px0   = clp.mt_expand(mode="both",  chroma="none")
+    px1   = clp.mt_expand(mode="square",chroma="none")
+    px2   = px1.mt_expand(mode="both",  chroma="none")
+    px3   = px2.mt_expand(mode="both",  chroma="none")
+    px4   = px3.mt_expand(mode="square",chroma="none")
 
-    kill        = px3
-    kill        = kill.mt_inpand(mode="square",chroma="none")
-    kill        = kill.mt_inpand(mode="both",  chroma="none")
-    kill        = kill.mt_inpand(mode="both",  chroma="none")
+    mpx0  = clp .mt_inpand(mode="both",  chroma="none")
+    mpx1  = clp .mt_inpand(mode="square",chroma="none")
+    mpx2  = mpx1.mt_inpand(mode="both",  chroma="none")
+    mpx3  = mpx2.mt_inpand(mode="both",  chroma="none")
+    mpx4  = mpx3.mt_inpand(mode="square",chroma="none")
 
-    kill1       = clp.RemoveGrain(2)
-    kill2       = clp.RemoveGrain(2).RemoveGrain(2)
-    kill3       = mpx0.mt_hysteresis(clp)
-    kill4       = kill1.mt_inpand(mode="both", chroma="none").mt_hysteresis(kill1)
-    kill5       = kill2.mt_inpand(mode="both", chroma="none").mt_hysteresis(kill2)
+    kill  = px3
+    kill  = kill.mt_inpand(mode="square",chroma="none")
+    kill  = kill.mt_inpand(mode="both",  chroma="none")
+    kill  = kill.mt_inpand(mode="both",  chroma="none")
 
-    balloon     = (mode ==  0) ? clp   :
-    \             (mode ==  1) ? px1   :
-    \             (mode ==  2) ? px2   :
-    \             (mode ==  3) ? px3   :
-    \             (mode ==  4) ? px4   :
-    \             (mode == 99) ? kill  :
-    \             (mode == 81) ? kill1 :
-    \             (mode == 82) ? kill2 :
-    \             (mode == 83) ? kill3 :
-    \             (mode == 84) ? kill4 :
-    \             (mode == 85) ? kill5 :
-    \             (mode == -1) ? px0   : nop
+    kill1 = clp.RemoveGrain(2)
+    kill2 = clp.RemoveGrain(2).RemoveGrain(2)
+    kill3 = mpx0.mt_hysteresis(clp)
+    kill4 = kill1.mt_inpand(mode="both", chroma="none").mt_hysteresis(kill1)
+    kill5 = kill2.mt_inpand(mode="both", chroma="none").mt_hysteresis(kill2)
 
+    out   = (mode ==                 0) ? clp   :
+    \       (mode ==                 1) ? px1   :
+    \       (mode ==                 2) ? px2   :
+    \       (mode ==                 3) ? px3   :
+    \       (mode ==                 4) ? px4   :
+    \       (mode ==                99) ? kill  :
+    \       (mode == 81 || mode == -81) ? kill1 :
+    \       (mode == 82 || mode == -82) ? kill2 :
+    \       (mode == 83 || mode == -83) ? kill3 :
+    \       (mode == 84 || mode == -84) ? kill4 :
+    \       (mode == 85 || mode == -85) ? kill5 :
+    \       (mode ==                -1) ? px0   : nop
+    return out
+}
+
+
+function MTballoon2PX(clip clp, int "mode") {
+    mode = default (mode, 0)
+
+    px1 = clp.mt_expand(mode="square", chroma="none")
+    px2 = px1.mt_expand(mode="square", chroma="none")
+    px3 = px2.mt_expand(mode="square", chroma="none")
+    px4 = px3.mt_expand(mode="square", chroma="none")
+    px5 = px4.mt_expand(mode="square", chroma="none")
+    px6 = px5.mt_expand(mode="square", chroma="none")
+    px7 = px6.mt_expand(mode="square", chroma="none")
+
+    px1m =  clp.mt_inpand(mode="square", chroma="none")
+    px2m = px1m.mt_inpand(mode="square", chroma="none")
+    px3m = px2m.mt_inpand(mode="square", chroma="none")
+    px4m = px3m.mt_inpand(mode="square", chroma="none")
+    px5m = px4m.mt_inpand(mode="square", chroma="none")
+    px6m = px5m.mt_inpand(mode="square", chroma="none")
+    px7m = px6m.mt_inpand(mode="square", chroma="none")
+
+    balloon = (mode ==  0) ? clp  :
+    \         (mode ==  1) ? px1  :
+    \         (mode ==  2) ? px2  :
+    \         (mode ==  3) ? px3  :
+    \         (mode ==  4) ? px4  :
+    \         (mode ==  5) ? px5  :
+    \         (mode ==  6) ? px6  :
+    \         (mode ==  7) ? px7  :
+    \         (mode == -1) ? px1m :
+    \         (mode == -2) ? px2m :
+    \         (mode == -3) ? px3m :
+    \         (mode == -4) ? px4m :
+    \         (mode == -5) ? px5m :
+    \         (mode == -6) ? px6m :
+    \         (mode == -7) ? px7m : nop
     return balloon
 }
 
@@ -2045,7 +1918,6 @@ function balloonPX(clip clp, int "mode") {
     \             (mode == -1) ? mpx1 .ShowAlpha :
     \             (mode == -2) ? mpx2 .ShowAlpha :
     \             (mode == -7) ? mpx7 .ShowAlpha : nop
-
     return balloon
 }
 
@@ -2123,7 +1995,7 @@ function KillBalloonFX(clip c, int "mode", int "pre", int "h2", int "h3") {
     \     (h2 == 4) ? msk.mt_expand(mode="square").mt_expand(mode="square").mt_expand(mode="square").mt_expand(mode="square") : nop
 
     # Replaced v1.33, few % faster.
-    #blk = BlankClip(clp, pixel_type="Y8").ColorYUV(levels="tv->pc")
+    #blk = BlankClip(clp, Color_yuv=$000000, pixel_type="Y8")
     #ooo = clp.Overlay(blk, mask=msk)
     ooo = clp.mt_makediff(msk).mt_binarize()
 
@@ -2148,7 +2020,6 @@ function DynRePassFX(clip clp, int "Dyn3Seq", int "ClpBlend", int "KillNoise") {
 
     re = clp.ClipBlend(ClpBlend).mt_binarize(254).TrimergageFX(Seq=Dyn3Seq, ClpBlend=ClpBlend)
     out = (KillNoise != 0) ? re.MTballoonPX(KillNoise) : re
-
     return out
 }
 
@@ -2180,7 +2051,6 @@ function ppFX(clip clp, int "mode") {
     \                              .Blur(1.58).Blur(1.58).Blur(1.58).Blur(1.58).Blur(1.58).Blur(1.58)
     \                              .Blur(1.58).Blur(1.58).Blur(1.58).Blur(1.58).Blur(1.58).Blur(1.58)
     \                              .Blur(1.58).Blur(1.58).Blur(1.58).Blur(1.58).Blur(1.58).Blur(1.58) : clp
-
     return pp
 }
 
@@ -2225,7 +2095,6 @@ function InpaintLoc ( clip clp, string "loc")
     hightlight  = blankclip(width=x-a+c,height=y-b+d,color=$96ff2d).converttoRGB32
 
     out         = clp.converttoRGB32.layer(hightlight.Mask(blankclip(hightlight, color=$444444)),x=a,y=b)
-
     return out
 }
 
@@ -2238,7 +2107,7 @@ function InpaintLoc ( clip clp, string "loc")
 Function SubsMask2Img(clip clp, String "ImgDir", Float "CorrTh", Int "SubTune", Int "SubMinDur", Int "SubSuspect", String "ImgType", Int "ImgInflate", Int "ImgInvert", Int "ImgSize") {
     StartTime   = TimerFX()
     CorrTh      = Default(CorrTh      ,  0.8)
-    SubTune     = Default(SubTune     ,  210)
+    SubTune     = Default(SubTune     ,  235)
     SubMinDur   = Default(SubMinDur   ,   12)
     SubSuspect  = Default(SubSuspect  ,    0)
     ImgType     = Default(ImgType     ,"png")
@@ -2247,8 +2116,8 @@ Function SubsMask2Img(clip clp, String "ImgDir", Float "CorrTh", Int "SubTune", 
     ImgSize     = Default(ImgSize     ,    1)
     ImgDir      = Default(ImgDir      ,   "")
 
-    Assert (!(CorrTh      <  0.65 || CorrTh      >  0.95), """"CorrTh" value must be between 0.65 and 0.95.""")
-    Assert (!(SubTune     <   200 || SubTune     >   254), """"SubTune" value must be between 200 and 254.""")
+    Assert (!(CorrTh      <   0.5 || CorrTh      >  0.95), """"CorrTh" value must be between 0.5 and 0.95.""")
+    Assert (!(SubTune     <   100 || SubTune     >   254), """"SubTune" value must be between 200 and 254.""")
     Assert (!(SubMinDur   <     1 || SubMinDur   >    20), """"SubMinDur" value must be between 1 and 20.""")
     Assert (!(SubSuspect  <     0 || SubSuspect  >    40), """"SubSuspect" value must be between 0 and 40.""")
     Assert ( (ImgType    == "png" || ImgType    == "tif"), """"ImgType" string must be 'png' or 'tif'.""")
@@ -2268,8 +2137,8 @@ Function SubsMask2Img(clip clp, String "ImgDir", Float "CorrTh", Int "SubTune", 
     FC      = clp.FrameCount
     VW      = clp.Width
     VH      = clp.Height
-    CropW   = int((VW / 2) *0.95)
-    CropH   = int((VH / 2) *0.50)
+    CropW   = int((VW / 2) *0.90)
+    CropH   = int((VH / 2) *0.45)
     inY8    = clp.ConvertToY8()
 
 
@@ -2350,17 +2219,18 @@ Function SubsMask2Img(clip clp, String "ImgDir", Float "CorrTh", Int "SubTune", 
         if(SubDur >= SubMinDur && SubDur > SubSuspect) {
             FNam  = Frame2TimeFX(SubStart,fps) +"__"+ Frame2TimeFX(SubEnd+1,fps)
             OneF1 = inY8.Trim(SubStart,SubEnd).ClipBlend.Trim(SubEnd-SubStart,-1).mt_binarize(SubTune)
-            OneF2 = (ImgInflate ==  0) ? OneF1 : OneF1.MTballoonPX(1)
-            OneF3 = (ImgInvert  ==  0) ? OneF2 : OneF2.Invert
-            OneF4 = (ImgType == "png") ? OneF3 : OneF3.ConvertToRGB24
-            OneF5 = (ImgSize ==     1) ? OneF4 : OneF4.PointResize(VW*ImgSize,VH*ImgSize)
+            OneF2 = (ImgType == "png") ? OneF1 : OneF1.ConvertToRGB24
+            OneF3 = (ImgSize ==     1) ? OneF2 : OneF2.PointResize(VW*ImgSize,VH*ImgSize)
+            OneF4 = (ImgInflate ==  0) ? OneF3 : OneF3.mt_expand(mode="square")
+            OneF5 = (ImgInvert  ==  0) ? OneF4 : OneF4.Invert
             OneF5.ImageWriter(ImgDir+"\"+FNam+"%.0d.%s",0,-1,ImgType).RT_YankChain(n=0)
         } else if(SubDur >= SubMinDur) {
             FNam  = Frame2TimeFX(SubStart,fps) +"__"+ Frame2TimeFX(SubEnd+1,fps)
-            OneF2 = (ImgInflate ==  0) ? OneF1 : OneF1.MTballoonPX(1)
-            OneF3 = (ImgInvert  ==  0) ? OneF2 : OneF2.Invert
-            OneF4 = (ImgType == "png") ? OneF3 : OneF3.ConvertToRGB24
-            OneF5 = (ImgSize ==     1) ? OneF4 : OneF4.PointResize(VW*ImgSize,VH*ImgSize)
+            OneF1 = inY8.Trim(SubStart,SubEnd).ClipBlend.Trim(SubEnd-SubStart,-1).mt_binarize(SubTune)
+            OneF2 = (ImgType == "png") ? OneF1 : OneF1.ConvertToRGB24
+            OneF3 = (ImgSize ==     1) ? OneF2 : OneF2.PointResize(VW*ImgSize,VH*ImgSize)
+            OneF4 = (ImgInflate ==  0) ? OneF3 : OneF3.mt_expand(mode="square")
+            OneF5 = (ImgInvert  ==  0) ? OneF4 : OneF4.Invert
             OneF5.ImageWriter(ImgDir+"\_"+FNam+"%.0d.%s",0,-1,ImgType).RT_YankChain(n=0)
             SSubs = SSubs+1
         } else {
@@ -2389,6 +2259,7 @@ Function SubsMask2Img(clip clp, String "ImgDir", Float "CorrTh", Int "SubTune", 
     return out
 }
 
+
 function Frame2TimeFX(int frame, float fps) {
      msTime = round(frame * 1000 / fps)
 
@@ -2407,6 +2278,7 @@ function Frame2TimeFX(int frame, float fps) {
     timeStr = hh+"_"+mm+"_"+ss+"_"+ms
     return timeStr
 }
+
 
 function TimerFX(int "startTime") {
     startTime = default(startTime, 0)

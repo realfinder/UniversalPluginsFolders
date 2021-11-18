@@ -1,0 +1,387 @@
+=================================================================================
+=================================================================================
+	     CropResize FrostyBorders Help 2021-10-22
+=================================================================================
+=================================================================================
+
+CropResize(Frosty=true) enables "FrostyBorders" rather than plain borders.
+
+The global FCropResize function is used to configure the FrostyBorder options. The FCropResize function does
+nothing else. It passes the video through untouched.
+
+FCropResize(StaticFrosty=3857, BDivider=2, Bright=-10)
+CropResize(1280, 720)
+
+If borders are being added to both the width and height, the larger borders will be Frosty and the smaller
+borders will plain black (or a color specified via the BColor option), as FrostyBorders can't be added to the
+sides and the top/bottom at the same time (mainly because it doesn't look very good).
+
+If more than one instance of FCropResize is added to a script, it can be used to change the FrostyBorder
+options, or to specify new ones. For the example below, second instance of CropResize uses different values
+for brightness and contrast than the first instance.
+
+FCropResize(Bright=-10, Cont=0.8)
+Trim.(0,10658).CropResize(1280,720, Frosty=true)\
+++Trim(10659,0).FCropResize(Bright=0, Cont=0.95).CropResize(1280,720, Frosty=true)
+
+=================================================================================
+=================================================================================
+	     FCropResize Options
+=================================================================================
+=================================================================================
+
+FCropResize(clip Source, \
+bool "Frosty", int "FrostyStatic", int "Clone", bool "FrostyGradient", bool "FrostyPlain", bool "Plain", \
+val "BColor", int "BDivider", val "BDColor", int "Feather", \
+float "Bright", float "Cont", float "Sat", float "Blend", float "Blur", float "VBlur", int "Iterations", \
+int "GPlugin", float "Texture", float "TextureC", int "TSoft", bool "Faster")
+
+=================================================================================
+	     Frosty
+=================================================================================
+
+Default  true
+
+Frosty=true enables the adding of standard frosty borders.
+
+Note: Frosty=true for CropResize enables the use of the included FrostyBorders function for borders, whereas
+Frosty=true/false for FCropResize is one of the arguments determining the type of borders being added by the
+incuded FrostyBorders function.
+
+=================================================================================
+	     FrostyStatic
+=================================================================================
+
+Default  none
+
+FrostyStatic can be used to pick a specific frame from a FrostyBorders clip and use it's borders for the
+entire video. It's enabled by specifying any frame number with the FrostyStatic argument.
+ie FrostyStatic=65834
+
+For FrostyStatic, the default for Blend is 0.5, making the borders identical, but the Blend option can still
+be used to change the blending. Other border options such as saturation and contrast can also be used.
+
+=================================================================================
+	     Clone
+=================================================================================
+
+Default  0
+
+Clone adds borders cropped directly from the picture sides or the top and bottom, then textured and blurred.
+Clone=1 and Clone=2 add identical borders unless feathering is enabled, in which case they're feathered into
+the picture differently. When the border width/height exceeds half the picture width/height the Clone=1 and
+Clone=2 borders are stretched.
+
+Clone=3 adds similar borders, but they're enlarged and cropped to the border dimensions.
+If the border width/height exceeds half the picture width/height, they're enlarged further rather than stretched.
+Clone=3 borders are most similar to the borders added to smart-phone footage by television broadcasters.
+
+=================================================================================
+	     FrostyGradient
+=================================================================================
+
+Default  false
+
+FrostyGradient=true enables the adding of plain colored borders, but with a dark to light gradient and a frosty look.
+Border options such as saturation and contrast can still be specified.
+As a reminder to select a color, when FrostyGradient=true, BColor defaults to $008080 (color_teal) as there's
+little point to enabling the FrostyGradient option for black borders.
+
+=================================================================================
+	     FrostyPlain
+=================================================================================
+
+Default  false
+
+FrostyPlain=true enables the adding of plain colored borders without a gradient, but with arguments such as
+Bright, Sat and Texture still applied. The default border color is $008080 (color_teal).
+
+=================================================================================
+	     Plain
+=================================================================================
+
+Default  false
+
+Plain=true enables the adding of plain colored borders without a gradient, and by default, without arguments
+such as Bright, Sat and Texture applied (however those arguments can still be used).
+The default border color is black.
+
+Plain=true takes precedence over the other border types and automatically becomes to true when all other
+border types are disabled.
+
+=================================================================================
+	     BColor
+=================================================================================
+
+FrostyGradient default  $008080 (color_teal)
+FrostyPlain default     $008080 (color_teal)
+Plain default           $000000 (color_black)
+
+BColor can be used to specify a border color other than black when adding plain borders or for FrostyGradient &
+FrostyPlain. See the "colors_rgb.avsi" script in the Avisynth plugins folder for a list of colors.
+
+=================================================================================
+	     BDivider
+=================================================================================
+
+Default  0
+
+When BDivider is greater than zero, a divider is placed between the picture and the borders according to the
+value specified. Dividers won't be added until the borders exceed the minimum size required for each type of
+border.
+
+BDivider can't be used when Feather is greater than zero.
+
+=================================================================================
+	     BDColor
+=================================================================================
+
+Default  $000000 (color_black)
+
+Specifies the color of the border divider (BDivider).
+
+=================================================================================
+	     Feather
+=================================================================================
+
+Default  0
+
+When Feather is greater than zero, the border edges are feathered into the picture instead of having sharp edges.
+The greater the value, the more the borders are feathered.
+
+Feathering can't be used when BDivider is greater than zero or when FrostyGradient=true.
+
+=================================================================================
+	     Bright
+=================================================================================
+
+Pillarbox default  0.0
+Letterbox default  -25.0
+
+Range -250.0 to 255.0
+
+Adjusts the brightness of the borders.
+
+=================================================================================
+	     Cont
+=================================================================================
+
+Pillarbox default  1.0
+Letterbox default  0.66
+
+Range 0.0 to 10.0
+
+Adjusts the contrast of the borders.
+
+=================================================================================
+	     Sat
+=================================================================================
+
+Pillarbox default  0.85
+Letterbox default  0.66
+
+Range 0.0 to 10.0
+
+Adjusts the color saturation of the borders.
+
+=================================================================================
+	     Blend
+=================================================================================
+
+Frosty=true
+Pillarbox default  0.2
+Letterbox default  0.2
+
+FrostyStatic=true
+Pillarbox default  0.5
+Letterbox default  0.5
+
+Clone=1, Clone=2 & Clone=3
+Pillarboxing  0.0
+Letterboxing  0.0
+
+Range 0.0 to 1.0
+
+0.0 - The borders are completely independent.
+0.5 - The borders are blended together equally, so they'll look exactly the same.
+1.0 - The borders will have effectively swapped sides
+
+Has no effect for FrostyGradient, FrostyPlain or Plain borders.
+
+=================================================================================
+	     Blur
+=================================================================================
+
+Frosty=true & FrostyStatic=true
+Pillarbox default  -  The number of pixels used to create the borders (width)
+Letterbox default  -  Width of the picture used to create the borders / 10
+
+Clone=1 & Clone=2
+Pillarbox default  -  Height of the picture used to create the borders / 75
+Letterbox default  -  Width of the picture used to create the borders / 75
+
+Clone=3
+Pillarbox default  -  Height of the picture used to create the borders / 25
+Letterbox default  -  Width of the picture used to create the borders / 25
+
+Adjusts the horizontal Blur radius.
+Has no effect for FrostyGradient, FrostyPlain or Plain borders.
+
+When Frosty=true or FrostyStatic=true, Blur and VBlur are independent.
+For Clone borders, if a value is specified for Blur but not for VBlur, the Blur value is
+automatically applied to VBlur.
+
+Blur can have both a positive and negative value.
+When Blur > 0, it specifies an absolute value for applying Blur.
+When Blur < 0, it specifies a value for applying Blur based on resolution. The idea being a negative value should
+produce a visually similar result regardless of resolution.
+The formula for calculating the Blur when a negative value is specified is based on a width or height of 720 pixels.
+As the width or height increases, so too will the amount of Blur applied. A lower width or height will reduce the
+amount of Blur applied.
+
+The calculation is as follows for a negative Blur value:
+
+Pillarbox borders  -Blur * Height / 720
+Letterbox borders  -Blur * Width / 720
+
+Height and width above refer to the height and width of the picture used to create the borders, which may be
+the source before it's resized when upscaling, or after it's resized when downscaling.
+
+For pillarbox borders and a height of 540, Blur=-20 would result in:
+
+20 * 540 / 720 = 15
+
+Therefore for pillarbox borders and a height of 540, Blur=-20 and Blur=15 should produce the same result.
+
+=================================================================================
+	     VBlur
+=================================================================================
+
+Frosty=true & FrostyStatic=true
+Pillarbox default  -  Height of the picture used to create the borders / 10
+Letterbox default  -  The number of pixels used to create the borders (height)
+
+Clone=1 & Clone=2
+Pillarbox default  -  Height of the picture used to create the borders / 75
+Letterbox default  -  Width of the picture used to create the borders / 75
+
+Clone=3
+Pillarbox default  -  Height of the picture used to create the borders / 25
+Letterbox default  -  Width of the picture used to create the borders / 25
+
+Has no effect for FrostyGradient, FrostyPlain or Plain borders.
+
+When Frosty=true or FrostyStatic=true, Blur and VBlur are independant.
+For Clone borders, if a value is specified for Blur but not for VBlur, the Blur value is
+automatically applied to VBlur.
+
+VBlur can have both a positive and negative value.
+See the description for Blur above.
+
+=================================================================================
+	     Iterations
+=================================================================================
+
+Default  3
+
+Applies to the FastBlur function used for blurring. The number of iterations for approximation.
+A value of 1 performs a box blur.
+
+Has no effect for FrostyGradient, FrostyPlain or Plain borders.
+
+=================================================================================
+	     GPlugin
+=================================================================================
+
+Default 1
+
+GPlugin = 0  disables adding texture to the borders
+GPlugin = 1  uses AddGrainC for texture
+GPlugin = 2  uses neo_f3kdb for texture
+
+=================================================================================
+	     Texture
+=================================================================================
+
+Frosty=true & FrostyStatic=true
+Pillarbox default  -  Output height / 100
+Letterbox default  -  Output width / 100
+
+Clone=1, Clone=2 & Clone=3
+Pillarbox default  -  Output height / 200
+Letterbox default  -  Output width / 200
+
+Adjusts the amount of luma texture over the borders.
+
+Texture can have both a positive and negative value.
+When Texture > 0, it specifies an absolute value for applying texture.
+When Texture < 0, it specifies a value for applying texture based on resolution. The idea being a negative value
+should produce a visually similar result regardless of resolution.
+The formula for calculating the texture when a negative value is specified is based on a width or height of
+720 pixels. As the width or height increases, so too will the amount of texture applied. A lower width or height
+will reduce the amount of texture applied.
+
+The calculation is as follows for a negative Texture value:
+
+Pillarbox borders  -Texture * Output Height / 720
+Letterbox borders  -Texture * Output Width / 720
+
+For pillarbox borders and an output height of 540, Texture=-20 would result in:
+
+20 * 540 / 720 = 15
+
+Therefore for pillarbox borders and an output height of 540, Texture=-20 and Texture=15 should produce the
+same result.
+
+=================================================================================
+	     TextureC
+=================================================================================
+
+Pillarbox default  0.0
+Letterbox default  0.0
+
+Adjusts the amount of chroma texture over the borders.
+
+TextureC can have both a positive and negative value.
+See the description for Texture above.
+
+=================================================================================
+	     TSoft
+=================================================================================
+
+Frosty=true & FrostyStatic=true
+Pillarbox default  5
+Letterbox default  5
+
+Clone=1 & Clone=2
+Pillarbox default  0
+Letterbox default  0
+
+Clone=3
+Pillarbox default  1
+Letterbox default  1
+
+The number of frames TemporalSoften processes each side of the current frame for the temporal softening
+of the borders.
+
+Range  -  0 (disabled) to 7.
+
+Has no effect for FrostyGradient, FrostyPlain or Plain borders.
+
+=================================================================================
+	     Faster
+=================================================================================
+
+Default  false
+
+Applies only when Frosty=true or FrostyStatic=true.
+Faster=true can be used with FrostyStatic borders, although for FrostyStatic the borders for the entire clip are
+only created once.
+
+The "Faster" option reduces the number of pixels taken for temporal smoothing by half, and 1/4 of those are
+used for borders. the number of pixels taken is still adjusted according to the resolution, but Faster=true
+"might" result in a speed increase. Scene change detection for the borders "may" be a little less accurate.
+
+=================================================================================
+=================================================================================
+=================================================================================

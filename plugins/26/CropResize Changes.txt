@@ -1,0 +1,522 @@
+=================================================================================
+============ Changes 2021-10-22 =================================================
+=================================================================================
+
+Fixed an unnecessary error message when using Clone=3 with FCropResize (adding frosty borders) and the
+ResampleMT plugin wasn't loaded. Made Clone=3 play nice with YV411.
+
+=================================================================================
+============ Changes 2021-10-20 =================================================
+=================================================================================
+
+Fixed an unnecessary error message when using the Blend or TSoft arguments with FCropResize
+(adding frosty borders).
+
+=================================================================================
+============ Changes 2021-10-15 =================================================
+=================================================================================
+
+Cropping changes.
+
+The four cropping arguments can be float as well as integer.
+While CropResize does it's own sub-pixel cropping, making float values for cropping unnecessary most of the time,
+the ability to accept float for cropping makes CropResize play nicer with Avisynth's Animate().
+
+As part of the change to float values, the script may use a resizer to crop even when resizng is disabled.
+In such cases though, the source still won't be resized.
+Previously, to crop the height of a source by mod4, it required something like this:
+CropResize(0,0, 0,2,0,-2, NoResize=true)
+It's now possible to crop a source by mod4 in the following manner, even when resizing is disabled.
+Crop(0,0, 0,3.5,0,-0.5, NoResize=true)
+
+------------------------
+
+Added "RStr" argument (resizer string). Multiple named arguments can be given, wrapped in a pair
+of single quotes. For example, specifying Bicubic resizing along with it's b & c arguments.
+
+CropResize(768,576, Resizer="Bicubic", RStr="b=0.5, c=0.5")
+
+When a resizer argument needs to be supplied as a string, the triple quote method can be used.
+CropResize(768,576, Resizer="Resize8", RStr="""Kernel="Bicubic", a1=0.5, a2=0.5""")
+
+------------------------
+
+Updated the wrapper function for Resize8 in the "Resizer Functions" script. The original Resize8 function will no
+longer work with the updated wrapper function.
+The new version of the Resize8 function is here: https://forum.doom9.org/showthread.php?t=183057
+or here: https://forum.videohelp.com/threads/403005-Resize8-An-updated-version-of-the-original-resizing-function
+
+------------------------
+
+Fixed the two wrapper functions for AVSResize (CR_ZLanczos & CR_ZBicubic) in the "Resizer Functions" script.
+They only produced an error message.
+
+------------------------
+
+Info=true fix to display Avisynth version correctly when it has two decimal places (3.7.0 rather than 3.70).
+
+------------------------
+
+- Frosty=true now enables FrostyBorders without also having to specify Borders=true.
+
+- New global FCropResize arguments for FrostyBorders.
+New types of borders have been added and some global FCropResize arguments changed. The script's ability
+to add "Frosty Borders" has been updated to match the stand-alone FrostyBorders function. See the separate
+help file for the included Frosty Borders function.
+
+An example of using the global FCropResize function to specify options when adding FrostyBorders.
+Here, the source would need to have an aspect ratio less than 16:9 for borders to be added to the sides,
+or wider than 16:9 for borders to be added top and bottom.
+
+FCropResize(FrostyGradient=true, BDivider=2, Bright=-20)
+CropResize(1280, 720)
+
+=================================================================================
+============ Changes 2021-02-01 =================================================
+=================================================================================
+
+- Added new OutWidth and OutHeight options, used by specifying a negative value. Details in the
+"OutWidth & OutHeight" description in the help file under "Additional options since CropResize 2021-02-01".
+
+- Added the CRCrop() functions, used as wrapper functions for Avisynth's Crop().
+Usage details at the top of the CRCrop script.
+
+- For clips with a total frame count of less than 3000, the default for the first frame checked by
+auto-cropping when AutoC=true is now the first video frame (CStart=0), otherwise it's CStart=250 as before.
+
+- The Position argument can now be used with the global GCropResize function.
+
+- For color formats where the minimum mod width is 2 (Mod=2), CropResize was enforcing a minimum height
+of mod2 (HMod=2), even when the minimum HMod could be one (YUY2, for example).
+
+- The included function for adding FrostyBorders has been updated, along with the global FCropResize
+function. The arguments for the FCropResize function have been simplified and reduced in number.
+(see the Frosty description in the help file for details).
+
+- When cropping was specified resulting in a clip of a tiny or negative width or height, for example
+Crop(10,0,2,0) instead of Crop(10,0,-2,0), sometimes any error message would appear to be due to
+a problem with the CropResize function itself. The error message will now be raised by the Avisynth
+resizer or crop function, and therefore make sense.
+
+=================================================================================
+============ Changes 2020-11-05 =================================================
+=================================================================================
+
+- Automatic picture dimming when Info=true is now disabled by default.
+The idea was to make the text easier to read but I found it annoying. There's instructions in the help
+file under the PicDim section explaining how to enable it by default again if you prefer it that way.
+The previous default value was 50.
+
+- Fixed an unnecessary error messages relating to color conversion when using Avisynth 2.6,
+however color conversion when using Avisynth 2.6 is limited to using HDRMatrix and conversion
+between rec.601 and rec.709.
+Resizing and color conversion may work with AVSResize and Avisynth 2.6, but AVSResize doesn't
+work on XP and definitely requires Avisynth+ for color converting RGB.
+
+- Changed HDRTools RGB color conversion from being done in 32 bit to 16 bit.
+
+=================================================================================
+============ Changes 2020-10-30 =================================================
+=================================================================================
+
+- After DitherTools was removed as a color correction/conversion method, there was no longer a requirement
+for YUV to be limited range in order to convert the colors. RGB can also be full or limited range. The information
+to the contrary has been removed from the help file.
+
+=================================================================================
+============ Changes 2020-10-28 =================================================
+=================================================================================
+
+- Video was correctly converted to a bitdepth supported by HDRMatrix, but the original bitdepth was specified.
+Consequently when color converting most high bitdepth video with HDRMatrix, an "unsupported bitdepth"
+error message was produced.
+
+- Tweaked the info displayed when a cropping preview is enabled or when Info=true.
+The source and output mods are now displayed along with their resolutions. For example:
+1280x720 (Mod 16x16)
+or
+1280x532 (Mod 16x4)
+
+=================================================================================
+============ Changes 2020-09-11 =================================================
+=================================================================================
+
+CropResize no longer supports color correction/conversion with ColorMatrix or DitherTools, and DitherTools
+can no longer be specified as a resizing method (although a wrapper function for the Resize16X() script is
+still included for resizing 8 bit video in stacked 16 bit format with DitherTools).
+---------------------------------------------------------------------------------
+The AVSResize plugin has been added for color conversion, and can also be used for resizing, in much the
+same way as DitherTools could be specified previously. Resizer="z_Spline36"
+
+CropResize(1280,720, Resizer="z_Spline36")
+would resize with AVSResize and Spline36 (z.lib resizer).
+
+The following resizers are supported.
+"z_Point", "z_Bilinear", "z_Bicubic", "z_Spline16", "z_Spline36", "z_Spline64", "z_Lanczos" and "z_Lanczos4"
+
+AVSResize supports all planar color formats. CropResize automatically converts interleaved formats to planar,
+and back again after color conversion or resizing.
+Avisynth+ is required for AVSResize, and unfortunately, it doesn't run on XP.
+http://avisynth.nl/index.php/Avsresize
+---------------------------------------------------------------------------------
+The HDRMatrix plugin has been added for color conversion (not to be confused with the HDRTools plugin,
+which is still supported).
+HDRMatrix.dll is required from the HDRFilters plugins pack (or HDRMatrix-x64.dll for 64 bit).
+
+HDRMatrix only supports conversions between standard definition and high definition colorimetry, as was
+the case for ColorMatrix and DitherTools, but all YUV 8 bit, 16 bit and 32 bit float sources are supported.
+HDRMatrix doesn't support YUY2 natively, so CropResize converts to YV16, then back to YUY2 after color
+conversion. Likewise, 10, 12, 14 and 32 bit sources are converted to 16 bit, then back to their original
+bit depths.
+https://www.videoartifact.com/hdr/
+---------------------------------------------------------------------------------
+The values for the ColorCorrect argument have been updated to accommodate the above changes.
+
+ColorCorrect=0
+Disables automatic color correction as before (the default).
+ColorCorrect=1
+Enables automatic color correction with AVSResize. When converting to/from standard definition, the color
+primaries are converted to/from the 525 line/SMPTE 170m (NTSC) color primaries.
+ColorCorrect=2
+Enables automatic color correction with AVSResize. When converting to/from standard definition, the color
+primaries are converted to/from the 625 line/BT.470bg (PAL) color primaries.
+ColorCorrect=3
+Enables automatic color correction with HDRTools. When converting to/from standard definition, the color
+primaries are converted to/from the 525 line/SMPTE 170m (NTSC) color primaries.
+ColorCorrect=4
+Enables automatic color correction with HDRTools. When converting to/from standard definition, the color
+primaries are converted to/from the 625 line/BT.470bg (PAL) color primaries.
+ColorCorrect=5
+Enables automatic color correction with HDRMatrix (YUV conversions between standard and high definition
+colorimetry).
+---------------------------------------------------------------------------------
+Additional ColorMode options have been added, allowing the standard definition color primaries to be
+specified directly.
+
+601N can be used to specify the SMPTE 170M color primaries with the Rec.601 matrix (525 line or "N" for NTSC).
+601P can be used to specify the BT.470bg color primaries and with Rec.601 matrix (625 line or "P" for PAL).
+
+For example:
+To convert from standard definition NTSC/SMPTE 170M to high definition Rec709.
+ColorMode="601N-709"
+To convert from high definition Rec709 to standard definition PAL/BT.470bg.
+ColorMode="709-601P"
+
+It's now also possible to convert between the NTSC/SMPTE 170M and PAL/BT.470bg color primaries.
+ColorMode="601N-601P" or ColorMode="601P-601N"
+
+ColorCorrect cannot equal 5 when 601N and 601P are specified as part of a color colversion, as HDRMatrix
+does a "matrix only" color conversion, as was previously the case for ColorMatrix and DitherTools.
+---------------------------------------------------------------------------------
+Fixed a couple of errors in the "Resizer Wrapper Functions" script and added wrapper functions for two
+AVSResize/z.lib resizers. They are CR_ZBicubic() and CR_ZLanczos().
+
+=================================================================================
+============ Changes 2020-06-23 =================================================
+=================================================================================
+
+- Fixed a very specific aspect ratio issue.
+In order for the problem to occur, the following conditions were required.
+* NoResize enabled (NoResize=true).
+* No cropping being applied by the CropResize function itself.
+* MeGUI was adding it's global DAR variables to the script.
+* An input DAR or SAR was specified via the InDAR or InSAR argument.
+What should have happened is the specified InDAR/InSAR should have taken precedence over the MeGUI DAR,
+the picture cropped to the appropriate mod width and height if required, and a new OutDAR calculated
+accordingly. Instead, CropResize was repeating the same global DAR variables as those created by MeGUI,
+rather than replacing them according to the specified InDAR or InSAR. The chances of anyone being effected
+by the above problem were very low.
+
+- Fixed another output aspect ratio issue.
+When an OutDAR was specified, borders enabled, and either OutWidth or OutHeight were not specified,
+the script was resizing incorrectly. Fortunately it would have been fairly obvious the result was not correct,
+helped by the fact Info=true wasn't displaying the specified OutDAR, and also fortunately, specifying an
+OutDAR without also specifying both a width and height wouldn't be "normal" usage.
+
+=================================================================================
+============ Changes 2020-03-26 =================================================
+=================================================================================
+
+- Each argument for specifying an aspect ratio (CropDAR, InDAR, InSAR, OutDAR & OutSAR) can be reset by
+specifying a value of zero, allowing a global aspect ratio to be over-ridden. The aspect ratio arguments were
+always meant to work that way, but at some stage a change to the script broke that. For example:
+
+GCropResize(720,576, InDAR=16.0/9.0, OutDAR=20.0/11.0)
+Clip1.CropResize(0,0, 8,2,-8,-4)++\    # this CropResize instance will see the source DAR as 16:9.
+Clip2.CropResize(0,0, 6,2,-2,-2, InDAR=0)    # this CropResize instance will see the source as non-anamorphic.
+
+- Tightened the script's aspect ratio/dimension comparisons a little.
+Aspect ratios and dimensions are compared in a few places before the script decides if additional cropping is
+required, as floating point math can only be relied on to be accurate to about 4 decimal places. It helps to
+prevent problems such as the script calculatung a new height of 479.9999784 instead of 480, causing the
+height to be reduced to 476, or the next mod height down, and some extra picture to be cropped.
+The change was the result of discovering a mod1 source with an odd resolution where the aspect ratio of the
+cropped picture and the aspect ratio after resizing weren't identical, according to Info=true (it displays aspect
+ratios to six decimal places). The difference was only around 2% of a pixel, but tightening the comparisons
+enough to fix it doesn't seem to be causing problems elsewhere.
+
+- Fixed properly (hopefully) Info=true sometimes displaying negative zero for cropping rather than simply
+displaying zero.
+
+- Fixed some problems with HDRTools color conversion/correction. The script was color converting correctly,
+although some source types produced an error message instead (YUY2, YUVA and probably any 32 bit RGB).
+
+=================================================================================
+============ Changes 2020-01-30 =================================================
+=================================================================================
+
+- Removed a line in the script added for testing color conversion, causing the script to throw an error for
+sources with a bit depth greater than 8 when color converting with HDRTools.
+
+=================================================================================
+============ Changes 2020-01-25 =================================================
+=================================================================================
+
+- Added a "Position" argument for displaying the current frame number and position in time over the video.
+Enabling it requires GRunT. http://avisynth.nl/index.php/GRunT
+
+- Changed the "PicDim" argument so it now requires a positive value for dimming the picture when Info=true.
+Zero means no dimming, and the maximum dimming is 255.
+
+=================================================================================
+============ Changes 2020-01-07 =================================================
+=================================================================================
+
+ - Color conversion with HDRTools causes too much banding when converting in 8 bit. It's not an issue with
+HDRTools, but an 8 bit limitation. Color conversion is now done in 16 bit, making Avisynth+ a requirement
+for HDRTools.
+
+- New ColorMode argument added for specifying the type of color conversion (between Rec.601, Rec.709 or
+Rec.2020). If ColorCorrect > 0 and ColorMode is unspecified, automatic color correction takes place as before
+when downscaling or upscaling. The ColorMode argument over-rides any automatic color correction.
+Automatic color correction still only applies in full resizing mode, however the ColorMode argument can be used
+in any mode. Color converting from Rec.709 to Rec.601 with DitherTools looks like this:
+CropResize(704,396, 14,4,-16,-6, InDAR=20.0/11.0, ColorCorrect=2, ColorMode="709-601")
+
+- When ColorCorrect=0, if ColorMode specifies a conversion between Rec.601 and Rec.709 for YV12 and YUY2
+video, the ColorMatrix plugin is automatically used unless DitherTools is resizing, in which case it also converts
+the colors for YV12.
+For the remaining YUV formats supported by DitherTools, it converts the colors by default (when ColorCorrect=0).
+For any conversion from/to Rec.2020, HDRTools is automatically used.
+The ColorCorrect argument over-rides these defaults and the conversion method specified is always used.
+
+ - Automatic color correction when downscaling or upscaling now only applies to YUV sources.
+If need be, RGB sources can be manually color converted via the new ColorMode argument (HDRTools only).
+
+- All color correction is applied under the assuption YUV sources are Limited Range and RGB sources are
+Full Range.
+
+- Corrected an oversight that meant HDRTools wasn't always color converting RGB sources correctly.
+
+- DitherTools can now be specified for resizing 8 bit video in stacked 16 bit with an Avisynth resizer.
+Resizer="DTBicubic" or Resizer="DTBicubicResize" would resize with DitherTools and BicubicResize.
+Resizer="DT" is the same as Resizer="DTSpline36" or Resizer="DTSpline36Resize", as Spline36 is the default
+resizing method.
+
+- The specified resizing method doesn't require Resize to be appended to it's name. Resizer="Bilinear" can
+be used instead of Resizer="BilinearResize" (only applies to Avisynth's resizers).
+
+- Info=true sometimes displayed incorrect resizer cropping (only for Avisynth+). The cropping applied to the
+video was still correct though. This was caused by a typo when adding a workaround to prevent Avisynth+
+from sometimes displaying -0 for cropping instead of 0.
+
+- The PicDim argument (for dimming the picture when Info=true) now scales according to bitdepth. Video
+bitdepths greater than 8 are dimmed by the expected amount.
+
+- Reduced the picture dimming when Info=true. The previous PicDim default was -75, it's now -50 (changed to
+a positive value in order to dim the picture for version 2020-01-25).
+
+- The Overlay masks for creating the cropping previews scale according to bitdepth so the previews display
+properly for high bit depth video.
+
+=================================================================================
+============ Changes 2019-09-20 =================================================
+=================================================================================
+
+- Fiddled with Info=true again. The Avisynth and CropResize versions are now displayed. For an anamorphic
+source and/or output, the source and/or output "display dimensions" are included (right column). The height is
+the source/output height. The width is the source/output width, as it would be when resized to "square pixel"
+dimensions. If necessary, "display width" is rounded to an integer (a whole pixel).
+
+- Avisynth Neo probably didn't work correctly with CropResize. Added a check for Neo, although the script
+doesn't do anything "Neo specific". It now assumes Avisynth+ is being used when Neo is detected.
+
+- The GCropResize function was completely broken after the last update. If GCropResize was used, an error
+message displayed (due to a typo).
+
+=================================================================================
+============ Changes 2019-08-08 to 2019-09-10 ===================================
+=================================================================================
+
+- No changes to the CropResize script itself for the 2019-09-10 version (same as version 2019-09-02, but there's
+some corrections and improvements to the help file. Nothing major, but to prevent ambiguity the version date has
+been updated to 2019-09-10 to indicate it has the latest help file.
+- There's no longer any optional plugins bundled with the script as they'll eventually become outdated. Links for
+optional plugins can be found at the top of the help file.
+
+- Avisynth 2.5.8 is no longer supported. As it turns out, the script was already using a couple of functions not
+available in Avisynth 2.5.8.
+
+- Added PicDim argument for adjusting how much the picture is dimmed when Info=true. The default is -75, and
+the range is -255 to 0 (changed to positive values in order to dim the picture for version 2020-01-25, and the
+default value changed to 50 rather than 75 for version 2020-01-07 to reduce the default dimming).
+
+- Fixed an incorrect OutDAR calculation when NoResize=true and an input sample aspect ratio was specified.
+The script was still cropping correctly, but the OutDAR calculated by the script was wrong.
+- Fixed a mistake when defining the resolutions for SD, HD and UHD (in relation to color correction).
+
+- Restored the ability to automatically color convert when upscaling or downscaling.
+- HDRTools added as a color correction option. HDRTools is capable of color converting high bitdepth video when
+using Avisynth+. Conversions between SD, HD, and UHD colorimetry are supported (standard dynamic range only).
+- DitherTools resizes in 16 bit when it's being used to convert colors, assuming a compatible resizer is specified.
+DitherTools is only used for conversions between SD and HD colorimetry.
+- ColorMatrix is only used for conversions between SD and HD colorimetry.
+- Added Avisynth+ bitdepth check for color correction as only HDRTools supports bitdepths greater than 8 bit.
+
+- Tweaked Info=true. The displayed info scales a little better with resolution. The source color format and
+bitdepth are now displayed. Added an Avisynth+ workaround to prevent zero from displaying as a negative.
+
+=================================================================================
+============ Changes 2019-08-08 =================================================
+=================================================================================
+
+The "2019-08-08" changes are mostly aimed at making the script's behaviour more predictable. The cropping
+and resizing functionality remains the same.
+
+------------ Minor Changes & Fixes ----------------------------------------------
+
+- Fixed a glitch that sometimes prevented borders from being added when the AutoAspect and Border options
+were enabled at the same time.
+- Modified the AutoAspect option so when Borders=true it will only decrease the aspect ratio to achieve 16:9
+(increase the height), or increase the aspect ratio to achieve 4:3 (increase the width).
+- Fixed an occasional issue with global Input DAR's being passed along to successive CropResize instances
+correctly.
+- Added picture dimming when Info=true to make the text easier to read.
+- A few changes to the displayed text when Info=true.
+
+------------ RMode - Common Resizing --------------------------------------------
+
+The "common resizing" functionality must now be enabled by the user. A new RMode option (resize mode)
+has been added for that purpose. 
+When RMode=true, if changing an option for any CropResize instance also changes the output resolution
+temporarily, it'll be resized to match the resolution of the CropResize instance where RMode=true.
+
+Trim(0,1999).CropResize(832,468, CPreview=1, RMode=true)\
+++Trim(2000,2999).CropResize(832,468)\
+++Trim(3000,3999).CropResize(832,468, 6,4,-12,-2)
+
+------------ Input / Output Aspect ----------------------------------------------
+
+There were times when the Output DAR for one instance of CropResize would be passed along to the next
+instance of CropResize to become it's Input DAR. It wasn't always intuitive, so there's no longer any ambiguity.
+If you want the Output DAR from CropResize to become the Input DAR for a following CropResize instance, it
+must be specified manually. For example:
+
+CropResize(704,480, OutDAR=4.0/3.0, Borders=true)
+CropResize(720,480, InDAR=4.0.0/3.0, OutDAR=15.0/11.0, NoResize=true, Borders=true)
+
+------------ FrostyBorders ------------------------------------------------------
+
+The FrostyBorders function has been updated and all FrostyBorder options are now configurable via a new
+global FCropResize() function. FCropResize() only adjusts FrostyBorder options globally, while passing the
+video through untouched.
+
+FCropResize(Bright=-10, Cont=0.7, Texture=0.7)
+CropResize(960,540, InDAR=4.0/3.0, Borders=true, Frosty=true)
+
+------------ MeGUI global DAR ---------------------------------------------------
+
+Any global MeGUI DAR in a script is now ignored by all but the first instance of CropResize by default.
+For the MeGUI DAR to be used, there can't be a previous CropResize instance in the script. For the
+MeGUI DAR to be passed along to any further CropResize instances, they must be preceded by the
+global GCropResize function. The GCropResize function then instructs CropResize to pass the MeGUI DAR
+along to each instance of CropResize, as it does when specifying other options globally. ie
+
+global MeGUI_darx = 4
+global MeGUI_dary = 3
+
+GCropResize(720,576, 6,4,-12,-2, OutDAR=4.0/3.0)
+
+Trim(0,1999).CropResize()\
+++Trim(2000,2999).CropResize(0,0, 10,4,-16,-4)\
+++Trim(3000,3999).CropResize()
+
+=================================================================================
+============ Changes 2019-07-18 =================================================
+=================================================================================
+
+------------ Argument Names -----------------------------------------------------
+
+"AutoAspect"  -  "Aspect" renamed "AutoAspect"
+"CAlign"  -  added to allow the enabling of the Crop() function's Align option.
+"ColorCorrection"  -  removed.
+"CPreview"  -  "CPreview", "ACPreview" & "CPreviewB" merged into a single "CPreview" argument.
+"CropDAR"  -  "PicDAR" renamed "CropDAR" (to better reflect it controls the cropping DAR).
+"CSplit"  -  added to control the cropping split.
+"GMode"  -  added for adjusting how CropResize operates when the global GCropResize function is used.
+"InSAR"  -  "PixelAR" renamed "InSAR" (Iinput Sample Aspect Ratio), so "InDAR" and "InSAR" are similarly named.
+"NoResize"  -  "Resize" renamed "NoResize", making all true/false arguments false by default.
+"OutDAR"  -  added (Output Display Aspect Ratio).
+"OutSAR"  -  added (Output Sample Aspect Ratio).
+"Resizer"  -  now used to specify any compatible resizer.
+"ResizerC"  -  removed.
+
+------------ Anamorphic Output Support ------------------------------------------
+
+An Output Display Aspect Ratio (OutDAR) or Output Sample Aspect Ratio (OutSAR) can now be specified.
+
+------------ Avisynth Compatibility ---------------------------------------------
+
+CropResize should now be compatible with Avisynth 2.5.8, Avisynth 2.6 and Avisynth+.
+
+------------ ColorCorrection (removed) - (restored with version 2019-08-09) -----
+
+CropResize no longer converts the colors when upscaling or downscaling.
+It previously only converted between rec.601 and rec.709, and color conversion isn't technically the job of a
+cropping/resizing script, so color correction has been removed entirely.
+
+------------ Cropping -----------------------------------------------------------
+
+Specified cropping can now be Mod1 for any source. CropResize will increase the cropping to the correct mod
+when it's not resizing, or hand off any non-mod cropping to the resizer when it is.
+Cropping is now split between Avisynth's Crop() function and resizer cropping more intelligently, and the cropping
+split can now be controlled by the CSplit argument.
+Right and bottom cropping can be a positive or negative integer, applied in the same way as Avisynth's Crop()
+function.
+
+------------ Global GCropResize Function ----------------------------------------
+
+There's a new GCropResize function for configuring the CropResize options globally when there's more than one
+instance of CropResize in a script. The options can be over-ridden by individual instances of CropResize.
+The GCropResize function only outputs an unmodified version of the source clip (except when global auto-cropping
+is enabled). GCropResize can be used to create two sets of global variables, but as an example of usage with a
+single set of global variables:
+
+GCropResize(720,480, 8,2,-8,-4, InDAR=4.0/3.0, OutDAR=15.0/11.0)
+
+Trim(0,1999).CropResize()\
+++Trim(2000,2999).CropResize(0,0, 12,14,-10,-6)\
+++Trim(3000,3999).CropResize()\
+++Trim(4000,0).CropResize(Borders=true)
+
+------------ MeGUI Support ------------------------------------------------------
+
+If there's a previous global MeGUI DAR in a script, for example:
+
+global MeGUI_darx = 4
+global MeGUI_dary = 3
+
+CropResize will automatically use it as it's Input DAR.
+CropResize also creates the appropriate global MeGUI DAR variables for MeGUI to use when loading a script.
+MeGUI can then calculate the correct sample aspect ratio automatically and add it to the command line for
+encoding.
+
+------------ Resizing -----------------------------------------------------------
+
+Any compatible resizer can be specified via the Resizer argument, not just an Avisynth resizer, or the Resize8
+script as was the case with the previous version.
+There are wrapper functions included for specifying options when resizng with the Resize8 or ResizeX scripts,
+the ResampleHQ plugin, and for each of the Avisynth resizers with optional arguments.
+
+=================================================================================
+=================================================================================

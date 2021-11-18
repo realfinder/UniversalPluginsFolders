@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Fisheye Function</title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>Fisheye </h1></font>
+	 
+	  <BR><b>Author<a href="../vcmohan.html"> V. C. Mohan</a></b>
+	  <BR> Date 16 oct 2021
+	  
+	  
+	  <p>This plugin corrects fish eye type distortions in 
+	  an image that result in due to camera lens projecting image on to
+	  a flat film or sensor array. Distortion from use of very wide angle lens is termed fisheye
+		For fisheye processing "Altera" Manipal dot net in their 2008 paper was considered.  
+		In the test mode a  distorted matrix of dots is overlain on the specified frame. These will be along lines which will be corrected. Best fit parameters can be arrived at. </p>
+		<p> Five methods of processing are available. These are:-
+		
+		<br>. 1. Correction of fish eye distortion with Orthoganal formulation output
+		<br>. 2. Correction of fish eye distortion with Linear 	formulation output
+		<br>. 3. Correction of fish eye distortion with Equi Solid formulation	output
+		<br>. 4. Correction of fish eye distortion with Panoramic formulation 	output	
+		<br>. 5. Correction of fish eye distortion with Radial formulation 
+		
+		</P>		
+	  <P><b>Input formats RGB, Y or YUV444 (no subsampling)only are acceptable.All bit depths are handled. This function is Thread safe. MT_NICE_FILTER</b></P>
+	  <P> This function operates in two modes decided automatically. If the fisheye image is fully within the input frame, then the output frame will be a square encompassing the corrected image centrally. Additionally a parameter sqr if set to true, the image will be converted to fit the square fully.
+<BR> In case the input Fisheye image is present only partially in the frame, then the output frame size will be same as input. Adding borders may be required to get the corrected image fully.</P>
+	 <p> The parameters to be specified mainly depend upon the lens of the camera, field of view of lens  and size of image.  To decide upon the coordinates of the origin and  radius of the Fisheye image, help of the function Circles of this plugin may be needed.</p> 	  
+	  
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top">Details of parameters </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip </td>
+       <td></td>
+       <td>clip</td>
+       <td>RGB or planar YUV444 or Y format only</td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>image center x coordinate</td>
+       <td>xo</td>
+       <td>int</td>
+       <td>can be outside frame.</td>
+       <td>frame width / 2</td>
+</tr>
+<tr>
+       <td>image center y coordinate</td>
+       <td>yo</td>
+       <td>int</td>
+       <td>can be outside frame.</td>
+       <td>frame height / 2</td>
+</tr>
+<tr>
+       <td>type of interpolation</td>
+       <td>q</td>
+       <td>int</td>
+       <td>1. manipal scheme, 2. bilinear, 3. bicubic and 4. lanczos 6x6.</td>
+       <td>1</td>
+</tr>
+<tr>
+       <td>whether in test mode</td>
+       <td>test</td>
+       <td>Boolean</td>
+       <td>true for test, false for normal</td>
+       <td>false</td>
+</tr>
+<tr>
+       <td>density of dots in test mode </td>
+       <td>dots</td>
+       <td>Int</td>
+       <td>1 to 4</td>
+       <td>2</td>	   
+</tr>
+<tr>
+       <td>type of correction scheme</td>
+       <td>method</td>
+       <td>Int</td>
+       <td>1 to 5</td>
+       <td>3</td>
+	   
+</tr>
+
+<tr>
+       <td>whether output to be fitted to square Applicable only if Fisheye image is fully within input frame</td>
+       <td>sqr</td>
+       <td>Boolean</td>
+       <td>true , false </td>
+       <td>true</td>
+</tr>
+
+<tr>
+       <td>dim factor for ease of viewing over the image in test mode</td>
+       <td>dim</td>
+       <td>float</td>
+       <td>between  0.0 and 1.0</td>
+       <td>0.5</td>
+</tr>
+
+<tr>
+       <td>Field of view of lens in degrees </td>
+       <td>fov</td>
+       <td>float</td>
+       <td> between 40 and 170</td>
+       <td>120</td>
+</tr>
+<tr>
+       <td>refraction coefficient </td>
+       <td>rix</td>
+       <td>float</td>
+       <td>positive value  between 1.0 and 1.5</td>
+       <td>1.15</td>
+</tr>
+
+<tr>
+       <td>radius of fisheye image</td>
+       <td>frad</td>
+       <td>integer</td>
+       <td>between 64 and value to ensure at least part of fish is in frame</td>
+       <td>frame width/ 2</td>
+</tr>
+     
+</table>
+
+
+<br>
+<table>
+
+<tr>
+       <td><a href="../manyPlus.html">To my index page</a></td>
+	   <td>down load<a href="manyPlus.7z">movePlus </a>plugin</td>
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>
+</body>
+</html>
+

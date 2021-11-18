@@ -1,159 +1,140 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- saved from url=(0071)./doc/EffectsPlus_index.html -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
 	<title>EffectsPlus AviSynth+ Plugin</title>
 </head>
 
 <body>
 	   <font color="#cc0033"><h1>EffectsPlus </h1></font>
-	  <br><b><a href="http://www.avisynth.nl/users/vcmohan/vcmohan.html">Author V. C. Mohan</a></b>
-	  <br>Date: June 2017
+	  <BR><b><a href="../vcmohan.html">Author V. C. Mohan</a></b>
+	  <BR>Date: 28 Oct 2021
 	  <p>About 26 functions are in this package of special effects. These effects are created on the input clip in the range of the frame numbers specified. The 
 	  Audio is not affected. A brief description of these functions are in  the 
 	  synopsis. Links are provided to transfer to the full description pages. All functions are thread safe. RGB, YUY2 and Planar 8/ 9-16/ 32 bit depth color formats are supported.</p>
 
-<p>The first three parameters are identical for all the functions excepting TVLook. These are
-<br>1.	Clip 
-<br>2.	 Start Frame Number sf defaults to first frame of clip
-<br>3.	 End Frame Number ef defaults to last frame of clip <br> TVLook does not have starting and ending frame parameters.</p>
+<p>The first three parameters are identical for all the functions excepting RearViewMirror and TVLook. These are
+<BR>1.	Clip 
+<BR>2.	 Start Frame Number sf defaults to first frame of clip
+<BR>3.	 End Frame Number ef defaults to last frame of clip <BR> TVLook does not have starting and ending frame parameters.</p>
 
-<p>Some effectss if used one after other can give unexpected interesting results. 
+<p>Some effectss if used one over other can give unexpected interesting results. 
 
 The fireworks, pool, ripples and bubbles functions can be better appreciated with 
 about 4 sec or more(may be few minutes) of input frames.</p>
 
 
-<br>  
-<br>
+<BR>  
+<BR>
 <b><a href="./doc/Synopsis">Synopsis of EffectsPlus plugin functions</a></b>
 
- <br>
-<br><b><a href="./doc/Balloon.html">Balloon</a>:</b> This function creates
+ <BR>
+<BR><b><a href="./doc/Balloon.html">Balloon</a>:</b> This function creates
  a balloon of desired color and opacity and which hops.
-<br>
-<br> <b><a href="./doc/Binoculars.html">Binoculars</a>:</b> This creates 
+<BR>
+<BR> <b><a href="./doc/Binoculars.html">Binoculars</a>:</b> This creates 
 twin circular discs with identical magnified image from an area situated midway 
 between the discs.The center can be moved  linearly during the effect . 
-<br>
-<br><b><a href="./doc/Bubbles.html">Bubbles</a></b> creates soap bubbles 
+<BR>
+<BR><b><a href="./doc/Bubbles.html">Bubbles</a></b> creates soap bubbles 
 in myriad colors emanating at selected point, that travel in different paths 
 and speeds.
- <br>
-<br><b><a href="./doc/Conez.html">Conez</a>:</b> The image is wrapped over
+ <BR>
+<BR><b><a href="./doc/Conez.html">Conez</a>:</b> The image is wrapped over
  either a vertical or a horizontal cone,  top and base diameters of which can be
   specified. The image is either fully  wrapped from start to end or progressively
    the cone takes shape. 
-<br>
-<br><b><a href="./doc/DiscoLights.html">DiscoLights</a>:</b> Multicolored 
+<BR>
+<BR><b><a href="./doc/DiscoLights.html">DiscoLights</a>:</b> Multicolored 
 light spots flash and move over the image. Parameters control the size, direction,
  type and speed of movement of light spots.
-<br>
+<BR>
 
-<br><b><a href="./doc/Distort.html">Distort</a>:</b> This function 
+<BR><b><a href="./doc/Distort.html">Distort</a>:</b> This function 
 distorts and can produce grotesque  image. 
- <br>
+ <BR>
 
-<br><b><a href="./doc/Fire.html">Fire</a>:</b> This function 
+<BR><b><a href="./doc/Fire.html">Fire</a>:</b> This function 
 generates a fire at given x level.
-<br>
-<br><b><a href="./doc/Flashes.html">Flashes</a>:</b> Creates a smoke filled area.Thereafter a series of light flashes occur 
+<BR>
+<BR><b><a href="./doc/Flashes.html">Flashes</a>:</b> Creates a smoke filled area.Thereafter a series of light flashes occur 
 in the smoke filled portion. This  resembles  flashing fire works.
-<br>
-<br><b><a href="./doc/FlowerPot.html">Flowerpot</a>:</b> This function 
+<BR>
+<BR><b><a href="./doc/FlowerPot.html">Flowerpot</a>:</b> This function 
 generates multi colored glowing embers in parabolic trajectories from given point,
  resembling Flower Pot Fire Works (as popularly known in India).
-<br>
-<br><b><a href="./doc/Fog.html">Fog</a>:</b> Creates fog on the image
-<br>
-<br><b><a href="./doc/Lens.html">Lens</a>:</b> A circular area is magnified 
+<BR>
+<BR><b><a href="./doc/Fog.html">Fog</a>:</b> Creates fog on the image
+<BR>
+<BR><b><a href="./doc/Lens.html">Lens</a>:</b> A circular area is magnified 
 with uniform magnification or with magnification varying from center to edge. 
 The center of the disc can be linearly varied during the ..
-<br>
-<br><b><a href="./doc/LineMagnifier.html">LineMagnifier</a>:</b>  Magnifies 
+<BR>
+<BR><b><a href="./doc/LineMagnifier.html">LineMagnifier</a>:</b>  Magnifies 
 either a vertical or Horizontal strip of image. The magnifier can be moved across image.
- <br>
-<br><b><a href="./doc/Plasma.html">Plasma</a>:</b> This function 
+ <BR>
+<BR><b><a href="./doc/Plasma.html">Plasma</a>:</b> This function 
 generates a plasma of colors in an area of image. 
-<br>
-<br><b><a href="./doc/Rain.html">Rain</a>:</b>  Adds rain to the image. 
+<BR>
+<BR><b><a href="./doc/Rain.html">Rain</a>:</b>  Adds rain to the image. 
 The rain can be light, medium, heavy, increasing from light to heavy or decrease 
 from heavy to light.  The color of rain, their opacity can be specified. The 
 direction of rain fall can be varied during the .
-<br>
-<br><b><a href="./doc/Rainbow.html">Rainbow</a>:</b> Adds a rainbow to the
+<BR>
+<BR><b><a href="./doc/Rainbow.html">Rainbow</a>:</b> Adds a rainbow to the
  image centered at the specified coordinates  and with a given radius. The center
   coordinates and radius can be linearly varied  in the range. Left and right 
   cut off of rainbow display can be specified and  varied during . 
-<br>
+<BR>
+<BR><b><a href="./doc/RearViewMirror.html">RearViewMirror</a>:</b> Creates an image as viewed in a rear view mirror. Can also create  image viewed with Fish eye . 
+<BR>
 
-<br><b><a href="./doc/Ripples.html">Ripples</a>:</b>  
+<BR><b><a href="./doc/Ripples.html">Ripples</a>:</b>  
 
 a ripple
  is created over the image centered at the specified coordinates and growing up and 
 subsiding
 
-<br>
-<br><b><a href="./doc/Rockets.html">Rockets</a>:</b> This function generates 
+<BR>
+<BR><b><a href="./doc/Rockets.html">Rockets</a>:</b> This function generates 
 rocket fire works firing off at regular intervals and displays the glowing embers.  
-<br>
-<br><b><a href="./doc/SnowFlakes.html">SnowFlakes</a>:</b> creates big or 
+<BR>
+<BR><b><a href="./doc/SnowFlakes.html">SnowFlakes</a>:</b> creates big or 
 small size snow flakes that drift in wind and fall down. The dense (ness) of snow,
  drift %age, the falling speed (%age) and whether big or small flakes can be opted.
-<br>
-<br><b><a href="./doc/SnowStorm.html">SnowStorm</a>:</b> Swirling white 
+<BR>
+<BR><b><a href="./doc/SnowStorm.html">SnowStorm</a>:</b> Swirling white 
 particles of snow are created on the image. 
 The snow can be either light, medium or heavy or increase from light to heavy or
  decrease from heavy to light. 
-<br>
+<BR>
 
-<br><b><a href="./doc/Sparkler.html">Sparkler</a></b> generates multi 
+<BR><b><a href="./doc/Sparkler.html">Sparkler</a></b> generates multi 
 colored flashing flowers around a thin pencil like object known as the Firework 
 Sparkler. The sparkler burns from start to end  during the range of the . 
-<br>
-<br><b><a href="./doc/Spotlight.html">SpotLight</a>:</b> This function 
+<BR>
+<BR><b><a href="./doc/Spotlight.html">SpotLight</a>:</b> This function 
 illuminates a specified circular disc area. 
 The illumination (color and strength) can be specified and remains constant. 
 The spot center moves during . 
-<br>
-<br><b><a href="./doc/Sunflower.html">SunFlower</a>:</b> This function 
+<BR>
+<BR><b><a href="Sunflower.html">SunFlower</a>:</b> This function 
 generates radially expanding colored light 
 beams in the sky and which finally fall back as in the fireworks. 
-<br>
-<br><b><a href="./doc/Swirl.html">Swirl</a>:</b>   Swirls the image 
+<BR>
+<BR><b><a href="./doc/Swirl.html">Swirl</a>:</b>   Swirls the image 
 centered at the specified coordinates and up
  to a given maximum radius. The swirl starts from zero and increases to full in 
  the first part, remains at this size in the second part and reduces to 
  zero in the last part. 
-<br>
-<br><b><a href="./doc/TVLook.html">TVlook</a>:</b> On a clip a old TV set type image is created
+<BR>
+<BR><b><a href="./doc/TVLook.html">TVlook</a>:</b> On a clip a old TV set type image is created
 from a second clip.
-<br>
+<BR>
 
 <pre>
-#effectsPlus Test
-loadplugin("C:\..................EffectsPlus.dll")
-#----------------------------------------
-SetFilterMTMode("Swirl", MT_NICE_FILTER)
-SetFilterMTMode("Sunflower", MT_NICE_FILTER)
-SetFilterMTMode("SpotLight", MT_NICE_FILTER)
-SetFilterMTMode("Sparkler", MT_NICE_FILTER)
-SetFilterMTMode("SnowStorm", MT_NICE_FILTER)
-SetFilterMTMode("SnowFlakes", MT_NICE_FILTER)
-SetFilterMTMode("Rockets", MT_NICE_FILTER)
-SetFilterMTMode("Ripples", MT_NICE_FILTER)
-SetFilterMTMode("Rainbow", MT_NICE_FILTER)
-SetFilterMTMode("Plasma", MT_NICE_FILTER)
-SetFilterMTMode("Pool", MT_NICE_FILTER)
-SetFilterMTMode("LineMagnifier", MT_NICE_FILTER)
-SetFilterMTMode("Flowerpot", MT_NICE_FILTER)
-SetFilterMTMode("Flashes", MT_NICE_FILTER)
-SetFilterMTMode("Fire", MT_NICE_FILTER)
-#
-SetFilterMTMode("Distort", MT_NICE_FILTER)
-SetFilterMTMode("conez", MT_NICE_FILTER)
-SetFilterMTMode("Binoculars", MT_NICE_FILTER)
-SetFilterMTMode("Bubbles", MT_NICE_FILTER)
-SetFilterMTMode("Balloon", MT_NICE_FILTER)
+
+
 # use either an image or color bars or a video as input
 imagereader("C:\..............jpg", end = 200)
 #some effects are not seen clearly on colorbars
@@ -197,6 +178,7 @@ out = out + snowflakes().subtitle(" S N O W F L A K E S ",text_color=0,align=5,s
 out = out + rockets().subtitle(" R O C K E T S ",text_color=0,align=5,size=32)
 out = out + ripples(lambda = 16, amp = 4).subtitle(" R I P P L E S",text_color=0,align=5,size=32)
 out = out + rainbow(rad = 80, erad = 300).subtitle(" R A I N B O W",text_color=0,align=5,size=32)
+out = out + RearViewMirror( i).subtitle(" R E A R  V I E W  M I R R O R",text_color=0,align=5,size=32)
 out = out + pool().subtitle(" P O O L ",text_color=0,align=5,size=32)
 out = out + plasma( plasma = 1, pallet = 1, speed = 1, width = 400, height = 400).subtitle(" P L A S M A ",text_color=0,align=5,size=32)
 out = out + LineMagnifier( type = "hor", xy = 2, exy =400, mag = 6, lwidth = 160, simple = false).subtitle(" L I N E M A G N I F I E R ",text_color=0,align=5,size=32)
@@ -228,8 +210,8 @@ prefetch(6)
 
 <table>
 
-<tbody><tr>
-       <td><a href="http://www.avisynth.nl/users/vcmohan/index.html">Back to vcmohan's plugins index</a></td><td></td><td></td>
+<tr>
+       <td><a href="../index.html">Back to vcmohan's plugins index</a></td><td></td><td></td>
 </tr>
 <tr>	   
        <td></td><td><a href="./doc/EffectsPlus.7z">down load EffectsPlus plugin</a></td><td></td>
@@ -237,10 +219,9 @@ prefetch(6)
  <tr>
        <td></td><td></td><td><a href="http://www.avisynth.nl/">back to Avisynth home page</a></td>
 </tr>
-</tbody></table>
+</table>
 
 
 	
-
-
-</body></html>
+</body>
+</html>
