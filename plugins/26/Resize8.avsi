@@ -1,11 +1,14 @@
 # ===============================================================================
 # ===============================================================================
+#            Resize8 Mod 2021-12-30
+# ===============================================================================
 # ===============================================================================
 #
-#   Updated by Hello_Hello 2021.09.07
+#   Resize8 Mod 2021-12-30 by Hello_Hello
+#   https://forum.videohelp.com/threads/403005-Resize8-An-updated-version-of-the-original-resizing-function
 #   https://forum.doom9.org/showthread.php?t=183057
 #
-#   Resize8 by mawen1250 2015.02.23
+#   Based on Resize8 1.2 2015.02.23 by mawen1250
 #   http://avisynth.nl/index.php/Resize8
 #
 # ===============================================================================
@@ -29,9 +32,8 @@
 #   AviSynth+ Revision > 2294 for HBD and YUVA support.
 #   AviSynth+ Revision <= 2294 without HBD and YUVA support.
 #   AviSynth 2.60 or 2.61 without HBD and YUVA support.
-#   RgTools http://avisynth.nl/index.php/RgTools
+#   RgTools for ringing repair http://avisynth.nl/index.php/RgTools
 #
-# ===============================================================================
 # ===============================================================================
 # ===============================================================================
 
@@ -44,22 +46,24 @@ function Resize8(clip source, int "target_width", int "target_height",
 # ===============================================================================
 
     AvsVerStrLC = LCase(VersionString())
-    IsAvsPlus   = (FindStr(AvsVerStrLC, "avisynth+") > 0)
-    IsAvsNeo    = (FindStr(AvsVerStrLC, "avisynth neo") > 0)
-    AvsStrNumA  = IsAvsPlus || IsAvsNeo ? FindStr(AvsVerStrLC, "(r") + 2 : 0
-    AvsStrNumB  = IsAvsPlus || IsAvsNeo ? FindStr(AvsVerStrLC, ",") : 0
-    AvsStrNumC  = (AvsStrNumB > AvsStrNumA) ? AvsStrNumB - AvsStrNumA : undefined()
-    AvsBuildNum = (AvsStrNumA > 2) ? int(value(MidStr(AvsVerStrLC, AvsStrNumA, AvsStrNumC))) : 0
-    IsAvsHBD    = (AvsBuildNum > 2294)
+    IsAvsPlus = (FindStr(AvsVerStrLC, "avisynth+") > 0)
+    IsAvsNeo = (FindStr(AvsVerStrLC, "avisynth neo") > 0)
+    AvsStrNum = IsAvsPlus || IsAvsNeo ? FindStr(AvsVerStrLC, "(r") + 2 : 0
+    AvsBuildNum = (AvsStrNum > 2) ? int(value(MidStr(AvsVerStrLC, AvsStrNum))) : 0
+    IsAvsHBD = (AvsBuildNum > 2294)
 
-    R_8   = " Resize8 " + chr(10)
+    R8 = " Resize8 " + chr(10)
+    assert(HasVideo(source) && (width(source) > 48) && (height(source) > 48),
+    \      R8 + " No video found or the source width or height is too small " + chr(10))
 
 # ===============================================================================
-#   Source properties
+#            Source properties
 # ===============================================================================
 
+    audio = HasAudio(source) ? source.KillVideo() : source
+    source = source.KillAudio()
     pixtype = PixelType(source)
-    SourceBits = IsAvsHBD ? BitsPerComponent(source) : 8
+    vbits = IsAvsHBD ? BitsPerComponent(source) : 8
 
     sCSP = IsYUY2(source)  ? "YUY2" :
     \      IsYV411(source) ? "411"  :
@@ -73,11 +77,12 @@ function Resize8(clip source, int "target_width", int "target_height",
     \      IsAvsHBD && IsRGB64(source) ? "RGB64" :
     \      IsAvsHBD && IsPlanarRGB(source)  ? "RGBP"  :
     \      IsAvsHBD && IsPlanarRGBA(source) ? "RGBAP" :
-    \      assert(false, R_8 + """ """" + pixtype + """" +
+    \      assert(false, R8 + """ """" + pixtype + """" +
     \             is an unsupported color format """ + chr(10))
 
     IsAlpha = (IsAvsHBD && HasAlpha(source)) || (sCSP == "RGB32")
     IsRGBSource = (LeftStr(sCSP, 3) == "RGB")
+
     Sub444 = (sCSP == "444") || IsRGBSource     || (sCSP == "000")
     Sub42x = (sCSP == "422") || (sCSP == "420") || (sCSP == "YUY2")
     Sub420 = (sCSP == "420")
@@ -97,7 +102,7 @@ function Resize8(clip source, int "target_width", int "target_height",
     src_h = (src_h <= 0) ? sh - src_t + src_h : src_h
 
 # ===============================================================================
-#   Parameters for resizing
+#            Parameters for resizing
 # ===============================================================================
 
     separate = default(separate, false)
@@ -108,13 +113,13 @@ function Resize8(clip source, int "target_width", int "target_height",
     ohc = Sub420 ? oh / 2 : oh
 
     assert(!Sub411 || (ow == (owc * 4)),
-    \     R_8 + " " + pixtype + " output width must be MOD4 " + chr(10))
+    \     R8 + " " + pixtype + " output width must be MOD4 " + chr(10))
     assert(!Sub42x || (ow == (owc * 2)),
-    \     R_8 + " " + pixtype + " output width must be MOD2 " + chr(10))
+    \     R8 + " " + pixtype + " output width must be MOD2 " + chr(10))
     assert(!Sub420 || (oh == (ohc * 2)),
-    \     R_8 + " " + pixtype + " output height must be MOD2 " + chr(10))
+    \     R8 + " " + pixtype + " output height must be MOD2 " + chr(10))
 
-    !Separate ? Eval("""
+    !separate ? Eval("""
 
     src_lc = Sub444 ? src_l : src_l / (Sub42x ? 2 : 4)
     src_tc = Sub420 ? src_t / 2 : src_t
@@ -132,48 +137,49 @@ function Resize8(clip source, int "target_width", int "target_height",
 
     """)
 
-    ratio_w  = float(ow) / float(src_w)
-    ratio_h  = float(oh) / float(src_h)
+    ratio_w  = float(ow)  / float(src_w)
+    ratio_h  = float(oh)  / float(src_h)
     ratio_wc = float(owc) / float(src_wc)
     ratio_hc = float(ohc) / float(src_hc)
-    IsLup    = ((ratio_w * ratio_h) >= 1)
+    IsLup    = ((ratio_w  * ratio_h) >= 1)
     IsCup    = ((ratio_wc * ratio_hc) >= 1)
 
 # ===============================================================================
-#   Determine the resizing kernel
+#            Determine the resizing kernel
 # ===============================================================================
 
-    IsAvsHBD ? eval(""" IsMTResize=FunctionExists("Spline36ResizeMT") """) : eval("""
-    try{ test=source.Spline36ResizeMT(640,480) IsMTResize=true }catch(err){ IsMTResize=false } """)
+    IsAvsHBD ? eval("""  IsResampleMT = FunctionExists("Spline36ResizeMT")  """) :
+    \          eval("""  try{  test = source.Spline36ResizeMT(640,480)   IsResampleMT = true  }
+                         catch(err){  IsResampleMT = false  }  """)
 
     LumaU = (R8_Luma_UpScale() == "") ?
-    \       (IsMTResize ? "Lanczos4ResizeMT" : "Lanczos4Resize") : R8_Luma_UpScale()
+    \       (IsResampleMT ? "Lanczos4ResizeMT" : "Lanczos4Resize") : R8_Luma_UpScale()
     LumaD = (R8_Luma_DownScale() == "") ?
-    \       (IsMTResize ? "Spline36ResizeMT" : "Spline36Resize") : R8_Luma_DownScale()
+    \       (IsResampleMT ? "Spline36ResizeMT" : "Spline36Resize") : R8_Luma_DownScale()
     ChroU = (R8_Chroma_UpScale() == "") ?
-    \       (IsMTResize ? "LanczosResizeMT"  : "LanczosResize")  : R8_Chroma_UpScale()
+    \       (IsResampleMT ? "LanczosResizeMT"  : "LanczosResize")  : R8_Chroma_UpScale()
     ChroD = (R8_Chroma_DownScale() == "") ?
-    \       (IsMTResize ? "Spline36ResizeMT" : "Spline36Resize") : R8_Chroma_DownScale()
+    \       (IsResampleMT ? "Spline36ResizeMT" : "Spline36Resize") : R8_Chroma_DownScale()
 
     IsKl = defined(kernel)
     IsKc = defined(kernel_c)
-    Kl = default(kernel, IsLup ? LumaU : LumaD)
-    Kc = default(kernel_c, IsKl ? kernel : IsCup ? ChroU : ChroD)
+    Kl   = default(kernel, IsLup ? LumaU : LumaD)
+    Kc   = default(kernel_c, IsKl ? kernel : IsCup ? ChroU : ChroD)
 
     original_Kl = Kl
     original_Kc = Kc
 
-    HasResizeMT_Kl = (RightStr(Kl, 8) == "ResizeMT") || (RightStr(Kl, 8) == "MTResize")
-    HasResizeMT_Kc = (RightStr(Kc, 8) == "ResizeMT") || (RightStr(Kc, 8) == "MTResize")
-    HasMT_Kl       = !HasResizeMT_Kl && (RightStr(Kl, 2) == "MT")
-    HasMT_Kc       = !HasResizeMT_Kc && (RightStr(Kc, 2) == "MT")
+    IsResizeMTAppended_Kl = (RightStr(Kl, 8) == "ResizeMT") || (RightStr(Kl, 8) == "MTResize")
+    IsResizeMTAppended_Kc = (RightStr(Kc, 8) == "ResizeMT") || (RightStr(Kc, 8) == "MTResize")
+    IsMTAppended_Kl       = (RightStr(Kl, 2) == "MT")
+    IsMTAppended_Kc       = (RightStr(Kc, 2) == "MT")
 
-    Kl = HasResizeMT_Kl ? LeftStr(Kl, StrLen(Kl) - 8) :
+    Kl = IsResizeMTAppended_Kl ? LeftStr(Kl, StrLen(Kl) - 8) :
     \    (RightStr(Kl, 6) == "Resize") ? LeftStr(Kl, StrLen(Kl) - 6) :
-    \    HasMT_Kl ? LeftStr(Kl, StrLen(Kl) - 2) : Kl
-    Kc = HasResizeMT_Kc ? LeftStr(Kc, StrLen(Kc) - 8) :
+    \    IsMTAppended_Kl ? LeftStr(Kl, StrLen(Kl) - 2) : Kl
+    Kc = IsResizeMTAppended_Kc ? LeftStr(Kc, StrLen(Kc) - 8) :
     \    (RightStr(Kc, 6) == "Resize") ? LeftStr(Kc, StrLen(Kc) - 6) :
-    \    HasMT_Kc ? LeftStr(Kc, StrLen(Kc) - 2) : Kc
+    \    IsMTAppended_Kc ? LeftStr(Kc, StrLen(Kc) - 2) : Kc
 
     assert((((LeftStr(Kl, 9) != "SoftCubic") || (StrLen(Kl) < 10) || (Kl == "SoftCubicXX") ||
     \      (Kl == "SoftCubic100") || (Kl == "SoftCubicMT")) ||
@@ -181,11 +187,11 @@ function Resize8(clip source, int "target_width", int "target_height",
     \      (((LeftStr(Kc, 9) != "SoftCubic") || (StrLen(Kc) < 10) || (Kc == "SoftCubicXX") ||
     \      (Kc == "SoftCubic100") || (Kc == "SoftCubicMT")) ||
     \      (0 < value(RightStr(Kc, StrLen(Kc) - 9)) <= 100)),
-    \      R_8 + """ When replacing "XX" in SoftCubicXX with an integer """ + chr(10) +
+    \      R8 + """ When replacing "XX" in SoftCubicXX with an integer """ + chr(10) +
     \      """ "XX" must be greater than zero, & less than or equal to 100 """ + chr(10))
 
 # ===============================================================================
-#   Add the appropriate resizer arguments
+#            Add the appropriate resizer arguments
 # ===============================================================================
 
     IsA1  = defined(a1)
@@ -285,11 +291,11 @@ function Resize8(clip source, int "target_width", int "target_height",
 
     unKnown_Kl = (arg1_Kl == "unKnown")
     unKnown_Kc = (arg1_Kc == "unKnown")
-    arg1_Kl = (arg1_Kl == "unKnown") ? "" : (arg1_Kl != "") ? arg1_Kl : ""
-    arg1_Kc = (arg1_Kc == "unKnown") ? "" : (arg1_Kc != "") ? arg1_Kc : ""
+    arg1_Kl    = (arg1_Kl == "unKnown") ? "" : (arg1_Kl != "") ? arg1_Kl : ""
+    arg1_Kc    = (arg1_Kc == "unKnown") ? "" : (arg1_Kc != "") ? arg1_Kc : ""
 
 # ===============================================================================
-#   Restore full resizer names
+#            Restore full resizer names
 # ===============================================================================
 
     Kl = (Kl == "Catmull-Rom") || (Kl == "Hermite") || (Kl == "Mitchell-Netravali") ||
@@ -302,13 +308,13 @@ function Resize8(clip source, int "target_width", int "target_height",
     \    (LeftStr(Kc, 8) == "Blackman") ? "Blackman" :
     \    (Kc == "Lanczos2") || (Kc == "Lanczos3") ? "Lanczos" : Kc
 
-    resizer_Kl = unKnown_Kl ? original_Kl : 
-    \            Kl + (!HasResizeMT_Kl && !HasMT_Kl ? "Resize" : "ResizeMT")
+    resizer_Kl = unKnown_Kl ? original_Kl :
+    \            Kl + (!IsResizeMTAppended_Kl && !IsMTAppended_Kl ? "Resize" : "ResizeMT")
     resizer_Kc = unKnown_Kc ? original_Kc :
-    \            Kc + (!HasResizeMT_Kc && !HasMT_Kc ? "Resize" : "ResizeMT")
+    \            Kc + (!IsResizeMTAppended_Kc && !IsMTAppended_Kc ? "Resize" : "ResizeMT")
 
 # ===============================================================================
-#   Configure rstr & rstr_c
+#            Configure rstr & rstr_c
 # ===============================================================================
 
     strLumaU = IsKl ? "" : R8_Luma_UpScale_rstr()
@@ -326,11 +332,12 @@ function Resize8(clip source, int "target_width", int "target_height",
     rstr_c = (rstr_c != "") ? ", " + rstr_c : ""
 
 # ===============================================================================
-#   Chroma crop before scaling to prevent shift
+#            Chroma crop before scaling to prevent shift
 # ===============================================================================
 
-    cplace = default(cplace, !separate ? "mpeg2" : "mpeg1")
-    IsM1 = (cplace == "mpeg1")
+    cplace = default(cplace, (Kc == "Point") || separate ? "mpeg1" : "mpeg2")
+    IsMpeg1 = (cplace == "mpeg1")
+    IsMpeg2 = (cplace == "mpeg2")
 
     # Chroma placement of MPEG2-YV12(4:2:0), YUY2(4:2:2), YV16(4:2:2) and
     # YV11(4:1:1) is left-aligned, thus center-aligned resizer can cause
@@ -339,53 +346,55 @@ function Resize8(clip source, int "target_width", int "target_height",
     # Negetive value means right-shift / bottom-shift.
     #
     # Chroma horizontal shift after scaling.
-    # chshifta = Sub444 || IsM1 ? 0.0 :
+    # chshifta = Sub444 || IsMpeg1 ? 0.0 :
     # \          Sub42x ? 0.25 - (0.25 * (owc / src_wc)) :
     # \          Sub411 ? 0.375 - (0.375 * (owc / src_wc)) : 0.0
     # Chroma horizontal shift before scaling equivalent to that after scaling.
-    # chshiftb = Sub444 || IsM1 ? 0.0 :
+    # chshiftb = Sub444 || IsMpeg1 ? 0.0 :
     # chshiftb = Sub42x ? (0.25 / (owc / src_wc)) - 0.25 :
     # \          Sub411 ? (0.375 / (owc / src_wc)) - 0.375 : 0.0
 
-    assert((cplace == "mpeg2") || IsM1,
-    \      R_8 + """ cplace must be "mpeg2" or "mpeg1" """ + chr(10))
-    assert(!separate || IsM1,
-    \ R_8 + """ When separate=true, cplace defaults to "mpeg1" and can't be changed """ +
-    \ """ (For separate=false, "mpeg2" is the default, but it can be changed) """ + chr(10))
+    assert(IsMpeg1 || IsMpeg2,
+    \      R8 + """ cplace must be "mpeg1" or "mpeg2" """ + chr(10))
+    assert(!separate || IsMpeg1,
+    \      R8 + """ When separate=true, cplace defaults to "mpeg1" and cannnot be changed """ +
+    \      """ (For separate=false, "mpeg2" is the default, but it can be changed) """ + chr(10))
+    assert((Kc != "Point") || IsMpeg1,
+    \      R8 + """ When kernel_c="PointResize", cplace defaults to "mpeg1" and cannnot be changed """ + chr(10))
 
-    chfix = Sub444 || IsM1 || Separate? 0.0 :
-    \       Sub42x ? 0.25  - (float(src_wc) * 0.25 /  float(owc)) :
-    \       Sub411 ? 0.375 - (float(src_wc) * 0.375 / float(owc)) : 0.0
+    chfix  = Sub444 || IsMpeg1 ? 0.0 :
+    \        Sub42x ? 0.25  - (float(src_wc) * 0.25 /  float(owc)) :
+    \        Sub411 ? 0.375 - (float(src_wc) * 0.375 / float(owc)) : 0.0
 
     src_lf = src_lc + chfix
 
 # ===============================================================================
-#   Create strings for resizing
+#            Create strings for resizing
 # ===============================================================================
 
-    whstr   = "(" + string(ow)  + ", " + string(oh)
-    whstr_c = "(" + string(owc) + ", " + string(ohc)
+    whstr    = "(" + string(ow)  + ", " + string(oh)
+    whstr_c  = "(" + string(owc) + ", " + string(ohc)
 
     srcstr   = ", src_left="  + string(src_l)  + ", src_top="    + string(src_t) +
     \          ", src_width=" + string(src_w)  + ", src_height=" + string(src_h)
     srcstr_c = ", src_left="  + string(src_lf) + ", src_top="    + string(src_tc) +
     \          ", src_width=" + string(src_wc) + ", src_height=" + string(src_hc)
 
-    resizeA = resizer_Kc + whstr   + srcstr   + arg1_Kc + arg2_Kc + rstr_c + ")"
-    resizeY = resizer_Kl + whstr   + srcstr   + arg1_Kl + arg2_Kl + rstr   + ")"
-    resizeC = resizer_Kc + whstr_c + srcstr_c + arg1_Kc + arg2_Kc + rstr_c + ")"
+    resizeA  = resizer_Kc + whstr   + srcstr   + arg1_Kc + arg2_Kc + rstr_c + ")"
+    resizeY  = resizer_Kl + whstr   + srcstr   + arg1_Kl + arg2_Kl + rstr   + ")"
+    resizeC  = resizer_Kc + whstr_c + srcstr_c + arg1_Kc + arg2_Kc + rstr_c + ")"
 
-    gaussY = IsMTResize ? "GaussResizeMT" + whstr   + srcstr   + ",p=100)" :
-    \                     "GaussResize"   + whstr   + srcstr   + ",p=100)"
-    gaussC = IsMTResize ? "GaussResizeMT" + whstr_c + srcstr_c + ",p=100)" :
-    \                     "GaussResize"   + whstr_c + srcstr_c + ",p=100)"
+    gaussY   = IsResampleMT ? "GaussResizeMT" + whstr   + srcstr   + ",p=100)" :
+    \                       "GaussResize"   + whstr   + srcstr   + ",p=100)"
+    gaussC   = IsResampleMT ? "GaussResizeMT" + whstr_c + srcstr_c + ",p=100)" :
+    \                       "GaussResize"   + whstr_c + srcstr_c + ",p=100)"
 
     BlankY   = "BlankClip(width=ow,  height=oh, color=$808080)"
     BlankC   = "BlankClip(width=owc, height=ohc,color=$828282)"
     BlankRGB = "BlankClip(width=owc, height=ohc,color=$000000)"
 
 # ===============================================================================
-#   Use RgTools/repair plugin to repair ringing
+#            Use RgTools to repair ringing
 # ===============================================================================
 
     # Disable ringing repair for these kernels by default
@@ -404,31 +413,29 @@ function Resize8(clip source, int "target_width", int "target_height",
     noring_c   = default(noring_c, IsNoring && (Kl == Kc) ? noring : nrkn_c || !IsCup ? false : true)
 
     assert((IsBool(noring) || IsFloat(noring)) && (IsBool(noring_c) || IsFloat(noring_c)),
-    \      R_8 + """ "noring" must be bool, integer or float """ + chr(10))
+    \      R8 + """ "noring" must be bool, integer or float """ + chr(10))
     assert((IsBool(noring) || (0 <= noring <= 1)) && (IsBool(noring_c) || (0 <= noring_c <= 1)),
-    \      R_8 + """ when "noring" is an integer or float """ + chr(10) +
+    \      R8 + """ When "noring" is an integer or float """ + chr(10) +
     \      " the allowed range is 0 to 1 " + chr(10))
 
 # ===============================================================================
-#   Weight calculation of adaptive anti-ringing algorithm
+#            Weight calculation of adaptive anti-ringing algorithm
 # ===============================================================================
 
-    res_mul = IsLup ? float(ow) * float(oh) / float(src_h) / float(src_w) :
-    \         float(src_w) * float(src_h) / float(oh) / float(ow)
-    res_mul = min(max(res_mul, 1), 2.25)
-    nr_wght = IsFloat(noring) ? noring :
-    \         (noring == true) ? Spline(res_mul, 1, 0, 2.25, 1, 3.5, 0, true) : 0
-    nr_wght = min(max(nr_wght, 0), 1)
+    res_mul   = IsLup ? float(ow) * float(oh) / float(src_h) / float(src_w) :
+    \           float(src_w) * float(src_h) / float(oh) / float(ow)
+    res_mul   = min(max(res_mul, 1), 2.25)
+    nr_wght   = IsFloat(noring) ? noring : noring ? Spline(res_mul, 1, 0, 2.25, 1, 3.5, 0, true) : 0
+    nr_wght   = min(max(nr_wght, 0), 1)
 
     res_mul_c = IsCup ? float(owc) * float(ohc) / float(src_hc) / float(src_wc) :
     \           float(src_wc) * float(src_hc) / float(ohc) / float(owc)
     res_mul_c = min(max(res_mul_c, 1), 2.25)
-    nr_wght_c = IsFloat(noring_c) ? noring_c :
-    \           (noring_c == true) ? Spline(res_mul_c, 1, 0, 2.25, 1, 3.5, 0, true) : 0
-    nr_wght_c   = min(max(nr_wght_c, 0), 1)
+    nr_wght_c = IsFloat(noring_c) ? noring_c : noring_c ? Spline(res_mul_c, 1, 0, 2.25, 1, 3.5, 0, true) : 0
+    nr_wght_c = min(max(nr_wght_c, 0), 1)
 
 # ===============================================================================
-#   Control whether to process Y/U/V/A or R/G/B/A planes
+#            Control whether to process Y/U/V/A or R/G/B/A planes
 # ===============================================================================
 
     show = default(show, false)
@@ -444,18 +451,17 @@ function Resize8(clip source, int "target_width", int "target_height",
     Bt = default(V, true)
 
     assert(IsAvsHBD || ((!alpha || IsAlpha) || IsRGBSource),
-    \      R_8 + " AviSynth+ Revision > 2294 required for YUVA support " + chr(10))
+    \      R8 + " AviSynth+ Revision > 2294 required for YUVA support " + chr(10))
     assert((!alpha || IsAlpha) || ((sCSP != "YUY2") && !Sub411 && !Sub000),
-    \      R_8 + " An alpha plane can't be added to " + pixtype + " " + chr(10))
+    \      R8 + " An alpha plane can't be added to " + pixtype + " " + chr(10))
     assert(chroma || !IsRGBSource,
-    \      R_8 + " chroma=false only applies to YUV sources " + chr(10))
+    \      R8 + " chroma=false only applies to YUV sources " + chr(10))
     assert(((Kl != "Spline") && (Kl != "Spline100") && (Kl != "Spline144") &&
     \      (Kc != "Spline") && (Kc != "Spline100") && (Kc != "Spline144")) ||
-    \      (SourceBits == 8), R_8 + 
-    \      " The SplineResize plugin only supports 8 bit video " + chr(10))
+    \      (vbits == 8), R8 + " The SplineResize plugin only supports 8 bit video " + chr(10))
 
 # ===============================================================================
-#   YUV Resize 
+#            YUV Resize 
 # ===============================================================================
 
     !IsRGBSource && !show ? Eval("""
@@ -502,19 +508,19 @@ function Resize8(clip source, int "target_width", int "target_height",
     Vm = Vt ? ((nr_wght_c==1) ? Vr : (nr_wght_c>0) ? Vo.Merge(Vr, nr_wght_c): Vo) : Eval("Vs."+BlankC)
 
     cspace = Sub444 ? 444 : Sub42x && !Sub420 ? 422 : 420
-    ptype = !IsAvsHBD || (!IsAlpha && !AddAlpha) ? pixtype :
-    \       BuildPixelType(family=IsAlpha? "YUV" : "YUVA", bits=SourceBits, chroma=cspace)
+    ptype  = !IsAvsHBD || (!IsAlpha && !AddAlpha) ? pixtype :
+    \        BuildPixelType(family=IsAlpha? "YUV" : "YUVA", bits=vbits, chroma=cspace)
 
-    res = Sub000 ? Ym :
-    \     IsAvsHBD && (sCSP != "YUY2") && !Sub411 ? (At ?
-    \     CombinePlanes(Ym, Um, Vm, Am, planes="YUVA", source_planes="YYYY", pixel_type=pixtype) :
-    \     CombinePlanes(Ym, Um, Vm, planes="YUV", source_planes="YYY", pixel_type=ptype)) :
-    \     (sCSP != "YUY2") ? YtoUV(Um, Vm, Ym) : YtoUV(Um, Vm, Ym).ConvertToYUY2()
+    res    = Sub000 ? Ym :
+    \        IsAvsHBD && (sCSP != "YUY2") && !Sub411 ? (At ?
+    \        CombinePlanes(Ym, Um, Vm, Am, planes="YUVA", source_planes="YYYY", pixel_type=pixtype) :
+    \        CombinePlanes(Ym, Um, Vm, planes="YUV", source_planes="YYY", pixel_type=ptype)) :
+    \        (sCSP != "YUY2") ? YtoUV(Um, Vm, Ym) : YtoUV(Um, Vm, Ym).ConvertToYUY2()
 
-    """, "Resize YUV Eval") : !show ? Eval("""
+    """, "Resize YUV Eval") : IsRGBSource && !show ? Eval("""
 
 # ===============================================================================
-#   RGB Resize
+#            RGB Resize
 # ===============================================================================
 
     As = At ? (IsAvsHBD ? ExtractA(source) : ShowAlpha(source, "Y8")) : nop()
@@ -564,18 +570,18 @@ function Resize8(clip source, int "target_width", int "target_height",
 
     ptype = !IsAlpha && !AddAlpha ? pixtype :
     \       (sCSP == "RGBAP") || (sCSP == "RGBP") ?
-    \       BuildPixelType(family=IsAlpha ? "RGB" : "RGBA", bits=SourceBits) : nop()
+    \       BuildPixelType(family=IsAlpha ? "RGB" : "RGBA", bits=vbits) : nop()
 
-    res = (sCSP == "RGBAP") && At ?
-    \     CombinePlanes(Rm, Gm, Bm, Am, planes="RGBA", source_planes="YYYY", pixel_type=pixtype) :
-    \     (sCSP == "RGBAP") || (sCSP == "RGBP") ?
-    \     CombinePlanes(Rm, Gm, Bm, planes="RGB", source_planes="YYY", pixel_type=ptype) :
-    \     At ? MergeARGB(Am, Rm, Gm, Bm) : MergeRGB(Rm, Gm, Bm, cspace)
+    res   = (sCSP == "RGBAP") && At ?
+    \       CombinePlanes(Rm, Gm, Bm, Am, planes="RGBA", source_planes="YYYY", pixel_type=pixtype) :
+    \       (sCSP == "RGBAP") || (sCSP == "RGBP") ?
+    \       CombinePlanes(Rm, Gm, Bm, planes="RGB", source_planes="YYY", pixel_type=ptype) :
+    \       At ? MergeARGB(Am, Rm, Gm, Bm) : MergeRGB(Rm, Gm, Bm, cspace)
 
-    """, "Resize RGB Eval") : show ? Eval("""
+    """, "Resize RGB Eval") : Eval("""
 
 # ===============================================================================
-#   Display resizing strings using a blank clip
+#            Display resizing strings using a blank clip
 # ===============================================================================
 
     src_r  = (src_w <= 0) ? src_w : -sw + src_w + src_l
@@ -585,34 +591,31 @@ function Resize8(clip source, int "target_width", int "target_height",
     src_rf = src_rc + chfix
     src_bc = !Separate ? (Sub420 ? src_b / 2 : src_b) : -shc + src_t + src_hc
 
-    srxl=R8_FS(src_l)       srxt=R8_FS(src_t)       srxw=R8_FS(src_w)
-    srxh=R8_FS(src_h)       srxr=R8_FS(src_r)       srxb=R8_FS(src_b)
-    srxlf=R8_FS(src_lf)     srxtc=R8_FS(src_tc)     srxwc=R8_FS(src_wc)
-    srxhc=R8_FS(src_hc)     srxrf=R8_FS(src_rf)     srxbc=R8_FS(src_bc)
-    cfx=R8_FS(chfix)        nwl=R8_FS(nr_wght,1)    nwc=R8_FS(nr_wght_c,1)
+    srxl  = R8_FS(src_l)
+    srxt  = R8_FS(src_t)
+    srxw  = R8_FS(src_w)
+    srxh  = R8_FS(src_h)
+    srxlf = R8_FS(src_lf)
+    srxtc = R8_FS(src_tc)
+    srxwc = R8_FS(src_wc)
+    srxhc = R8_FS(src_hc)
+    cfx   = R8_FS(chfix)
+    nwl   = R8_FS(nr_wght, keep=true)
+    nwc   = R8_FS(nr_wght_c, keep=true)
 
-    dl=", src_left="         dt=", src_top="
-    dw=", src_width="        dh=", src_height="
-    b1="("                   b2=")"                   Q=",  " 
-       
-    srxstr   = dl + srxl  + dt + srxt  + dw + srxw  + dh + srxh
-    srxstr_c = dl + srxlf + dt + srxtc + dw + srxwc + dh + srxhc
+    srxstr   = ", src_left=" + srxl  + ", src_top=" + srxt  +
+    \          ", src_width=" + srxw  + ", src_height=" + srxh
+    srxstr_c = ", src_left=" + srxlf + ", src_top=" + srxtc +
+    \          ", src_width=" + srxwc + ", src_height=" + srxhc
 
-    ltwh  = b1 + srxl  + Q + srxt  + Q + srxw  + Q + srxh  + b2
-    ltrb  = b1 + srxl  + Q + srxt  + Q + srxr  + Q + srxb  + b2
-    ltwhc = b1 + srxlf + Q + srxtc + Q + srxwc + Q + srxhc + b2
-    ltrbc = b1 + srxlf + Q + srxtc + Q + srxrf + Q + srxbc + b2
+    ltwh  = "(" + srxl  + ",  " + srxt  + ",  " + srxw  + ",  " + srxh  + ")"
+    ltwhc = "(" + srxlf + ",  " + srxtc + ",  " + srxwc + ",  " + srxhc + ")"
 
-    resizestrA = resizer_Kc + whstr   + srxstr   + arg1_Kc + arg2_Kc + rstr_c + b2 
-    resizestrY = resizer_Kl + whstr   + srxstr   + arg1_Kl + arg2_Kl + rstr   + b2
-    resizestrC = resizer_Kc + WHstr_c + srxstr_c + arg1_Kc + arg2_Kc + rstr_c + b2
+    resizestrA = resizer_Kc + whstr   + srxstr   + arg1_Kc + arg2_Kc + rstr_c + ")"
+    resizestrY = resizer_Kl + whstr   + srxstr   + arg1_Kl + arg2_Kl + rstr   + ")"
+    resizestrC = resizer_Kc + WHstr_c + srxstr_c + arg1_Kc + arg2_Kc + rstr_c + ")"
 
-    formatted = true
-    resizestrA = Formatted ? resizestrA :resizeA
-    resizestrY = Formatted ? resizestrY :resizeY
-    resizestrC = Formatted ? resizestrC :resizeC
-
-    Do_nwKc = !Sub000 && (IsNoring_c || (noring != noring_c))
+    Do_nwKc  = !Sub000 && (IsNoring_c || (noring != noring_c))
     Do_textC = !Sub000 && !IsRGBSource && (Ut || Vt) 
 
     nwKl = (IsRGBSource && Do_nwKc ? "\n" : "") + (!IsNoring && !noring ?
@@ -628,14 +631,7 @@ function Resize8(clip source, int "target_width", int "target_height",
     \      !noring_c ? "  Ringing repair disabled" : "  Weight of " +
     \      (!Do_nwKc ? "" : Kc + " ") + "ringing repair  " + nwc)
 
-    textQ = "  Luma  left, top, width, height  " + ltwh +
-    \       "\n  Luma  left, top, right, bottom  " + ltrb
-
-    textR = Sub000 || (IsRGBSource && (!IsAlpha || !AT)) ? "" :
-    \       "  Chroma  left, top, width, height  " + ltwhc +
-    \           "\n  Chroma  left, top, right, bottom  " + ltrbc
-
-    textS = "  Source" + string(SourceBits,"  %.0f bit  ") + pixtype
+    stext = "  Source" + string(vbits,"  %.0f bit  ") + pixtype
 
     textA = Sub000 ? "" : "\n  " + (AddAlpha ? "Adding Alpha Plane" :
     \       !IsAlpha ? "No Alpha Plane" : !At ? "Alpha Plane Disabled" :
@@ -645,68 +641,81 @@ function Resize8(clip source, int "target_width", int "target_height",
     \       (!Rt && !Gt && !Bt) ? "\n  All RGB Planes Disabled" :
     \       (!IsRGBSource ? "  Y Plane\n  " : "  RGB Planes\n  ") + resizestrY
 
-    textC = !Do_textC ? "" :
-    \       "  UV Planes\n  " + resizestrC + (Sub42x && !IsM1 ?
-    \       "\n\n  Extra UV left crop to prevent chroma shift  " + cfx : "")
+    textC = !Do_textC ? "" : "  UV Planes\n  " + resizestrC +
+    \       (Sub42x && (IsMpeg2 || (Kc == "Point")) ?
+    \       "\n\n  Extra UV left crop to prevent chroma shift  " + 
+    \       ((Kc != "Point") ? cfx : "(disabled for PointResize)") : "")
 
-    ts=17.5                  tr=ts*0.85               tc=ts*0.9
+    s  = 18.0
 
-    ya = AddAlpha || !IsAlpha || !At ? ts : 0.0
-    yr = ya + (tr * (Do_textC && Sub42x ? 0.0 : Do_textC ? 3.0 : 6.0))
+    ya = AddAlpha || !IsAlpha || !At ? s : 0.0
+    yr = ya + (s * (Do_textC && Sub42x ? 0.0 : Do_textC ? 3.0 : 6.0))
 
     scolor1 = AddAlpha || !IsAlpha || !At ? $FFFFFF : !IsRGBSource ? $F0FFFF : $FFFFE0
     scolor2 = Do_nwKc ? $F0FFFF : $FFFFFF
 
     showstr = BlankClip(width=1280, height=480, pixel_type=pixtype).KillAudio()
-             \.subtitle(textQ, size=tc, text_color=$F0FFFF, y=ts,        lsp=20)
-             \.subtitle(textR, size=tc, text_color=$FFFFE0, y=(ts*3.5),  lsp=20)
-             \.subtitle(textS, size=ts, text_color=$FFFFFF, y=(ts*8),    lsp=20)
-             \.subtitle(textA, size=ts, text_color=scolor1, y=(ts*10),   lsp=20)
-             \.subtitle(textY, size=ts, text_color=$F0FFFF, y=(ts*14)-ya,lsp=20)
-             \.subtitle(textC, size=ts, text_color=$FFFFE0, y=(ts*17)-ya,lsp=20)
-             \.subtitle(nwKl,  size=tr, text_color=scolor2, y=(ts*24)-yr,lsp=20)
-             \.subtitle(nwKc,  size=tr, text_color=$FFFFE0, y=(ts*24)-yr,lsp=20)
+             \.subtitle(stext, size=s, text_color=$FFFFFF, y=s*1.5,      lsp=10)
+             \.subtitle(textA, size=s, text_color=scolor1, y=(s*4),      lsp=10)
+             \.subtitle(textY, size=s, text_color=$F0FFFF, y=(s*9.5)-ya, lsp=10)
+             \.subtitle(textC, size=s, text_color=$FFFFE0, y=(s*14)-ya,  lsp=10)
+             \.subtitle(nwKl,  size=s, text_color=scolor2, y=(s*21.5)-yr,  lsp=10)
+             \.subtitle(nwKc,  size=s, text_color=$FFFFE0, y=(s*22.5)-yr,  lsp=10)
 
-    """, "Show Eval") : nop()
+    """, "Show Eval")
 
 # ===============================================================================
-#   Resize8 out
+#            Resize8 out
 # ===============================================================================
 
-    return !show ? res : showstr  }
+    return !show ? (HasAudio(audio) ? AudioDub(res, audio) : res) : showstr  }
 
 # ===============================================================================
 # ===============================================================================
-#   Format string function (remove zeros)
+#            Format String Function
 # ===============================================================================
 # ===============================================================================
 
-function R8_FS(float f, int "keep1", int "limit")  {
+function R8_FS(float f, int "limit", bool "keep")  {
 
-    keep = (default(Keep1, 0) > 0)
-    lim  = (default(limit, 1) > 0)
-    Isd  = (abs(round(f) - f) > 0.0005)
+    limit  = abs(default(limit, 3))
+    keep   = default(keep, false)
+    limit0 = (limit == 0)
 
-    s = !Isd ? string(f,"%.0f") : lim ? string(f,"%.4f") : string(f,"%.6f")
-    sl = StrLen(s)
-    d = FindStr(s, ".")
-    ls = Isd ? LeftStr(s, d) : s
-    rs = Isd ? RightStr(s, sl - d) : ""
-    rsl = StrLen(rs)
-    rx = rs + "x"
+    s = limit0       ? string(f,"%.0f") : (limit == 1) ? string(f,"%.1f") :
+    \   (limit == 2) ? string(f,"%.2f") : (limit == 3) ? string(f,"%.3f") :
+    \   (limit == 4) ? string(f,"%.4f") : (limit == 5) ? string(f,"%.5f") : string(f,"%.6f")
 
-    del = (FindStr(rx, "000000x") > 0) ? 6 :
-    \     (FindStr(rx, "00000x") > 0)  ? 5 :
-    \     (FindStr(rx, "0000x") > 0)   ? 4 :
-    \     (FindStr(rx, "000x") > 0)    ? 3 :
-    \     (FindStr(rx, "00x") > 0)     ? 2 :
-    \     (FindStr(rx, "0x") > 0)      ? 1 : 0
+    slength = StrLen(s)
+    decpos  = limit0 ? 0 : FindStr(s, ".")
+    l       = limit0 ? s : LeftStr(s, decpos - 1)
+    r       = limit0 ? "" : RightStr(s, slength - decpos + 1)
+    rlength = limit0 ? 0 : StrLen(r)
+    rx      = r + "x"
 
-    return ls + MidStr(rs, 1, rsl - del) + (!Isd && keep ? ".0" : "")  }
+    deleteA = limit0                       ? 0 : (FindStr(rx, "000000x") > 0)  ? 6 :
+    \         (FindStr(rx, "00000x") > 0)  ? 5 : (FindStr(rx, "0000x") > 0)    ? 4 :
+    \         (FindStr(rx, "000x") > 0)    ? 3 : (FindStr(rx, "00x") > 0)      ? 2 :
+    \         (FindStr(rx, "0x") > 0)      ? 1 : 0
+
+    deleteB = limit0                       ? 0 : (FindStr(rx, ".000000x") > 0) ? 7 :
+    \         (FindStr(rx, ".00000x") > 0) ? 6 : (FindStr(rx, ".0000x") > 0)   ? 5 :
+    \         (FindStr(rx, ".000x") > 0)   ? 4 : (FindStr(rx, ".00x") > 0)     ? 3 :
+    \         (FindStr(rx, ".0x") > 0)     ? 2 : (FindStr(rx, ".x") > 0)       ? 1 : 0
+
+    IsDecLast  = ((deleteA + 1) == deleteB)
+    r          = limit0 || IsDecLast ? "" : LeftStr(r, rLength - deleteA)
+    lr         = l + r
+    IsNegative = (FindStr(lr, "-") > 0)
+    IsZero     = (value(lr) == 0)
+    end        = limit0 || !keep || !IsDecLast ? "" : ".0"
+    lr         = IsNegative && IsZero ? RightStr(lr, StrLen(lr) - 1) : lr
+
+    return lr + end  }
 
 # ===============================================================================
 # ===============================================================================
-#   Default resizer and string functions
+#            Resize8 Defaults
 # ===============================================================================
 # ===============================================================================
 #
@@ -754,6 +763,5 @@ function R8_FS(float f, int "keep1", int "limit")  {
     function R8_Chroma_UpScale_rstr()   { return "" }
     function R8_Chroma_DownScale_rstr() { return "" }
 
-# ===============================================================================
 # ===============================================================================
 # ===============================================================================

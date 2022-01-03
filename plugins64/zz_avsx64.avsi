@@ -17,7 +17,7 @@ spl = IsAvsPlus
 spl ? nop() : Import(AviSynthPlugins64Dir + "25/DirectshowSource.avsi")
 s26 ? LoadPlugin(AviSynthPlugins64Dir + "26/masktools2.dll") : LoadPlugin(AviSynthPlugins64Dir + "25/mt_masktools-25.dll")
 Import(AviSynthPlugins64Dir + "25/25b/dither.avsi")
-Import(AviSynthPlugins64Dir + "25/25b/MCTDmod.avsi")
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/25b/MCTDmod.avsi") : nop()
 Import(AviSynthPlugins64Dir + "25/25b/O16.avsi")
 #Import(AviSynthPlugins64Dir + "25/25b/StackedNto16.avs")
 }
@@ -73,6 +73,7 @@ Import(AviSynthPlugins64Dir + "26/vsTTempSmooth.avsi")
 Import(AviSynthPlugins64Dir + "26/yadifmod2.avsi")
 Import(AviSynthPlugins64Dir + "26/Rainbow_smooth2.avsi")
 Import(AviSynthPlugins64Dir + "26/YUY2toYV12i and YV12toYUY2i.avsi")
+LoadPlugin(AviSynthPlugins64Dir + "26/FrameSel.dll")
 }
 
 function AVS_p_64_A_SONY() {
@@ -129,6 +130,15 @@ AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPlugins64Dir + "26/SmoothUV
 AvsPlusVersionNumber < 3276 ? VersionNumber() < 2.60 ? Import(AviSynthPlugins64Dir + "25/VSFilter.avsi") : Import(AviSynthPlugins64Dir + "26/VSFilter.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "cplugin/stab.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/Deblock_QED_MT2.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/NonlinUSM.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/pSharpen.avsi") : nop()
+Import(AviSynthPlugins64Dir + "25/BlockTerminator.avsi")
+Import(AviSynthPlugins64Dir + "25/BlockKiller.avsi")
+Import(AviSynthPlugins64Dir + "25/FunkyDeblock.avsi")
+Import(AviSynthPlugins64Dir + "25/AutoDeblock2.avsi")
+Import(AviSynthPlugins64Dir + "25/STpresso.avsi")
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/ChubbyRain2.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/BalanceBorders.avsi") : nop()
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPlugins64Dir + "25/25b/avstp/avstp.dll")

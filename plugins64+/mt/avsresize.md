@@ -45,7 +45,7 @@ z_ConvertFormat(
 	str "cpu_type",
 	float "nominal_luminance",
 	bool "approximate_gamma",
-    bool "prefer_props")
+    bool "use_props")
 ```        
 - width: output width in pixels
 - height: output height in pixels
@@ -77,7 +77,7 @@ z_ConvertFormat(
     "YUVA444PS", "YUVA422PS", "YUVA420PS"
     ```
 - colorspace_op:
-	- matrix
+	- matrix (default YUV: `"170m"`)
         ```
         "rgb" (0),
         "709" (1),
@@ -126,7 +126,7 @@ z_ConvertFormat(
         "st432-1" ("display-p3") (12),
         "jedec-p22" (22)
         ```
-	- range
+	- range (default RGB: `"full"`; YUV < 32-bit: `"limited"`)
         ```
         "limited" ("l") (1),
         "full" ("f") (0)
@@ -187,6 +187,7 @@ Example 4-tap Lanczos: `resample_filter="lanczos", filter_param_a=4`
     ```
 - nominal_luminance (default 100.0): nominal peak luminance in cd/m^2 for standard-dynamic range (SDR) systems (more info [here](https://github.com/sekrit-twc/zimg/blob/93f8504a67373d428158219eb3aca0455e4c20ca/src/zimg/api/zimg.h#L595))
 - approximate_gamma (default true): evaluating transfer functions at reduced precision
+- use_props (default true, if frame properties are supported, otherwise false) - whether to read and set frame properties
 
 The names of the frame properties that are read and set are: `_ChromaLocation, _ColorRange, _Matrix, _Transfer, _Primaries`, `_SARNum`, `_SARDen`.
 The frame properties read and set the corresponding numerical index of the parameters. For example: matrix `"709"` has numerical index `1` and the frame property have value of `1`.

@@ -12,13 +12,21 @@
 ###                                                                                          ###
 ###                             HBD Performance mod by Dogway                                ###
 ###                                                                                          ###
-###                                v3.9 mix - 11 November 2021                               ###
+###                                v4.1 mix - 16 December 2021                               ###
 ###                                                                                          ###
 ################################################################################################
 ###
 ### +-----------+
 ### | CHANGELOG |
 ### +-----------+
+###
+### v4.1mx : - Update/Optimize expressions
+###          - Refine 'Smode' 1 and 2 to mimic original
+###          - Rebase to latest ExTools
+###          - Cosmetics
+###
+### v4.0mx : - Drop 'fulls' argument, now read from frameprops
+###          - Cosmetics
 ###
 ### v3.9mx : - Add workaround for 32-bit float support since Expr() scaling is broken for this bitdepth
 ###          - Optimize Smode=4 and 5
@@ -155,11 +163,11 @@
 ### | DEPENDENCIES |
 ### +--------------+
 ###
-### -> Masktools2   (v2.2.28 or up)
-### -> RgTools      (v1.2 or up)
-### -> ExTools      (v6.3 or up)
-### -> ResizersPack (v6.1 or up)
-### -> SharpenersPack                  [for Smode=1 and Smode=2]
+### -> MaskTools2     (v2.2.29 or up)
+### -> RgTools        (v1.2 or up)
+### -> ExTools        (v7.0 or up)
+### -> ResizersPack   (v7.1 or up)
+### -> SharpenersPack (v2.8 or up)     [for Smode=1 and Smode=2]
 ### -> CAS                             [for Smode=6]
 ### -> if you use AviSynth+ then make sure it's the latest one
 ###
@@ -178,7 +186,7 @@
 ###         edgemode, edgemaskHQ,
 ###         ss_x, ss_y, dest_x, dest_y,
 ###         show, screenW, screenH,
-###         preset, tv_range, fulls )
+###         preset, tv_range )
 ###
 ###
 ###
@@ -193,8 +201,8 @@
 ### Smode [int: 1,2,3,4,5,6]
 ### ----------------------
 ### Sharpen mode:
-###    =1 : Unsharp masking (from warpsharp)     (now UnsharpMask_HBD)
-###    =2 : Unsharp masking (from variableblur)  (now UnsharpMask_HBD)
+###    =1 : Unsharp masking (from warpsharp)     (now ex_unsharp())
+###    =2 : Unsharp masking (from variableblur)  (now ex_unsharp())
 ###    =3 : Range sharpening
 ###    =4 : Nonlinear sharpening (original  version)
 ###    =5 : Nonlinear sharpening (corrected version)
@@ -524,85 +532,88 @@ function LSFmod( clip inclip, float "strength", int "Smode", int "Smethod",
 \                int "edgemode", bool "edgemaskHQ",
 \                float "ss_x", float "ss_y", int "dest_x", int "dest_y",
 \                bool "show", int "screenW", int "screenH",
-\                string "preset", string "tv_range", bool "fulls" ) {
+\                string "preset", bool "tv_range") {
 
 
     ### PRESETS
-    version = "v3.9mix"
+    version = "v4.1mix"
     preset  = Default(preset,"mid")
     num     = preset=="old" ? 0 : preset=="slow" ? 1 : preset=="mid" || preset=="medium" ? 2 : preset=="fast" ? 3 : 4
+
+    rgb = isRGB(inclip)
+    bi  = BitsPerComponent(inclip)
+    fs  = propNumElements (inclip,"_ColorRange")  > 0 ? \
+          propGetInt      (inclip,"_ColorRange") == 0 : rgb
 
     ox   = inclip.width()
     oy   = inclip.height()
     isHD = (ox > 1099 ||  oy > 599)
-    bi   = BitsPerComponent(inclip)
-    fs   = Default(fulls,   false)
-    tv   = Default(tv_range, true)
+    tv   = Default(tv_range, !fs)
 
-    Assert(IsVersionOrGreater(3,5,0), "Update AviSynth+ version")
-    Assert(num != 4, chr(10) + """Preset must be "old", "slow", "mid" or "fast" !""" + chr(10))
+    Assert(IsVersionOrGreater(3,7,1), "LSFmod: Update AviSynth+ version")
+    Assert(num != 4,      chr(10) + """LSFmod: Preset must be "old", "slow", "mid" or "fast" !""" + chr(10))
 
-    #                                                                           OLD                  SLOW                 MEDIUM                  FAST
-    strength    = Default( strength,    Select(num,                              100.,                100.,                100.,                100.) )
-    Smode       = Default( Smode,       Select(num,                                3 ,                  5 ,                  4 ,                  3 ) )
-    Smethod     = Default( Smethod,     Select(num,                     Smode==3?2:1 ,                  3 ,                  3 ,                  2 ) )
+    #                                                                         OLD                  SLOW                 MEDIUM                  FAST
+    strength    = Default( strength,    Select(num,                           100.,                100.,                100.,                100.) )
+    Smode       = Default( Smode,       Select(num,                             3 ,                  5 ,                  4 ,                  3 ) )
+    Smethod     = Default( Smethod,     Select(num,                  Smode==3?2:1 ,                  3 ,                  3 ,                  2 ) )
 
-    preblur     = Default( preblur,     Select(num,                            "OFF" ,              "OFF" ,              "OFF" ,              "OFF" ) )
-    secure      = Default( secure,      Select(num,                            false ,               true ,               true ,                true ) )
+    preblur     = Default( preblur,     Select(num,                         "OFF" ,              "OFF" ,              "OFF" ,              "OFF" ) )
+    secure      = Default( secure,      Select(num,                         false ,               true ,               true ,                true ) )
 
-    Szrp        = Default( Szrp,        Select(num,                               16 ,                 16 ,                 16 ,                 16 ) )
-    Spwr        = Default( Spwr,        Select(num,                                2 ,                  4 ,                  4 ,                  4 ) )
-    SdmpLo      = Default( SdmpLo,      Select(num,                      strength/25 ,                  4 ,                  4 ,                  4 ) )
-    SdmpHi      = Default( SdmpHi,      Select(num,                                0 ,                 48 ,                 48 ,                 48 ) )
+    Szrp        = Default( Szrp,        Select(num,                            16 ,                 16 ,                 16 ,                 16 ) )
+    Spwr        = Default( Spwr,        Select(num,                             2 ,                  4 ,                  4 ,                  4 ) )
+    SdmpLo      = Default( SdmpLo,      Select(num,                   strength/25 ,                  4 ,                  4 ,                  4 ) )
+    SdmpHi      = Default( SdmpHi,      Select(num,                             0 ,                 48 ,                 48 ,                 48 ) )
 
-    Lmode       = Default( Lmode,       Select(num,                                1 ,                  4 ,                  4 ,                  1 ) )
-    Lrad        = Default( Lrad,        Select(num,                                1 ,                  1 ,                  1 ,                  1 ) )
-    overshoot   = Default( overshoot,   Select(num,                                1 ,       strength/100 ,       strength/100 ,       strength/100 ) )
-    undershoot  = Default( undershoot,  Select(num,                        overshoot ,          overshoot ,          overshoot ,          overshoot ) )
-    overshoot2  = Default( overshoot2,  Select(num,                      overshoot*2 ,        overshoot*2 ,        overshoot*2 ,        overshoot*2 ) )
-    undershoot2 = Default( undershoot2, Select(num,                       overshoot2 ,         overshoot2 ,         overshoot2 ,         overshoot2 ) )
+    Lmode       = Default( Lmode,       Select(num,                             1 ,                  4 ,                  4 ,                  1 ) )
+    Lrad        = Default( Lrad,        Select(num,                             1 ,                  1 ,                  1 ,                  1 ) )
+    overshoot   = Default( overshoot,   Select(num,                             1 ,       strength/100 ,       strength/100 ,       strength/100 ) )
+    undershoot  = Default( undershoot,  Select(num,                     overshoot ,          overshoot ,          overshoot ,          overshoot ) )
+    overshoot2  = Default( overshoot2,  Select(num,                   overshoot*2 ,        overshoot*2 ,        overshoot*2 ,        overshoot*2 ) )
+    undershoot2 = Default( undershoot2, Select(num,                    overshoot2 ,         overshoot2 ,         overshoot2 ,         overshoot2 ) )
 
-    soft        = Default( soft,        Select(num,                                0 ,                 -2 ,                  0 ,                  0 ) )
-    soothe      = Default( soothe,      Select(num,                            false ,               true ,               true ,                true ) )
-    keep        = Default( keep,        Select(num,                               25 ,                 20 ,                 20 ,                 20 ) )
+    soft        = Default( soft,        Select(num,                             0 ,                 -2 ,                  0 ,                  0 ) )
+    soothe      = Default( soothe,      Select(num,                         false ,               true ,               true ,                true ) )
+    keep        = Default( keep,        Select(num,                            25 ,                 20 ,                 20 ,                 20 ) )
 
-    edgemode    = Default( edgemode,    Select(num,                                0 ,                  0 ,                  0 ,                  0 ) )
-    edgemaskHQ  = Default( edgemaskHQ,  Select(num,                             true ,               true ,               true ,               false ) )
+    edgemode    = Default( edgemode,    Select(num,                             0 ,                  0 ,                  0 ,                  0 ) )
+    edgemaskHQ  = Default( edgemaskHQ,  Select(num,                          true ,               true ,               true ,               false ) )
 
-    ss_x        = Default( ss_x,        Select(num,    Smode==6?1.:Smode==3?1.5:1.25 ,    Smode==3?1.:1.5 ,   Smode==3?1.:1.25 ,   Smode==3?1.:1.25 ) )
-    ss_y        = Default( ss_y,        Select(num,                             ss_x ,               ss_x ,               ss_x ,               ss_x ) )
-    dest_x      = Default( dest_x,      Select(num,                               ox ,                 ox ,                 ox ,                 ox ) )
-    dest_y      = Default( dest_y,      Select(num,                               oy ,                 oy ,                 oy ,                 oy ) )
+    ss_x        = Default( ss_x,        Select(num, Smode==6?1.:Smode==3?1.5:1.25 ,    Smode==3?1.:1.5 ,   Smode==3?1.:1.25 ,   Smode==3?1.:1.25 ) )
+    ss_y        = Default( ss_y,        Select(num,                          ss_x ,               ss_x ,               ss_x ,               ss_x ) )
+    dest_x      = Default( dest_x,      Select(num,                            ox ,                 ox ,                 ox ,                 ox ) )
+    dest_y      = Default( dest_y,      Select(num,                            oy ,                 oy ,                 oy ,                 oy ) )
 
-    show        = Default( show,        Select(num,                            false ,              false ,              false ,               false ) )
-    screenW     = Default( screenW,     Select(num,                             1920 ,               1920 ,               1920 ,               1920 ) )
-    screenH     = Default( screenH,     Select(num,                             1080 ,               1080 ,               1080 ,               1080 ) )
+    show        = Default( show,        Select(num,                         false ,              false ,              false ,               false ) )
+    screenW     = Default( screenW,     Select(num,                          1920 ,               1920 ,               1920 ,               1920 ) )
+    screenH     = Default( screenH,     Select(num,                          1080 ,               1080 ,               1080 ,               1080 ) )
 
     Assert(!isYUY2(inclip), chr(10) + "LSFmod: Unsupported format: YUY2" + chr(10))
     Assert(!isRGB(inclip),  chr(10) + "LSFmod: Unsupported format: RGB"  + chr(10))
-    Assert( ( strength >= 0 )                                            , chr(10) + "'strength' have not a correct value! [>=0]"              + chr(10))
-    Assert( ( Smode >= 1 && Smode <= 6 )                                 , chr(10) + "'Smode' have not a correct value! [1,2,3,4,5,6]"         + chr(10))
-    Assert( ( Smethod >= 1 && Smethod <= 4 )                             , chr(10) + "'Smethod' have not a correct value! [1,2,3,4]"           + chr(10))
-    Assert( ( Szrp >= 1 && Szrp <= 255 )                                 , chr(10) + "'Szrp' have not a correct value! [1...255]"              + chr(10))
-    Assert( ( Spwr >= 1 )                                                , chr(10) + "'Spwr' have not a correct value! [>=1]"                  + chr(10))
-    Assert( ( SdmpLo >= 0 && SdmpLo <= 255 )                             , chr(10) + "'SdmpLo' have not a correct value! [0...255]"            + chr(10))
-    Assert( ( SdmpHi >= 0 && SdmpHi <= 255 )                             , chr(10) + "'SdmpHi' have not a correct value! [0...255]"            + chr(10))
-    Assert( ( Lmode <= 6 )                                               , chr(10) + "'Lmode' have not a correct value! [...-1,0,1,2,3,4,5,6]" + chr(10))
-    Assert( ( overshoot >= 0 && overshoot <= 255 )                       , chr(10) + "'overshoot' have not a correct value! [0...255]"         + chr(10))
-    Assert( ( undershoot >= 0 && undershoot <= 255 )                     , chr(10) + "'undershoot' have not a correct value! [0...255]"        + chr(10))
-    Assert( ( overshoot2 >= 0 && overshoot2 <= 255 )                     , chr(10) + "'overshoot2' have not a correct value! [0...255]"        + chr(10))
-    Assert( ( undershoot2 >= 0 && undershoot2 <= 255 )                   , chr(10) + "'undershoot2' have not a correct value! [0...255]"       + chr(10))
-    Assert( ( soft >= -2 && soft <= 100 )                                , chr(10) + "'soft' have not a correct value! [-2,-1,0,1...100]"      + chr(10))
-    Assert( ( keep >= 0 && keep <= 100 )                                 , chr(10) + "'keep' have not a correct value! [0...100]"              + chr(10))
-    Assert( ( edgemode >= -1 && edgemode <= 2 )                          , chr(10) + "'edgemode' have not a correct value! [-1,0,1,2]"         + chr(10))
-    Assert( ( ss_x >= 1.0 )                                              , chr(10) + "'ss_x' have not a correct value! [>=1.0]"                + chr(10))
-    Assert( ( ss_y >= 1.0 )                                              , chr(10) + "'ss_y' have not a correct value! [>=1.0]"                + chr(10))
+    Assert( ( strength >= 0 )                                            , chr(10) + "LSFmod: 'strength' have not a correct value! [>=0]"              + chr(10))
+    Assert( ( Smode >= 1 && Smode <= 6 )                                 , chr(10) + "LSFmod: 'Smode' have not a correct value! [1,2,3,4,5,6]"         + chr(10))
+    Assert( ( Smethod >= 1 && Smethod <= 4 )                             , chr(10) + "LSFmod: 'Smethod' have not a correct value! [1,2,3,4]"           + chr(10))
+    Assert( ( Szrp >= 1 && Szrp <= 255 )                                 , chr(10) + "LSFmod: 'Szrp' have not a correct value! [1...255]"              + chr(10))
+    Assert( ( Spwr >= 1 )                                                , chr(10) + "LSFmod: 'Spwr' have not a correct value! [>=1]"                  + chr(10))
+    Assert( ( SdmpLo >= 0 && SdmpLo <= 255 )                             , chr(10) + "LSFmod: 'SdmpLo' have not a correct value! [0...255]"            + chr(10))
+    Assert( ( SdmpHi >= 0 && SdmpHi <= 255 )                             , chr(10) + "LSFmod: 'SdmpHi' have not a correct value! [0...255]"            + chr(10))
+    Assert( ( Lmode <= 6 )                                               , chr(10) + "LSFmod: 'Lmode' have not a correct value! [...-1,0,1,2,3,4,5,6]" + chr(10))
+    Assert( ( overshoot >= 0 && overshoot <= 255 )                       , chr(10) + "LSFmod: 'overshoot' have not a correct value! [0...255]"         + chr(10))
+    Assert( ( undershoot >= 0 && undershoot <= 255 )                     , chr(10) + "LSFmod: 'undershoot' have not a correct value! [0...255]"        + chr(10))
+    Assert( ( overshoot2 >= 0 && overshoot2 <= 255 )                     , chr(10) + "LSFmod: 'overshoot2' have not a correct value! [0...255]"        + chr(10))
+    Assert( ( undershoot2 >= 0 && undershoot2 <= 255 )                   , chr(10) + "LSFmod: 'undershoot2' have not a correct value! [0...255]"       + chr(10))
+    Assert( ( soft >= -2 && soft <= 100 )                                , chr(10) + "LSFmod: 'soft' have not a correct value! [-2,-1,0,1...100]"      + chr(10))
+    Assert( ( keep >= 0 && keep <= 100 )                                 , chr(10) + "LSFmod: 'keep' have not a correct value! [0...100]"              + chr(10))
+    Assert( ( edgemode >= -1 && edgemode <= 2 )                          , chr(10) + "LSFmod: 'edgemode' have not a correct value! [-1,0,1,2]"         + chr(10))
+    Assert( ( ss_x >= 1.0 )                                              , chr(10) + "LSFmod: 'ss_x' have not a correct value! [>=1.0]"                + chr(10))
+    Assert( ( ss_y >= 1.0 )                                              , chr(10) + "LSFmod: 'ss_y' have not a correct value! [>=1.0]"                + chr(10))
 
     xxs  = nmod(ox*ss_x,8)
     yys  = nmod(oy*ss_y,8)
 
-    bi32m = bi != 32 ? "range_half -" : ""  # due to float scaling not being supported in Expr() (https://forum.doom9.org/showthread.php?p=1954164#post1954164)
-    bi32p = bi != 32 ? "range_half +" : ""  # due to float scaling not being supported in Expr() (https://forum.doom9.org/showthread.php?p=1954164#post1954164)
+    bi32m = bi != 32 ? "range_half -" : ""
+    bi32p = bi != 32 ? "range_half +" : ""
 
     str  = strength / 100.
 
@@ -620,19 +631,19 @@ function LSFmod( clip inclip, float "strength", int "Smode", int "Smethod",
     ### PRE (preblur="ON" looks like a mini MinBlur() )
     tmp  = ss_x > 1.0 || ss_y > 1.0 ? input.spline36resize(xxs,yys) : input
     pre  = preblur=="OFF" ? tmp
-    \    : preblur=="ON"  ? tmp.ex_lutxyz(ex_makediff(tmp,tmp.removegrain(12,-1), UV=1, fulls=fs)
-    \                                    ,ex_makediff(tmp,tmp.removegrain(4, -1), UV=1, fulls=fs),"y "+bi32m+" A@ z "+bi32m+" B@ * 0 < x A abs B abs < A B ? x swap - ?", UV=1, fulls=fs)
+    \    : preblur=="ON"  ? tmp.ex_lutxyz(ex_makediff(tmp,tmp.removegrain(12,-1), UV=1, fulls=!tv)
+    \                                    ,ex_makediff(tmp,tmp.removegrain(4, -1), UV=1, fulls=!tv),"y "+bi32m+" A@ z "+bi32m+" B@ * 0 < x A abs B abs < A B ? x swap - ?", UV=1, fulls=!tv)
     \    : Eval("tmp."+preblur)
 
 
-    # Top is a 4-way sobel, Bottom a min/max
-    rhlf  = ex_dlut("range_half", bi, fs)
+    # Top is a 4-way sobel. Bottom a min/max
+    rhlf  = Eval(ex_dlut("range_half", bi, !tv))
     rhlf  = bi == 14 || bi == 16 ? Format("{rhlf} /") : string(1./rhlf)+" *"
-    emHQn = 1. / ex_bs(32,  8, bi, fulls=fs)
-    edge  = edgemaskHQ ? tmp.ex_edge(mode=Format("x[1,-1] C@ x[1,1] I@ + x[-1,-1] A@ - x[-1,1] G@ - x[1,0] x[-1,0] - 2 * + abs "                                                    \
-                                                +"G I + A - C - x[0,1] x[0,-1] - 2 * + abs max 2 *     "+rhlf+" 0.86 ^ 0 max range_max *"), lo=0, hi=255, UV=1, fulls=fs)
-    \     :              tmp.ex_edge(mode=Format("x[1,1] A@ x[1,0] B@ max x[1,-1] C@ max x[-1,1] D@ max x[-1,0] E@ max x[-1,-1] F@ max x[0,1] G@ max x[0,-1] H@ max x[0,0] O@ max " \
-                                                +"A B min C min G min O min H min D min E min F min - {emHQn} * 0.86 ^ 0 max range_max *"), lo=0, hi=255, UV=1, fulls=fs)
+    emHQn = 1. / ex_bs(32,  8, bi, fulls=!tv)
+    edge  = edgemaskHQ ? tmp.ex_lut(Format("x[1,-1] C@ x[1,1] I@ + x[-1,-1] A@ - x[-1,1] G@ - x[1,0] x[-1,0] - 2 * + abs "                                                    \
+                                          +"G I + A - C - x[0,1] x[0,-1] - 2 * + abs max 2 *     "+rhlf+" 0.86 ^ 0 max range_max *"), UV=1, fulls=!tv)
+    \     :              tmp.ex_lut(Format("x[1,1] A@ x[1,0] B@ max x[1,-1] C@ max x[-1,1] D@ max x[-1,0] E@ max x[-1,-1] F@ max x[0,1] G@ max x[0,-1] H@ max x[0,0] O@ max " \
+                                          +"A B min C min G min O min H min D min E min F min - {emHQn} * 0.86 ^ 0 max range_max *"), UV=1, fulls=!tv)
 
     edgei = edge.mt_inflate()
 
@@ -648,37 +659,38 @@ function LSFmod( clip inclip, float "strength", int "Smode", int "Smethod",
     \      : Smethod==2   ? minmaxavg
     \      :                isHD ? minmaxavg.removegrain(12,-1).removegrain(20,-1) : minmaxavg.removegrain(12,-1)
 
-    sec    = ex_bs(tv ? 0.51 : 0.594, 8, bi, fulls=fs)
+    sec    = ex_bs(tv ? 0.51 : 0.594, 8, bi, fulls=!tv)
     secstr = Format("x y < x {sec} + x y > x {sec} - x ? ?")  # "x y x 2 + min y x 2 - max clip" or "y x 2 + min x 2 - max " # faster but 95% not 100% match (replicates ex_clamp() )
-    method = secure ? method.ex_lutxy(pre,secstr, UV=1, fulls=fs)
+    method = secure ? method.ex_lutxy(pre,secstr, UV=1, fulls=!tv)
     \      :          method
 
-    method = preblur=="OFF" ? method : tmp.ex_lutxyz(pre,method,"x y z - "+bi32p+" - "+bi32p, UV=1, fulls=fs)
+    method = preblur=="OFF" ? method : tmp.ex_lutxyz(pre,method,"x y z - "+bi32p+" - "+bi32p, UV=1, fulls=!tv)
 
 
     ### SHARP
     # Smode==1 Parametrized to original WarpSharp's    unsharpmask()
     # Smode==2 Parametrized to original VariableBlur's unsharp()
-    Szrpv     =                         ex_bs(Szrp,    8, bi, tv_in=true, tv_out=tv,  fulls=fs)
-    SdmpLov   =                         ex_bs(SdmpLo,  8, bi, tv_in=true, tv_out=tv,  fulls=fs)
-    SdmpLov   =                         ex_bs(SdmpLoV, 8, bi, tv_in=true, tv_out=tv,  fulls=fs) # Yes, again
-    SdmpHiv   = SdmpHi == 0 ?  0 : 1. / ex_bs(SdmpHi,  8, bi, tv_in=true, tv_out=tv,  fulls=fs)
+    Szrpv     =                         ex_bs(Szrp,    8, bi, !tv)
+    SdmpLov   =                         ex_bs(SdmpLo,  8, bi, !tv)
+    SdmpLov   =                         ex_bs(SdmpLoV, 8, bi, !tv) # Yes, again ¯\_("/)_/¯
+    SdmpHiv   = SdmpHi == 0 ?  0 : 1. / ex_bs(SdmpHi,  8, bi, !tv)
     SdmpHr    = SdmpHi == 0 ? "" : Format("{Szrpv} {SdmpHiv} * 4 ^ 1 +  ")
     SdmpHs    = SdmpHi == 0 ? "" : Format("      B {SdmpHiv} * 4 ^ 1 + /")+(Smode==5 ? " *" : "")
     Szrpv2    = pow( Szrpv,2)
     Szrpr     = 1. / Szrpv
     Spwrr     = 1. / Spwr
-    rad       = round((ss_x+ss_y)/2.)
+    rad2      = (ss_x+ss_y)/2.0
+    rad       = round(rad2)
 
-    normsharp = Smode==1 ? tmp.ex_unsharp(str= 0.1+0.65*str-(rad/10.),Fc=max(ox,oy)*(1.2-0.2*(1+rad)),th=0,UV=1,fulls=fs)
-    \         : Smode==2 ? tmp.ex_unsharp(str=          str/2.,       Fc=max(ox,oy)*(1.0-0.2*   rad), th=0,UV=1,fulls=fs)
-    \         : Smode==3 ? ex_lutxy(tmp, method, Format("x y - {str} * x +"), UV=1, fulls=fs)
-    \         : Smode==4 ? ex_lutxy(tmp, method, Format("x dup y == swap dup y - A@ dup 0 < -1 1 ? S^ abs B@ {Szrpr} * {Spwrr} ^ {Szrpv} {str} * * A dup * dup "
-    \                                                  +"{SdmpLov} + / * S * "+SdmpHs+" x + ?"), UV=1, fulls=fs)
-    \         : Smode==5 ? ex_lutxy(tmp, method, Format("x dup y == swap dup y - A@ dup 0 < -1 1 ? S^ abs B@ {Szrpr} * {Spwrr} ^ {Szrpv} {str} * * S * A dup * C@ "
-    \                                                  +"{Szrpv2} {SdmpLov} + * C {SdmpLov} + {Szrpv2} * / * "+SdmpHr+" "+SdmpHs+" x + ?"), UV=1, fulls=fs)
-    \         : preblur!="OFF" && secure ? tmp.ex_lutxyz(pre,pre.CAS(min(Str, 1)).ex_lutxy(pre,secstr, UV=1, fulls=fs), "x y z - "+bi32p+" - "+bi32p, UV=1, fulls=fs)
-    \         : preblur!="OFF"           ? tmp.ex_lutxyz(pre,pre.CAS(min(Str, 1)), "x y z - "+bi32p+" - "+bi32p, UV=1, fulls=fs) : secure ? pre.CAS(min(Str, 1)).ex_lutxy(pre,secstr, UV=1, fulls=fs) : pre.CAS(min(Str, 1))
+    normsharp = Smode==1 ? tmp.ex_unsharp(str=str*0.7,                           Fc=max(ox,oy)/max(1,0.76*exp(0.26*round(1+rad2))),th=0,UV=1)
+    \         : Smode==2 ? tmp.ex_unsharp(str=str/(1.489*pow(rad2,-1.112)+0.51), Fc=max(ox,oy)*0.8,                                th=0,UV=1)
+    \         : Smode==3 ? ex_lutxy(tmp, method, Format("x y - {str} * x +"), UV=1, fulls=!tv)
+    \         : Smode==4 ? ex_lutxy(tmp, method, Format("x dup y == swap dup y - A@ abs B@ {Szrpr} * {Spwrr} ^ {Szrpv} {str} * * A dup * dup "
+    \                                                  +"{SdmpLov} + / * A sgn * "+SdmpHs+" x + ?"), UV=1, fulls=!tv)
+    \         : Smode==5 ? ex_lutxy(tmp, method, Format("x dup y == swap dup y - A@ abs B@ {Szrpr} * {Spwrr} ^ {Szrpv} {str} * * A sgn * A dup * C@ "
+    \                                                  +"{Szrpv2} {SdmpLov} + * C {SdmpLov} + {Szrpv2} * / * "+SdmpHr+" "+SdmpHs+" x + ?"), UV=1, fulls=!tv)
+    \         : preblur!="OFF" && secure ? tmp.ex_lutxyz(pre,pre.CAS(min(Str, 1)).ex_lutxy(pre,secstr, UV=1, fulls=!tv), "x y z - "+bi32p+" - "+bi32p, UV=1, fulls=!tv)
+    \         : preblur!="OFF"           ? tmp.ex_lutxyz(pre,pre.CAS(min(Str, 1)), "x y z - "+bi32p+" - "+bi32p, UV=1, fulls=!tv) : secure ? pre.CAS(min(Str, 1)).ex_lutxy(pre,secstr, UV=1, fulls=!tv) : pre.CAS(min(Str, 1))
 
 
     # Temporal limiting
@@ -688,21 +700,21 @@ function LSFmod( clip inclip, float "strength", int "Smode", int "Smethod",
 
         if (!isg || (ss_x > 1.0 || ss_y > 1.0)) {
 
-            blcksze   = (ox > 2599 ||  oy > 1499) ? 32 : isHD ? 16 : 8
+            blksize   = (ox > 2599 ||  oy > 1499) ? 32 : isHD ? 16 : 8
 
-            pre       = pre.ConvertBits(8, dither=-1, fulls=fs)
+            pre       = pre.ConvertBits(8, dither=-1, fulls=!tv)
             superfilt = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, chroma=false, mt=true)
             super     = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, chroma=false, mt=true, levels=1)
 
-            cb1 = superfilt.MAnalyse(isb = false, chroma=false, blksize = blcksze,   overlap=blcksze/2, delta = 1, temporal=true, truemotion=true, mt=true)
-            cf1 = superfilt.MAnalyse(isb = true,  chroma=false, blksize = blcksze,   overlap=blcksze/2, delta = 1, temporal=true, truemotion=true, mt=true)
-            cb1 =     super.Mrecalculate(cb1,     chroma=false, blksize = blcksze/2, overlap=blcksze/4, thSAD=110,                 truemotion=true, mt=true)
-            cf1 =     super.Mrecalculate(cf1,     chroma=false, blksize = blcksze/2, overlap=blcksze/4, thSAD=110,                 truemotion=true, mt=true)
+            cb1 = superfilt.MAnalyse(isb = false, chroma=false, blksize = blksize,   overlap=blksize/2, delta = 1, temporal=true, truemotion=true, mt=true)
+            cf1 = superfilt.MAnalyse(isb = true,  chroma=false, blksize = blksize,   overlap=blksize/2, delta = 1, temporal=true, truemotion=true, mt=true)
+            cb1 =     super.Mrecalculate(cb1,     chroma=false, blksize = blksize/2, overlap=blksize/4, thSAD=110,                 truemotion=true, mt=true)
+            cf1 =     super.Mrecalculate(cf1,     chroma=false, blksize = blksize/2, overlap=blksize/4, thSAD=110,                 truemotion=true, mt=true)
             }
 
-        cb1     = repair(pre.MCompensate(super, cb1, thSAD=220, mt=true), pre, 3, -1).ConvertBits(bi, fulls=fs)
-        cf1     = repair(pre.MCompensate(super, cf1, thSAD=220, mt=true), pre, 3, -1).ConvertBits(bi, fulls=fs)
-        os      = ex_bs(overshoot,   8, bi, fulls=fs)      us     = ex_bs(undershoot,  8, bi, fulls=fs)
+        cb1     = repair(pre.MCompensate(super, cb1, thSAD=220, mt=true), pre, 3, -1).ConvertBits(bi, fulls=!tv)
+        cf1     = repair(pre.MCompensate(super, cf1, thSAD=220, mt=true), pre, 3, -1).ConvertBits(bi, fulls=!tv)
+        os      = ex_bs(overshoot, 8, bi, fulls=!tv)       us     = ex_bs(undershoot, 8, bi, fulls=!tv)
         os      = os  == 0 ? "" : Format("{os}  +")        us     = us  == 0 ? "" : Format("{us}  -")
         normalT = ex_lutxyza(tmp,normsharp,cb1,cf1,Format("y x z max a max "+os+" min x z min a min "+us+" max"),UV=1)
         }
@@ -710,12 +722,12 @@ function LSFmod( clip inclip, float "strength", int "Smode", int "Smethod",
     ### LIMIT
     os10    = overshoot  == 0 && undershoot  == 0
     os20    = overshoot2 == 0 && undershoot2 == 0
-    zero    =                ex_clamp(normsharp, bright_limit,  dark_limit,                  0,                  0, UV=1, fulls=fs)
-    zero2   =                ex_clamp(normsharp, bright_limit2, dark_limit2,                 0,                  0, UV=1, fulls=fs)
-    second  = os20 ? zero  : ex_clamp(normsharp, bright_limit,  dark_limit,  round(overshoot2), round(undershoot2), UV=1, fulls=fs)
-    second2 = os20 ? zero2 : ex_clamp(normsharp, bright_limit2, dark_limit2, round(overshoot2), round(undershoot2), UV=1, fulls=fs)
-    normal  = os10 ? zero  : ex_clamp(normsharp, bright_limit,  dark_limit,  round(overshoot),  round(undershoot),  UV=1, fulls=fs)
-    normal2 = os10 ? zero2 : ex_clamp(normsharp, bright_limit2, dark_limit2, round(overshoot),  round(undershoot),  UV=1, fulls=fs)
+    zero    =                ex_clamp(normsharp, bright_limit,  dark_limit,                  0,                  0, UV=1)
+    zero2   =                ex_clamp(normsharp, bright_limit2, dark_limit2,                 0,                  0, UV=1)
+    second  = os20 ? zero  : ex_clamp(normsharp, bright_limit,  dark_limit,  round(overshoot2), round(undershoot2), UV=1)
+    second2 = os20 ? zero2 : ex_clamp(normsharp, bright_limit2, dark_limit2, round(overshoot2), round(undershoot2), UV=1)
+    normal  = os10 ? zero  : ex_clamp(normsharp, bright_limit,  dark_limit,  round(overshoot),  round(undershoot),  UV=1)
+    normal2 = os10 ? zero2 : ex_clamp(normsharp, bright_limit2, dark_limit2, round(overshoot),  round(undershoot),  UV=1)
 
 
     # really like Lmode=5 and 6
@@ -735,19 +747,19 @@ function LSFmod( clip inclip, float "strength", int "Smode", int "Smethod",
 
 
     ### SOFT
-    soft = soft!=-1  ? soft : sqrt( (((ss_x+ss_y)/2.0-1.0)*100.0) ) * 10
+    soft = soft!=-1  ? soft : sqrt( ((rad2-1.0)*100.0) ) * 10
     soft = soft!=-2  ? soft : int( (1.0+(2.0/(ss_x+ss_y))) * sqrt(strength) )
     soft = min(soft,100)
-    sharpdiff = ex_makediff(tmp,limit2, UV=1, fulls=fs)
-    sharpdiff = ex_lutxyz(tmp, sharpdiff, sharpdiff.removegrain(20,-1), Format("y "+bi32m+" abs z "+bi32m+" abs > z {soft} * y 100 {soft} - * + 0.01 * y ? x swap - "+bi32p), UV=1, fulls=fs)
+    sharpdiff = ex_makediff(tmp, limit2, UV=1, fulls=!tv)
+    sharpdiff = ex_lutxyz(tmp, sharpdiff, sharpdiff.removegrain(20,-1), Format("y "+bi32m+" abs z "+bi32m+" abs > z {soft} * y 100 {soft} - * + 0.01 * y ? x swap - "+bi32p), UV=1, fulls=!tv)
 
     PP1 = soft==0 ? limit2 : sharpdiff
 
 
     ### SOOTHE
-    diff  = ex_makediff(tmp, PP1, UV=1, fulls=fs)
+    diff  = ex_makediff(tmp, PP1, UV=1, fulls=!tv)
     diff2 = diff.temporalsoften(1,255,0,32,2)
-    diff3 = ex_lutxyz(tmp,diff,diff2,Format("y "+bi32m+" A@ z "+bi32m+" B@ * 0 < A {keep} 0.01 * * "+bi32p+" A abs B abs > y {keep} * z 100 {keep} - * + 0.01 * y ? ? x swap - "+bi32p), UV=1, fulls=fs)
+    diff3 = ex_lutxyz(tmp,diff,diff2,Format("y "+bi32m+" A@ z "+bi32m+" B@ * 0 < A {keep} 0.01 * * "+bi32p+" A abs B abs > y {keep} * z 100 {keep} - * + 0.01 * y ? ? x swap - "+bi32p), UV=1, fulls=!tv)
 
     PP2 = soothe ? diff3 : PP1
 
@@ -764,12 +776,12 @@ function LSFmod( clip inclip, float "strength", int "Smode", int "Smethod",
         no  =              normsharp.spline36resize(dest_x, dest_y)
         src = sisupscale ?    source.spline36resize(dest_x, dest_y) : source
 
-        srcD   = ex_makediff(in, src, UV=1, fulls=fs)
-        shrpD  = ex_makediff(in, no,  UV=1, fulls=fs)
-        srcDP  =  srcD.PadBorders(4,4,4,4)
-        shrpDP = shrpD.PadBorders(4,4,4,4)
+        srcD   = ex_makediff(in, src, UV=1, fulls=!tv)
+        shrpD  = ex_makediff(in, no,  UV=1, fulls=!tv)
+        srcDP  =  srcD.PadBorders(4,4,4,4,"Dilate")
+        shrpDP = shrpD.PadBorders(4,4,4,4,"Dilate")
         shrpL  = shrpDP.repair(isHD?shrpDP.repair(srcDP,max(abs(Lmode),1),-1):srcDP,max(abs(Lmode),1),-1).crop(4,4,-4,-4,true)
-        out    = ex_lutxyz(in,shrpL,shrpD, "y "+bi32m+" X@ abs z "+bi32m+" Y@ abs < X Y ? x swap -", UV=1, fulls=fs)
+        out    = ex_lutxyz(in,shrpL,shrpD, "y "+bi32m+" X@ abs z "+bi32m+" Y@ abs < X Y ? x swap -", UV=1, fulls=!tv)
     }
 
     output = edgemode!=-1 ? out : !sisupscale ? edge.spline36resize(dest_x,dest_y) : edge.spline36resize(dest_x,dest_y).greyscale()

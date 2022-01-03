@@ -1,6 +1,6 @@
 #############################################################################
 ###                                                                       ###
-###        Deblock Pack v1.4  (05-11-2021)                                ###
+###        Deblock Pack v1.6  (27-11-2021)                                ###
 ###                                                                       ###
 ###        Collection of deblocking solutions for AviSynth+               ###
 ###                                                                       ###
@@ -35,14 +35,16 @@
 ### In block interiours, the chances of differentiating 1st/2nd generation blocking artefacts from actual detail are poor anyway, and danger is high to remove detail.
 ### So, for block interiours get only a different "shading"
 ###
-### http://avisynth.nl/index.php/Deblock_QED
-### http://web.archive.org/web/20060509152326/http://home.arcor.de/dhanselmann/_stuff/Deblock_QED.avs
+### https://avisynth.nl/index.php/Deblock_QED
+### https://web.archive.org/web/20060509152326/http://home.arcor.de/dhanselmann/_stuff/Deblock_QED.avs
 ### http://videoprocessing.forumer.com/viewtopic.php?p=413
 ### https://forum.doom9.org/showthread.php?p=751174#post751174
 ###
 ### Dependencies:
 ###             Deblock
 ###             DCTFilter
+###             ExTools
+###             ResizersPack
 ###
 ### Changelog:
 ###
@@ -65,7 +67,7 @@
 ### Changes 2010-10-16: (Bi11)
 ### - Replaced 'relative' with the new 'mode' parameter in mt_LutSpa(), starting from MaskTools 2.0a45
 ### - Changed Quant and Offset defaults to 24,26,1,1,2,2 to increase effectiveness, but still within sensible limits.
-###   (see for details: http://forum.doom9.org/showthread.php?p=810932#post810932)
+###   (see for details: https://forum.doom9.org/showthread.php?p=810932#post810932)
 ###
 ### Changes 2011-11-29: (06_taro)
 ### - Replaced (chroma=uv>2?"process":"ignore") by (chroma=uv>2?"process":"copy") to avoid garbage clip when uv=2.
@@ -90,9 +92,11 @@
 ### - Replaced PointResize with PadBorders (2021-10-18)
 ###
 
-function Deblock_QED ( clip clp, int "quant1", int "quant2",
- \                     int "aOff1", int "bOff1", int "aOff2", int "bOff2", string "exdeblock1", string "exdeblock2", int "UV", bool "fulls"  ) {
+function Deblock_QED ( clip clp, int "quant1", int "quant2", int "aOff1", int "bOff1", int "aOff2", int "bOff2", string "exdeblock1", string "exdeblock2", int "UV"  ) {
 
+    rgb    = isRGB(clp)
+    fs     = propNumElements (clp,"_ColorRange")  > 0 ? \
+             propGetInt      (clp,"_ColorRange") == 0 : rgb
 
     quant1 = Default( quant1, 24 ) # Strength of block edge deblocking
     quant2 = Default( quant2, 26 ) # Strength of block internal deblocking
@@ -103,7 +107,6 @@ function Deblock_QED ( clip clp, int "quant1", int "quant2",
     bOff1  = Default( bOff1,   2 ) # "Sensitivity to detect blocking" for borders
     bOff2  = Default( bOff2,   2 ) # "Sensitivity to detect blocking" for block interiors
 
-    fs     = Default( fulls,  false)
     UV     = Default( uv, 3 )      # u=3  -> use proposed method for chroma deblocking
                                    # u=2  -> no chroma deblocking at all (just copy it from source)
                                    # u=1  -> directly use chroma deblocking from the normal deblock()
@@ -117,10 +120,10 @@ function Deblock_QED ( clip clp, int "quant1", int "quant2",
     h    = clp.height()
     padX = w%8 == 0 ? 0 : (8 - w%8)
     padY = h%8 == 0 ? 0 : (8 - h%8)
-    clp=clp.PadBorders(0,0,padX,padY)
+    clp  = clp.PadBorders(0,0,padX,padY,"Dilate")
 
     # block
-    block = clp.ex_lutspa(mode="absolute",expr="x 1 + 8 % 1 < x 8 % 1 < y 1 + 8 % 1 < y 8 % 1 < | | | range_max 0 ?", UV=!isy && uv!=2 ? 3 : 1, fulls=fs)
+    block = clp.ex_lutspa(mode="absolute",expr="x 1 + 8 % 1 < x 8 % 1 < y 1 + 8 % 1 < y 8 % 1 < | | | range_max 0 ?", UV=!isy && uv!=2 ? 3 : 1)
 
     # create normal deblocking (for block borders) and strong deblocking (for block interiour)
     normal = Defined(exdeblock1) ? Eval("clp." + exdeblock1) : clp.Deblock_deblock(quant=quant1,aOffset=aOff1,bOffset=bOff1)
@@ -139,7 +142,7 @@ function Deblock_QED ( clip clp, int "quant1", int "quant2",
     remX = sw%16 == 0 ? 0 : (16 - sw%16)
     remY = sh%16 == 0 ? 0 : (16 - sh%16)
 
-    strongD3 = strongD2.PadBorders(0,0,remX,remY).DCTfilter(1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0).crop(0,0,-remX,-remY)
+    strongD3 = strongD2.PadBorders(0,0,remX,remY,"Dilate").DCTfilter(1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0).crop(0,0,-remX,-remY)
 
     # apply compensation from "normal" deblocking to the borders of
     # the full-block-compensations calculated from "strong" deblocking ... and apply it.
@@ -161,7 +164,7 @@ function Deblock_QED ( clip clp, int "quant1", int "quant2",
 ################################
 
 ## Initial VapourSynth release (01-05-2016)
-## AviSynth+ port    by Dogway (20-09-2021)
+## AviSynth+ port    by Dogway (20-09-2021) (WIP)
 ##
 ## Input: 444 YUV/RGB in 32-bit float
 ##
@@ -196,34 +199,39 @@ function Deblock_QED ( clip clp, int "quant1", int "quant2",
 ##    Dependencies:
 ##                  ExTools
 ##                  ResizersPack
-##                  mvtools2
+##                  MVTools
 ##                  KNLMeansCL
 ##                  BM3D
 ##                  DFTTest
 ##                  nnedi3
+##                  SysInfo
+##                  TransformsPack (for RGB)
 
 
 function oyster_Super(clip src, int "pel") {
 
     pel = Default(pel, 2)
-    th  = 8 # threads
-
     bi  = BitsPerComponent(src)
     rgb = isRGB(src)
+    fs  = propNumElements (src,"_ColorRange")  > 0 ? \
+          propGetInt      (src,"_ColorRange") == 0 : rgb
 
-    Assert(isclip(src),          "Oyster.Super: src has to be a video clip!")
-    Assert(bi == 32,             "Oyster.Super: the sample type of src has to be single precision!")
-    Assert(is444(src) || rgb,    "Oyster.Super: subsampled stuff not supported!")
-    Assert(pel == 2 || pel == 4, "Oyster.Super: pel has to be 2 or 4!")
+    Assert(isclip(src),          "oyster_Super: src has to be a video clip!")
+    Assert(bi == 32,             "oyster_Super: the sample type of src has to be single precision!")
+    Assert(is444(src) || rgb,    "oyster_Super: subsampled stuff not supported!")
+    Assert(pel == 2 || pel == 4, "oyster_Super: pel has to be 2 or 4!")
+    cores   = SI_PhysicalCores()
+    threads = SI_LogicalCores()
 
     src
     AssumeFrameBased()
-    rgb ? RGB_to_OPP() : last
+    rgb ? !fs ? SMPTE_legal(false).RGB_to_OPP() : RGB_to_OPP() : last
+    ConvertBits(8, dither=-1, fulls=rgb ? false : fs)
 
-#    PadBorders(128, 128, 128, 128)
-    PadBorders(64, 64, 64, 64)
+#    PadBorders(128, 128, 128, 128, "Dilate")
+    PadBorders(64, 64, 64, 64, "Dilate")
 #    nnedi3_rpow2(rfactor=pel,nns=4,nsize=0,qual=2,threads=th/2,prefetch=th,SetAffinity=true,MaxPhysCore=false)
-    nnedi3_rpow2(rfactor=pel,nns=1,nsize=0,qual=1,threads=th/2,prefetch=th,SetAffinity=true,MaxPhysCore=false)
+    nnedi3_rpow2(rfactor=pel,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2)
 
     return last }
 
@@ -241,27 +249,29 @@ function oyster_Basic(clip src, clip "super", int "radius", int "pel", int "sad"
 
     rgb = isRGB(src)
     bi  = BitsPerComponent(src)
+    fs  = propNumElements (src,"_ColorRange")  > 0 ? \
+          propGetInt      (src,"_ColorRange") == 0 : rgb
 
-    Assert(isclip(src),                "Oyster.Basic: src has to be a video clip!")
-    Assert(is444(src) || rgb,          "Oyster.Basic: subsampled stuff not supported!")
-    Assert(pel == 1 || pel == 2 || pel == 4, "Oyster.Super: pel has to be 1, 2 or 4!")
-    Assert(isclip(super),              "Oyster.Basic: super has to be a video clip or None!")
-    Assert(isint(radius),              "Oyster.Basic: radius has to be an integer!")
-    Assert(radius>1,                   "Oyster.Basic: radius has to be greater than 0!")
-    Assert(isint(pel),                 "Oyster.Basic: pel has to be an integer!")
-    Assert(isint(sad) || isfloat(sad), "Oyster.Basic: sad has to be a real number!")
-    Assert(sad>0,                      "Oyster.Basic: sad has to be greater than 0!")
-    Assert(isbool(short_time),         "Oyster.Basic: short_time has to be boolean!")
+    Assert(isclip(src),                "oyster_Basic: src has to be a video clip!")
+    Assert(is444(src) || rgb,          "oyster_Basic: subsampled stuff not supported!")
+    Assert(pel == 1 || pel == 2 || pel == 4, "oyster_Super: pel has to be 1, 2 or 4!")
+    Assert(isclip(super),              "oyster_Basic: super has to be a video clip or None!")
+    Assert(isint(radius),              "oyster_Basic: radius has to be an integer!")
+    Assert(radius>1,                   "oyster_Basic: radius has to be greater than 0!")
+    Assert(isint(pel),                 "oyster_Basic: pel has to be an integer!")
+    Assert(isfloat(sad),               "oyster_Basic: sad has to be a real number!")
+    Assert(sad>0,                      "oyster_Basic: sad has to be greater than 0!")
+    Assert(isbool(short_time),         "oyster_Basic: short_time has to be boolean!")
 
-    src   = rgb ? RGB_to_OPP(src) : src
+    src   = rgb ? !fs ? src.SMPTE_legal(false).RGB_to_OPP() : src.RGB_to_OPP() : src
     src   = AssumeFrameBased(src)
     super = Defined(super) ? super : AssumeFrameBased(super)
 
-#    src         = PadBorders(src, 128, 128, 128, 128)
-    src         = PadBorders(src, 64, 64, 64, 64)
-    pre         = src.ConvertBits(8, dither=-1, fulls=false)
+#    src         = PadBorders(src, 128, 128, 128, 128, "Dilate")
+    src         = PadBorders(src, 64, 64, 64, 64, "Dilate")
+    pre         = src.ConvertBits(8, dither=-1, fulls=rgb ? false : fs)
     supersoft   = MSuper(pre, pelclip=super, rfilter=4, pel=pel, chroma=color, hpad=0, vpad=0, sharp=2, levels=0)
-    supersharp  = MSuper(pre, pelclip=super, rfilter=2, pel=pel, chroma=color, hpad=0, vpad=0, sharp=2, levels=0).ConvertBits(32, fulls=false)
+    supersharp  = MSuper(pre, pelclip=super, rfilter=2, pel=pel, chroma=color, hpad=0, vpad=0, sharp=2, levels=0).ConvertBits(32, fulls=fs)
 
     if (short_time) {
 
@@ -288,7 +298,6 @@ function oyster_Basic(clip src, clip "super", int "radius", int "pel", int "sad"
     clp         = src.MDegrainN(supersharp, vmulti, radius, thsad=sad, plane=plane, thscd1=8*8*255, thscd2=255, mt=true)
     clp         = Crop(clp, 64, 64, -64, -64)
 
-    clp   = rgb ? OPP_to_RGB(clp) : clp
     return clp }
 
 
@@ -316,22 +325,22 @@ function oyster_Deringing(clip src, clip ref, int "radius", float "h", float "si
     bi  = BitsPerComponent(src)
     bir = BitsPerComponent(ref)
 
-    Assert(isclip(src),              "Oyster.Deringing: src has to be a video clip!")
-    Assert(bi == 32,                 "Oyster.Deringing: the sample type of src has to be single precision!")
-    Assert(is444(src) || rgb,        "Oyster.Deringing: subsampled stuff not supported!")
-    Assert(isclip(ref),              "Oyster.Deringing: ref has to be a video clip!")
-    Assert(bir == 32,                "Oyster.Deringing: the sample type of ref has to be single precision!")
-    Assert(is444(ref) || isrgb(ref), "Oyster.Deringing: subsampled stuff not supported!")
-    Assert(isint(radius),            "Oyster.Deringing: radius has to be an integer!")
-    Assert(radius>1,                 "Oyster.Deringing: radius has to be greater than 0!")
-    Assert(isint(h) || isfloat(h),   "Oyster.Deringing: h has to be a real number!")
-    Assert(h>=0,                     "Oyster.Deringing: h has to be greater than 0!")
-#    Assert(isint(mse0) || isfloat(mse0), "Oyster.Deringing: sad has to be a real number or None!")
-#    Assert(isint(mse1) || isfloat(mse1), "Oyster.Deringing: sad has to be a real number or None!")
+    Assert(isclip(src),              "oyster_Deringing: src has to be a video clip!")
+    Assert(bi == 32,                 "oyster_Deringing: the sample type of src has to be single precision!")
+    Assert(is444(src) || rgb,        "oyster_Deringing: subsampled stuff not supported!")
+    Assert(isclip(ref),              "oyster_Deringing: ref has to be a video clip!")
+    Assert(bir == 32,                "oyster_Deringing: the sample type of ref has to be single precision!")
+    Assert(is444(ref) || isrgb(ref), "oyster_Deringing: subsampled stuff not supported!")
+    Assert(isint(radius),            "oyster_Deringing: radius has to be an integer!")
+    Assert(radius>1,                 "oyster_Deringing: radius has to be greater than 0!")
+    Assert(isfloat(h),               "oyster_Deringing: h has to be a real number!")
+    Assert(h>=0,                     "oyster_Deringing: h has to be greater than 0!")
+#    Assert(isint(mse0) || isfloat(mse0), "oyster_Deringing: sad has to be a real number or None!")
+#    Assert(isint(mse1) || isfloat(mse1), "oyster_Deringing: sad has to be a real number or None!")
 
     if (rgb) {
-       src    = RGB_to_OPP(src)
-       ref    = RGB_to_OPP(ref)
+       src    = !fs ? src.SMPTE_legal(false).RGB_to_OPP() : src.RGB_to_OPP()
+       ref    = ref
     }
     src       = AssumeFrameBased(src)
     ref       = AssumeFrameBased(ref)
@@ -370,7 +379,7 @@ function oyster_Deringing(clip src, clip ref, int "radius", float "h", float "si
     bm3d    = FreqMerge(refined, bm3d, nmod(block_size,2) + 1, lowpass)
     clp     = oy_loop(bm3d, bm3d, refined, 4, strength0, strength1, color)
 
-    clp     = rgb ? OPP_to_RGB(clp) : clp
+    clp     = rgb ? OPP_to_RGB(clp).SMPTE_legal(true) : clp
     return clp }
 
 
@@ -400,29 +409,29 @@ function oyster_Destaircase(clip src, clip ref, int "radius", float "sigma", flo
     bi  = BitsPerComponent(src)
     bir = BitsPerComponent(ref)
 
-    Assert(isclip(src),                    "Oyster.Destaircase: src has to be a video clip!")
-    Assert(bi == 32,                       "Oyster.Destaircase: the sample type of src has to be single precision!")
-    Assert(is444(src) || rgb,              "Oyster.Destaircase: subsampled stuff not supported!")
-    Assert(isclip(ref),                    "Oyster.Destaircase: ref has to be a video clip!")
-    Assert(bir == 32,                      "Oyster.Destaircase: the sample type of ref has to be single precision!")
-    Assert(is444(ref) || isrgb(ref),       "Oyster.Destaircase: subsampled stuff not supported!")
-    Assert(isint(radius),                  "Oyster.Destaircase: radius has to be an integer!")
-    Assert(radius>1,                       "Oyster.Destaircase: radius has to be greater than 0!")
-    Assert(isint(thr) || isfloat(thr),     "Oyster.Destaircase: thr has to be a real number!")
-    Assert(thr>=0 && thr<= 1,              "Oyster.Destaircase: thr has to fall in [0, 1]!")
-    Assert(isint(elast) || isfloat(elast), "Oyster.Destaircase: elast has to be a real number!")
-    Assert(elast>=0 && elast<=thr,         "Oyster.Destaircase: elast has to fall in [0, thr]!")
-#    Assert(isint(mse0) || isfloat(mse0), "Oyster.Destaircase: sad has to be a real number or None!")
-#    Assert(isint(mse1) || isfloat(mse1), "Oyster.Destaircase: sad has to be a real number or None!")
+    Assert(isclip(src),                    "oyster_Destaircase: src has to be a video clip!")
+    Assert(bi == 32,                       "oyster_Destaircase: the sample type of src has to be single precision!")
+    Assert(is444(src) || rgb,              "oyster_Destaircase: subsampled stuff not supported!")
+    Assert(isclip(ref),                    "oyster_Destaircase: ref has to be a video clip!")
+    Assert(bir == 32,                      "oyster_Destaircase: the sample type of ref has to be single precision!")
+    Assert(is444(ref) || isrgb(ref),       "oyster_Destaircase: subsampled stuff not supported!")
+    Assert(isint(radius),                  "oyster_Destaircase: radius has to be an integer!")
+    Assert(radius>1,                       "oyster_Destaircase: radius has to be greater than 0!")
+    Assert(isfloat(thr),                   "oyster_Destaircase: thr has to be a real number!")
+    Assert(thr>=0 && thr<= 1,              "oyster_Destaircase: thr has to fall in [0, 1]!")
+    Assert(isfloat(elast),                 "oyster_Destaircase: elast has to be a real number!")
+    Assert(elast>=0 && elast<=thr,         "oyster_Destaircase: elast has to fall in [0, thr]!")
+#   Assert(isfloat(mse0),                  "oyster_Destaircase: sad has to be a real number or None!")
+#   Assert(isfloat(mse1),                  "oyster_Destaircase: sad has to be a real number or None!")
 
     if (rgb) {
-       src    = RGB_to_OPP(src)
-       ref    = RGB_to_OPP(ref)
+       src    = !fs ? src.SMPTE_legal(false).RGB_to_OPP() : src.RGB_to_OPP()
+       ref    = ref
     }
     src       = AssumeFrameBased(src)
     ref       = AssumeFrameBased(ref)
 
-    msk       = ex_lutspa(ExtractY(src),mode="absolute",expr="x 1 + 8 % 1 < x 8 % 1 < y 1 + 8 % 1 < y 8 % 1 < | | | range_max 0 ?",fulls=false)
+    msk       = ex_lutspa(ExtractY(src),mode="absolute",expr="x 1 + 8 % 1 < x 8 % 1 < y 1 + 8 % 1 < y 8 % 1 < | | | range_max 0 ?")
     ref       = FreqMerge(src, ref, nmod(block_size,2) + 1, lowpass)
     ref       = ThrMerge(src, ref, thr=thr, elast=elast)
     dif       = ex_makediff(src, ref)
@@ -441,7 +450,7 @@ function oyster_Destaircase(clip src, clip ref, int "radius", float "sigma", flo
     ref       = ex_adddiff(ref, dif)
     clp       = ex_merge(src, ref, msk, luma=true)
 
-    clp       = rgb ? OPP_to_RGB(clp) : clp
+    clp       = rgb ? OPP_to_RGB(clp).SMPTE_legal(true) : clp
     return clp }
 
 
@@ -469,25 +478,25 @@ function oyster_Deblocking(clip src, clip ref, int "radius", float "h", float "s
     bi  = BitsPerComponent(src)
     bir = BitsPerComponent(ref)
 
-    Assert(isclip(src),              "Oyster.Deblocking: src has to be a video clip!")
-    Assert(bi == 32,                 "Oyster.Deblocking: the sample type of src has to be single precision!")
-    Assert(is444(src) || rgb,        "Oyster.Deblocking: subsampled stuff not supported!")
-    Assert(isclip(ref),              "Oyster.Deblocking: ref has to be a video clip!")
-    Assert(bir == 32,                "Oyster.Deblocking: the sample type of ref has to be single precision!")
-    Assert(is444(ref) || isrgb(ref), "Oyster.Deblocking: subsampled stuff not supported!")
-    Assert(isint(radius),            "Oyster.Deblocking: radius has to be an integer!")
-    Assert(radius>1,                 "Oyster.Deblocking: radius has to be greater than 0!")
-    Assert(isint(h) || isfloat(h),   "Oyster.Deblocking: h has to be a real number!")
-    Assert(h>0,                      "Oyster.Deblocking: h has to be greater than 0!")
+    Assert(isclip(src),              "oyster_Deblocking: src has to be a video clip!")
+    Assert(bi == 32,                 "oyster_Deblocking: the sample type of src has to be single precision!")
+    Assert(is444(src) || rgb,        "oyster_Deblocking: subsampled stuff not supported!")
+    Assert(isclip(ref),              "oyster_Deblocking: ref has to be a video clip!")
+    Assert(bir == 32,                "oyster_Deblocking: the sample type of ref has to be single precision!")
+    Assert(is444(ref) || isrgb(ref), "oyster_Deblocking: subsampled stuff not supported!")
+    Assert(isint(radius),            "oyster_Deblocking: radius has to be an integer!")
+    Assert(radius>1,                 "oyster_Deblocking: radius has to be greater than 0!")
+    Assert(isfloat(h),               "oyster_Deblocking: h has to be a real number!")
+    Assert(h>0,                      "oyster_Deblocking: h has to be greater than 0!")
 
     if (rgb) {
-       src    = RGB_to_OPP(src)
-       ref    = RGB_to_OPP(ref)
+       src    = !fs ? src.SMPTE_legal(false).RGB_to_OPP() : src.RGB_to_OPP()
+       ref    = ref
     }
     src      = AssumeFrameBased(src)
     ref      = AssumeFrameBased(ref)
 
-    msk      = ex_lutspa(ExtractY(src),mode="absolute",expr="x 1 + 8 % 1 < x 8 % 1 < y 1 + 8 % 1 < y 8 % 1 < | | | range_max 0 ?",fulls=false)
+    msk      = ex_lutspa(ExtractY(src),mode="absolute",expr="x 1 + 8 % 1 < x 8 % 1 < y 1 + 8 % 1 < y 8 % 1 < | | | range_max 0 ?")
     cleansed = NLMeans(ref, radius, block_size, ceil(block_size / 2.), h, ref, color)
     dif      = ex_makediff(ref, cleansed)
 #    dif      = BM3D_CUDA(dif, cleansed, radius=radius, th_mse=mse0, hard_thr=hard_thr, sigma=sigma, \
@@ -507,7 +516,7 @@ function oyster_Deblocking(clip src, clip ref, int "radius", float "h", float "s
     src      = FreqMerge(cleansed, src, nmod(block_size,2) + 1, lowpass)
     clp      = ex_merge(src, ref, msk, luma=True)
 
-    clp      = rgb ? OPP_to_RGB(clp) : clp
+    clp      = rgb ? OPP_to_RGB(clp).SMPTE_legal(true) : clp
     return clp }
 
 
@@ -532,7 +541,7 @@ function NLMeans(clip src, int d, int a, int s, float h, clip rclip, bool color)
 
     function duplicate(clip src, int d) {
         if (d > 0) {
-                blank   = ex_lut(src.trim(0,-1), "0", UV=1)
+                blank   = ex_lut(src.trim(0,-1), "0", UV=1, scale_input="none")
            for (i = 1, d, 1) {
                 blank   = blank + blank
             }
@@ -564,16 +573,16 @@ function ThrMerge(clip flt, clip src, clip "ref", float "thr", float "elast") {
     ref   = Defined(ref)   ? ref   : src
     elast = Defined(elast) ? elast : thr / 2.
 
-    BDif  = ex_lut(src, "0")
+    BDif  = ex_lut(src, "0", scale_input="none")
 #    PDif  = ex_lutxy  (flt, src, "x y -", clamp_float=true)
 #    PRef  = ex_lutxy  (flt, ref, "x y -", clamp_float=true)
-    PBLD  = ex_lutxyza(src, BDif, flt, ref, Format("z x - 0 max {thr} {elast} + a z - 0 max Z@ - 2 {elast} * / * y {elast} Z + {thr} - 2 {elast} * / * +"))
+    PBLD  = ex_lutxyza(src, BDif, flt, ref, Format("z x - 0 max {thr} {elast} + a z - 0 max Z@ - 2 {elast} * / * y {elast} Z + {thr} - 2 {elast} * / * +"), scale_input="none")
 #    NDif  = ex_lutxy  (flt, src, "y x -", clamp_float=true)
 #    NRef  = ex_lutxy  (flt, ref, "y x -", clamp_float=true)
-    NBLD  = ex_lutxyza(src, BDif, flt, ref, Format("x z - 0 max {thr} {elast} + a z - 0 max Z@ - 2 {elast} * / * y {elast} Z + {thr} - 2 {elast} * / * +"))
+    NBLD  = ex_lutxyza(src, BDif, flt, ref, Format("x z - 0 max {thr} {elast} + a z - 0 max Z@ - 2 {elast} * / * y {elast} Z + {thr} - 2 {elast} * / * +"), scale_input="none")
     BLD   = ex_makeadddiff(PBLD, NBLD, src)
 #    UDN   = ex_lutxyz (flt, ref, BLD, Format("x y - abs {thr} {elast} - > z x ?"))
-    clp   = ex_lutxyza(flt, ref, BLD, src, Format("x y - abs X@ {thr} {elast} + < X {thr} {elast} - > z x ? a ?"))
+    clp   = ex_lutxyza(flt, ref, BLD, src, Format("x y - abs X@ {thr} {elast} + < X {thr} {elast} - > z x ? a ?"), scale_input="none")
 
     return clp }
 
@@ -700,9 +709,11 @@ function MCSoothe(clip a, float "sigma", int "UV", bool "fulls") {
 
 function MSUDeCor(clip a, int "UV") {
 
-    UV = Default(UV, 3)
+    UV  = Default(UV, 3)
+    mat = color_propGet(a)
+
     #d=t.ConvertToRGB32(matrix="rec709").MSU_Smart_Deblocking(1, 1, 1, 1, 0, 50, 50).ConvertBackToYUY2(matrix="rec709").ConvertToYV12() #use if MPEG2
-    d  = a.ConvertToPlanarRGB().MSU_Smart_Deblocking(1, 1, 1, 1, 0, 50, 50).MatchClip(a)
+    d  = a.ConvertToPlanarRGB(matrix=propIDs[2]).MSU_Smart_Deblocking(1, 1, 1, 1, 0, 50, 50).MatchClip(a)
 
     s1 = ex_makediff(d, a, UV=uv).ex_boxblur(1, mode="mean", UV=uv)
 
@@ -714,7 +725,7 @@ function MSUDeCor(clip a, int "UV") {
 ##    SmoothDeblock 0.3 by Redford (redfordxx) (23-05-2006)
 ##    Port to ExTools (WIP)
 ##
-##    http://forum.doom9.org/showthread.php?t=111526
+##    https://forum.doom9.org/showthread.php?t=111526
 ##
 ##    issues and todo's:
 ##        Find best averaging weight matrices for combining DCT shifts (=minimize artefacts at high quants and increase sharpness)
@@ -901,12 +912,12 @@ function SmoothDeblock4(clip orig, int "passes", int "density", int "inclOrig", 
 
 ###
 #  SmoothD2c() Version a3
-#  http://avisynth.nl/index.php/SmoothD2
+#  https://avisynth.nl/index.php/SmoothD2
 #
 #  Dependencies
-#    SmoothD2.dll  available from http://sites.google.com/site/pavelsx2/
-#    aWarpSharp2.dll  available from http://sites.google.com/site/pavelsx2/
-#    MaskTools2.dll available   from http://avisynth.org/mediawiki/MaskTools2
+#    SmoothD2       https://avisynth.nl/index.php/SmoothD2
+#    aWarpSharp2    https://avisynth.nl/index.php/AWarpSharp2
+#    MaskTools2     https://avisynth.nl/index.php/MaskTools2
 #
 ###
 #  RESTRICTIONS
@@ -976,22 +987,22 @@ Function SmoothD2c(clip clp, int "quant", int "num_shift", int "Matrix", int "Qt
     ow  = clp.width()
     oh  = clp.height()
 
-    Assert( ( quant       >= 1  &&  quant       <=  31 ), chr(10) + "'quant' wrong value! [1-31]"           + chr(10))
-    Assert( ( num_shift   >= 1  &&  num_shift   <=   4 ), chr(10) + "'num_shift' wrong value! [1-4]"        + chr(10))
-    Assert( ( Matrix      >= 1  &&  Matrix      <= 110 ), chr(10) + "'Matrix' wrong value! [1-110]"         + chr(10))
-    Assert( ( Qtype       >= 0  &&  Qtype       <=   4 ), chr(10) + "'Qtype' wrong value! [0-4]"            + chr(10))
-    Assert( ( ZW          >= 0  &&  ZW          <=  16 ), chr(10) + "'ZW' wrong value! [1-16]"              + chr(10))
-    Assert( ( Cpr         >= 0  &&  Cpr         <=   6 ), chr(10) + "'Cpr' wrong value! [0-6]"              + chr(10))
-    Assert( ( cWarpToLuma >= 0  &&  cWarpToLuma <=   8 ), chr(10) + "'cWarpToLuma' wrong value! [0-8]"      + chr(10))
-    Assert( ( downSize    >= 1  &&  downSize    <=   4 ), chr(10) + "'downSize' wrong value! [1-4]"         + chr(10))
-    Assert( ( ncpu        >= 1  &&  ncpu        <=   4 ), chr(10) + "'ncpu' wrong value! [1-4]"             + chr(10))
-    Assert( ( ow          ==        nmod(ow,4)         ), chr(10) + "'clip width'  must be a multiple of 4" + chr(10))
-    Assert( ( oh          ==        nmod(oh,4)         ), chr(10) + "'clip height' must be a multiple of 4" + chr(10))
+    Assert( ( quant       >= 1  &&  quant       <=  31 ), chr(10) + "SmoothD2c: 'quant' wrong value! [1-31]"           + chr(10))
+    Assert( ( num_shift   >= 1  &&  num_shift   <=   4 ), chr(10) + "SmoothD2c: 'num_shift' wrong value! [1-4]"        + chr(10))
+    Assert( ( Matrix      >= 1  &&  Matrix      <= 110 ), chr(10) + "SmoothD2c: 'Matrix' wrong value! [1-110]"         + chr(10))
+    Assert( ( Qtype       >= 0  &&  Qtype       <=   4 ), chr(10) + "SmoothD2c: 'Qtype' wrong value! [0-4]"            + chr(10))
+    Assert( ( ZW          >= 0  &&  ZW          <=  16 ), chr(10) + "SmoothD2c: 'ZW' wrong value! [1-16]"              + chr(10))
+    Assert( ( Cpr         >= 0  &&  Cpr         <=   6 ), chr(10) + "SmoothD2c: 'Cpr' wrong value! [0-6]"              + chr(10))
+    Assert( ( cWarpToLuma >= 0  &&  cWarpToLuma <=   8 ), chr(10) + "SmoothD2c: 'cWarpToLuma' wrong value! [0-8]"      + chr(10))
+    Assert( ( downSize    >= 1  &&  downSize    <=   4 ), chr(10) + "SmoothD2c: 'downSize' wrong value! [1-4]"         + chr(10))
+    Assert( ( ncpu        >= 1  &&  ncpu        <=   4 ), chr(10) + "SmoothD2c: 'ncpu' wrong value! [1-4]"             + chr(10))
+    Assert( ( ow          ==        nmod(ow,4)         ), chr(10) + "SmoothD2c: 'clip width'  must be a multiple of 4" + chr(10))
+    Assert( ( oh          ==        nmod(oh,4)         ), chr(10) + "SmoothD2c: 'clip height' must be a multiple of 4" + chr(10))
 
 
    sd1 = clp
 
-   sd1 = (downSize    > 1) ? sd1.Lanczos4Resize(nmod(ow/downSize,32), nmod(oh/downSize,32)) : sd1
+   sd1 = (downSize    > 1) ? sd1.Lanczos4Resize(nmod(ow/float(downSize),32,64), nmod(oh/float(downSize),32,64)) : sd1
    sd1 = (cWarpToLuma > 0) ? sd1.colorWarpToLuma(strength=cWarpToLuma)    : sd1
 
    zw1 = (Cpr == 0)  ?  sd1.ex_Ylevels( 0, 1.0, 255, 0, 0, fs)  :  sd1.buildZmask(cpr=cpr)
@@ -1008,11 +1019,11 @@ Function SmoothD2c(clip clp, int "quant", int "num_shift", int "Matrix", int "Qt
    u2  = u2.SmoothD2(quant=quant, num_shift=num_shift, Matrix=Matrix, Qtype=Qtype, ZW=ZW, ZWmask=zwuv, ncpu=ncpu)
    v2  = v2.SmoothD2(quant=quant, num_shift=num_shift, Matrix=Matrix, Qtype=Qtype, ZW=ZW, ZWmask=zwuv, ncpu=ncpu)
 
-   u2 = (downSize > 1) ? u2.Lanczos4Resize(ow/2, oh/2) : u2
-   v2 = (downSize > 1) ? v2.Lanczos4Resize(ow/2, oh/2) : v2
+   u2 = (downSize > 1) ? u2.Lanczos4Resize(nmod(ow/2), nmod(oh/2)) : u2
+   v2 = (downSize > 1) ? v2.Lanczos4Resize(nmod(ow/2), nmod(oh/2)) : v2
 
-#   u2 = (downSize > 1) ? u2.bicubicResize(ow/2, oh/2) : u2
-#   v2 = (downSize > 1) ? v2.bicubicResize(ow/2, oh/2) : v2
+#   u2 = (downSize > 1) ? u2.bicubicResize(nmod(ow/2), nmod(oh/2)) : u2
+#   v2 = (downSize > 1) ? v2.bicubicResize(nmod(ow/2), nmod(oh/2)) : v2
 
    sd1 = YToUV(u2, v2).MergeLuma(clp)
 
@@ -1118,7 +1129,7 @@ function buildZmask(clip clp, int "Cpr", bool "fulls") {
 
     clp.SmoothD2(quant=31, num_shift=4, Matrix=29, Qtype=1, ZW=0, ZWce=1, ZWlmDark=0, ZWlmBright=255, ncpu=1)
     ex_invert()
-    ex_YlevelsS(90,1.01,240,0,255,fs) # This does a non linear range expansion see http://forum.doom9.org/showthread.php?t=79898
+    ex_YlevelsS(90,1.01,240,0,255,fs) # This does a non linear range expansion see https://forum.doom9.org/showthread.php?t=79898
     msk = ex_invert()
 
     ZWmask = (Cpr ==  0)  ?  clp
@@ -1156,7 +1167,7 @@ function colorWarpToLuma(clip clp, int "strength") {
 
     warpedColor = clp.aWarpSharp2(thresh=thresh, blur=blur, type=1, depth=14, chroma=4)
 
-    ex_merge(clp, clp, warpedColor, y=2, u=5, v=5) }
+    ex_merge(clp, clp, warpedColor, Y=2, UV=6) }
 
 
 # Reminder: Yexpr = "x a - b a - / 1 gamma / ^ d c - * c +"
@@ -1194,7 +1205,7 @@ function ex_YlevelsS(clip clp, int a, float gamma, int b, int c, int d, bool fs)
 #                                           #
 #############################################
 
-# http://forum.doom9.org/showthread.php?t=111526 redfordxx 23rd May 2006, 21:14
+# https://forum.doom9.org/showthread.php?t=111526 redfordxx 23rd May 2006, 21:14
 
 function SD_Matrix (clip clp, int "UV") {
 

@@ -1,20 +1,13 @@
+######################################################
 ###                                                 ##
 ###                                                 ##
-###                           1.0    (17-11-2011)   ##
-###                           4.5    (21-09-2015)   ##
-###                           4.6    (06-03-2019)   ##
-###                           4.7.1  (01-04-2021)   ## -> Finally fixed PadResize() (for real), added nnedi3 to RatioResize, added automatic dynamic cropping function: MatteCrop()
-###                           4.8.3  (20-05-2021)   ## -> Updated MatteCrop(), Ratioresize() and PadResize() and Overall improvements
-###                           5.0    (20-07-2021)   ## -> Removed legacy functions SpliceResize, Dither_addborders8 and LinearResize (superseeded by ConvertFormat)
-###                           5.1    (09-09-2021)   ## -> Maintenance update
-###   Resizers Functions Pack 6.1    (18-10-2021)   ## -> mmod() and nmod() functions. Replace PadMirror() with PadBorders(). Optimize MatteCrop()
+###   Resizers Functions Pack 7.1    (14-12-2021)   ##
 ###                                                 ##
 ###                      by Dogway (Jose Linares)   ##
 ###                                                 ##
 ### https://forum.doom9.org/showthread.php?t=182881 ##
 ###                                                 ##
 ######################################################
-
 
 
 ##############################
@@ -63,14 +56,15 @@
 
 function RatioResize(clip s, float "ratio", string "mode", int "PreW", int "PreH", int "mod", string "kernel", float "b", float "c", float "p") {
 
+    rgb   = isrgb(s)
     r     = Default(ratio,      0.5)
     mode  = Default(mode,       "%")
-    mod   = Default(mod,      isrgb(s) ? 1 : 2)
+    mod   = Default(mod, rgb ? 1 : 2)
     w     = Default(PreW,  s.width ())
     h     = Default(PreH,  s.height())
     kernel= Default(kernel,"spline36")
 
-    r = float(r)
+    r  = float(r)
 
     v  = (mode=="adjust2w")   ? h/(w/r)
     \  : (mode=="adjust2h")   ? w/(h/r)
@@ -88,14 +82,15 @@ function RatioResize(clip s, float "ratio", string "mode", int "PreW", int "PreH
     \  : (mode=="%")          ? "Vmod,nmod(h1,mod)"
     \  : (mode=="adjust2w")   ? "round(r),Vmod"
     \  : (mode=="adjust2h")   ? "Vmod,round(r)"
-    \  :  Assert(false, "Wrong Ratio mode")
+    \  :  Assert(false, "RatioResize: Wrong Ratio mode")
 
 
     kernel == "nnedi3" ? Eval("nnedi3_resize16(s," + String(op) + ")"    ) : \
     kernel == "gauss"  ? Eval(    "GaussResize(s," + String(op) + ",p=p)") : \
     kernel == "bicubic"? Eval(  "BicubicResize(s," + String(op) + ",b,c)") : \
-                         Eval(kernel + "Resize(s," + String(op) + ")"    )
-}
+                         Eval(kernel + "Resize(s," + String(op) + ")"    ) }
+
+
 
 ##############################
 ###
@@ -104,62 +99,56 @@ function RatioResize(clip s, float "ratio", string "mode", int "PreW", int "PreH
 ### Write target size and image will crop or pad...
 ### depending on source dimensions by adding black borders, mirroring borders or extending them depending on 'mode'.
 ###
-### bias:  From -100 to +100, to slide the frame within the resolution (ie. an asymmetrical matte)
+### bias:  From -width() to +width(), to slide the frame within the resolution (ie. an asymmetrical matte)
 ###
 ### *Color mode has two ways for inputs, the classical PC range based hexadecimal (see link below) or an alternative more intuitive way
 ###  by using an int array as string. For example for YUV TV Black you can input "$108080" or "[16,128,128]". Both modes are valid.
 ###
-function PadResize(clip c, int "width_dst", int "height_dst", int "mod", string "mode", float "biasW", float "biasH") {
+function PadResize(clip c, int "width", int "height", int "mod", string "mode", int "biasW", int "biasH") {
 
     c
     rgb = isRGB()
     w   = width()
     h   = height()
+    fch = isy() || rgb || is444()
 
-    width_dst  = Default(width_dst, w)
-    height_dst = Default(height_dst, h)
-    bw     = Default(biasW, 0.)
-    bh     = Default(biasH, 0.)
-    md     = Default(mode, rgb?"$000000":"$108080") # 'Dilate', 'Mirror' or color code (ie. "$108080" for YUV TV black or "$008080" for YUV PC black)
-    mod    = Default(mod, 2)
-	md     = LeftStr(md,1)=="[" ? ColortoHex(md) : md
+    wd     = Default(width,  w)
+    hd     = Default(height, h)
+    mod    = Default(mod,    fch ? 1 : 2)
+    bw     = Default(biasW,  0)
+    bh     = Default(biasH,  0)
+    # mode: 'Dilate', 'Mirror' or color code (ie. "$108080" for YUV TV black or "$008080" for YUV PC black)
 
-    fullchr = isy() ? true : isRGB(c) || ExtractU().width() == w
+    wm = nmod(wd,mod)
+    hm = nmod(hd,mod)
 
-    X = width_dst-w
-    Y = height_dst-h
+    # Crop or Pad
+    wc = wm > w
+    hc = hm > h
 
-    bw = bw>0 ? min(bw,100.) : max(bw,-100.)
-    bh = bh>0 ? min(bh,100.) : max(bh,-100.)
-    bw = (bw+100.)/200.
-    bh = (bh+100.)/200.
+    # Rounding
+    wp = abs(w - wm)/2.  wi = round(wp)%2
+    hp = abs(h - hm)/2.  hi = round(hp)%2
+    wh = ceil (Frac(wp))+floor(wp)
+    hh = ceil (Frac(hp))+floor(hp)
+    wl = floor(Frac(wp))+floor(wp)
+    hl = floor(Frac(hp))+floor(hp)
 
-    bw1 = int(round(w*bw))  bw2 = int(round(w*(1.-bw)))
-    bh1 = int(round(h*bh))  bh2 = int(round(h*(1.-bh)))
+    # Zeroing null transforms
+    wc1 = !wc ?  wh+wi : 0    wa1 =  wc ? wh+wi : 0
+    wc2 = !wc ? -wl+wi : 0    wa2 =  wc ? wl-wi : 0
+    hc1 = !hc ?  hh+hi : 0    ha1 =  hc ? hh+hi : 0
+    hc2 = !hc ? -hl+hi : 0    ha2 =  hc ? hl-hi : 0
 
-    bw1 = fullchr ? bw1 : bw1+bw1%2  bw2 = fullchr ? bw2 : bw2-bw2%2
-    bh1 = fullchr ? bh1 : bh1+bh1%2  bh2 = fullchr ? bh2 : bh2-bh2%2
+    bwa = abs (bw)
+    bha = abs (bh)
+    bw1 = sign(bw)<0 ? 0 : fch ? bwa : bwa+bwa%2
+    bw2 = sign(bw)>0 ? 0 : fch ? bwa : bwa-bwa%2
+    bh1 = sign(bh)<0 ? 0 : fch ? bha : bha+bha%2
+    bh2 = sign(bh)>0 ? 0 : fch ? bha : bha-bha%2
 
-
-    fh = abs(x/2.0)         fv = abs(y/2.0)
-
-    fh1 = int(floor(fh))    fh2 = int(ceil(fh))
-    fv1 = int(floor(fv))    fv2 = int(ceil(fv))
-
-    hsl = sign(x)>0 ? fullchr && mod == 1 ? fh1 : fh1-fh1%mod : 0
-    vst = sign(y)>0 ? fullchr && mod == 1 ? fv1 : fv1+fv1%mod : 0
-    hsr = sign(x)>0 ? fullchr && mod == 1 ? fh2 : fh2+fh2%mod : 0
-    vsb = sign(y)>0 ? fullchr && mod == 1 ? fv2 : fv2-fv2%mod : 0
-
-    LeftStr(md,1)!="$" ? PadBorders(hsl+bw1,vst+bh1,hsr+bw2,vsb+bh2,md)     : \
-                         AddBorders(hsl+bw1,vst+bh1,hsr+bw2,vsb+bh2,color_yuv = Eval(md))
-
-    hsl = sign(x)>0 ? 0 : fullchr && mod == 1 ? fh1 : fh1-fh1%mod
-    vst = sign(y)>0 ? 0 : fullchr && mod == 1 ? fv1 : fv1+fv1%mod
-    hsr = sign(x)>0 ? 0 : fullchr && mod == 1 ? fh2 : fh2+fh2%mod
-    vsb = sign(y)>0 ? 0 : fullchr && mod == 1 ? fv2 : fv2-fv2%mod
-
-    Crop(hsl+bw2,vst+bh2,-hsr-bw1,-vsb-bh1,true) }
+    PadBorders(wa1+bw1,ha1+bh1,wa2+bw2,ha2+bh2,mode)
+    Crop      (wc1+bw2,hc1+bh2,wc2-bw1,hc2-bh1,true) }
 
 
 
@@ -167,125 +156,174 @@ function PadResize(clip c, int "width_dst", int "height_dst", int "mod", string 
 ###
 ### PadBorders()
 ###
-### Superseeds Addborders(), old PadMirror() and Didée's Padding() (21-10-2012) (https://forum.doom9.org/showthread.php?p=1596804#post1596804)
+### Superseeds AddBorders(), old PadMirror() and Didée's Padding() (21-10-2012) (https://forum.doom9.org/showthread.php?p=1596804#post1596804)
 ### in one single filter.
-### In other words, with "mode" option you can dilate (extend), mirror, or add colored borders (http://avisynth.nl/index.php/Color_presets).
+### In other words, with "mode" option you can dilate (extend), mirror, or add colored borders (https://avisynth.nl/index.php/Color_presets).
 ###
-### 'Dilate' is slightly faster than 'Mirror' (and probably filter friendlier)
-###  Old PadMirror() itself was inspired by Didée's BorderMirror() (30-06-2004) (http://forum.doom9.org/showthread.php?p=518131#post518131)
+### 'Dilate' is slightly faster than 'Mirror' (and probably filtering friendlier)
+###  Old PadMirror() itself was inspired by Didée's BorderMirror() (30-06-2004) (https://forum.doom9.org/showthread.php?p=518131#post518131)
 ###
 ### *Color mode has two ways for inputs, the classical PC range based hexadecimal (see link above) or an alternative more intuitive way
 ###  by using an int array as string. For example for YUV TV Black you can input "$108080" or "[16,128,128]". Both modes are valid.
 ###
 function PadBorders(clip src, int "left", int "top", int "right", int "bottom", string "mode") {
 
-    rgb = isRGB(src)
-    isy = isy(src)
-
-    l  = Default( abs(left),   0 )
-    t  = Default( abs(top),    0 )
-    r  = Default( abs(right),  0 )
-    b  = Default( abs(bottom), 0 )
-    md = Default( mode, "Dilate" )  # 'Dilate', 'Mirror' or color code (ie. "$108080" for YUV TV black or "$008080" for YUV PC black)
-
-
-	md = LeftStr(md,1)=="[" ? ColortoHex(md) : md
-
-    l  = !rgb && !isy ? nmod(l,2) : l
-    t  = !rgb && !isy ? nmod(t,2) : t
-    r  = !rgb && !isy ? nmod(r,2) : r
-    b  = !rgb && !isy ? nmod(b,2) : b
-
     src
+    w   = width()
+    h   = height()
+    rgb = isRGB()
+    isy = isy()
+    fch = isy || rgb || is444()
+    mod = fch ? 1 : 2
+    fs  = propNumElements ("_ColorRange")  > 0 ? \
+          propGetInt      ("_ColorRange") == 0 : rgb
+
+    l  = Default( left,   0 )
+    t  = Default( top,    0 )
+    r  = Default( right,  0 )
+    b  = Default( bottom, 0 )
+    md = Default( mode, !rgb ? fs ? "$008080" : "$108080" : \
+                               fs ? "$000000" : "$101010" )  # 'Dilate', 'Mirror' or color code (ie. "$108080" for YUV TV black or "$008080" for YUV PC black)
+
+    md = LeftStr(md,1)=="[" ? ColortoHex(md) : md
+
+    l  = nmod(abs(l),mod)
+    t  = nmod(abs(t),mod)
+    r  = nmod(abs(r),mod)
+    b  = nmod(abs(b),mod)
 
     if (md=="mirror") {
 
-        top=(t  > 0) ? crop(0,0,0,-height()+t,true).flipvertical()  : last
+        top=(t  > 0) ? crop(0,0,0,-h+t,      true).flipvertical()   : last
             (t  > 0) ? stackvertical( top,src )                : last
         bot=(b  > 0) ? crop(0,height()-b,0,0,true).flipvertical()   : last
             (b  > 0) ? stackvertical( last,bot )               : last
         lft=(l  > 0) ? crop(0,0,-width()+l,0,true).fliphorizontal() : last
             (l  > 0) ? stackhorizontal(lft,last)               : last
-        rgh=(r  > 0) ? crop(width()-r,0,0,0,true).fliphorizontal()  : last
+        rgh=(r  > 0) ? crop(width()-r,0,0,0, true).fliphorizontal() : last
             (r  > 0) ? stackhorizontal(last,rgh)               : last
 
     } else if (md=="dilate") {
 
-        w   = width()
-        h   = height()
         PointResize(w+l+r, h+t+b, -l, -t, w+l+r, h+t+b+0.0001)
 
     } else if (LeftStr(md,1)=="$") {
 
-        rgb ? AddBorders(l,t,r,b, Eval(md))           : \
+        rgb ? AddBorders(l,t,r,b,             Eval(md)) : \
               AddBorders(l,t,r,b, color_yuv = Eval(md))
 
     } else {
 
-        Assert(false, "Wrong Pad mode")
+        Assert(false, "PadBorders: Wrong Pad mode")
 
     } }
 
 
 
 
-##############################
-### Adjust source to mod(n) size by adding or cropping borders. by Gavino
-### From this thread: http://forum.doom9.org/showthread.php?p=1453641#post1453641
-function mmod(clip c, int "modH", int "modV", string "mode", string "color")
-{
-    modH = Default(modH,        16)
-    modV = Default(modV,      modH)
-    mode = Default(mode,    "crop")      # "crop" or "add"
-    clr  = Default(color,"$108080")
-    bh = modH - ((c.Width() -1)%modH + 1)
-    bv = modV - ((c.Height()-1)%modV + 1)
-
-	clr = LeftStr(clr,1)=="[" ? ColortoHex(clr) : clr
-
-    l = bh/2
-       l = c.IsYUV() && l%2 != 0 ? l-1 : l
-    r = bh - l
-    t = bv/2
-       t = c.IsYV12() && t%2 != 0 ? t-1 : t
-    b = bv - t
-    (mode=="Add")  ? c.AddBorders(l,t,r,b,color_yuv=Eval(clr)) : \
-    (mode=="Crop") ? c.Crop      (l,t,-r,-b)         : \
-                     Assert(false, "Wrong mode")     }
-
-
 ###
 #
-#  nmod() - Rounding numbers by Dogway (18-10-2021)
+#  nmod() - Rounding numbers by Dogway (28-11-2021)
 #
 #  Description from SmoothD2c:
 #
-# "mod-4"   see "Crop restrictions" in http://avisynth.org/mediawiki/Crop
+# "mod-4"   see "Crop restrictions" in https://avisynth.nl/index.php/Crop
 #           nmod(n,4) is used in many scripts that do resizing.
 # "mod-8"   is used so that cropping will occur on luma block (8x8) boundaries
 #           and that resizing will produce an integer number of luma blocks.
 # "mod-16"  is used so that cropping will occur on YV12 chroma block (16x16) boundaries
 #           and that resizing will produce an integer number of chroma blocks.
 # "mod-m32" is used so that the zw1 mask can be resized to the size of the u and v planes.
+#
+# mod:     Rounding to defined 'mod' value
+# min:     Rounding never goes below the 'min' value. Usually you want to set this to mod*2
+# dec:     Rounding to defined decimal number. Also works for mod > 1 (rounding is done prior to mod)
+# bankers: By default 2.5 rounds to 3. With 'bankers' half float values round towards 0, so 2 in this case
+#
+# Examples:
+#   nmod(3)                    -> 4
+#   nmod(2,4)                  -> 4
+#   nmod(2,4,    bankers=true) -> 0
+#   nmod(2,4,1,  bankers=true) -> 4
+#   nmod(2,4,4.1,bankers=true) -> 4.1
+#   nmod(pi, dec=2)            -> 3.14
+#
+function nmod(val n, int "mod", val "min", int "dec", bool "bankers") {
 
-function  nmod(float n, int "mod", int "min", bool "bankers") {
-
-    mod = Default(mod, 2)
-    bnk = Default(bankers, false)    # Use bankers' rounding. Requires SimilarityMetrics
     dm  = Defined(min)               # Set 'min' to 16 for at-least n=16
-    un  = Undefined()
+    dc  = Defined(dec)
+    mod = Default(mod, dc ? 1 : 2)
+    mod = max(mod, 1)
+    bnk = Default(bankers, false)    # Use bankers' rounding. Requires SimilarityMetrics
+    und = Undefined()
+    dec = dc ? "%0."+string(dec)+"f"  : und
+    n   = dc ? Eval(String(n,   dec)) : float(n)
+    mnf = dc ? Eval(String(min, dec)) : min
+    mnf = dm ? mnf : und
 
-    return ( dm && nmod(n,mod,un,bnk) < max(mod,min) ? max(mod,min)                  : \
-              bnk && mod!=1                          ? RoundHalfToEven_mod(n, mod)   : \
-                                                       round( float(n) / mod ) * mod ) }
+         Assert(isFloat(n),   "nmod: 'n' is not a number")
+    dm ? Assert(isFloat(min), "nmod: 'min' is not a number") : nop()
+
+    return (  dc && mod == 1                       ? Eval(String(dm ? max(min,n) : n, dec)) : \
+             !dc && dm && nmod(n,mod,und,dec,bnk)  < max(mod,min)   ? max(mod,mnf)          : \
+              bnk                                  ? RoundHalfToEven_mod(n, mod)            : \
+                                                     round( n / mod ) * mod )               }
 
 
 
-# Converts a "stringed" color array into an hexadecimal string
+##############################
+### Adjust source to mod(n) size by adding or cropping borders.
+### It's a simpler, more straight-forward alternative of PadResize()
+###
+### modes:
+###     "auto" - will crop or pad depending on minimal transform (Default)
+###     "crop" - will force cropping to mod
+###     "pad"  - will force padding  to mod
+function mmod(clip c, int "modH", int "modV", string "mode", string "borders") {
+
+    c
+    rgb = isRGB()
+    fch = rgb || isy() || is444()
+    w   = width()
+    h   = height()
+
+    mdh    = Default(modH, fch ? 1 : 2)
+    mdv    = Default(modV, mdh)
+    md     = Default(mode, "auto")
+    # borders: 'Dilate', 'Mirror' or color code (ie. "$108080" for YUV TV black or "$008080" for YUV PC black)
+
+    wm = nmod(w,mdh)
+    hm = nmod(h,mdv)
+
+    # Crop or Pad
+    wc = md=="auto" ? wm < w : md=="crop"
+    hc = md=="auto" ? hm < h : md=="crop"
+
+    # Rounding
+    wp = abs(w - wm)/2.  wi = round(wp)%2
+    hp = abs(h - hm)/2.  hi = round(hp)%2
+    wh = ceil (Frac(wp))+floor(wp)
+    hh = ceil (Frac(hp))+floor(hp)
+    wl = floor(Frac(wp))+floor(wp)
+    hl = floor(Frac(hp))+floor(hp)
+
+    # Zeroing null transforms
+    wc1 = wc ?  wh+wi : 0    wa1 = !wc ? wh+wi : 0
+    wc2 = wc ? -wl+wi : 0    wa2 = !wc ? wl-wi : 0
+    hc1 = hc ?  hh+hi : 0    ha1 = !hc ? hh+hi : 0
+    hc2 = hc ? -hl+hi : 0    ha2 = !hc ? hl-hi : 0
+
+    PadBorders(wa1,ha1,wa2,ha2,borders)
+    Crop      (wc1,hc1,wc2,hc2,   true) }
+
+
+
+# Converts a 'string' type color array into an hexadecimal string
 # "[16,128,128]" -> "$108080"
 function ColortoHex(string color) {
     cl = Eval(Color)
     Return "$"+string(Hex(cl[0],2))+string(Hex(cl[1],2))+string(Hex(cl[2],2)) }
+
 
 
 
@@ -315,10 +353,10 @@ function ColortoHex(string color) {
 ### Dependencies:
 ### ------------
 ###   ExTools
-###   ClipBoard          (http://avisynth.nl/index.php/ClipBoard)
+###   ClipBoard          (https://avisynth.nl/index.php/ClipBoard)
 ###   SCSelect_HBD v0.02 (https://github.com/Dogway/Avisynth-Scripts/tree/master/EX%20mods)
 ###   MasksPack          (https://github.com/Dogway/Avisynth-Scripts)
-###   EdgeFixer          (http://avisynth.nl/index.php/EdgeFixer)
+###   EdgeFixer          (https://avisynth.nl/index.php/EdgeFixer)
 ###
 ###
 ### i.e.
@@ -326,21 +364,23 @@ function ColortoHex(string color) {
 ###
 ###############################################################################
 
-function MatteCrop(clip s, int "width", int "height", float "thr", bool "CropMore", bool "Moving", int "ScanW", int "ScanH", int "mode", float "SC_thr", string "kernel", float "b", float "c", float "p", bool "fulls") {
+function MatteCrop(clip s, int "width", int "height", float "thr", bool "CropMore", bool "Moving", int "ScanW", int "ScanH", int "mode", float "SC_thr", string "kernel", float "b", float "c", float "p") {
 
     s
+    rgb    = isRGB()
+    isy    = isy()
+    fch    = isy || rgb || is444()
+    bi     = BitsPerComponent(s)
     w      = width()
     h      = height()
 
-    isy     = isy()
-    fullchr = !isy ? ExtractU().width() == w : true
 
     nw     = Default(width, w)
     nh     = Default(height,h)
     addw   = Default(ScanW,round((w/8.)))
     addh   = Default(ScanH,round((h/4.)))
     Mot    = Default(Moving, False)                # If the matte is moving (sliding) this enables pixel level accuracy.
-    CM     = Default(CropMore, Mot || fullchr)     # In case of odd cropping, either crop 1 pixel out or leave 1 pixel of the border
+    CM     = Default(CropMore, Mot || fch)         # In case of odd cropping, either crop 1 pixel out or leave 1 pixel of the border
     thr    = Default(thr, Mot ? 16.3 : 16.0)       # Threshold, pixel values same or below this will be considered borders
     mode   = Default(mode, 2)                      # 0: center+pad 1: crop to minimum (WIP) 2: resize to maximum 3: hybrid 0-2 (auto)
     SC_thr = Default(SC_thr, 3.5)                  # Scene Change detection threshold
@@ -348,11 +388,10 @@ function MatteCrop(clip s, int "width", int "height", float "thr", bool "CropMor
     b      = Default(b, 0.0)
     c      = Default(c, 0.75)                      # Precise Bicubic by default (fast and HQ)
     p      = Default(p, 100.0)
-    fs     = Default(fulls, false)
-    bi     = BitsPerComponent(s)
+    fs     = rgb
 
-    addw==0 ? Assert( addh>0, "You need to scan borders for at least one of the dimension") : nop()
-    addh==0 ? Assert( addw>0, "You need to scan borders for at least one of the dimension") : nop()
+    addw==0 ? Assert( addh>0, "MatteCrop: You need to scan borders for at least one of the dimension") : nop()
+    addh==0 ? Assert( addw>0, "MatteCrop: You need to scan borders for at least one of the dimension") : nop()
 
     thr    = ex_bs(thr, 8, bi, fulls=fs)
     addwz  = addw > 0
@@ -364,12 +403,12 @@ function MatteCrop(clip s, int "width", int "height", float "thr", bool "CropMor
     avg  = avg.TemporalSoften(10,255,255,10,2)
     avg  = avg.RatioResize(float(w),"adjust2w",kernel="bicubic")
 
-    avgc = ex_merge(avgY, avg, BoxMask(s,addw,w-addw,addh,h-addh,show=true)).ConvertBits(bi,dither=-1,fulls=fs)
+    avgc = ex_merge(avgY, avg, BoxMask(s,addw,w-addw,addh,h-addh)).ConvertBits(bi,dither=-1,fulls=fs)
 
     SC   = SCSelect_HBD(avg,dfactor=SC_thr,mindif=1.0)
 
     # Add detection of credits and bumpers
-    ScriptClip(s, function [s,SC,avgc,addw,addh,addwz,addhz,w,h,thr,CM,Mot,fullchr,kernel,b,c,p,mode] () {
+    ScriptClip(s, function [s,SC,avgc,addw,addh,addwz,addhz,w,h,thr,CM,Mot,fch,kernel,b,c,p,mode] () {
 
         step  = Mot ? 1 : 2
 
@@ -428,7 +467,7 @@ function MatteCrop(clip s, int "width", int "height", float "thr", bool "CropMor
 
         MotW = Mot ? round(w-x1-x2) : nop()
         MotH = Mot ? round(h-y1-y2) : nop()
-        Mot ? spline36resize(s,fullchr?MotW:nmod(MotW,2),fullchr?MotH:nmod(MotH,2),src_left=x1,src_width=-x2,src_top=y1,src_height=-y2) : \
+        Mot ? spline36resize(s,fch?MotW:nmod(MotW,2),fch?MotH:nmod(MotH,2),src_left=x1,src_width=-x2,src_top=y1,src_height=-y2) : \
               crop(s,x1,y1,-x2,-y2,true)
 
         mode == 0 ? PadResize(w,h) : \
