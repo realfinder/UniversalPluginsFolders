@@ -4,50 +4,49 @@ LoadPlugin(AviSynthPluginsDir + "avsplus/avsresize.dll")
         z_ConvertFormat(clip, width, height, pixel_type, colorspace_op, chromaloc_op, interlaced, src_left, src_top, src_width, src_height, resample_filter, filter_param_a, filter_param_b, resample_filter_uv, filter_param_a_uv, filter_param_b_uv, dither_type, cpu_type, nominal_luminance, approximate_gamma, use_props)
 }
 
-function z_PointResize(clip clip, int "target_width", int "target_height", float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
+function z_PointResize(clip clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
 {
 LoadPlugin(AviSynthPluginsDir + "avsplus/avsresize.dll")
         z_PointResize(clip, target_width, target_height, src_left, src_top, src_width, src_height, chromaloc_op, dither)
 }
 
-function z_BilinearResize(clip clip, int "target_width", int "target_height", float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
+function z_BilinearResize(clip clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
 {
 LoadPlugin(AviSynthPluginsDir + "avsplus/avsresize.dll")
         z_BilinearResize(clip, target_width, target_height, src_left, src_top, src_width, src_height, chromaloc_op, dither)
 }
 
-
-function z_BicubicResize(clip clip, float "b", float "c", int "target_width", int "target_height", float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
+function z_BicubicResize(clip clip, int target_width, int target_height, float "b", float "c", float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
 {
 LoadPlugin(AviSynthPluginsDir + "avsplus/avsresize.dll")
-        z_BicubicResize(clip, b, c, target_width, target_height, src_left, src_top, src_width, src_height, chromaloc_op, dither)
+        z_BicubicResize(clip, target_width, target_height, b, c, src_left, src_top, src_width, src_height, chromaloc_op, dither)
 }
 
-function z_LanczosResize(clip clip, int "target_width", int "target_height", float "src_left", float "src_top", float "src_width", float "src_height", int "taps", string "chromaloc_op", string "dither")
+function z_LanczosResize(clip clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", int "taps", string "chromaloc_op", string "dither")
 {
 LoadPlugin(AviSynthPluginsDir + "avsplus/avsresize.dll")
         z_LanczosResize(clip, target_width, target_height, src_left, src_top, src_width, src_height, taps, chromaloc_op, dither)
 }
 
-function z_Lanczos4Resize(clip clip, int "target_width", int "target_height", float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
+function z_Lanczos4Resize(clip clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
 {
 LoadPlugin(AviSynthPluginsDir + "avsplus/avsresize.dll")
         z_Lanczos4Resize(clip, target_width, target_height, src_left, src_top, src_width, src_height, chromaloc_op, dither)
 }
 
-function z_Spline16Resize(clip clip, int "target_width", int "target_height", float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
+function z_Spline16Resize(clip clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
 {
 LoadPlugin(AviSynthPluginsDir + "avsplus/avsresize.dll")
         z_Spline16Resize(clip, target_width, target_height, src_left, src_top, src_width, src_height, chromaloc_op, dither)
 }
 
-function z_Spline36Resize(clip clip, int "target_width", int "target_height", float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
+function z_Spline36Resize(clip clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
 {
 LoadPlugin(AviSynthPluginsDir + "avsplus/avsresize.dll")
         z_Spline36Resize(clip, target_width, target_height, src_left, src_top, src_width, src_height, chromaloc_op, dither)
 }
 
-function z_Spline64Resize(clip clip, int "target_width", int "target_height", float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
+function z_Spline64Resize(clip clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
 {
 LoadPlugin(AviSynthPluginsDir + "avsplus/avsresize.dll")
         z_Spline64Resize(clip, target_width, target_height, src_left, src_top, src_width, src_height, chromaloc_op, dither)
