@@ -1,6 +1,6 @@
 ###                                                            ##
 ###                                                            ##
-###           MasksPack 4.5 By Dogway  (22-12-2021)            ##
+###           MasksPack 5.0 By Dogway  (09-01-2022)            ##
 ###                                                            ##
 ###      https://forum.doom9.org/showthread.php?t=182881       ##
 ###                                                            ##
@@ -19,9 +19,22 @@
 ###         ResizersPack
 ###         GradePack (for show=true)
 ###
+### Function Definition:
+###    (
+###    clip,
+###    int x1=0 (0 to 1920 by 1),
+###    int x2=0 (0 to 1920 by 1),
+###    int y1=0 (0 to 1080 by 1),
+###    int y2=0 (0 to 1080 by 1),
+###    bool "invert"=false,
+###    bool "show"=false,
+###    bool "tv_out"=false,
+###    bool "UV"=3 (1 to 128 by 1),
+###    )
+###
 ###########################
 
-function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", bool "invert", bool "show") {
+function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", bool "invert", bool "show", bool "tv_out") {
 
     clp
     rgb     = isRGB()
@@ -33,6 +46,7 @@ function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", boo
     y1      = Default(y1,0)
     y2      = Default(y2,0)
     in      = Default(invert, false)
+    tv      = Default(tv_out, false)
     show    = Default(show,   false)
     UV      = Default(UV,3)
 
@@ -46,8 +60,8 @@ function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", boo
 
     UV = UV!=3 && !rgb ? 128 : UV
 
-    wh = !in ? "range_max" : "0"
-    bl =  in ? "range_max" : "0"
+    wh = !in ? tv ? "ymax" : "range_max" : tv ? "ymin" : "0"
+    bl =  in ? tv ? "ymax" : "range_max" : tv ? "ymin" : "0"
     x  = is422() || is420() ? 2. : isYV411() ? 4. : 1
     y  = is420()            ? 2. :                  1
 
@@ -57,9 +71,9 @@ function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", boo
     Luma = Format("x {x1}  >= x {x2}  <= & y {y1}  >= y {y2}  <= & & "+wh+" "+bl+" ?")
     Chrm = Format("x {x1c} >= x {x2c} <= & y {y1c} >= y {y2c} <= & & "+wh+" "+bl+" ?")
 
-    ex_lutspa(mode="absolute", expr=Luma, cexpr=Chrm, UV=UV)
+    ex_lutspa(mode="absolute", expr=Luma, cexpr=Chrm, UV=UV, fulld=!tv)
 
-    !show ? last : ex_blend(clp,last,"softlight",0.5) }
+    !show ? last : ex_blend(clp,last,"softlight",0.5,tv_range=tv) }
 
 
 
@@ -84,26 +98,39 @@ function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", boo
 ###     filt = YourFilter()
 ###     flatmask(1,filt=filt) # to merge with filtered clip
 ###
+###
+### Function Definition:
+###    (
+###    clip,
+###    float rad=3.0 (1.0 to 4.0 by 0.5),
+###    float "scale"=5.0 (1.0 to 10.0 by 0.5),
+###    int "lo"=4 (0 to 32 by 1),
+###    int "MSR"=40 (0 to 128 by 1),
+###    bool "invert"=false,
+###    bool "show"=false,
+###    )
+###
 ###########################
 
-function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip "filt", bool "show") {
+function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip "filt", bool "invert", bool "show") {
 
     a
     rgb   = isRGB()
-    bi    = BitsPerComponent()
     w     = width ()
     h     = height()
-    fs    = propNumElements ("_ColorRange")  > 0 ? \
-            propGetInt      ("_ColorRange") == 0 : rgb
+    bi    = BitsPerComponent()
+    fs    = propNumElements("_ColorRange")  > 0 ? \
+            propGetInt     ("_ColorRange") == 0 : rgb
 
-    isHD  = (w > 1099 ||  h >  599)
-    isUHD = (w > 2599 ||  h > 1499)
+    isHD  = (w > 1099 || h >  599)
+    isUHD = (w > 2599 || h > 1499)
 
     rd    = Default(rad, isHD?3:1)   # 1 or 2 for SD, 3 for HD and >=4 for 1080p or higher. 0 is a plain edge mask (ex_edge("qprewitt") )
     scl   = Default(scale,      5)   # Scale of the mask. Increase to convert edge mask to a flat mask
     lo    = Default(lo,         4)   # Clip pixels under this value
     lvl   = Default(MSR,       40)   # Low level for ex_retinex normalization
     sh    = Default(show,   false)   # True to show mask in split view
+    in    = Default(invert, false)
     fil   = Defined(filt)
 
     !isy() ? ExtractY() : last
@@ -129,7 +156,7 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
     xx2=xx2.ex_lut(Format("x[1,1]  x[-1,-1] -"))
     yy2=    ex_lut(Format("x[1,-1] x[-1,1]  -"))
     yy2=yy2.ex_lutxyza(xx1,yy1,xx2,            \
-                   Format("x[1,-1] x[-1,1] - 0 max dup * y dup * z dup * a dup * + + + sqrt {scl} * dup {lo} {scl} * > swap 0 ?"))
+                   Format("x[1,-1] x[-1,1] - 0 max dup * y dup * z dup * a dup * + + + sqrt {scl} * dup {lo} {scl} * > swap 0 ?"+(in && rd==1 ? " range_max swap -" : "")))
 
     # Pre for 'Fill holes'
     ex_contrast(scl>9?yy2.ex_median("median"):yy2,1,pivot=80,tv_range=false)
@@ -143,11 +170,11 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
     ex_lutxy(MSR,last,Format("x[-1,-1] A@ x[-1,0] x[-1,1] F@ + + x[1,-1] C@ - x[1,0] - x[1,1] H@ - dup *
                               A C x[0,-1] + + F - H - x[0,1] - dup * + sqrt {lo} 2.5 * - {rd} 3 / 1 + * y max" ))
     # Close gaps
-    ex_luts(     mode="avg", pixels=ex_shape(ceil(rd/2.), mode="ring"), exprf="dup dup x > swap 128 > & swap 1.15 * x ?")
+    ex_luts(mode="avg", pixels=ex_shape(ceil(rd/2.), mode="ring"), exprf="dup dup x > swap 128 > & swap 1.15 * x ?"+(in ? " range_max swap -" : ""))
 
     rd  = round(rd)
-    rd == 1 ? yy2                          : \
-    rd == 0 ? ex_edge(MSR,"qprewitt")      : last                                # maybe add back qprewitt on top for rd==1
+    rd == 1 ? yy2                               : \
+    rd == 0 ? ex_edge(MSR,"qprewitt",invert=in) : last                           # Maybe add back qprewitt on top for rd==1
 
     !isHD   ? BicubicResize(w,h,-0.5,0.25) : ex_smooth(2, mode="SG", sharp=true) # Clean up result. No need when resizing down
      isUHD  ? BicubicResize(w,h,1/3.,1/3.) : last
@@ -186,6 +213,15 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
 ### Useful to protect dark/bright areas from certain filters without
 ### a hard threshold like ex_binarize()
 ###
+###
+### Function Definition:
+###    (
+###    clip,
+###    int "lo"=24 (0 to 255 by 1),
+###    int "hi"=48 (0 to 255 by 1),
+###    bool "invert"=false,
+###    )
+###
 ##############################################################
 
 function LumaMask(clip a, int "lo", int "hi", bool "invert", int "UV") {
@@ -212,7 +248,7 @@ function LumaMask(clip a, int "lo", int "hi", bool "invert", int "UV") {
                    Format("0         range_max {LO} {HI} - / x {LO} - * - "+bi32)
 
     str    = ex_dlut(code, bi, true)
-    cstr   = ex_UVexpr("", UV, bi, rgb, true)
+    cstr   = ex_UVexpr("", max(7,UV), bi, rgb, true)
 
     isy     ?  Expr(a, str,       lut=lut) : \
     UV == 1 ?  Expr(a, str, "",   lut=lut) : \

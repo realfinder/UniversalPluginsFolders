@@ -74,3 +74,5 @@ hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir +
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/ChromaShiftSP2.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/LWLInfo.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/retinex_edgemask.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/ssubsampling_convert_plus.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/GradFun3DBmod.avsi") : nop() : nop()
