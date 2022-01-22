@@ -173,6 +173,9 @@ Import(AviSynthPluginsDir + "25/STpresso.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/ChubbyRain2.avsi") : Import(AviSynthPluginsDir + "avsplus/ChubbyRain2.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/ssubsampling_convert_plus.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/GradFun3DBmod.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/Cube.avsi")
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/BalanceBorders.avsi") : Import(AviSynthPluginsDir + "avsplus/bborders.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/bbmodY.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")
