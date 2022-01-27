@@ -3,6 +3,7 @@ LoadPlugin(AviSynthPlugins64PDir + "any/manyPlus.dll")
 LoadPlugin(AviSynthPlugins64PDir + "any/TxPlus.dll")
 hashasalpha = InternalFunctionExists("hasalpha")
 hasIsVersionOrGreater = InternalFunctionExists("IsVersionOrGreater")
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/FFMS2.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,6) ? IsVersionOrGreater(3,7,1) ? import(AviSynthPlugins64PDir + "36x/vsLGhost.avsi") : import(AviSynthPlugins64PDir + "36x/vsLGhost70.avsi") : nop() : nop()
 hashasalpha ? import(AviSynthPlugins64PDir + "mt/avsresize.avsi") : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,6) ? import(AviSynthPlugins64PDir + "36x/Butteraugli.avsi") : nop() : nop()
@@ -46,17 +47,12 @@ hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir +
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/DeStripe.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/MCaWarpSharp4.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/ScSelect_HBD.avsi") : nop() : nop()
-hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/SimilarityMetrics.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/ChubbyRain2.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/FixBrightnessProtect3.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/Fixer.avsi") : nop() : nop()
-hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/GMSD.avsi") : nop() : nop()
-hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/IQA_downsample.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/MCTD.avsi") : nop() : nop()
-hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/MDSI.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/Offset_video.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/RoundHalfToEven.avsi") : nop() : nop()
-hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/SSIM_downsample.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/Tonemapper.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/bborders.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/bbmodY.avsi") : nop() : nop()
@@ -65,7 +61,6 @@ hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir +
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/LinesLumaDiff.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/solarCurve.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/spline36resizemod.avsi") : nop() : nop()
-hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/vsSSIM.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/AutoResize.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/AddBordersMod.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/AnimeMask.avsi") : nop() : nop()
@@ -76,3 +71,9 @@ hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir +
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/retinex_edgemask.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/ssubsampling_convert_plus.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/GradFun3DBmod.avsi") : nop() : nop()
+#hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/MDSI.avsi") : nop() : nop() #SimilarityMetrics
+#hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/GMSD.avsi") : nop() : nop() #SimilarityMetrics
+#hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/IQA_downsample.avsi") : nop() : nop() #SimilarityMetrics
+#hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/SSIM_downsample.avsi") : nop() : nop() #SimilarityMetrics
+#hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/vsSSIM.avsi") : nop() : nop() #SimilarityMetrics
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/SimilarityMetrics.avsi") : nop() : nop()

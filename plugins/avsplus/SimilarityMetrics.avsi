@@ -1,6 +1,6 @@
 #############################################################################
 ###                                                                       ###
-###        Similarity Metrics Pack v2.2  (13-01-2022)                     ###
+###        Similarity Metrics Pack v2.4  (25-01-2022)                     ###
 ###                                                                       ###
 ###        Collection of metric functions for AviSynth+                   ###
 ###            Ported by Asd-g from VapourSynth                           ###
@@ -41,7 +41,7 @@ Ref:
 */
 
 
-### Requirements - AviSynth+ 3.7.1+, fmtconv and ExTools.
+### Requirements - AviSynth+ 3.7.1+, ExTools and fmtconv (for downsample=true)
 
 
 ### Usage ###
@@ -95,14 +95,10 @@ function GMSD(clip dist, clip ref, bool "downsample", float "c", bool "show_map"
     clip1 = dist
     clip2 = ref
 
-    w1 = clip1.Width ()
-    h1 = clip1.Height()
-    w2 = clip2.Width ()
-    h2 = clip2.Height()
-
-    Assert(PixelType(clip1) == PixelType(clip2),              "GMSD: clip1 and clip2 must be of the same format")
-    Assert(w1 == w2 && h1 == h2,                              "GMSD: clip1 and clip2 must be of the same width and height")
-    Assert((y && !u && !v)||(!y && u && !v)||(!y && !u && v), "GMSD: only one plane must be processed")
+    Assert(IsVersionOrGreater(3,7,1),                                         "GMSD: Update AviSynth+ version")
+    Assert(PixelType(clip1) == PixelType(clip2),                              "GMSD: clip1 and clip2 must be of the same format")
+    Assert(clip1.Width() == clip2.Width() && clip1.Height() == clip2.Height(),"GMSD: clip1 and clip2 must be of the same width and height")
+    Assert((y && !u && !v)||(!y && u && !v)||(!y && !u && v),                 "GMSD: only one plane must be processed")
 
     clip1 = y ? ExtractY(clip1) : u ? ExtractU(clip1) : ExtractV(clip1)
     clip2 = y ? ExtractY(clip2) : u ? ExtractU(clip2) : ExtractV(clip2)
@@ -162,7 +158,7 @@ Ref:
 */
 
 
-### Requirements - AviSynth+ 3.7.1+, ExTools, TransformsPack.
+### Requirements - AviSynth+ 3.7.1+, ExTools, TransformsPack and fmtconv (for downsample=true)
 
 
 ### Usage ###
@@ -175,18 +171,18 @@ Ref:
 #---------------
 # clip2: The second clip, to be compared with the first one.
 #---------------
-# down_scale (default 1): Factor of downsampling before quality assessment.
+# downsample (default false): Whether to average the clips over local 2x2 window and downsample by a factor of 2 before calculation.
 #---------------
-# alpha (default 0.6): Weight used to merge gradient similarity (GS) map and chromaticity similarity (CS) map.
+# alpha (default 0.6): Weight used to merge Gradient Similarity (GS) map and Chromaticity Similarity (CS) map.
 #---------------
-# show_map (default false): Whether to return gradient similarity (GS), chromaticity similarity (CS) and GCS (linear combination of CS and GCS) maps. If it is true, interleaved clip of gs, cs, gcs will be returned. If it false, clip1 will be returned.
+# show_map (default false): Whether to return Gradient Similarity (GS), Chromaticity Similarity (CS) and pooled Gradient-Chromacity Similarity (GCS -linear combination of CS and GS-) maps. If it is true, interleaved clip of GS, CS, GCS will be returned. If it false, clip1 will be returned.
 #---------------
 # show (default 0): Decides output form. 0 returns 'distorted' with frameprops, 1 returns 'reference' with frameprops. 2 returns 'distorted' subtitled with MDSI value and frameprops,
 
 
 ### Changelog ###
 #---------------
-# Ported to ExTools and TransformsPack (131% speed gain) by Dogway. Also implemented back IQA downsample from the official paper.
+# Ported to ExTools and TransformsPack (137% speed gain) by Dogway. Also implemented back IQA downsample from the official paper.
 #---------------
 # Changed global scope of gcs to local.
 #---------------
@@ -209,13 +205,9 @@ function MDSI(clip dist, clip ref, bool "downsample", float "alpha", bool "show_
     clip1 = dist
     clip2 = ref
 
-    w1 = clip1.Width ()
-    h1 = clip1.Height()
-    w2 = clip2.Width ()
-    h2 = clip2.Height()
-
-    Assert(PixelType(clip1) == PixelType(clip2) && (IsPlanarRGB(clip1) || IsPlanarRGBA(clip1)), "MDSI: clip1 and clip2 must be in the same format and must be in planar RGB format")
-    Assert(w1 == w2 && h1 == h2,                                                                "MDSI: clip1 and clip2 must be of the same width and height")
+    Assert(IsVersionOrGreater(3,7,1),                                                           "MDSI: Update AviSynth+ version")
+    Assert(PixelType(clip1) == PixelType(clip2) && (IsPlanarRGB(clip1) || IsPlanarRGBA(clip1)), "MDSI: clip1 and clip2 must be in planar RGB format")
+    Assert(clip1.Width() == clip2.Width() && clip1.Height() == clip2.Height(),                  "MDSI: clip1 and clip2 must be of the same width and height")
 
     c1 = 140 / pow(255, 2)
     c2 = 55  / pow(255, 2)
@@ -227,20 +219,22 @@ function MDSI(clip dist, clip ref, bool "downsample", float "alpha", bool "show_
     down1 = down1.ConvertBits(bi, fulls=!downscl ? fs : true, fulld=true).ExtractClip()
     down2 = down2.ConvertBits(bi, fulls=!downscl ? fs : true, fulld=true).ExtractClip()
 
-    l1  = DotClipA(down1,[0.298903,0.586620,0.114477])  # Consider converting properly in linear light with greyscale_rgb()
-    l2  = DotClipA(down2,[0.298903,0.586620,0.114477])  # Consider converting properly in linear light with greyscale_rgb()
-    g_f = ex_edge(Merge(l1, l2),  "qprewitt", 0, 255)
+    l1   = DotClipA(down1,[0.298903,0.586620,0.114477])  # Consider converting properly in linear light with greyscale_rgb()
+    l2   = DotClipA(down2,[0.298903,0.586620,0.114477])  # Consider converting properly in linear light with greyscale_rgb()
+    l1l2 = Merge(l1, l2)
 
-    # HVS (Human Visual System) based gradient similarity
-    gs_hvs = ex_lutxyz(l1, l2, g_f, Format("f32 x[-1,-1] A@ x[-1,0] x[-1,1] F@ + + x[1,-1] C@ - x[1,0] - x[1,1] H@ - dup *
+    # HVS (Human Visual System) based Gradient Similarity (GS)
+    gs_hvs = ex_lutxyz(l1, l2, l1l2,Format("f32 z[-1,-1] A@ z[-1,0] z[-1,1] F@ + + z[1,-1] C@ - z[1,0] - z[1,1] H@ - dup *
+                                                A C z[0,-1] + + F - H - z[0,1] - dup * + sqrt Z^
+                                                x[-1,-1] A@ x[-1,0] x[-1,1] F@ + + x[1,-1] C@ - x[1,0] - x[1,1] H@ - dup *
                                                 A C x[0,-1] + + F - H - x[0,1] - dup * + sqrt X^
                                                 y[-1,-1] A@ y[-1,0] y[-1,1] F@ + + y[1,-1] C@ - y[1,0] - y[1,1] H@ - dup *
                                                 A C y[0,-1] + + F - H - y[0,1] - dup * + sqrt Y@
                                                 X * 2 * {c1} + X dup * XX@ Y dup * YY@ {c1} + + /
-                                              X z * 2 * {c2} +         XX  z dup * ZZ@ {c2} + + / +
-                                              Y z * 2 * {c2} +         YY          ZZ  {c2} + + / -"), UV=1, scale_inputs="intf").ConvertBits(32, fulls=true, fulld=true)
+                                              X Z * 2 * {c2} +         XX  Z dup * ZZ@ {c2} + + / +
+                                              Y Z * 2 * {c2} +         YY          ZZ  {c2} + + / -"), UV=1, scale_inputs="intf").ConvertBits(32, fulls=true, fulld=true)
 
-    # opponent color space
+    # Opponent color space
     h1 = DotClipA(down1,[0.30,0.04,0.35]).ConvertBits(32, fulls=true, fulld=true)
     h2 = DotClipA(down2,[0.30,0.04,0.35]).ConvertBits(32, fulls=true, fulld=true)
     m1 = DotClipA(down1,[0.34,0.60,0.17]).ConvertBits(32, fulls=true, fulld=true)
@@ -248,9 +242,9 @@ function MDSI(clip dist, clip ref, bool "downsample", float "alpha", bool "show_
 
     if (show_map) {
 
-        # chromaticity similarity
+        # Chromaticity Similarity (CS)
         cs  = ex_lutxyza(h1, h2, m1, m2, Format("x y * z a * + 2 * {c3} + x dup * y dup * z dup * a dup * {c3} + + + + /"), UV=1)
-        # gradient-chromaticity
+        # Gradient-Chromaticity Similarity (GCS)
         gcs = ex_lutxy(gs_hvs, cs, Format("x y - {alpha} * y + 0 1 clip 0.25 ^"), UV=1)
 
             if (show == 2) {
@@ -300,7 +294,7 @@ Ref:
 */
 
 
-### Requirements - AviSynth+ 3.7.1+, vsTCanny, fmtconv and ExTools.
+### Requirements - AviSynth+ 3.7.1+, vsTCanny, ExTools and fmtconv (for downsample=true)
 
 
 ### Usage ###
@@ -359,14 +353,10 @@ function vsSSIM(clip dist, clip ref, bool "downsample", float "k1", float "k2", 
     clip1 = dist
     clip2 = ref
 
-    w1 = clip1.Width ()
-    h1 = clip1.Height()
-    w2 = clip2.Width ()
-    h2 = clip2.Height()
-
-    Assert(PixelType(clip1) == PixelType(clip2),              "SSIM: clip1 and clip2 must be of the same format")
-    Assert(w1 == w2 && h1 == h2,                              "SSIM: clip1 and clip2 must be of the same width and height")
-    Assert((y && !u && !v)||(!y && u && !v)||(!y && !u && v), "SSIM: only one plane must be processed")
+    Assert(IsVersionOrGreater(3,7,1),                                         "vsSSIM: Update AviSynth+ version")
+    Assert(PixelType(clip1) == PixelType(clip2),                              "vsSSIM: clip1 and clip2 must be of the same format")
+    Assert(clip1.Width() == clip2.Width() && clip1.Height() == clip2.Height(),"vsSSIM: clip1 and clip2 must be of the same width and height")
+    Assert((y && !u && !v)||(!y && u && !v)||(!y && !u && v),                 "vsSSIM: only one plane must be processed")
 
     c1 = Pow(k1 * DR, 2.0)
     c2 = Pow(k2 * DR, 2.0)
@@ -410,14 +400,13 @@ function vsSSIM(clip dist, clip ref, bool "downsample", float "k1", float "k2", 
 
 
 
-# BSSIM() by zorr
+# BSSIM() by zorr from B-SSIM paper: "B-SSIM - Structural Similarity Index for Blurred Videos"
 # Adapted by Dogway for optimization and read '_PlaneSSIM' frame property
 #
 # Dependencies:
 #     ExTools
-#     StainlessS's RT_Stats for the standard deviation
-#     vsTCanny  (if '_PlaneSSIM' frame property is not present)
-#     fmtconv   (if '_PlaneSSIM' frame property is not present)
+#     vsTCanny
+#     fmtconv
 
 function BSSIM(clip dist, clip ref, int "show", bool "fulls") {
 
@@ -428,8 +417,10 @@ function BSSIM(clip dist, clip ref, int "show", bool "fulls") {
     vSSIM = propNumElements (dist, "_PlaneSSIM")  > 0 ? \
                              dist                     : vsSSIM(dist, ref, fulls=fs)
 
-    show = Default(show,           0)  # 0: output 'dist'  1: output 'ref'  2: output 'dist' with subtitle
-    fs   = Default(fulls,         fs)
+    show = Default(show,        0)  # 0: output 'dist'  1: output 'ref'  2: output 'dist' with subtitle
+    fs   = Default(fulls,      fs)
+
+    Assert(IsVersionOrGreater(3,7,1), "BSSIM: Update AviSynth+ version")
 
     source  = ref
     blurred = vSSIM
@@ -437,20 +428,28 @@ function BSSIM(clip dist, clip ref, int "show", bool "fulls") {
     source8        =  source.ConvertBits(8, dither=-1, fulls=fs, fulld=true)
     blurred8       = blurred.ConvertBits(8, dither=-1, fulls=fs, fulld=true)
 
-    scharr_orig    = ex_edge(source8,  "pscharr", 0, 255)
-    scharr_blurred = ex_edge(blurred8, "pscharr", 0, 255)
+    scharr_orig    = ex_edge(source8,  "tritical", 0, 50) # Original paper uses sobel but this is faster
+    scharr_blurred = ex_edge(blurred8, "tritical", 0, 50)
 
     ScriptClip(show == 1 ? ref : dist, function [blurred, source8, blurred8, scharr_orig, scharr_blurred, show] () {
 
         SSIM        = propGetFloat  (blurred, "_PlaneSSIM")
-        stddev_orig = RT_YPlaneStdev(scharr_orig)        # only works on 8-bit (output is also 8-bit)
-        stddev_alt  = RT_YPlaneStdev(scharr_blurred)     # only works on 8-bit (output is also 8-bit)
 
-        bssim = SSIM * (2*stddev_orig*stddev_alt) / (stddev_orig*stddev_orig + stddev_alt*stddev_alt)
+        mean8       = AverageLuma(scharr_orig)
+        var8        = ex_lut(scharr_orig,   Format("x {mean8} - dup *"))
+        varian_orig = AverageLuma(var8)
+      # stddev_orig = sqrt(varian_orig)
 
-        propSet(last,"_PlaneBSSIM", bssim, 0)
+        mean8       = AverageLuma(scharr_blurred)
+        var8        = ex_lut(scharr_blurred,Format("x {mean8} - dup *"))
+        varian_alt  = AverageLuma(var8)
+      # stddev_alt  = sqrt(varian_alt)
 
-        return show == 2 ? Subtitle(Format("PlaneBSSIM: {bssim}")) : last } ) }
+        BSSIM = SSIM * (2*sqrt(varian_orig * varian_alt)) / (varian_orig + varian_alt)
+
+        propSet(last,"_PlaneBSSIM", BSSIM, 0)
+
+        return show == 2 ? Subtitle(Format("PlaneBSSIM: {BSSIM}")) : last } ) }
 
 
 
@@ -473,8 +472,7 @@ This script is port of the VapourSynth SSIM_downsample - https://github.com/Wolf
 
 */
 
-
-### Requirements - AviSynth+, vsTCanny, and ExTools.
+### Requirements - AviSynth+, vsTCanny and ExTools.
 
 
 ### Usage ###
@@ -484,7 +482,7 @@ This script is port of the VapourSynth SSIM_downsample - https://github.com/Wolf
 ## Parameters ##
 #---------------
 # c: Source clip.
-# 32-bit source clip is assumed full range.
+# 32-bit source clip is assumed full range otherwise it's internally converted.
 #---------------
 # target_width: The width of the output.
 #---------------
@@ -593,7 +591,7 @@ The “clip” is down-sampled by a factor of 2 with a 'Box' kernel, akin to process
 */
 
 
-### Requirements - RoundHalfToEven.
+### Requirements - fmtconv
 
 
 ### Changelog ###

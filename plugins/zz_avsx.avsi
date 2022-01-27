@@ -41,13 +41,13 @@ LoadPlugin(AviSynthPluginsDir + "26/SangNom2.dll")
 Import(AviSynthPluginsDir + "26/aWarpSharp4xx.avsi")
 Import(AviSynthPluginsDir + "26/DebilinearM.avsi")
 Import(AviSynthPluginsDir + "26/deblock.avsi")
-!SI_IsWinXP ? Import(AviSynthPluginsDir + "26/ffms2.avsi") : nop()
+!SI_IsWinXP ? Import(AviSynthPluginsDir + "26/ffms2.avsi")  : nop()
+!SI_IsWinXP && AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "26/ffms2_26.avsi") : nop()
 SI_IsWinXP ? Import(AviSynthPluginsDir + "cplugin/ffms2_pc.avsi") : nop()
 SI_IsWinXP ? Import(AviSynthPluginsDir + "cplugin/ffms2.avsi") : nop()
 !SI_IsWinXP ? Import(AviSynthPluginsDir + "26/D2VSource.avsi") : nop()
 Import(AviSynthPluginsDir + "26/edi_rpow2.avsi")
 Import(AviSynthPluginsDir + "26/eedi3_resize16.avsi")
-Import(AviSynthPluginsDir + "26/ffms2.avsi")
 Import(AviSynthPluginsDir + "26/HaloBuster.avsi")
 Import(AviSynthPluginsDir + "26/JincResizeNR.avsi")
 #Import(AviSynthPluginsDir + "26/neo-f3kdb.avsi") #bug
@@ -127,6 +127,7 @@ AvsPlusVersionNumber < 3442 ? AvsPlusVersionNumber < 3276 ? nop() : import(AviSy
 Import(AviSynthPluginsDir + "avsplus/MtModes.avsi")
 }
 
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/ffms2.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/Utils-r41.avsi")
 AvsPlusVersionNumber < 3382 ? VersionNumber() < 2.60 ? Import(AviSynthPluginsDir + "25/QTGMC.avsi") : Import(AviSynthPluginsDir + "26/QTGMC.avsi") : Import(AviSynthPluginsDir + "avsplus/QTGMC.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/MasksPack.avsi") : Import(AviSynthPluginsDir + "avsplus/MasksPack.avsi")
@@ -168,7 +169,6 @@ AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/Frame
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/DeStripe.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/MCaWarpSharp4.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/ScSelect_HBD.avsi")
-AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/SimilarityMetrics.avsi")
 Import(AviSynthPluginsDir + "25/STpresso.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/ChubbyRain2.avsi") : Import(AviSynthPluginsDir + "avsplus/ChubbyRain2.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/ssubsampling_convert_plus.avsi")
@@ -176,6 +176,7 @@ AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/GradF
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/Cube.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/BalanceBorders.avsi") : Import(AviSynthPluginsDir + "avsplus/bborders.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/bbmodY.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/SimilarityMetrics.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")
