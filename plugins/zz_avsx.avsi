@@ -111,7 +111,6 @@ LoadPlugin(AviSynthPluginsDir + "26/PlanarTools.dll")
 LoadPlugin(AviSynthPluginsDir + "26/TCannyMod.dll")
 LoadPlugin(AviSynthPluginsDir + "26/tcolormask.dll")
 LoadPlugin(AviSynthPluginsDir + "26/tmaskcleaner.dll")
-LoadPlugin(AviSynthPluginsDir + "26/xNLMeans.dll")
 LoadPlugin(AviSynthPluginsDir + "26/YV12To422.dll")
 }
 
@@ -177,6 +176,7 @@ AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/Cube.
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/BalanceBorders.avsi") : Import(AviSynthPluginsDir + "avsplus/bborders.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/bbmodY.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/SimilarityMetrics.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/GradFun3mod.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")

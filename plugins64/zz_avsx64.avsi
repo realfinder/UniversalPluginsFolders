@@ -106,7 +106,6 @@ LoadPlugin(AviSynthPlugins64Dir + "26/tcolormask.dll")
 LoadPlugin(AviSynthPlugins64Dir + "26/tmaskcleaner.dll")
 LoadPlugin(AviSynthPlugins64Dir + "26/Watershed.dll")
 LoadPlugin(AviSynthPlugins64Dir + "26/waveform.dll")
-LoadPlugin(AviSynthPlugins64Dir + "26/xNLMeans.dll")
 LoadPlugin(AviSynthPlugins64Dir + "26/YV12To422.dll")
 #Import(AviSynthPlugins64Dir + "26/MaskCrop.avsi")
 }

@@ -1,11 +1,30 @@
 ###########################################################
 ###                                                      ##
 ###                                                      ##
-###           Grade Pack v6.5 (28-01-2022)               ##
+###           Grade Pack v6.6 (05-02-2022)               ##
 ###                                                      ##
 ###    https://forum.doom9.org/showthread.php?t=182881   ##
 ###                                                      ##
 ###                             by Dogway (Jose Linares) ##
+###                                                      ##
+###                                                      ##
+### Functions:                                           ##
+###     ex_vibrance                                      ##
+###     ex_contrast                                      ##
+###     ex_levels                                        ##
+###     ex_blend                                         ##
+###     ex_glow                                          ##
+###     ex_posterize                                     ##
+###     Skin_Qualifier                                   ##
+###     HSVxHSV                                          ##
+###     GamutWarning                                     ##
+###     PseudoColor                                      ##
+###     Vignette                                         ##
+###     greyscale_rgb                                    ##
+###     GreyWorld                                        ##
+###     WhitePoint                                       ##
+###     Curve Fitting Evaluator                          ##
+###                                                      ##
 ###                                                      ##
 ###########################################################
 ###
@@ -115,7 +134,7 @@ function ex_vibrance (clip a, float "sat", string "mode", float "bias", clip "Rc
 
     } else {
 
-        if (sat==1 && sh==0) { a } else {
+        if (sat==1         && sh==0) { a } else {
 
         rangePCc = tv      ?        "range_max cmax cmin - / *"   : ""
         offset   = !bi32   ?        " 0.5 - "                     : ""
@@ -312,10 +331,10 @@ function ex_levels (clip c, float "input_low", float "gamma", float "input_high"
     rangePCc = tv ? "x range_half - range_max cmax cmin - / * "  : "x range_half - "
     rangeTVc = tv ? " cmax cmin - range_max / * range_half + "   : "  range_half + "
 
-    ilo = ex_bs( ilo, 8, bi, tv_in=tv, tv_out=false)
-    ihi = ex_bs( ihi, 8, bi, tv_in=tv, tv_out=false)
-    olo = ex_bs( olo, 8, bi, tv_in=tv, tv_out=false)
-    ohi = ex_bs( ohi, 8, bi, tv_in=tv, tv_out=false)
+    ilo = ex_bs( ilo, 8, bi, tv_in=tv, tv_out=false, flt=true)
+    ihi = ex_bs( ihi, 8, bi, tv_in=tv, tv_out=false, flt=true)
+    olo = ex_bs( olo, 8, bi, tv_in=tv, tv_out=false, flt=true)
+    ohi = ex_bs( ohi, 8, bi, tv_in=tv, tv_out=false, flt=true)
     iho = ihi - ilo
     oho = ohi - olo
     ilo = ilo == 0 ? "" : Format(" {ilo} - ")
@@ -933,7 +952,7 @@ function HSVxHSV (clip c, float "str", string "modeA", string "modeB", float "De
 
 ###
 ###
-### GamutWarning() - (30-12-2021)
+### GamutWarning() - (02-02-2022)
 ###
 ###
 ### Shows pixels that fall out-of-gamut when converting YUV to RGB PC range.
@@ -949,6 +968,13 @@ function HSVxHSV (clip c, float "str", string "modeA", string "modeB", float "De
 ### Dependencies: > AviSynth+ 3.7.1
 ###                 ExTools
 ###                 TransformsPack
+###
+###
+### Example for fixing out-of-gamut:
+###
+###     msk=GamutWarning(show=2)
+###     ex_merge(last,ex_vibrance(0.4,"vibrance",4),msk,luma=true,Y=2,UV=3) # There's yet to add chroma induced luma recovery
+###   # GamutWarning(show=1) # show improvement
 ###
 ####################################
 
@@ -967,7 +993,7 @@ function HSVxHSV (clip c, float "str", string "modeA", string "modeB", float "De
     A quarter band filter applied horizontally and a half band filter applied vertically is recommended.
 */
 
-function GamutWarning(clip yuv, string "matrix", bool "tv_range", bool "EBUR103", bool "show") {
+function GamutWarning(clip yuv, string "matrix", bool "tv_range", bool "EBUR103", int "show") {
 
     propIDs = color_propGet(yuv)
     bi      =  propIDs[7]
@@ -976,7 +1002,7 @@ function GamutWarning(clip yuv, string "matrix", bool "tv_range", bool "EBUR103"
     mat     = Default (matrix, propIDs[2])
     tv      = Default (tv_range,      !fs)
     ebu     = Default (EBUR103,     false)  # Enable for EBU R103 (frameprops and less strict thresholds)
-    sh      = Default (show,        false)
+    sh      = Default (show,            0)  # 0: Show out-of-gamut overlay   1: Also show metric   2: Show mask so you can filter out those areas
 
     Assert(IsVersionOrGreater(3,7,1), "GamutWarning: Update AviSynth+ version")
     Assert(!isRGB(yuv),               "GamutWarning: Only YUV format supported")
@@ -1009,11 +1035,14 @@ function GamutWarning(clip yuv, string "matrix", bool "tv_range", bool "EBUR103"
     pn     = !ebu ?  0 : -0.05*pm
     pm     = !ebu ? pm :  1.05*pm
 
-    Expr(Y,yuv,yuv.SwapUV(),"",ex_dlut(Format("x "+rangeY+" X@ "+string(m0)+" * z "+UVf+" Z@ "+string(m2)+" * +                      dup {pn} < swap {pm} > or
-                                               X               "+string(m6)+" * y "+UVf+" Y@ "+string(m7)+" * +                      dup {pn} < swap {pm} > or or
-                                               X               "+string(m3)+" * Y            "+string(m4)+" * + Z "+string(m5)+" * + dup {pn} < swap {pm} > or or range_max y ?"), bi, !tv), Format=PixelType(yuv))
+    expr = ex_dlut(Format("x "+rangeY+" X@ "+string(m0)+" * z "+UVf+" Z@ "+string(m2)+" * +                      dup {pn} < swap {pm} > or
+                           X               "+string(m6)+" * y "+UVf+" Y@ "+string(m7)+" * +                      dup {pn} < swap {pm} > or or
+                           X               "+string(m3)+" * Y            "+string(m4)+" * + Z "+string(m5)+" * + dup {pn} < swap {pm} > or or range_max y ?"), bi, !tv)
 
-    !ebu ? last : \
+    sh<2 ? Expr(Y,yuv,yuv.SwapUV(),"", expr, Format=PixelType(yuv)) : \
+           Expr(Ys, U,  V,             expr.ReplaceStr("y ?", "0 ?") ).ex_expand(mode="disk").ex_boxblur(4,mode="weighted")
+
+    !ebu || sh==2? last : \
     ScriptClip( function[bi,tv] () {
 
         # Evaluate also Luminance (Y) stats?
@@ -1025,7 +1054,7 @@ function GamutWarning(clip yuv, string "matrix", bool "tv_range", bool "EBUR103"
         U >= 255 || V >= 255 ? PropSet("_OutGamut", 1) : \
                                PropSet("_OutGamut", 0) } )
 
-    if (sh) {
+    if (sh==1) {
 
         bin = ex_lut("x range_size 1 - < 0 x ?",Y=1,UV=3)
         div = (ex_bs(256, 8, bi, !tv)-1)*(2/100.)
