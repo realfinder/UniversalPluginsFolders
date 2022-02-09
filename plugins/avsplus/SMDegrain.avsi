@@ -10,7 +10,7 @@
 ###                       v0.4.0d      by Dogway    - 03 Sep  2011                           ###
 ###                       v3.1.2d      by Dogway    - 21 July 2015                           ###
 ###                       v3.1.2.111s  by A.SONY.   - 09 Febr 2021                           ###
-###                       v3.4.4d      by Dogway    - 28 Jan  2022                           ###
+###                       v3.4.6d      by Dogway    - 08 Feb  2022                           ###
 ###                                                                                          ###
 ################################################################################################
 ###
@@ -38,8 +38,9 @@
 ###                                      or  prefilter=0~3)
 ###              DFTTest                (for prefilter=4)
 ###              KNLMeansCL             (for prefilter=5)
-###              BM3D                   (for prefilter=6) # Buggy when used along ffvideosource()
-###                 TransformsPack      (for prefilter=6)
+###              BM3D                   (for prefilter=6) # Buggy when used along ffvideosource() or cropping in DGSource()
+###              DGDecNV                (for prefilter=7)
+###                 TransformsPack      (for prefilter=6 or prefilter=7)
 ###              neo_tmedian            (for mode="medianT")
 ###              nnedi3                 (for subpixel=3)
 ###                 SysInfo             (for subpixel=3)
@@ -54,7 +55,7 @@
 ###   [int "blksize"=16 (4 to 64 by 4)],
 ###   [int "overlap"=8 (2 to 32 by 4)],
 ###   string "mode"="MDegrain" ("MDegrain" / "MedianT" / "MedianST" / "MedianSTS" / "TemporalSoften" / "FluxSmoothT" / "ML3DEx" / "Hybrid" / "TL3D" / "STWM" / "IQMT" / "GaussT5" / "GaussST5" / "--" / "rMDegrain" / "rMedianST" / "rMedianSTS" / "rML3DEx" / "rHybrid" / "rTL3D" / "rSTWM" / "rIQMT" /"rGaussT5" / "rGaussST5"),
-###   int "prefilter"=-1 (-1 to 6 by 1),
+###   int "prefilter"=-1 (-1 to 7 by 1),
 ###   bool "ContraSharp"=false,
 ###   bool "RefineMotion"=false,
 ###   float "Str"=3.0 (0.0 to 6.0 by 0.1),
@@ -98,10 +99,29 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
     TS           = md == "TemporalSoften"
 
     tr           = T3 ? 1 : T5 ? 2 : T7 ? min(3,tr) : TS ? min(7,tr) : tr
+
+
+    UHDhalf      = Default( UHDhalf,  true)
+    isMult       = tr > 6                                      # MDegrainN is slower, so avoid >6 at possible
+    isHD         = (w > 1099 || h >  599)
+      UHD        = (w > 2599 || h > 1499)
+    isUHD        = UHD && !UHDhalf
+    UHDhalf      = UHD &&  UHDhalf
+
+    cplaceCMD = is420  (input) ? "420" : is422(input) ? "422" : "444"
+
+    scaleCSAD = is420  (input) ? isHD ? 2 :  0 : \
+                is422  (input) ? isHD ? 2 :  0 : \
+                is444  (input) ? isHD ? 2 :  1 : \
+                isYV411(input) ? isHD ? 0 : -1 : \
+                                 isHD ? 2 :  0
+
     thSAD        = Default( thSAD,  300 )
-        thSAD2   = thSAD / 2
-    thSADC       = Default( thSADC, thSAD2)
+        thSADR   =                  round(exp(-101./(thSAD*0.83)) * 360) # Directly proportional up to critical thSAD, then -not included- inversely proportional (-1.9x+682)
+        thSADRC  =                  round(thSADR * 0.755 * (0.25*exp(scaleCSAD*0.693)))   # Currently not supported by MRecalculate()
+    thSADC       = Default( thSADC, round(thSAD  * 0.755 * (0.25*exp(scaleCSAD*0.693))))
     RefineMotion = Default( RefineMotion, false)
+
 
     Globals      = Default( Globals,  0 )
     GlobalR      = Globals == 1
@@ -110,18 +130,11 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
     isCClip      = Defined( CClip )
     Contrasharp  = Default( Contrasharp, !GlobalO && isCClip)
     SLimit       = Default( limitS,      true )                # Limit type for the contrasharpening   True: Spatial  False: Temporal
+    isCntr       = IsBool (   Contrasharp )
+    isShrp       = !isCntr ? (Contrasharp > 0.0) : Contrasharp
     isInter      = Default( Interlaced,  false)
     InterPar     = isInter ? GetParity(input) : nop()
 
-
-    UHDhalf      = Default( UHDhalf,  true)
-    isCntr       = IsBool(Contrasharp)
-    isShrp       = !isCntr ? (Contrasharp > 0.0) : Contrasharp
-    isMult       = tr > 6                                      # MDegrainN is slower, so avoid >6 at possible
-    isHD         = (w > 1099 ||  h >  599)
-      UHD        = (w > 2599 ||  h > 1499)
-    isUHD        = UHD && !UHDhalf
-    UHDhalf      = UHD &&  UHDhalf
 
     preclip      = IsClip ( prefilter )
     prefilter    = Default( prefilter, -1 )
@@ -149,7 +162,7 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
     overlap      = Default( overlap, blk2 )
     search       = Default( search,     4 )
     searchparam  = Default( searchparam, isUHD ? 1 : 2 )
-    pelsearch    = Default( pelsearch,   pel )
+    pelsearch    = Default( pelsearch,   pel )                 # searchRange at finest level. Higher has a high performance hit
     truemotion   = Default( truemotion, TS || T7 || !isHD)
     DCT          = Default( DCT,   0 )                         # Change to 5 (slower) if you get artifacts due to luminosity changes (fades, flashes, etc)
     thSCD1       = Default( thSCD1,  round(pow((blksize*2.5),2)))
@@ -166,16 +179,6 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
     Amp          = Default( Amp, 0.0625 )
     DefTV        = Defined( tv_range)
     tv           = Default( tv_range, !fscale)
-
-
-    cplaceCMD = is420(input) ? "420" : is422(input) ? "422" : "444"
-
-    scaleCSAD = is420  (input) ? isHD ? 2 :  0 : \
-                is422  (input) ? isHD ? 2 :  0 : \
-                is444  (input) ? isHD ? 2 :  1 : \
-                isYV411(input) ? isHD ? 0 : -1 : \
-                                 isHD ? 2 :  0
-
 
     hpad         = Default( hpad, isHD ? 0   : blksize)
         hpadU    = isUHD ? hpad/2+(hpad/2)%2 : hpad
@@ -207,10 +210,10 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
 
     # RefineMotion Variables
 
-    halfblksize  = blk2                                      # MRecalculate works with half block size
-    halfoverlap  = ovl2                                      # Halve the overlap to suit the halved block size
-    halfthSAD    = RefineMotion || isMult ? thSAD2   : nop() # MRecalculate uses a more strict thSAD, which defaults to 150 (half of function's default of 300)
-    halfthSADC   =                 isMult ? thSADC/2 : nop() # For MDegrainN()
+    halfblksize  = blk2     # MRecalculate works with half block size
+    halfoverlap  = ovl2     # Halve the overlap to suit the halved block size
+    halfthSAD    = thSADR
+    halfthSADC   = thSADC/2 # For MDegrainN()
 
 
 
@@ -240,10 +243,11 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
                                   (prefilter== 2) ?  pref.ex_MinBlur(2,Chr)                                                                                                    : \
                                   (prefilter== 3) ?  pref.ex_FluxSmoothST(2,2,255,0,false,UV=Chr)                                                                              : \
                                   (prefilter== 4) ?  ex_merge(dfttest(pref,sstring="0.0:4.0 0.2:9.0 1.0:15.0",tbsize=1,U=chroma,V=chroma,dither=1,threads=1),pref,               \
-                                                     pref.ex_lut(Format("range_max range_max {Lthres} ymin - / x ymin - * -"),UV=1,clamp_float=true), luma=chroma, UV=chr)     : \
-                                  (prefilter== 5) ?  pref.ex_KNLMeansCL(a=2,s=2,d=1,h=7.0,wmode=0,chroma=chroma,device_type="GPU",device_id=device_id,LFR=round(600*(w/1920.))): \
-                                  (prefilter== 6) ?  pref.ex_BM3D(sigma=10,radius=1,CUDA=true,UV=Chr,tv_range=tv)                                                              : \
-                                                     Assert(false, "SMDegrain: Prefilter must be between -1~6: "+string(prefilter))                                            : \
+                                                     pref.ex_lut(Format("range_max range_max {Lthres} ymin - / x ymin - * -"),UV=1,clamp_float=true), luma=chroma, UV=Chr)     : \
+                                  (prefilter== 5) ?  pref.ex_KNLMeansCL(a=2,s=2,d=1,h=7.0,wmode=0,chroma=chroma,device_type="GPU",device_id=device_id,LFR=round(600*(w/1920.))).ex_boxblur(0.5, mode="weighted", UV=Chr) : \
+                                  (prefilter== 6) ?  pref.ex_BM3D(sigma=10,radius=1,CUDA=false,UV=Chr,tv_range=tv)                                                             : \
+                                  (prefilter== 7) ?  pref.ex_DGDenoise(str=0.10,UV=Chr).ex_boxblur(0.5, mode="weighted", UV=Chr)                                               : \
+                                                     Assert(false, "SMDegrain: Prefilter must be between -1~7: "+string(prefilter))                                            : \
                                   pref
 
 
@@ -261,20 +265,20 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
         inputP8 = inputP.ConvertBits(8, dither=-1, fulls=!tv, fulld=!tv)
         threads = pelclip ? SI_LogicalCores()  : nop()
         cores   = pelclip ? SI_PhysicalCores() : nop()
-        pclip   = pelclip             ? pel==4 ?   pref8.nnedi3_rpow2(rfactor=4,nns=1,nsize=0,threads=cores,prefetch=(threads+cores)/2,range=tv?2:1)                                       :  \
-                                                   pref8.nnedi3_rpow2(rfactor=2,nns=1,nsize=0,threads=cores,prefetch=(threads+cores)/2,range=tv?2:1)                                       : nop()
-        pclip2  = pelclip && !GlobalR ? pel==4 ? inputP8.nnedi3_rpow2(rfactor=4,nns=1,nsize=0,threads=cores,prefetch=(threads+cores)/2,range=tv?2:1).ConvertBits(bi, fulls=!tv, fulld=!tv) :  \
-                                                 inputP8.nnedi3_rpow2(rfactor=2,nns=1,nsize=0,threads=cores,prefetch=(threads+cores)/2,range=tv?2:1).ConvertBits(bi, fulls=!tv, fulld=!tv) : nop()  # nnedi3 is too slow in HBD
+        pclip   = pelclip             ? pel==4 ?   pref8.nnedi3_rpow2(rfactor=4,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2,range=tv?2:1)                                       :  \
+                                                   pref8.nnedi3_rpow2(rfactor=2,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2,range=tv?2:1)                                       : nop()
+        pclip2  = pelclip && !GlobalR ? pel==4 ? inputP8.nnedi3_rpow2(rfactor=4,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2,range=tv?2:1).ConvertBits(bi, fulls=!tv, fulld=!tv) :  \
+                                                 inputP8.nnedi3_rpow2(rfactor=2,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2,range=tv?2:1).ConvertBits(bi, fulls=!tv, fulld=!tv) : nop()  # nnedi3 is too slow in HBD
 
 
         # Motion vectors search (mt=true requires avstp.dll in plugin path, otherwise ignored)
 
-        super_search = !GlobalR ?                  pelclip ? MSuper(pref8,  pel=pel,                      chroma=chroma, hpad=hpadU, vpad=vpadU,          pelclip=pclip,   rfilter=rfilter, mt=true) : \
-                                                             MSuper(pref8,  pel=pel,sharp=min(subpixel,2),chroma=chroma, hpad=hpadU, vpad=vpadU                        ,   rfilter=rfilter, mt=true) : nop()
-        super_render =                            (pelclip ? MSuper(inputP, pel=pel,                      chroma=plane0, hpad=hpad,  vpad=vpad, levels=1, pelclip=pclip2                  , mt=true) : \
-                                                             MSuper(inputP, pel=pel,sharp=min(subpixel,2),chroma=plane0, hpad=hpad,  vpad=vpad, levels=1                                  , mt=true))
-        Recalculate  = !GlobalR && RefineMotion ? (pelclip ? MSuper(pref8,  pel=pel,                      chroma=chroma, hpad=hpadU, vpad=vpadU,levels=1, pelclip=pclip                   , mt=true) : \
-                                                             MSuper(pref8,  pel=pel,sharp=min(subpixel,2),chroma=chroma, hpad=hpadU, vpad=vpadU,levels=1                                  , mt=true)): nop()
+        super_search = !GlobalR ?                  pelclip ? MSuper(pref8,  pel=pel,                        chroma=chroma, hpad=hpadU, vpad=vpadU,          pelclip=pclip, rfilter=rfilter, mt=true) : \
+                                                             MSuper(pref8,  pel=pel, sharp=min(subpixel,2), chroma=chroma, hpad=hpadU, vpad=vpadU                        , rfilter=rfilter, mt=true) : nop()
+        super_render =                            (pelclip ? MSuper(inputP, pel=pel,                        chroma=plane0, hpad=hpad,  vpad=vpad, levels=1, pelclip=pclip2                , mt=true) : \
+                                                             MSuper(inputP, pel=pel, sharp=min(subpixel,2), chroma=plane0, hpad=hpad,  vpad=vpad, levels=1                                , mt=true))
+        Recalculate  = !GlobalR && RefineMotion ? (pelclip ? MSuper(pref8,  pel=pel,                        chroma=chroma, hpad=hpadU, vpad=vpadU,levels=1, pelclip=pclip                 , mt=true) : \
+                                                             MSuper(pref8,  pel=pel, sharp=min(subpixel,2), chroma=chroma, hpad=hpadU, vpad=vpadU,levels=1                                , mt=true)): nop()
             If (!isMult) {
                 t2 = isInter ? tr > 1 ? tr*2 : tr : tr
                 bv12 =   isInter && (tr > 5)                  ? (!GlobalR  ? super_search.MAnalyse(isb = true, delta =12,  overlap=    overlap,blksize=    blksize, search=search, chroma=chroma, truemotion=truemotion, dct=dct,searchparam=searchparam, pelsearch=pelsearch, temporal=TS, scaleCSAD=scaleCSAD, mt=true) : bv12) : nop()
@@ -364,8 +368,8 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
 
                     gcv = i==1 && isShrp && isCntr && !SLimit ? "global " : ""
 
-                    Eval(      Format(        "b{i}c = !isMult ? inputP.MCompensate(super_render, bv{i}, thSAD=thSAD, thSAD2=halfthSAD, thSCD1=thSCD1, thSCD2=thSCD2, mt=true) : nop()"))
-                    Eval(      Format(        "f{i}c = !isMult ? inputP.MCompensate(super_render, fv{i}, thSAD=thSAD, thSAD2=halfthSAD, thSCD1=thSCD1, thSCD2=thSCD2, mt=true) : nop()"))
+                    Eval(      Format(        "b{i}c = !isMult ? inputP.MCompensate(super_render, bv{i}, thSAD=thSAD, thSAD2=thSAD/2, thSCD1=thSCD1, thSCD2=thSCD2, mt=true) : nop()"))
+                    Eval(      Format(        "f{i}c = !isMult ? inputP.MCompensate(super_render, fv{i}, thSAD=thSAD, thSAD2=thSAD/2, thSCD1=thSCD1, thSCD2=thSCD2, mt=true) : nop()"))
                     Eval(gcv + Format(TS||T7? "b{i}c = b{i}c" : """b{i}c = ex_repair(b{i}c, inputP, "undot3", UV=U!=2||V!=2 ? 3 : 1)"""))
                     Eval(gcv + Format(TS||T7? "f{i}c = f{i}c" : """f{i}c = ex_repair(f{i}c, inputP, "undot3", UV=U!=2||V!=2 ? 3 : 1)"""))
 
@@ -392,7 +396,7 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
                 if (LFRB) {
 
                     mfilterLP = inputP.ex_gaussianblur(LFR)
-                    DCTF_pass = DCTF ? inputP.smdegrain(tr=ceil(tri/3.),thSAD=thSAD/2,blksize=blksize,prefilter=mfilterLP,rfilter=0,str=0,tv_range=false,plane=0,truemotion=false) : nop()  # Calming -Luma- Low Frequency Flicker (aka removing DCT flicker: https://forum.doom9.org/showthread.php?p=1073349#post1073349)
+                    DCTF_pass = DCTF ? inputP.smdegrain(tr=ceil(tri/3.),thSAD=thSAD/2,blksize=blksize,prefilter=mfilterLP,pel=1,rfilter=0,str=0,tv_range=false,plane=0,truemotion=false) : nop()  # Calming -Luma- Low Frequency Flicker (aka removing DCT flicker: https://forum.doom9.org/showthread.php?p=1073349#post1073349)
                     mfilterLP = DCTF ? ex_repair(mfilterLP, DCTF_pass.ex_gaussianblur(LFR),"temp4") : mfilterLP
                     outputLP  = output.ex_gaussianblur(LFR)
                     output    = ex_makeadddiff(output, outputLP, mfilterLP, UV=2)
@@ -406,14 +410,14 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
             # Finally, MDegrain
 
             MDe= "output  = isInter ?
-                \                 ( isMult  ? mfilter.MDegrainN(super_render, vmulti, tr, thSAD2=halfthSAD, thSADC2=halfthSADC,               thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
+                \                 ( isMult  ? mfilter.MDegrainN(super_render, vmulti, tr, thSAD2=thSAD/2, thSADC2=halfthSADC,                 thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
                 \                 (tr == 6) ? mfilter.MDegrain6(super_render, bv2, fv2, bv4, fv4, bv6, fv6, bv8, fv8, bv10, fv10, bv12, fv12, thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
                 \                 (tr == 5) ? mfilter.MDegrain5(super_render, bv2, fv2, bv4, fv4, bv6, fv6, bv8, fv8, bv10, fv10,             thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
                 \                 (tr == 4) ? mfilter.MDegrain4(super_render, bv2, fv2, bv4, fv4, bv6, fv6, bv8, fv8,                         thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
                 \                 (tr == 3) ? mfilter.MDegrain3(super_render, bv2, fv2, bv4, fv4, bv6, fv6,                                   thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
                 \                 (tr == 2) ? mfilter.MDegrain2(super_render, bv2, fv2, bv4, fv4,                                             thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
                 \                             mfilter.MDegrain1(super_render, bv2, fv2,                                                       thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true)):
-                \                 ( isMult  ? mfilter.MDegrainN(super_render, vmulti, tr, thSAD2=halfthSAD, thSADC2=halfthSADC,               thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
+                \                 ( isMult  ? mfilter.MDegrainN(super_render, vmulti, tr, thSAD2=thSAD/2, thSADC2=halfthSADC,                 thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
                 \                 (tr == 6) ? mfilter.MDegrain6(super_render, bv1, fv1, bv2, fv2, bv3, fv3, bv4, fv4, bv5, fv5, bv6, fv6,     thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
                 \                 (tr == 5) ? mfilter.MDegrain5(super_render, bv1, fv1, bv2, fv2, bv3, fv3, bv4, fv4, bv5, fv5,               thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
                 \                 (tr == 4) ? mfilter.MDegrain4(super_render, bv1, fv1, bv2, fv2, bv3, fv3, bv4, fv4,                         thSAD=thSAD, thSADC=thSADC, thSCD1=thSCD1, thSCD2=thSCD2, limit=limit, limitc=limitc, plane=plane, mt=true) :
@@ -427,7 +431,7 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
             if (LFRB) {
 
                 mfilterLP = mfilter.ex_gaussianblur(LFR)
-                DCTF_pass = DCTF ? mfilter.smdegrain(tr=ceil(tri/3.),thSAD=thSAD/2,blksize=blksize,prefilter=mfilterLP,rfilter=0,str=0,tv_range=false,plane=0,chroma=false,truemotion=false) : nop()  # Calming -Luma- Low Frequency Flicker (aka removing DCT flicker: https://forum.doom9.org/showthread.php?p=1073349#post1073349)
+                DCTF_pass = DCTF ? mfilter.smdegrain(tr=ceil(tri/3.),thSAD=thSAD/2,blksize=blksize,prefilter=mfilterLP,pel=1,rfilter=0,str=0,tv_range=false,plane=0,chroma=false,truemotion=false) : nop()  # Calming -Luma- Low Frequency Flicker (aka removing DCT flicker: https://forum.doom9.org/showthread.php?p=1073349#post1073349)
                 mfilterLP = DCTF ? ex_repair(mfilterLP, DCTF_pass.ex_gaussianblur(LFR),"temp4") : mfilterLP
                 outputLP  =  output.ex_gaussianblur(LFR)
                 output    = ex_makeadddiff(output, outputLP, mfilterLP, UV=2)
@@ -502,9 +506,9 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
 
 
 
-        output = !GlobalO && isShrp ? isCntr ? ex_ContraSharpening(output, CClip, MC=!SLimit, HD=isHD, overshoot=TS?100:0)                                                      : \
-                                      SLimit ? LSFmod(output,source=CClip,preset="LSF",strength=Contrasharp,Smode=5,Lmode=0,edgemode=0,soothe=false,overshoot=0,soft=-2,keep=0) : \
-                                               LSFmod(output,             preset="LSF",strength=Contrasharp,Smode=5,Lmode=6,edgemode=0,soothe=false,overshoot=0,soft=-2,keep=0) : output
+        output = !GlobalO && isShrp ? isCntr ? ex_ContraSharpening(output, CClip, MC=!SLimit, HD=isHD, overshoot=TS?100:0)                                                             : \
+                                      SLimit ? LSFmod(output,source=CClip,preset="LSF",strength=Contrasharp,Smode=isHD?4:5,Lmode=0,edgemode=0,soothe=false,overshoot=0,soft=-2,keep=0) : \
+                                               LSFmod(output,             preset="LSF",strength=Contrasharp,Smode=isHD?4:5,Lmode=6,edgemode=0,soothe=false,overshoot=0,soft=-2,keep=0) : output
 
                  !GlobalO ? (isInter ? output.weave() : output) : input
 
@@ -592,7 +596,7 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
         varn = "\n\n\n\n\n"
         sp   = !GlobalR && str==1.0 ? "  " : ""
 
-        Subtitle("SMDegrain Mod v3.4.4",text_color=red||blue||yellow?Color:$7f7f7f,halo_color=$000000,font="VERDANA",size=s*2,x=w1,y=isInter?h/50:h/20)
+        Subtitle("SMDegrain Mod v3.4.6",text_color=red||blue||yellow?Color:$7f7f7f,halo_color=$000000,font="VERDANA",size=s*2,x=w1,y=isInter?h/50:h/20)
 
         Subtitle("BASIC"   ,lsp=lsp,text_color=$ffffff,font="COURIER NEW",size=s,x=w1,y=ys)
         Subtitle(            "\n\ntr           = " + string(tr)                                                                              + \
@@ -614,7 +618,7 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
                  varn+             "search     = " + string( GlobalR?"bypass":search)                                                        ,lsp=lsp,text_color=yellow&&!GlobalR        ?Color:$7f7f7f,font="COURIER NEW",size=s,x=w4,y=ys)
         Subtitle(varn+varn+        "blksize    = " + string( GlobalR?"bypass":blksize)                                                       + \
                                  "\noverlap    = " + string( GlobalR?"bypass":overlap)                                                       ,lsp=lsp,text_color=(red||blue)&&!GlobalR   ?Color:$7f7f7f,font="COURIER NEW",size=s,x=w4,y=ys)
-        Subtitle(varn+           "\nprefilter  = " + (GlobalR?string("bypass"):(preclip?"Clip"+sp+" Variable":(prefilter==0?"0"+sp+"    MinBlur(0)":prefilter==1?"1"+sp+"    MinBlur(1)":prefilter==2?"2"+sp+"    MinBlur(2)":prefilter==3?"3"+sp+"    FluxSmoothST":prefilter==4?"4"+sp+"    Dfttest":prefilter==5?"5"+sp+"    KNLmeans":prefilter==6?"6"+sp+"    BM3D":"OFF"+sp+"    (-1)"))) + \
+        Subtitle(varn+           "\nprefilter  = " + (GlobalR?string("bypass"):(preclip?"Clip"+sp+" Variable":(prefilter==0?"0"+sp+"    MinBlur(0)":prefilter==1?"1"+sp+"    MinBlur(1)":prefilter==2?"2"+sp+"    MinBlur(2)":prefilter==3?"3"+sp+"    FluxSmoothST":prefilter==4?"4"+sp+"    DFTTest":prefilter==5?"5"+sp+"    KNLmeans":prefilter==6?"6"+sp+"    BM3D":prefilter==7?"7"+sp+"    DGDenoise":"OFF"+sp+"    (-1)"))) + \
                                "\n\nAmp        = " + (GlobalR||str==1.0?string("bypass"):string(Amp,"%1.2f"))+" Amplitude"                   + \
                  varn+           "\nlimit(C)   = " + (GlobalO?string("bypass"):string(limit)     + "(" + string(limitc) + ")")               ,lsp=lsp,text_color=                               $7f7f7f,font="COURIER NEW",size=s,x=w4,y=ys)
 
@@ -635,7 +639,7 @@ function SMDegrain (clip input   , int "tr"      , int "thSAD"    , int  "thSADC
 
 ########################################################
 #                                                      #
-#     HELPER FUNCTIONS: For Prefilter                  #
+#       HELPER FUNCTIONS: Prefilters                   #
 #                                                      #
 ########################################################
 
@@ -799,17 +803,16 @@ function ex_Luma_Rebuild (clip src, float "s0", float "c", int "Y", int "UV", bo
 
     if (sh) {
 
-        out = ConvertBits(8,dither=1,fulls=!tv)
+        bi > 8 ? ConvertBits(8,dither=1,fulls=!tv) : last
         w   = src.width()
         h   = src.height()
         sw  = nmod(w/5.)   sh = sw
-        GradientLinear(last, zoom=1, positive=true, smooth=true, tv_range=tv)
-        ex_Luma_Rebuild(s0,c,tv_range=tv)
-        HistoCurve(size=1,gradient=false)
-        plt = BicubicResize(sw,sh,-0.5,0.25)
+        plt = GradientLinear(last, zoom=1, positive=true, smooth=true, tv_range=tv)
+        plt = ex_Luma_Rebuild(plt,s0,c,tv_range=tv)
+        plt = HistoCurve(plt,size=1,gradient=false).BicubicResize(sw,sh,-0.5,0.25)
         plt = PadBorders(plt,w-sw,0,0,h-sh)
-        plt = Merge(out,rgb ? plt.ConverttoPlanarRGB() : plt)
-        ex_merge(out,plt,BoxMask(out,w-sw,w,0,sh),UV=3)
+        plt = Merge(last,rgb ? plt.ConverttoPlanarRGB() : plt)
+        ex_merge(plt,BoxMask(w-sw,w,0,sh),UV=3)
     } }
 
 
@@ -915,7 +918,7 @@ function ex_retinex(clip clp, int "lvl", float "lo", float "hi", float "sigma", 
         } )
     }
 
-    UV == 3 ? CombinePlanes(last, clp, planes=rgb?"RGB":"YUV", pixel_type=PixelType(clp)) : last
+    UV == 3 ? CombinePlanes(last, clp, planes=rgb?"RGB":"YUV", pixel_type=PixelType(clp)).propCopy(clp) : last
               PropSet("_ColorRange", 0) }
 
 
@@ -924,6 +927,8 @@ function ex_retinex(clip clp, int "lvl", float "lo", float "hi", float "sigma", 
 # Requires TransformsPack for OPP=true, RGB clips or processing chroma
 #
 # Disclaimer: ffvideosource() causes issues with BM3D for UV=1 or r>3
+#             BM3D() causes issues when CUDA=true and you crop with DGSource()
+#             BM3D() causes issues when CUDA=true and a high combination of radius + sigma (ie. sigma=5, radius=1) in lack of 'blocking_step' argument
 #
 #   # The following settings aren't available on the BM3D AVS+ port but included here for reference
 #
@@ -958,33 +963,34 @@ function ex_retinex(clip clp, int "lvl", float "lo", float "hi", float "sigma", 
 # Function Definition:
 #    (
 #    clip,
-#    float sigma=3.0 (1.0 to 5.0 by 0.5),
+#    float sigma=3.0 (1.0 to 10.0 by 0.5),
 #    int radius=1 (1 to 5 by 1),
-#    bool CUDA=true,
+#    bool CUDA=false,
 #    bool OPP=true,
 #    )
 #
 function ex_BM3D(clip a, float "sigma", int "radius", bool "CUDA", bool "OPP", int "UV", bool "tv_range") {
 
     rgb = isRGB(a)
-    isy = isy(a)
+    isy = isy  (a)
     bi  = BitsPerComponent(a)
-    fs  = propNumElements (a,"_ColorRange")  > 0 ? \
-          propGetInt      (a,"_ColorRange") == 0 : rgb
+    pID = color_propGet   (a)
 
-    s   = Default(sigma,    3)
-    r   = Default(radius,   1)
-    cd  = Default(CUDA,  true)
+    s   = Default(sigma,    3)  # denoising strength
+    r   = Default(radius,   1)  # temporal radius
+    cd  = Default(CUDA,  false)
     OPP = Default(OPP,   rgb)
     UV  = Default(UV,    rgb ? 3 : 1)
-    tv  = Default(tv_range, !fs)
+    tv  = Default(tv_range, pID[6])
     r   = min(r,3) # Buggy when r > 3
+    pri = pID[2]
+    mat = (!tv?"PC":"Rec")+pri
 
     a
     ch = !(isy || UV!=3)
-    ch && !rgb && !OPP ? ConverttoYUV444(chromaresample="spline16")                         : last
-          !rgb &&  OPP ? ConvertToPlanarRGB(!tv?"PC709":"Rec709",chromaresample="spline16") : last
-           rgb ||  OPP ? RGB_to_OPP().ConvertBits(32, fulls=true, fulld=true)               : ConvertBits(32, fulls=!tv, fulld=!tv)
+    ch && !rgb && !OPP ? ConverttoYUV444   (matrix=mat,chromaresample="spline16") : last
+          !rgb &&  OPP ? ConvertToPlanarRGB(matrix=mat,chromaresample="spline16") : last
+           rgb ||  OPP ? RGB_to_OPP().ConvertBits(32, fulls=true, fulld=true)     : ConvertBits(32, fulls=!tv, fulld=!tv)
 
     cs = rgb || OPP ? s : ch ? s/2 : 0
 
@@ -995,15 +1001,63 @@ function ex_BM3D(clip a, float "sigma", int "radius", bool "CUDA", bool "OPP", i
     if (rgb || OPP) {
         bi != 32 ? ConvertBits(bi, dither=1, fulls=true, fulld=true) : last
         OPP_to_RGB()
-        !rgb && OPP ? MatchClip(a)  : last
+        !rgb && OPP ? MatchClip(a,matrix=pri) : last
     } else if (ch) {
-        MatchClip(a)
+        MatchClip(a,matrix=pri)
     } else {
         bi != 32 ? ConvertBits(bi, dither=1, fulls=!tv, fulld=!tv) : last
-        mergechroma(a) } }
+        MergeChroma(a) } }
 
 
-## ex_KNLMeansCL() - KNLMeansCL wrapper by Dogway (10-10-2021)
+
+
+## ex_DGDenoise() - DGDenoise GPU denoiser wrapper
+##
+## Output is soft, similar to Photoshop's Surface Blur, so works well as prefilter, specially for anime.
+## Supports YUV format in any bitdepth
+##
+## Function Definition:
+##    (
+##    clip,
+##    float str=0.15 (0.0 to 1.0 by 0.01),
+##    float strc=0.15 (0.0 to 1.0 by 0.01),
+##    float bl=0.0 (0.0 to 1.0 by 0.01),
+##    float blc=0.0 (0.0 to 1.0 by 0.01),
+##    int "searchw"=9 (5 to 9 by 2),
+##    int "UV"=3 (1 to 3 by 1),
+##    )
+##
+function ex_DGDenoise(clip a, float "str", float "strc", float "blend", float "blendc", int "searchw", int "UV") {
+
+    w   = width (a)
+    h   = height(a)
+    is42= is420 (a)
+    bi  = BitsPerComponent(a)
+    pID = color_propGet   (a)
+
+    str  = Default(str,      0.10)
+    strc = Default(strc,   str/2.)
+    bl   = Default(blend,       0)
+    blc  = Default(blendc,      0)
+    srch = Default(searchw,  min(9,max(5,round(w/1.51>h?0.375*w+1.8:0.667*h+1.8))))
+    UV   = Default(UV,          1)
+    strc = UV==3 ? strc : 0
+    tv   = pID[6]
+    pri  = pID[2]
+    mat  = (!tv?"PC":"Rec")+pri
+
+    a
+    !is42 ? ConverttoYUV420(matrix=mat,chromaresample=UV==3?"spline16":"point") : last
+    bi>8 && bi!= 16 ? ConvertBits(16, fulls=!tv, fulld=!tv)                     : last
+
+    DGDenoise(str,strc,bl,blc,srch)
+
+    ConvertBits(bi, dither=bi==32?-1:1, fulls=!tv, fulld=!tv)
+    !is42 ? MatchClip(a,matrix=pri) : last }
+
+
+
+## ex_KNLMeansCL() - KNLMeansCL wrapper by Dogway (08-02-2022)
 ##
 ##
 ## Function Definition:
@@ -1018,24 +1072,25 @@ function ex_BM3D(clip a, float "sigma", int "radius", bool "CUDA", bool "OPP", i
 ##    bool "chroma"=true,
 ##    )
 ##
-function ex_KNLMeansCL (clip c, float "h", int "d", int "a", int "s", int "wmode", clip "rclip", int "LFR", bool "chroma", string "device_type", int "device_id",  string "knlm_params") {
+function ex_KNLMeansCL (clip c, float "h", int "d", int "a", int "s", int "wmode", clip "rclip", int "LFR", bool "chroma", string "device_type", int "device_id", float "wref", string "knlm_params") {
 
 
-    w            = c.width()
-    h            = c.height()
+    w2           = c.width()
+    h2           = c.height()
 
     h            = Default( h, 7.0)         # Sigma
     d            = Default( d, 0)           # Temporal radius
     a            = Default( a, 1)           # Spatial  radius
-    s            = Default( s, a*2)         # Spatial  radius of the similarity neighborhood
+    s            = min(Default( s, a*2),8)  # Spatial  radius of the similarity neighborhood
     wmode        = Default( wmode, 0)
+    wref         = Default( wref, 1.0)
     deviceid     = Default( device_id, 0)
     chroma       = Default( chroma, true)
-    LFR          = Default( LFR, wmode < 1 || d > 0 ? min(2,d+1)*300*(w/1920.) : 0) # Restore low frequency details, specially on wmode=0, and more specially with d > 0 (motion estimation is very bad in KNLMeansCL)
+    LFR          = Default( LFR, wmode < 1 || d > 0 ? min(2,d+1)*300*(w2/1920.) : 0) # Restore low frequency details, specially on wmode=0, and more specially with d > 0 (motion estimation is very bad in KNLMeansCL). Set to 0 to disable.
     knlm_params  = Defined( knlm_params) ? ","+knlm_params : ""
 
     LFRc    = max(LFR,50)
-    Fs      = max(w,h) * 2                  # Frequency sample rate is resolution * 2 (for Nyquist)
+    Fs      = max(w2,h2) * 2                # Frequency sample rate is resolution * 2 (for Nyquist)
     k       = sqrt(log(2)/2) * LFRc         # Constant for -3dB
     LFRc    = Fs / ( k * 2 * pi )           # Frequency Cutoff for Gaussian Sigma
 
@@ -1065,25 +1120,25 @@ function ex_KNLMeansCL (clip c, float "h", int "d", int "a", int "s", int "wmode
         nlc     =          StackHorizontal(ExtractY(c),    UVstack )
         nlrc    = dwclip ? StackHorizontal(ExtractY(wclip),UVwstack) : Undefined()
 
-        nlckl   = Eval("  nlc.KNLMeansCL(D=d, A=a, h=h, s=s, device_type=device_type, device_id=deviceid, rclip=nlrc,   wmode=wmode, channels=UV" + knlm_params + ")")
-        nlc     = LFR > 0 ? ex_makeadddiff(nlckl, nlckl.ex_gaussianblur(LFRc,UV=UVb), nlc.ex_gaussianblur(LFRc,UV=UVb), UV=UVb) : nlckl
+        nlckl   = Eval("  nlc.KNLMeansCL(D=d, A=a, h=h, s=s, device_type=device_type, device_id=deviceid, rclip=nlrc,  wmode=wmode, wref=wref, channels=UV" + knlm_params + ")")
+        nlc     = LFR > 50 ? ex_makeadddiff(nlckl, nlckl.ex_gaussianblur(LFRc,UV=UVb), nlc.ex_gaussianblur(LFRc,UV=UVb), UV=UVb) : nlckl
 
         uvw     = Uclip.width ()
         uvh     = Uclip.height()
 
         nly     =          nlc.crop(0,0,chr420 ? -uvw : -(uvw+uvw),0, true)
 
-        nlu     = chr420 ? nlc.crop(w,0,0,-uvh,  true) : \
-                           nlc.crop(w,0,-uvw,0,  true)
-        nlv     = chr420 ? nlc.crop(w,uvh,   0,0,true) : \
-                           nlc.crop(w+uvw,0,0,0 ,true)
+        nlu     = chr420 ? nlc.crop(w2,0,0,-uvh,  true) : \
+                           nlc.crop(w2,0,-uvw,0,  true)
+        nlv     = chr420 ? nlc.crop(w2,uvh,   0,0,true) : \
+                           nlc.crop(w2+uvw,0,0,0 ,true)
 
                   CombinePlanes(nly, nlu, nlv, planes="YUV", pixel_type=PixelType(c))
 
         } else {
 
-                out   = Eval("  c.KNLMeansCL(D=d, A=a, h=h, s=s, device_type=device_type, device_id=deviceid, rclip=wclip, wmode=wmode, channels=UV" + knlm_params + ")")
-                out   = LFR > 0 ? ex_makeadddiff(out, out.ex_gaussianblur(LFRc,UV=UVb), c.ex_gaussianblur(LFRc,UV=UVb), UV=UVb) : out
+                out = Eval("c.KNLMeansCL(D=d, A=a, h=h, s=s, device_type=device_type, device_id=deviceid, rclip=wclip, wmode=wmode, wref=wref, channels=UV" + knlm_params + ")")
+                out = LFR > 50 ? ex_makeadddiff(out, out.ex_gaussianblur(LFRc,UV=UVb), c.ex_gaussianblur(LFRc,UV=UVb), UV=UVb) : out
                 out
 
         } }

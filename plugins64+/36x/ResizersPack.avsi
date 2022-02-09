@@ -1,7 +1,7 @@
 ######################################################
 ###                                                 ##
 ###                                                 ##
-###   Resizers Functions Pack 7.6    (05-02-2022)   ##
+###   Resizers Functions Pack 7.8    (08-02-2022)   ##
 ###                                                 ##
 ###                      by Dogway (Jose Linares)   ##
 ###                                                 ##
@@ -26,12 +26,40 @@
 
 ##############################
 ###
-### deep_resize() - by Dogway (01-02-2022)
+### deep_resize() - by Dogway (08-02-2022)
 ###
 ### Convenient and high performance function to resize in high quality (different kernel for edge/flat areas).
 ### Defaults work pretty nice out-of-the-box so you don't need to spend time tweaking settings.
 ### If you want more control (ColorSpaces, UVRecon, nomoiree, etc) use directly ConvertFormat().
 ### Supports all YUV formats in any given bitdepth.
+###
+### deconv: An option to undo the oversharpening or blur of the original downscaling kernel.
+###         Following suggested values for deconv:
+###
+###         -10 "SoftCubic100"
+###         -7  "Robidoux Soft"
+###         -6  "SoftCubic75"
+###         -6  "Bilinear"
+###         -6  "BilcubicD"
+###         -6  "BilcubicU"
+###         -6  "Hermite"
+###         -5  "Robidoux"
+###         -5  "Centroid"
+###         -5  "Mitchell-Netravali"
+###         -4  "Robidoux Sharp"
+###         -5  "SoftCubic50"
+###         -0  "Cub-grange"
+###         -0  "Catmull-Rom"
+###         +1  "Didee"
+###         +4  "Zopti"
+###         +2  "Precise Bicubic"
+###         +2  "Sharp"
+###         +0  "spline16"
+###         +0  "spline36"
+###         +2  "DPID"
+###         +0  "SSIM2"
+###         +0  "SincLin"
+###         +15 "SinPow"
 ###
 ###
 ### Dependencies:
@@ -44,8 +72,8 @@
 ###       SysInfo        (for default "nnedi3")
 ###
 ###
-### 100.0% deep_resize()     (16.6fps)
-###  22.3% nnedi3_resize16() (3.7fps)
+### 100.0% deep_resize()     (13.6fps)
+###  27.2% nnedi3_resize16() (3.7fps)
 ###
 ### General guidelines:
 ### -Avoid bicubics for highly compressed images as it will amplify DCT blocks
@@ -56,7 +84,7 @@
 ### -Use even number of taps (taps=lobes in AviSynth) to avoid a final positive lobe ("ringing") before cutoff of the window support. Negative "ringing" (halos) are rarely created in gamma light resizing.
 ###
 ### More info: http://avisynth.nl/index.php/Resampling
-function deep_resize(clip a, float "width", float "height", string "edge", string "flat", float "ratio", float "th", float "elast", int "qual") {
+function deep_resize(clip a, float "width", float "height", string "edge", string "flat", int "deconv", float "th_rat", float "th", float "elast", int "qual") {
 
     w   = width (a)
     h   = height(a)
@@ -74,17 +102,20 @@ function deep_resize(clip a, float "width", float "height", string "edge", strin
     factor = rw < 3 && rh < 3 ? 2 : 4
     rat    = abs(max(rw,rh)-1)+1
 
-    rth   = Default(ratio, 1.25)                                                         # threshold for mix mode. Lower than this (target_size/source_size) will use only 'kernel1' kernel
+    rth   = Default(th_rat, 1.25)                                                        # threshold for mix mode. Lower than this (target_size/source_size) will use only 'kernel1' kernel
     krn1  = Default(edge, rat<=rth*0.95 ? "spline16" : \
                            rw<1 && rh<1 ? "DPID"     : rat<=rth ? "blackman" : "nnedi3") # Resize kernel for the edge area. AI upscalers recommended here: nnedi3, FSRCNN, FCBI, SuperResXBR... or for downscaling: DPID, SSIM2, Zopti
     krn2  = Default(flat, "sinc")                                                        # Resize kernel for the flat area (noop when downscaling). Ringing kernels are ok here.
     thr   = Default(th,      1.0)                                                        # 0-255 (normally up to 10)
-    ela   = Default(elast,   1.5)                                                        # 1-255 (normally up to 10)
+    ela   = Default(elast,   4.0)                                                        # 1-255 (normally up to 10)
     qual  = Default(qual,      1)
+    dec   = Default(deconv,    0)                                                        # 0~10 (0 is disabled, raise to apply deconvolution when upscaling a very sharpened downscale -anything sharper than Catmull-Rom-)
+    dec   = krn2 == "sinc" ? dec+2 : dec
     nns   = 3
     nsize = 0
     etype = 0
     pscrn = 2
+    und   = Undefined()
 
     Assert(IsVersionOrGreater(3,7,1), "deep_resize: Update AviSynth+ version")
 
@@ -94,26 +125,36 @@ function deep_resize(clip a, float "width", float "height", string "edge", strin
 
     } else if (rw<1 && rh<1) {
 
-        ConvertFormat(a, w2,h2,cs_out="",EOTF="",scale_space="gamma",kernel=krn1,taps=krn1=="blackman"?8:Undefined())
+        ConvertFormat(a, w2,h2,cs_out="",EOTF="",scale_space="gamma",kernel=krn1,taps=krn1=="blackman"?8:und)
 
     } else {
 
-        nfactor = (rw == 2 || rh == 2) || (rw == 4 || rh == 4)
-        rfactor =  rw<factor || rh<factor
-        kernel2 =  ( rfactor ? "bicubic" : "blackman" ) + "resize" # hard coded nnedi3 final edge resize: 'zopti' for down 'blackman' for up
-        ep0     =    rfactor ?      -0.6 : 6
-        sh      = krn1 == "nnedi3" ? nfactor ? 0.25 : 0 : 0
+        if (krn1 == "nnedi3") {
 
-        cores   = krn1 == "nnedi3" ? SI_PhysicalCores() : nop()
-        threads = krn1 == "nnedi3" ? SI_LogicalCores()  : nop()
+            nfactor = (rw == 2 || rh == 2) || (rw == 4 || rh == 4)
+            rfactor =  rw<factor || rh<factor
+            kernel2 =  ( rfactor ? "bicubic" : "blackman" ) + "resize" # hard coded nnedi3 final edge resize: 'zopti' for down 'blackman' for up
+            ep0     =    rfactor ?      -0.6 : 6
+
+            cores   = krn1 == "nnedi3" ? SI_PhysicalCores() : nop()
+            threads = krn1 == "nnedi3" ? SI_LogicalCores()  : nop()
+        }
+            sh      = krn1 == "nnedi3" ? nfactor ? 0.25 : 0 : 0
 
         a8      = ConvertBits(a, 8, dither=-1, fulls=fs, fulld=fs)
-        edge    = krn1 == "nnedi3" ? nnedi3_rpow2(a8,rfactor=factor,nns=nns,nsize=nsize,qual=qual,etype=etype,pscrn=pscrn,cshift=nfactor?Undefined():kernel2,fwidth=w2,fheight=h2,ep0=ep0,ep1=0.4,threads=cores,prefetch=(threads+cores)/2,csresize=true,mpeg2=true,range=fs?1:2) : \
-                                     ConvertFormat(a,w2,h2,cs_out="",EOTF="",scale_space="gamma",kernel=krn1,taps=krn1=="blackman"?8:Undefined())
-        edge    = krn1 == "nnedi3" ? LSFmod(edge,preset="LSF",strength=FC?2*rat:2,Smode=4,Lmode=1,edgemode=0,soothe=FC,overshoot=0,soft=-2,keep=0).ex_unsharp(0.08,max(w2,h2)/(rat*2),deconv=true).ConvertBits(bi, fulls=fs, fulld=fs) : edge
-        flat    =                    ConvertFormat(a,w2,h2,cs_out="",EOTF="",scale_space="gamma",kernel=krn2,taps=krn2=="blackman"?8:Undefined(),src_left=sh,src_top=sh)
+        edge1   = krn1 == "nnedi3" ? nnedi3_rpow2(a8,rfactor=factor,nns=nns,nsize=nsize,qual=qual,etype=etype,pscrn=pscrn,cshift=nfactor?und:kernel2,fwidth=w2,fheight=h2,ep0=ep0,ep1=0.4,threads=cores,prefetch=(threads+cores)/2,csresize=true,mpeg2=true,range=fs?1:2) : \
+                                     ConvertFormat(a,w2,h2,cs_out="",EOTF="",scale_space="gamma",kernel=krn1,taps=krn1=="blackman"?8:und)
+        edge    = krn1 == "nnedi3" ? LSFmod(edge1,preset="LSF",strength=FC?2*rat:2,Smode=4,Lmode=2,edgemode=0,soothe=FC,overshoot=0,soft=-2,keep=0).ConvertBits(bi, fulls=fs, fulld=fs) : edge1
+        flat    =                    ConvertFormat(a,w2,h2,cs_out="",EOTF="",scale_space="gamma",kernel=krn2,taps=krn2=="blackman"?8:und,src_left=sh,src_top=sh)
 
-        rat <= rth ? edge : ex_limitdif(flat, edge, thr=thr, elast=ela, UV=isy(a)?1:3).propCopy(a) } }
+        rat <= rth ? edge : ex_limitdif(flat, edge, thr=thr, elast=ela, UV=isy(a)?1:3).propCopy(a)
+
+        LFR = max(w,h)/(rat*2)
+        Fsa = max(w,h) * 2
+        k   = sqrt(log(2)/2) * LFR
+        LFR = Fsa / ( k * 2  * pi )
+        rat <= rth ? last : krn2!="sinc" ? last : ex_makeadddiff(last, last.ex_gaussianblur(LFR), krn1!="nnedi3" ? edge1.ex_gaussianblur(LFR) : edge1.ConvertBits(bi, fulls=fs, fulld=fs).ex_gaussianblur(LFR),UV=3)
+        dec != 0 ? ex_unsharp(abs(dec)/100.,max(w2,h2)/(rat*2), deconv=dec>0) : last } }
 
 
 
@@ -549,7 +590,7 @@ function MatteCrop(clip s, int "width", int "height", float "thr", bool "CropMor
     avg  = avg.TemporalSoften(10,255,255,10,2)
     avg  = avg.RatioResize(float(w),"adjust2w",kernel="bicubic")
 
-    avgc = ex_merge(avgY, avg, BoxMask(s,addw,w-addw,addh,h-addh)).ConvertBits(bi,dither=-1,fulls=fs)
+    avgc = ex_merge(avgY, avg, BoxMask(avg,addw,w-addw,addh,h-addh)).ConvertBits(bi,dither=-1,fulls=fs)
 
     SC   = SCSelect_HBD(avg,dfactor=SC_thr,mindif=1.0)
 
