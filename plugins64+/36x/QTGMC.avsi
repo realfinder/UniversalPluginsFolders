@@ -3,7 +3,7 @@
 #     QTGMC 3.33         by Vit,   2012                             #
 #     QTGMC 3.34d    mod by Dogway 2015                             #
 #     QTGMC 3.382s   mod by A.SONY 2021, based on 3.34d             #
-#     QTGMC 3.75 mix mod by Dogway 2022, based on 3.382s            #
+#     QTGMC 3.77 mix mod by Dogway 2022, based on 3.382s            #
 #                                                                   #
 #     https://avisynth.nl/index.php/QTGMC                           #
 #                                                                   #
@@ -16,6 +16,15 @@
 # Full documentation is in the 'QTGMC' html file that may comes with this script, or even better see avisynth wiki
 #
 # --- LATEST CHANGES ---
+#
+# v3.77mx
+# - Add ex_ReduceFlicker()
+# - Fix addnoiseN clamp
+#
+# v3.76mx
+# - Frameprops passthrough
+# - Add function definitions
+# - Tweak 'Str' and 'Amp' defaults
 #
 # v3.75mx
 # - Fix ex_vinverse() vertical blur
@@ -237,7 +246,7 @@
 #
 # Core plugins:
 #   MVTools2   (2.7.45 or above)
-#   MaskTools2 (2.2.29 or above)
+#   MaskTools2 (2.2.30 or above)
 #   NNEDI3     (0.9.4.59 or above)
 #   RgTools    (1.2 or above)
 #   vsTCanny   (1.1.5 for gaussian blur)
@@ -245,8 +254,8 @@
 #   Vinverse
 #
 # Core scripts:
-#   ExTools      (7.4   or above)
-#   SMDegrain    (3.4.5 or above) (for ex_luma_rebuild() or KNLMeansCL denoiser type)
+#   ExTools      (7.5   or above)
+#   SMDegrain    (3.4.7 or above) (for ex_luma_rebuild() or KNLMeansCL denoiser type)
 #   Zs_RF_Shared (1.156 or above) (for sh_Bob(), for YUY2: nonyuy2clipin() and nonyuy2clipout() and for EdiMode=="BWDIF+EEDI3": slimit_dif2() )
 #
 # Additional plugins and scripts:
@@ -257,7 +266,7 @@
 #       For FFT3DFilter & ddftest you also need the FFTW3 library (FFTW.org). On Windows the file needed for both is libfftw3f-3.dll. However, for FFT3DFilter
 #       the file needs to be called FFTW3.dll, so you will need two copies and rename one. On Windows put the files in your System32 or SysWow64 folder
 #   KNLMeansCL - if selected for noise processing
-#   AddGrainC v1.8.3 - if NoiseDeint="Generate" selected for noise bypass
+#   AddGrainC v1.8.4 - if NoiseDeint="Generate" selected for noise bypass
 #   chikuzen PlanarTools - if you work with YUY2 source (not necessarily required but may improve speed)
 #   BWDIF - for EdiMode modes "BWDIF+NNEDI3" and "BWDIF+EEDI3"
 
@@ -289,6 +298,38 @@
 #        Setting MBlurLimit has been renamed to SBlurLimit
 #        Setting NoiseBypass has been renamed to NoiseProcess
 #
+#
+# Function Definition:
+#     (
+#     clip,
+#     string "Preset"="Very Slow" ("Placebo" / "Very Slow" / "Slower" / "Slow" / "Medium" / "Fast" / "Faster" / "Very Fast" / "Super Fast" / "Ultra Fast" / "Draft"),
+#     [int "TR0"=2 (0 to 4 by 1)],
+#     [int "TR1"=2 (0 to 4 by 1)],
+#     [int "TR2"=1 (0 to 4 by 1)],
+#     [float "Sharpness"=1.0 (0.0 to 1.0 by 0.1)],
+#     [float "SVThin"=0.0 (0.0 to 0.5 by 0.05)],
+#     [int "ThSAD1"=640 (100 to 1000 by 1)],
+#     [int "ThSAD2"=256 (100 to 1000 by 1)],
+#     int "SourceMatch"=0 (0 to 3 by 1),
+#     string "MatchPreset"="Very Slow" ("Placebo" / "Very Slow" / "Slower" / "Slow" / "Medium" / "Fast" / "Faster" / "Very Fast" / "Super Fast" / "Ultra Fast" / "Draft"),
+#     string "MatchPreset2"="Very Slow" ("Placebo" / "Very Slow" / "Slower" / "Slow" / "Medium" / "Fast" / "Faster" / "Very Fast" / "Super Fast" / "Ultra Fast" / "Draft"),
+#     [int "MatchTR2"=1 (0 to 2 by 1)],
+#     [float "MatchEnhance"=0.0 (0.0 to 1.0 by 0.05)],
+#     int "Lossless"=0 (0 to 2 by 1),
+#     float "EZDenoise"=0.0 (0.0 to 3.0 by 0.1),
+#     float "EZKeepGrain"=1.0 (0.0 to 1.0 by 0.1),
+#     string "NoisePreset"="Faster" ("Slower" / "Slow" / "Medium" / "Fast" / "Faster"),
+#     [int "InputType"=0 (0 to 3 by 1)],
+#     [int "ShutterBlur"=0 (0 to 3 by 1)],
+#     [int "FPSDivisor"=1 (1 to 2 by 1)],
+#     [bool "Precise"=false],
+#     [string "Tuning"="None" ("None" / "DV-SD" / "DV-HD")],
+#     bool "Show"=false,
+#     bool "tv_range"=true,
+#     int "Threads"=4 (2 to 16 by 2),
+#     )
+#
+#
 function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", int "Rep0", int "Rep1", int "Rep2", string "EdiMode", bool "RepChroma", \
                     int "NNSize", int "NNeurons", int "EdiQual", int "EdiMaxD", string "ChromaEdi", clip "EdiExt", float "Sharpness", \
                     int "SMode", int "SLMode", int "SLRad", int "SOvs", float "SVThin", int "Sbb", int "SrchClipPP", int "SubPel", int "SubPelInterp", \
@@ -317,8 +358,8 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
     n16           = Default( n16,       false)
     n16d          = Default( n16d,      false)
     UseEdiExt     = Default( useEdiExt,    0 )
-    Str           = Default( Str,        3.0 )
-    Amp           = Default( Amp,     0.0625 )
+    Str           = Default( Str,        5.0 )
+    Amp           = Default( Amp,     0.0312 )
     tv            = Default( TV_range,    !fs)
 
     Assert(IsVersionOrGreater(3,7,1),            "QTGMC: Update AviSynth+ version")
@@ -628,8 +669,8 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
       domtr02 && Defined(EdiExt) ? isyuy2(EdiExt) ? bi8 ? EdiExt.nonyuy2clipin(true).vinverse(uv=CMmt) : EdiExt.nonyuy2clipin(true).ex_vinverse(uv=CMmt,fulls=!tv)                      : \
                                                     bi8 ?                     EdiExt.vinverse(uv=CMmt) :                     EdiExt.ex_vinverse(uv=CMmt,fulls=!tv) : TR0 == -2 ? bobbed : \
       domtr01 && Defined(EdiExt) ? isyuy2(EdiExt) ?       EdiExt.nonyuy2clipin(true)                   : EdiExt                                                    : TR0 == -1 ? bobbed : \
-                (TR0 == 0)       ? bobbed                                                                                                                 : \
-                (TR0 == 1)       ? (ChromaMotion ? ts1.Merge( bobbed, 0.25 ) : ts1.MergeLuma( bobbed, 0.25 ))                                             : \
+                (TR0 == 0)       ? bobbed                                                                                                                                               : \
+                (TR0 == 1)       ? (ChromaMotion ? ts1.Merge( bobbed, 0.25 ) : ts1.MergeLuma( bobbed, 0.25 ))                                                                           : \
                                                    ex_lutxyz(ts1,ts2,bobbed,"x 0.562625 * y 0.312375 * z 0.125 * + +", UV=CMmt)
 
     # Remove areas of difference between temporal blurred motion search clip and bob that are not due to bob-shimmer - removes general motion blur
@@ -849,7 +890,7 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
     # Add back any extracted noise, prior to final temporal smooth - this will restore detail that was removed as "noise" without restoring the noise itself
     # Average luma of FFT3DFilter extracted noise is 128.5, so deal with that too
     addNoise1 = (GrainRestore <= 0.0) ? backBlend2 : \
-                                        backBlend2.ex_lutxy( finalNoise, Format("y {noiseCentre} - {GrainRestore} * x +"), UV=CNmt2, fulls=!tv )
+                                        backBlend2.ex_lutxy( finalNoise, Format("y {noiseCentre} - {GrainRestore} * range_half neg range_half clip x +"), UV=CNmt2, fulls=!tv )
 
     # Final light linear temporal smooth for denoising
     stableSuper = (TR2  > 0) ? addNoise1.MSuper( pel=SubPel, sharp=SubPelInterp, levels=1, hpad=hpad, vpad=vpad, mt=bomt ) : nop()
@@ -878,7 +919,7 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
     # Add back any extracted noise, after final temporal smooth. This will appear as noise/grain in the output
     # Average luma of FFT3DFilter extracted noise is 128.5, so deal with that too
     addNoise2 = (NoiseRestore <= 0.0) ? lossed2 : \
-                                        lossed2.ex_lutxy( finalNoise, Format("y {noiseCentre} - {NoiseRestore} * 0 range_max clip x +"), UV=CNmt2, fulls=!tv )
+                                        lossed2.ex_lutxy( finalNoise, Format("y {noiseCentre} - {NoiseRestore} * range_half neg range_half clip x +"), UV=CNmt2, fulls=!tv )
 
 
     #---------------------------------------
@@ -920,6 +961,7 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
     # >>>> Restore YUY2 to interleaved
     output = (ShowNoise == 0.0) ? cropped : finalNoise.ex_lut(Format("x "+bi32m+" {ShowNoise} * "+bi32p), clamp_float=true, UV=CNmt128, fulls=!tv )
     output = yuy2 ? output.nonyuy2clipout(true) : output
+    output = output.propCopy(input).propSet("_FieldBased",0).propSet("_Combed", Lossless == 1 && SourceMatch > 0 ? 1 : 0 )
     return !ShowSettings ? output : \
         output.Subtitle( "TR0=" + string(TR0) + " | TR1=" + string(TR1) + " | TR2=" + string(TR2) + " | Rep0=" + string(Rep0) + " | Rep1=" + string(Rep1) + \
         " | Rep2=" + string(Rep2) + " | RepChroma=" + string(RepChroma) + "\nEdiMode='" + EdiMode + "' | NNSize=" + string(NNSize) + " | NNeurons=" + \
@@ -1245,7 +1287,7 @@ function ex_vinverse (clip clp, float "sstr", int "amnt", int "UV", clip "custem
     bi32m  = bi == 32 ? "" : "range_half -"
     bi32p  = bi == 32 ? "" : "range_half +"
 
-    vblur  =  clp.ex_lut("x[0,-1] x[0,1] x 1.98 * + + 0.251256281 * ", UV=uv) # Custom weighted blur, like ex_boxblur(0,1,"weighted") but not quite
+    vblur  =  clp.ex_lut("x[0,-1] x[0,1] x 1.98 * + + 0.251256281 *", UV=uv) # Custom weighted blur, like ex_boxblur(0,1,"weighted") but not quite
     vblurD =  dcus ? ex_makediff(clp, vblur, UV=uv, fulls=fs) : nop()
 
     VshrpD = !dcus ? ex_lutxy(vblur, vblur.ex_boxblur(0, 2, "weighted", UV=uv), Format("x y - {sstr} * "+bi32p), UV=uv, fulls=fs) : nop()
@@ -1255,3 +1297,46 @@ function ex_vinverse (clip clp, float "sstr", int "amnt", int "UV", clip "custem
                      ex_lutxyz(clp, VshrpD, Vblur,  "y "+bi32m+" A@ x z -          B@ * 0 < A abs B abs < A B ? dup 0.25 * swap ? z +" + sl, UV=uv, fulls=fs)
 
              (amnt ==  0) ?    clp : VlimD }
+
+
+
+# ReduceFlicker by Kassandro (15-09-2005)
+#
+# Port of ReduceFlicker plugin to internal Expr() wrappers by Dogway (18-02-2022)
+#
+# ReduceFlicker performs controlled averaging of a frame with its two adjacent temporal neighbors.
+# Controlled means that averaging only takes place in the presence of oscillations. Without such a restraint the filter would create massive ghosts.
+#
+# ReduceFlicker is purely a temporal filter that can be used for all kinds of material, but it is are particularly useful for interlaced footage or
+# progressive videos from digicams like my Canon Powershot S1 IS. It should be applied before deinterlacing.
+# If done so, the motion detection of the deinterlacer is fooled less by flicker, whence more detail is preserved.
+#
+# The type of flicker, which can be removed or at least reduced with ReduceFlicker, is more prevalent in camcorder material and the chroma of analog clips,
+# especially clips captured from VHS tapes. In other words ReduceFlicker is suited for removing or reducing certain kinds of electronic noise,
+# but it has virtually no effect on dust and film grain.
+#
+# Benchmarks:
+#     100% ex_ReduceFlicker(strength=1) (357fps)
+#      94% ReduceFlicker   (strength=1) (335fps, AVS+ port by Asd-g)
+#
+function ex_ReduceFlicker(clip a, int "strength", bool "aggressive", int "UV") {
+
+    str = max(1,Default(strength, 2))
+    agg = Default(aggressive,   false) # Avoid with strength=3
+    UV  = Default(UV,             3)
+    UV2 = !isy(a) && UV==3 ? Undefined() : ""
+
+    b3  = str > 2  ? a.selectevery(1,-3) : nop()
+    b2  =            a.selectevery(1,-2)
+    b   =            a.selectevery(1,-1)
+    f   =            a.selectevery(1,+1)
+    f2  = str == 2 ? a.selectevery(1,+2) : nop()
+    f3  = str >  2 ? a.selectevery(1,+3) : nop()
+
+    !agg     ?                                                                                                                                                                                                 \
+    str == 1 ? ex_lutxyza(a,   b2,b,f,   "z a dup1 dup1 max swap2 min x y - abs D@                             - x max swap D + x min z a x 2 * + + 0.25 * swap2 clip",                               UV=uv) : \
+    str == 2 ? Expr      (a,   b2,b,f,f2,"z a dup1 dup1 max swap2 min x y - abs x b - abs min D@               - x max swap D + x min z a x 2 * + + 0.25 * swap2 clip",                               UV2)   : \
+               Expr      (a,b3,b2,b,f,f3,"a b dup1 dup1 max swap2 min x z - abs x y - abs min x c - abs min D@ - x max swap D + x min a b x 2 * + + 0.25 * swap2 clip",                               UV2)   : \
+    str == 1 ? ex_lutxyza(a,   b2,b,f,   "z a dup1 dup1 max swap2 min y x - 0 max                              - x max swap x y - 0 max + x min z a x 2 * + + 0.25 * swap2 clip",                     UV=uv) : \
+    str == 2 ? Expr      (a,   b2,b,f,f2,"z a dup1 dup1 max swap2 min y x - b x - min 0 max                    - x max swap x y - x b - min 0 max + x min z a x 2 * + + 0.25 * swap2 clip",           UV2)   : \
+               Expr      (a,b3,b2,b,f,f3,"a b dup1 dup1 max swap2 min z x - y x - min c x - min 0 max          - x max swap x z - x y - min x c - min 0 max + x min a b x 2 * + + 0.25 * swap2 clip", UV2)   }

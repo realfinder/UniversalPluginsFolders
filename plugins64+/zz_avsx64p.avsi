@@ -78,3 +78,5 @@ hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir +
 #hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/vsSSIM.avsi") : nop() : nop() #SimilarityMetrics
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/SimilarityMetrics.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/GradFun3mod.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/CTools.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7) ? import(AviSynthPlugins64PDir + "36x/CToolsp.avsi") : nop() : nop()

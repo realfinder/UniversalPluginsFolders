@@ -1,0 +1,516 @@
+
+
+                            TelecineBob & FieldDeBlend  -  HELP FILE
+
+
+GENERAL INFO:
+
+     All filters are for YV12 8bit videos!
+
+     The plugins in CTools.avsi are not necessary. They are short and self explanatory.
+     You can mod/delete them if you want unless is stated so in the file.
+
+   Syntax=>
+
+     CTelecineNew(float "sstr", int "nt", bool "bob", bool "write", bool "inputTxt", float "thr60i", int "nt60i")
+     CDecimateNew(bool "isBob", bool "error", bool "heuristic")
+     CPostProcessing(float "thr", float "thr2", float "sstr", int "ntC", int "ntM", bool "isBob", clip "edeint", clip "edeint2")
+
+     CDuplicate(float "thr", int "nt", clip "dClip", bool "write")
+     CFieldDuplicate(float "thr", float "thr2", int "nt", clip "dClip", bool "write", bool "inputTxt")
+     CDropFrame()
+     CReplaceFrame()
+     CInterpolate(float "thr", int "nt", clip "dClip", clip "iClip", bool "write", bool "inputTxt")
+     CTelecine(int "thr", int "thr2", int "blkthr", int "blksize", int "mode", int "metric", int "nt", bool "sse", clip "edeint", clip "edeint2", bool "write", bool "inputTxt", bool "match")
+     CTelecine2(int "thr", int "thr2", int "blkthr", int "blksize", int "mode", int "metric", int "nt", bool "sse", clip "edeint", clip "edeint2", bool "write", bool "inputTxt")
+     CFieldDeBlend(float "thr", int "nt", clip "dClip", bool "prev", bool "bob")
+     CDecimate(bool "CTelecine", bool "CDuplicate")
+     CDecimate2()
+     CSceneChange(bool "write")
+     CSetPattern(int "start", int "end", bool "CCCCC", bool "NNCCC", bool "CNNCC", bool "CCNNC", bool "CCCNN", bool "NCCCN")
+     CGuessPattern()
+     CFieldDifference(int "mode", int "nt", bool "sse", bool "write", clip "dClip")
+
+CTELECINENEW PARAMETERS:
+
+     This filter uses a new field matching mode that should be less biased toward false n matches.
+     It requires vinverse.dll in your plugin folder.
+
+     sstr -
+   
+         vinverse sstr parameter. Influences the matching decision.
+         The more you increase it the more you low the nt parameter. The inverse is also true. 
+         However you are encouraged to try different values to find the best setting for your source.
+
+         Default: 2.7 (float)
+
+     nt - 
+
+         Difference noise threshold. Influences the matching decision.
+         You are encouraged to tune it to your source,
+         especially if you are getting wrong mouth matching on anime sources.
+         
+         Default: 5 (int)
+
+     bob -
+ 
+         If true, the output will be bobbed and a c/p match will be performed on the first field
+         and a c/n match on the second. Otherwise, same framerate c/n match.
+
+         Default: false (bool)
+
+     write -
+
+         Write the field matching decision to the CTelecine.txt file.
+         If bob is true, CTelecineBob.txt is also created to track p matches,
+         since a n match on the second field doesn't mean p match on the first field.
+         This last file is of no use to CDecimate.
+         The file are separated for easy implementation of functions who use CTelecine.txt.
+
+         Default: false (bool)
+
+     inputTxt -
+
+         Will reuse CTelecineNew(write=true) file to skip field matching calculation.
+
+         Default: false (bool)
+
+     thr60i -
+
+         Threshold for pure interlaced content. 
+         Everything with a combed value higher than thr60i is detected as pure interlaced.
+         Used only if bob=true.
+
+         Default: 1.0 (float)
+
+     nt60i -
+
+         Difference noise threshold for combed detection.
+         Don't mess with me too much.
+
+         Default: 10 (int)
+
+CDECIMATENEW PARAMETERS:
+
+     isBob -
+
+         If true the filter will do a 60->24 fps decimation, else 30->24.
+
+         Default: false (bool)
+
+     error -
+
+         Disable CDecimateNew startup error. If false, every error is handled as VFR for lack of data.
+
+         Default: true (bool)
+
+     heuristic - 
+
+         If true, CDecimate will drop the last n of the longest string of n matches.
+         Those cases won't trigger an error anymore (if true).
+         However cases like cncnc are stil treated as VFR due to lack of data.
+         (It might even be a post telecine cut and it would be correct to have VFR).
+
+         Default: true (bool)
+    
+CPOSTPROCESSING PARAMETERS:
+
+     This filter is used to deinterlace leftover combed and pure interlaced frames.
+     It requires vinverse.dll in your plugin folder.
+
+     - thr, thr2, edeint, edeint2
+
+         Any frame with a combed value higher than thr2 is REPLACED with a frame from the edeint2 clip.
+         Any frame with a combed value in the range (thr,thr2) is REPLACED with a frame from the edeint clip.
+
+         If edeint2 is not passed the default is QTGMC() (you don't need selecteven).
+         If edeint is not passed CPostProcessingMask() is called from CTools.avsi with edeint2 as deinterlacer.
+         This will help keep most of the progressive part of the frame as long the edeint2 deinterlacer does
+         some spatial or temporal check.
+
+         Default: 0.3 (float), 1.2 (float), CPostProcessingMask(edeint2,ntM) (clip), QTGMC(src) (clip)
+
+     sstr -
+   
+         vinverse sstr parameter. 
+         Higher value reduce the number of pixels detected as combed. The inverse is true.
+
+         Default: 2.7 (float)
+
+     ntC - 
+
+         Difference noise threshold in combing detection. Don't mess with me too much.
+
+         Default: 10 (int)
+
+     ntM -
+
+         CPostProcessingMask noise threshold, if a edeint is specified, this parameter does nothing.
+
+         Default: 5 (int)
+
+     isBob -
+
+         Tell the filter if the source is bobbed in order to return the correct frames.
+
+CDUPLICATE PARAMETERS:
+
+     The default setting will just subtitle the video if the current frame is a duplicate or not.
+     Meant to be used for tuning of other filters or to write a file to be used later by other filters.
+
+     thr -
+         
+         Duplicate threshold. Higher values means more duplicate.
+         
+         Default: 0.25 (float)
+
+     nt - 
+         
+         Noise threshold. Every difference lower than nt is ignored.
+
+         Default:  5  (int)
+     
+     dClip - 
+
+         Set an external clip for the duplicate detection.
+
+         Default: NULL (clip)
+
+     write -
+
+         Write the filter output in an external txt file to be used with other CFilters.
+
+         Default: false (bool)
+
+CFIELDDUPLICATE PARAMETERS:
+
+     The default setting will just subtitle the video if the fields of the current frame are a duplicate or not.
+     Meant to be used for creating a CTelecine.txt file for CTelecine and CDecimate.
+     Don't use on anime, it won't make sense out of the duplicates!
+
+     thr -
+         
+         Field duplicate threshold. Higher values means more duplicate. Set it low.
+         
+         Default: 0.05 (float)
+
+     thr2 -
+         
+         Field duplicate threshold. Higher values means more duplicate. Set it high.
+         
+         Default: 0.5 (float)
+
+     nt - 
+         
+         Noise threshold. Every difference lower than nt is ignored.
+
+         Default:  5  (int)
+     
+     dClip - 
+
+         Set an external clip for the duplicate detection. 
+         Use CFieldDuplicate(dClip=CFieldSofter()) on ugly source or on ones with moire.
+
+         Default: NULL (clip)
+
+     write -
+
+         Write the filter output in an external txt file to be used by CFieldDuplicate(inputTxt=True).
+
+         Default: false (bool)
+
+     inputTxt -
+      
+         Create a CTelecine.txt file from the files written by CFieldDuplicate(write=True)
+
+         Default: false (bool)
+
+CDROPFRAME PARAMETERS:
+
+     There are no parameters.      
+     This filters takes the CDuplicate.txt file created by CDuplicate(write=true) 
+     and returns a clip without duplicates.
+
+CREPLACEFRAME PARAMETERS:
+
+     There are no parameters.      
+     This filters takes the CDuplicate.txt file created by CDuplicate(write=true) 
+     and returns a clip were all duplicates are replaced with the first not duplicate related to them.
+
+CINTERPOLATE PARAMETERS:
+
+     This filter interpolates duplicated frame that are followed by a not duplicate.
+     This allows to keep original full framerate animations while interpolating the above mentioned duplicates.
+ 
+     thr -
+         
+         Duplicate threshold. Higher values means more duplicate.
+         
+         Default: 0.25 (float)
+
+     nt - 
+         
+         Noise threshold. Every difference lower than nt is ignored.
+
+         Default:  5  (int)
+     
+     dClip - 
+
+         Set an external clip for the duplicate detection.
+
+         Default: NULL (clip)
+
+     iClip - 
+
+         Set the clip from which take the interpolate frame. You can use iClip() or iClip2() from CTools.avsi.
+
+         Default: not set (clip)
+
+     write -
+
+         Write the filter output in an external txt file to be used later for editing the filter decision.
+
+         Default: false (bool)
+
+     inputTxt -
+
+         Skip duplicate detection by using CInterpolate(write=true) generated file.
+
+         Default: false (bool)
+
+CTELECINE PARAMETERS:
+
+     This filter will perform a c/n match on a telecined source. 
+     It allows to deinterlace leftovers and pure 60i animations with different deinterlacers.
+
+     thr -
+
+         Set the combing detection threshold. Lower values means more pixels are detected as combed.
+	 255 means no comb detection is made. For values lower than 255, the combed pixels are
+	 replaced with the pixels from the edeint clip. This is only if the frame is detected as combed.
+	 See blkthr, blksize.
+
+	 A good starting value is 3.
+
+         Default:  255  (int)
+
+
+     thr2 -
+
+         Same as thr but is performed on the average combed value of the frame. If the average is
+	 detected as combed the whole frame is replaced with the frame from the edeint2 clip.
+
+	 A good starting value is 6.
+
+         Default:  255  (int)
+
+
+     blkthr, blksize -
+
+         blksize defines the side of the square block in which the comb detection is made to
+	 define if a frame is detected as combed. If the frame is combed the combed
+         pixels are replaced by the pixels from edeint clip.
+
+	 Available values are 4, 8, 16, 32, 64, 128.
+
+	 blkthr defines how much combed pixels must be in the block defined by blksize to detect
+         the frame as combed.
+
+         Default:  bt = 128, bs = 16  (int)
+
+     mode -
+
+         Set the field difference method. Available values are 0, 1 and 2.
+	
+	 mode 0 is a basic pixel by pixel abs difference.
+	 mode 1 is decomb.dll (?) field matching formula with minor changes.
+	 mode 2 is TIVTC.dll field matching formula.
+
+         Default:  0  (int)
+
+
+     metric -
+
+         Set the comb detection method. Available values are 0 and 1.
+	 
+	 metric 0 is TIVTC.dll default method.
+	 metric 1 is decomb.dll method.
+
+         Default:  1  (int)
+
+     nt -
+
+         Set the noise threshold for the field difference calculation. Every difference
+	 lower than nt is ignored.
+
+         Default:  5  (int)
+
+     sse -
+
+         If set to true, then sse (sum of squared errors) will be used instead of
+         sad (sum of absolute differences) when calculating the field difference.
+
+         Default:  true  (bool)
+
+     edeint, edeint2 -
+
+         Define the clips from which the deinterlaced pixels/frames are take from after the comb detection.
+
+         Default:  NULL, NULL  (clip)
+
+     write -
+
+         Write the filter output in an external txt file to be used later for editing the filter decision.
+
+         Default: false (bool)
+
+     inputTxt -
+
+         Skip field matching processing by using CTelecine(write=true) generated file.
+         You can also use it for CDecimate. See below.
+
+         Default: false (bool)
+
+     match -
+      
+         If false it will skip field matching. Use it for deinterlacing only.
+
+         Default: true (bool)
+
+CTELECINE2 PARAMETERS:
+
+     This filter will perform a p/c match on the first field and a c/n match on the second field
+     of a telecined source to output a bobbed clip. 
+     It allows to deinterlace leftovers and pure 60i animations with different deinterlacers.
+     The parameters are exactly the same as CTelecine (aside match), you need to use CDecimate2 with it.
+
+CFIELDDEBLEND PARAMETERS:
+
+     This filter will use CTelecine and CTelecine2 output video and remove field blending when possible.
+
+     thr -
+         
+         Duplicate threshold. Higher values means more duplicate.
+         
+         Default: 0.25 (float)
+
+     nt - 
+         
+         Noise threshold. Every difference lower than nt is ignored.
+
+         Default:  5  (int)
+     
+     dClip - 
+
+         Set an external clip for the duplicate detection.
+
+         Default: NULL (clip)
+
+     prev - 
+    
+         Decide if to replace the field blended frame with the next (false) or previous (true) frame.
+
+         Default: false (bool)
+
+     bob -
+   
+         Set a bobbed full deinterlaced clip for the field blend detection.
+         You might want to do something like this CFieldDeBlend(thr=0.005,bob=CTelecine2(thr=3,edeint=nnedi3(-2))).
+         As you can see you should use very low values for thr, since this mode is slower but more precise.
+         The dClip should be bobbed as well. "prev" is ignored because is checked from both sides in this mode.
+
+         Default: false (bool)
+
+CDECIMATE PARAMETERS:
+     
+     CTelecine, CDuplicate -
+
+         It will use CTelecine or CDuplicate txt files to perform the decimation.
+         At the startup it give an error if the used file contains a wrong decimation pattern.
+         It will specify the starting frame of the above mentioned cycle.
+         Editing the file until you don't get any error is the only way to get a perfect decimation.
+
+         Default: true, false (bool)
+
+CDECIMATE2 PARAMETERS:
+     
+         This function has no patameters.
+         It will use CTelecine2.txt to output a mixed 24p/30p/60p clip.
+
+CSCENECHANGE PARAMETERS:
+     
+     To use this you must call a mvtools2 MSCDetection(forwvec) clip.
+     You can use the SCClip() from CTools.avsi as a preset.
+
+     write - 
+        
+        If true: it will write a file with the MSCDetection decision.
+        If false: it will generate a file named Trim.txt which will contain your source trimmed by scene changes.
+        Use this for video editing or for scene filtering.
+
+        Default: true (bool)
+
+CSETPATTERN PARAMETERS:
+
+     This function will edit CTelecine.txt file to set a field matching pattern in a range of frames.
+
+     start, end -
+
+        The frames in the [start, end] range are the ones that are going to be edited.
+
+        Default: not set (int)
+
+     CCCCC, NNCCC, CNNCCC, CCNNC, CCCNN, NCCCN -
+
+        Use one of them to decide witch pattern to force in the CTelecine.txt file.
+
+        Default: false for all (bool)
+
+CGUESSPATTERN PARAMETERS:
+
+     This function will use CFieldDuplicate(write=true) and CSceneChange(SCClip(),write=true)
+     files to output a CTelecine.txt file.
+     The key to get the right guess is to have the right scenechange detection and enough motion in the scenes.
+
+CFIELDDIFFERENCE PARAMETERS:
+
+     This function will write a txt file with the current fields difference.
+     No function use those data at the moment, you can use a python script to use them if you want.
+
+     mode, nt, sse -
+
+        Same as CTelecine.
+
+     write -
+        
+        If false, the filter does nothing and just wastes your encoding time. Do not use.
+
+        Default: true (bool)    
+
+     dClip - 
+
+        Specify a clip from which to take the metrics.
+
+        Default: NULL (clip)
+
+CHANGE LIST:
+
+     v1.0.0 
+     - First public release.
+     v1.0.1
+     - Added VFR support on CDecimate, it will now output vfr on CCCCC or duplicate free cycles.
+     - Added CFieldDuplicate to counter moire and get (maybe) better field matching on not anime sources.
+     v1.0.2
+     - Added match parameter to CTelecine.
+     - Added 60i support to CTelecine2.
+     - Added CDecimate2()
+     - Added CSetPattern()
+     - Added CGuessPattern()
+     - Added CFieldDifference()
+     v1.0.3
+     - CDecimate2() bug fix.
+     v1.0.4
+     - Added CTelecineNew()
+     - Added CDecimateNew()
+     - Added CPostProcessing()
+

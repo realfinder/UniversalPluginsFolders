@@ -126,6 +126,8 @@ AvsPlusVersionNumber < 3442 ? AvsPlusVersionNumber < 3276 ? nop() : import(AviSy
 Import(AviSynthPluginsDir + "avsplus/MtModes.avsi")
 }
 
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/ExTools.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/SMDegrain.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/ffms2.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/Utils-r41.avsi")
 AvsPlusVersionNumber < 3382 ? VersionNumber() < 2.60 ? Import(AviSynthPluginsDir + "25/QTGMC.avsi") : Import(AviSynthPluginsDir + "26/QTGMC.avsi") : Import(AviSynthPluginsDir + "avsplus/QTGMC.avsi")
@@ -177,6 +179,8 @@ AvsPlusVersionNumber < 3382 ? Import(AviSynthPluginsDir + "25/BalanceBorders.avs
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/bbmodY.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/SimilarityMetrics.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/GradFun3mod.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/CToolsp.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/CTools.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")

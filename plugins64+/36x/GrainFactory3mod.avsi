@@ -6,7 +6,7 @@
 ###                                            ###
 ###            2012.04.06 v1.2 by 06_taro      ###
 ###            2020.04.06      by A.SONY.      ###
-###            2021.11.18 mx   by Dogway       ###
+###            2022.02.17 mx   by Dogway       ###
 ###                                            ###
 ##################################################
 ###
@@ -18,6 +18,12 @@
 ### +-------------+
 ### |  CHANGELOG  |
 ### +-------------+
+###
+### 2022.02.17 mx
+###      - Fix '_ColorRange' override
+###
+### 2022.02.16 mx
+###      - Fix 'fulls' logic
 ###
 ### 2021.11.18 mx
 ###      - Update 'fulls' defaults
@@ -90,12 +96,12 @@
 ### |  REQUIREMENTS  |
 ### +----------------+
 ###
-### -> AddGrainC         [v1.8.3]
+### -> AddGrainC         [v1.8.4]
 ### -> RgTools           [v1.2]
-### -> MaskTools2        [v2.2.29]
+### -> MaskTools2        [v2.2.30]
 ### -> neo_f3kdb         [r6]       (Optional)
-### -> ExTools           [v7.3.0]
-### -> ResizersPack      [v7.6.0]
+### -> ExTools           [v7.5.0]
+### -> ResizersPack      [v7.9.0]
 ###
 
 function GrainFactory3mod(clip clp,
@@ -154,11 +160,10 @@ ontop_cgrain = Default( ontop_cgrain,   0 )  # [ 0 - ???] additional chroma grai
 ontop_const  = Default( ontop_const, false)  # AddGrainC "constant" parameter of ontop clip
 use_ALMask   = Default( use_sAverageLumaMask, false)
 
-tv_D         = Defined( tv_range)
 rgb = isRGB(clp)
-fs  = tv_D ? tv : propNumElements (clp,"_ColorRange")  > 0 ? \
-                  propGetInt      (clp,"_ColorRange") == 0 : rgb
-tv           = Default( tv_range, !fs)
+fs  = propNumElements (clp,"_ColorRange")  > 0 ? \
+      propGetInt      (clp,"_ColorRange") == 0 : rgb
+tv  = Default( tv_range, !fs)
 
 
 #-----------------------------------------------------------------------------------
@@ -287,7 +292,7 @@ grainLayer = ( ontop_grain<=-1 || ontop_cgrain<=-1 ) ? grainLayer.neo_f3kdb(Y=0,
 
 #-----------------------------------------------------------------------------------
 
-result = o.ex_makediff(grainlayer, UV=ochroma, fulls=!tv)
+result = ex_lutxy(o, grainlayer, "x y - range_half +", UV=ochroma, fulls=!tv)
 msk    = o.ScriptClip( function[] () { ex_lut(string(AverageLuma(last)),UV=1) } )
 
 use_ALMask ? mt_merge(result, o, msk, luma=chroma, U=ochroma,V=ochroma) : result }
