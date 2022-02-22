@@ -128,6 +128,9 @@ CPOSTPROCESSING PARAMETERS:
          This will help keep most of the progressive part of the frame as long the edeint2 deinterlacer does
          some spatial or temporal check.
 
+	 For isBob=false, a double framerate edeint/2 clip is expected.
+         For isBob=true, a same framerate edeint/2 clip is expected.
+
          Default: 0.3 (float), 1.2 (float), CPostProcessingMask(edeint2,ntM) (clip), QTGMC(src) (clip)
 
      sstr -
@@ -513,4 +516,10 @@ CHANGE LIST:
      - Added CTelecineNew()
      - Added CDecimateNew()
      - Added CPostProcessing()
-
+     v1.0.5
+     - Reduced stack in CTelecineNew and CDecimateNew
+     - Now CTelecineNew closes automatically the txt file on last frame.
+     - Speed improvement.
+     v1.0.6
+     - Fixed wrong frame count on CDecimateNew
+     - Now CPP expect same frame rate edeint/2 clip when isBob=true.

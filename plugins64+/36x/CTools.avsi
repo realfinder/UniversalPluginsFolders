@@ -1,13 +1,13 @@
 ### DON'T DELETE ME!!! ###
 
-function CPostProcessingMask(clip src, clip "bob", int "nt")
+function CPostProcessingMask(clip src, clip "bob", int "nt", bool "isBob")
 {
     E = SelectEven(bob)
     O = SelectOdd(bob)
     mt_lutxy(E,O,"x y - abs "+string(nt)+" < 0 255 ?",u=3,v=3)
     mt_expand(mode="vertical",u=3,v=3)
     Interleave(last,last)
-    mt_merge(Interleave(src,src),bob,last,u=3,v=3)
+    mt_merge(isBob ? src : Interleave(src,src),bob,last,u=3,v=3)
 }
 
 ### COLORSPACE CONVERSIONS ###
