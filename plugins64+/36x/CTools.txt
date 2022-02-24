@@ -90,6 +90,15 @@ CTELECINENEW PARAMETERS:
 
          Default: 10 (int)
 
+     mode -
+
+         Field matching mode.
+         - mode == 0: use vinverse.dll.
+         - mode == 1: use ex_vinverse.avsi.
+         - mode == ...: coming soon or later.
+         
+         Default: 0 (int)
+
 CDECIMATENEW PARAMETERS:
 
      isBob -
@@ -523,3 +532,7 @@ CHANGE LIST:
      v1.0.6
      - Fixed wrong frame count on CDecimateNew
      - Now CPP expect same frame rate edeint/2 clip when isBob=true.
+     v1.0.7
+     - Added VFR to CFR support to CDecimateNew.
+     - Fixed VFR file grammar.
+     - Added mode parameter to CTelecineNew. (mode=1 is ex_vinverse).

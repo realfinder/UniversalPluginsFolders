@@ -195,8 +195,8 @@ function iClip3(clip src, int "p")
 {
     src
     super = MSuper()
-    backvec = MAnalyse(super,blksize=64,overlap=32,isb=true,delta=1)
-    forwvec = MAnalyse(super,blksize=64,overlap=32,isb=false,delta=1)
+    backvec = MAnalyse(super,blksize=4,overlap=2,isb=true,delta=1)
+    forwvec = MAnalyse(super,blksize=4,overlap=2,isb=false,delta=1)
     MFlowFps(src,super,backvec,forwvec,blend=false,num=120000,den=1001)
     SelectEvery(5,p)
     return last
