@@ -12,8 +12,8 @@ GENERAL INFO:
 
    Syntax=>
 
-     CTelecineNew(float "sstr", int "nt", bool "bob", bool "write", bool "inputTxt", float "thr60i", int "nt60i")
-     CDecimateNew(bool "isBob", bool "error", bool "heuristic")
+     CTelecineNew(float "sstr", int "nt", bool "bob", bool "write", bool "inputTxt", float "thr60i", int "nt60i", float "mode2thr")
+     CDecimateNew(bool "isBob", bool "error", bool "heuristic", clip "iClip")
      CPostProcessing(float "thr", float "thr2", float "sstr", int "ntC", int "ntM", bool "isBob", clip "edeint", clip "edeint2")
 
      CDuplicate(float "thr", int "nt", clip "dClip", bool "write")
@@ -95,9 +95,16 @@ CTELECINENEW PARAMETERS:
          Field matching mode.
          - mode == 0: use vinverse.dll.
          - mode == 1: use ex_vinverse.avsi.
+         - mode == 2: Not anime friendly. Might be good with movies. Only way for moire. Use with CFieldSofter().
          - mode == ...: coming soon or later.
          
          Default: 0 (int)
+
+     mode2thr -
+
+         Field duplicate detection threshold. Use small values.
+
+         Default: 0.005 (float)
 
 CDECIMATENEW PARAMETERS:
 
@@ -121,6 +128,12 @@ CDECIMATENEW PARAMETERS:
          (It might even be a post telecine cut and it would be correct to have VFR).
 
          Default: true (bool)
+
+     iClip -
+
+         Specify a 24fps interpolated clip to replace VFR section in order to get CFR.
+
+         Default: NULL (clip)
     
 CPOSTPROCESSING PARAMETERS:
 
@@ -536,3 +549,7 @@ CHANGE LIST:
      - Added VFR to CFR support to CDecimateNew.
      - Fixed VFR file grammar.
      - Added mode parameter to CTelecineNew. (mode=1 is ex_vinverse).
+     v1.0.8
+     - Added mode=2 and mode2thr paramater in CTelecineNew.
+     - Fixed CTelecineNew(bob=true,inputTxt=true) bug.
+     - Minor speed up for mode=0/1. From 250 fps to 280fps.

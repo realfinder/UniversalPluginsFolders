@@ -82,10 +82,10 @@ LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
     CFieldDifference(clip, mode, nt, sse, write, dClip)
 }
 
-function CTelecineNew(clip clip, float "sstr", int "nt", bool "bob", bool "write", bool "inputTxt", float "thr60i", int "nt60i", int "mode")
+function CTelecineNew(clip clip, float "sstr", int "nt", bool "bob", bool "write", bool "inputTxt", float "thr60i", int "nt60i", int "mode", float "mode2thr")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CTelecineNew(clip, sstr, nt, bob, write, inputTxt, thr60i, nt60i, mode)
+    CTelecineNew(clip, sstr, nt, bob, write, inputTxt, thr60i, nt60i, mode, mode2thr)
 }
 
 function CDecimateNew(clip clip, bool "isBob", bool "error", bool "heuristic")

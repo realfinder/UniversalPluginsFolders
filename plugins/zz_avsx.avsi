@@ -103,7 +103,6 @@ AvsPlusVersionNumber > 1576 ? AVS_P_MT_A_SONY() : nop()
 
 function AVS_2_6_NB_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "26/AutoLevels_0.9.dll")
-LoadPlugin(AviSynthPluginsDir + "26/CombMask.dll")
 LoadPlugin(AviSynthPluginsDir + "26/FFTQuiver.dll")
 LoadPlugin(AviSynthPluginsDir + "26/JpegSource.dll") #make 2012.03.31 and 2012.04.03 and 2012.05.16 crash so load it manually if you need it
 LoadPlugin(AviSynthPluginsDir + "26/DeJitter.dll")
