@@ -12,7 +12,11 @@ GENERAL INFO:
 
    Syntax=>
 
-     CTelecineNew(float "sstr", int "nt", bool "bob", bool "write", bool "inputTxt", float "thr60i", int "nt60i", float "mode2thr")
+     CAntiAliasing(int "nt", int "mode")
+     CSharpen(clip "blur", int "nt", int "mode")
+     CDeHalo(clip "blur", int "nt", int "mode")
+     CDegrain(int "radius", int "nt", int "thr", clip "dClip")
+     CTelecineNew(float "sstr", int "nt", int"ntN", bool "bob", bool "write", bool "inputTxt", float "thr60i", int "nt60i", float "mode2thr")
      CDecimateNew(bool "isBob", bool "error", bool "heuristic", clip "iClip")
      CPostProcessing(float "thr", float "thr2", float "sstr", int "ntC", int "ntM", bool "isBob", clip "edeint", clip "edeint2")
 
@@ -30,6 +34,100 @@ GENERAL INFO:
      CSetPattern(int "start", int "end", bool "CCCCC", bool "NNCCC", bool "CNNCC", bool "CCNNC", bool "CCCNN", bool "NCCCN")
      CGuessPattern()
      CFieldDifference(int "mode", int "nt", bool "sse", bool "write", clip "dClip")
+
+CSHARPEN PARAMETERS:
+
+     This filter is a fast solution to sharp a clip with some heuristic solutions for dithering and halo.
+     The first clip is the input, the second clip is a blur filter you must specify.
+     CSharpen(FastBlur(3)) is all you need to do. 
+
+     nt -
+     
+         Noise threshold. Every difference lower than this value is not used for sharpening.
+         This prevent dithering sharpening but some low frequency details may not get sharpened.
+
+         Default: 5 (int)
+
+     mode -
+
+	 mode == 0 CSharpen(FastBlur(3),mode=0) is basically mt_adddiff(mt_makediff(FastBlur(3))) without the nt parameter.
+         mode == 1 does the sqrt of the difference to prevent halo.
+         mode == 2 does atan * sqrt of the difference to get a slightly stronger sharpening.
+
+         Default: 1 (bool)
+
+CDEHALO PARAMETERS:
+
+     This filter is a fast solution to dehalo a clip with some heuristic solutions for dithering.
+     The first clip is the input, the second clip is a blur filter you must specify.
+     CDeHalo(FastBlur(3)) is all you need to do. 
+
+     nt -
+     
+         Noise threshold. Every difference lower than this value is not used for dehalo.
+         This prevent dithering and low frequency details blur.
+
+         Default: 5 (int)
+
+     mode -
+
+	 mode == 0 CDeHalo(FastBlur(3),mode=0) is basically mt_adddiff(mt_makediff(FastBlur(3)).invert()) without the nt parameter.
+         mode == 1 does the sqrt of the difference to reduce blur.
+         mode == 2 does atan * sqrt of the difference to get a slightly stronger dehalo.
+
+         Default: 1 (bool)
+
+CANTIALIASING PARAMETERS:
+
+     This filter is a blur based antialiasing. 
+     It does the average of the surrounding pixels and averages that with the current pixel.
+
+     nt -
+     
+         Noise threshold. Every difference lower than this is restored back.
+         This prevent dithering and low frequency details blur.
+
+         Default: 5 (int)
+
+     mode -
+
+	 mode == 0 strongest antialiasing mode.
+         mode == 1 restore some details.
+         mode == 2 restore some details. Should be stronger than mode == 1, but the difference is hard to see.
+
+         Default: 0 (int)
+   
+CDEGRAIN PARAMETERS:
+
+     This filter is a degrain that blends stationary parts of the picture. 
+     It takes the chroma difference into account to reduce blending by using a 4x4 block in order to use a 2x2 chroma block.
+     Using this filter I reduce a lossless anime encode with x264 from 1.48gb to 490mb (original source 460mb!) without introducing blending.
+
+     radius -
+
+         Set how much frames in each direction to take into account.
+ 
+         Default: 3 (int)
+
+     nt -
+
+         Any pixel difference value higher than nt is set to 255. 
+         This helps preventing blending.
+
+         Default: 5 (int)
+
+     thr - 
+
+         You have 4x4 pixels from the luma and 2x2x2 pixels from the chroma, so the sum of 24 pixel is taken into account.
+         If the sum of the difference is lower or equal than thr, the block is blended.
+
+	 Default: 32 (int)
+
+     dClip -
+
+         Specify a denoised clip from which to take the difference.
+
+         Default: NULL (clip)
 
 CTELECINENEW PARAMETERS:
 
@@ -51,6 +149,13 @@ CTELECINENEW PARAMETERS:
          especially if you are getting wrong mouth matching on anime sources.
          
          Default: 5 (int)
+
+     ntN - 
+
+         Difference noise threshold for N matches.
+         Used to increase/lower the bias of n matches in mode 3 and mode 4.
+         
+         Default: nt (int)
 
      bob -
  
@@ -96,7 +201,8 @@ CTELECINENEW PARAMETERS:
          - mode == 0: use vinverse.dll.
          - mode == 1: use ex_vinverse.avsi.
          - mode == 2: Not anime friendly. Might be good with movies. Only way for moire. Use with CFieldSofter().
-         - mode == ...: coming soon or later.
+         - mode == 3: Decomb.dll metric (not exactly).
+         - mode == 4: TIVTC.dll metric (not exactly).
          
          Default: 0 (int)
 
@@ -105,6 +211,12 @@ CTELECINENEW PARAMETERS:
          Field duplicate detection threshold. Use small values.
 
          Default: 0.005 (float)
+
+     sse -
+
+         If true the square of absolute difference is used into mode 3 and 4.
+
+         Default: true (bool)
 
 CDECIMATENEW PARAMETERS:
 
@@ -553,3 +665,14 @@ CHANGE LIST:
      - Added mode=2 and mode2thr paramater in CTelecineNew.
      - Fixed CTelecineNew(bob=true,inputTxt=true) bug.
      - Minor speed up for mode=0/1. From 250 fps to 280fps.
+     v1.0.9
+     - Added mode=3 and mode=4 to CTelecineNew.
+     - Added CDegrain.
+     - Added CSharpen.
+     v1.1.0
+     - Removed Sqrt parameter from CSharpen.
+     - Added mode parameter to CSharpen + new sharpening mode.
+     - Added CDeHalo.
+     - Added CAntiAliasing.
+     - Added ntN parameter to CTelecineNew for mode 3, 4.
+     - CTelecineNew default mode is now 3.

@@ -82,13 +82,13 @@ LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
     CFieldDifference(clip, mode, nt, sse, write, dClip)
 }
 
-function CTelecineNew(clip clip, float "sstr", int "nt", bool "bob", bool "write", bool "inputTxt", float "thr60i", int "nt60i", int "mode", float "mode2thr")
+function CTelecineNew(clip clip, float "sstr", int "nt", int "ntN", bool "bob", bool "write", bool "inputTxt", float "thr60i", int "nt60i", int "mode", float "mode2thr", bool "sse")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CTelecineNew(clip, sstr, nt, bob, write, inputTxt, thr60i, nt60i, mode, mode2thr)
+    CTelecineNew(clip, sstr, nt, ntN, bob, write, inputTxt, thr60i, nt60i, mode, mode2thr, sse)
 }
 
-function CDecimateNew(clip clip, bool "isBob", bool "error", bool "heuristic")
+function CDecimateNew(clip clip, bool "isBob", bool "error", bool "heuristic", clip "iClip")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
     CDecimateNew(clip, isBob, error, heuristic)
@@ -98,4 +98,28 @@ function CPostProcessing(clip clip, float "thr", float "thr2", float "sstr", int
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
     CPostProcessing(clip, thr, thr2, sstr, ntC, ntM, isBob, edeint, edeint2)
+}
+
+function CSharpen(clip clip, clip blur, int "nt", int "mode")
+{
+LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
+    CSharpen(clip, blur, nt, mode)
+}
+
+function CDeHalo(clip clip, clip blur, int "nt", int "mode")
+{
+LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
+    CDeHalo(clip, blur, nt, mode)
+}
+
+function CDegrain(clip clip, int "radius", int "nt", int "thr", clip "dClip")
+{
+LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
+    CDegrain(clip, radius, nt, thr, dClip)
+}
+
+function CAntiAliasing(clip clip, int "nt", int "mode")
+{
+LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
+    CAntiAliasing(clip, nt, mode)
 }

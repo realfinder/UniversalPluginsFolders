@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------#
 #                                                                   #
 #                     QTGMC 3.33 by Vit, 2012                       #
-#     QTGMC 3.382 2021 mod by A.SONY, based on v3.33d by Dogway     #
+#     QTGMC 3.383 2022 mod by A.SONY, based on v3.33d by Dogway     #
 #                                                                   #
 #   A high quality deinterlacer using motion-compensated temporal   #
 #  smoothing, with a range of features for quality and convenience  #
@@ -12,6 +12,10 @@
 # Full documentation is in the 'QTGMC' html file that may comes with this script, or even better see avisynth wiki
 #
 # --- LATEST CHANGES ---
+#
+# v3.383s
+# - update to STGMC 3.385
+# - change TV_range to false to make it act like Vit QTGMC 3.33
 #
 # v3.382s
 # - fix for n16 family
@@ -199,7 +203,7 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
                     float "NoiseRestore", string "NoiseDeint", bool "StabilizeNoise", int "InputType", float "ProgSADMask", int "FPSDivisor", \
                     int "ShutterBlur", float "ShutterAngleSrc", float "ShutterAngleOut", int "SBlurLimit", bool "Border", bool "Precise", string "Tuning", \
                     bool "ShowSettings", string "GlobalNames", string "PrevGlobals", int "ForceTR", \
-                    val "BT", val "DetailRestore", val "MotionBlur", val "MBlurLimit", val "NoiseBypass", float "Str", float "Amp", bool "TV_range", bool "useEdiExt", int "DftDither", bool "lsbd", bool "lsb", bool "n16", bool "keep_tv_range", String "device_type", int "device_id", bool "n16d", bool "FastMA", bool "ESearchP", bool "EdiExtPre", bool "Refinemotion" )
+                    val "BT", val "DetailRestore", val "MotionBlur", val "MBlurLimit", val "NoiseBypass", float "Str", float "Amp", bool "TV_range", int "useEdiExt", int "DftDither", bool "lsbd", bool "lsb", bool "n16", bool "keep_tv_range", String "device_type", int "device_id", bool "n16d", bool "FastMA", bool "ESearchP", bool "Refinemotion" )
 {
 	# EdiMode="RepcYadif"/"cYadif" require the Yadif plugin, which doesn't autoload. Typically the calling script would load it.
 
@@ -215,12 +219,11 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
     n16           = default( n16,       false)
     n16d          = default( n16d,      false)
     FastMA        = default( FastMA,    false)
-    useEdiExt     = default( useEdiExt, false)
-    EdiExtPre     = default( EdiExtPre, false)
+    UseEdiExt     = Default( UseEdiExt,     0)
     ESearchP      = default( ESearchP,  false)
     Str           = default( Str,        1.0 )
     Amp           = default( Amp,     0.0625 )
-    TV_range      = default( TV_range, !(Isrgb(input)))
+    TV_range      = default( TV_range,           false)
     keep_tv_range = default( keep_tv_range,      false)
 	
 	# Dogways Added Defaults
@@ -233,6 +236,8 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
 	sisphbd  ? Assert( !(sbpc > 8 && (lsb || lsbd)), "QTGMC: lsb hack is not Compatible with native high bit depth" ) : nop()
 	Assert(!(lsbd && n16d), "QTGMC: lsbd and n16d can't be used together" )
 	Assert(!(lsb && n16), "QTGMC: lsb and n16 can't be used together" )
+	Assert(!(!Defined(EdiExt) && UseEdiExt > 0), "STGMC: UseEdiExt need EdiExt to work")
+	Assert(!(n16d && sbpc >= 16), "STGMC: n16d should not be used with 16bit or better clip")
 
 	# Select presets / tuning
 	Preset = default( Preset, "Slower" )
@@ -501,10 +506,10 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
 	planarClip = yuy2 ? clip.nonyuy2clipin(true) : clip
 
 	# Bob the input as a starting point for motion search clip
-	bobbed = (InputType == 0) ? useEdiExt ? isyuy2(EdiExt) ? EdiExt.nonyuy2clipin(true) : EdiExt : planarClip.sh_Bob( 0,0.5 ) : \
+	bobbed = (InputType == 0) ? UseEdiExt > 0 ? isyuy2(EdiExt) ? EdiExt.nonyuy2clipin(true) : EdiExt : planarClip.sh_Bob( 0,0.5 ) : \
 	         (InputType == 1) ? planarClip : \
 	                            planarClip.Blur( 0,1 )
-	bobbed = (InputType == 0) && useEdiExt && EdiExtPre ? bobbed.Vinverse_avsi() : bobbed
+	bobbed = (InputType == 0) && UseEdiExt > 1 ? bobbed.Vinverse_avsi() : bobbed
 
 	# If required, get any existing global clips with a matching "GlobalNames" setting. Unmatched values get NOP (= 0)
 	srchClip  = QTGMC_GetUserGlobal( GlobalNames, "srchClip",  ReuseGlobals )
@@ -534,8 +539,8 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
 	ts2 = (!IsClip(srchClip) && TR0 > 1) ? bobbed.TemporalSoften( 2, 255,CMts, 28, 2 ) : NOP()  # 0.20  0.20  0.20  0.20  0.20
 
 	# Combine linear weightings to give binomial weightings - TR0=0: (1), TR0=1: (1:2:1), TR0=2: (1:4:6:4:1)
-	domtr02 = TR0 == -2 && !(InputType == 0 && useEdiExt && EdiExtPre)
-	domtr01 = TR0 == -1 && !(InputType == 0 && useEdiExt && EdiExtPre)
+	domtr02 = TR0 == -2 && !(InputType == 0 && UseEdiExt > 1)
+	domtr01 = TR0 == -1 && !(InputType == 0 && UseEdiExt > 1)
 	binomial0 = IsClip(srchClip) ? NOP() : \
 	  domtr02 && defined(EdiExt) ? isyuy2(EdiExt) ? EdiExt.nonyuy2clipin(true).Vinverse_avsi() : EdiExt.Vinverse_avsi() : TR0 == -2 ? bobbed : \
 	  domtr01 && defined(EdiExt) ? isyuy2(EdiExt) ? EdiExt.nonyuy2clipin(true) : EdiExt : TR0 == -1 ? bobbed : \
@@ -1059,8 +1064,8 @@ function QTGMC_Interpolate( clip Input, int InputType, string EdiMode, int NNSiz
                                                            Repair( Input.Yadifmod2( mode=3 ), default( Fallback, Input.sh_Bob( 0,0.5 ) ), 2, 0 ) : \	
 	         (EdiMode == "RepcYadif")    ? isyuy2(Input) ? Repair( Input.Yadif( mode=3 ).nonyuy2clipin(true), default( Fallback, Input.sh_Bob( 0,0.5 ) ).nonyuy2clipin(true), 2, 0 ).nonyuy2clipout(true) : \
 	         	         	                               Repair( Input.Yadif( mode=3 ), default( Fallback, Input.sh_Bob( 0,0.5 ) ), 2, 0 ) : \
-	         (EdiMode == "BWDIF+NNEDI3") ? isyuy2(Input) ? Input.nonyuy2clipin(true).BWDIF(-2,edeint=NNEDI3clp.nonyuy2clipin(true)).Vinverse_avsi(custem=NNEDI3clp.nonyuy2clipin(true)).nonyuy2clipout(true) : Input.BWDIF(-2,edeint=NNEDI3clp).Vinverse_avsi(custem=NNEDI3clp) : \
-	         (EdiMode == "BWDIF+EEDI3")  ? isyuy2(Input) ? Input.nonyuy2clipin(true).BWDIF(-2,edeint=EEDI3clp.nonyuy2clipin(true)).Vinverse_avsi(custem=NNEDI3clp.nonyuy2clipin(true)).nonyuy2clipout(true) : Input.BWDIF(-2,edeint=EEDI3clp).Vinverse_avsi(custem=NNEDI3clp) : \
+	         (EdiMode == "BWDIF+NNEDI3") ? isyuy2(Input) ? Input.nonyuy2clipin(true).BWDIF(-2,edeint=NNEDI3clp.nonyuy2clipin(true)).Vinverse_avsi(clip2=NNEDI3clp.nonyuy2clipin(true)).nonyuy2clipout(true) : Input.BWDIF(-2,edeint=NNEDI3clp).Vinverse_avsi(clip2=NNEDI3clp) : \
+	         (EdiMode == "BWDIF+EEDI3")  ? isyuy2(Input) ? Input.nonyuy2clipin(true).BWDIF(-2,edeint=EEDI3clp.nonyuy2clipin(true)).Vinverse_avsi(clip2=NNEDI3clp.nonyuy2clipin(true)).nonyuy2clipout(true) : Input.BWDIF(-2,edeint=EEDI3clp).Vinverse_avsi(clip2=NNEDI3clp) : \
 	                                       default( Fallback, Input.sh_Bob( 0,0.5 ) )
 
 	interpuv = (InputType == 1)        ? NOP() : \

@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>F1QClean Function  </title>
+</head>
+
+<body>
+	   <font color="#cc0033"><h1>F1QClean</h1></font>
+	 
+	  <BR><b>Author V. C. Mohan</b>
+	  <BR>Date Mar 2022
+	  <BR>EMail: <a href="mailto:mohanvc@gmail.com">mohanvc</a>
+	  
+
+<p>The freq domain filter functions require <a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3.zip">FFTw3f 32 bit dll</a> or for 64 bit <a href="<a href="http://www.avisynth.nl/users/vcmohan/libfftw3f-3_64bit.zip">FFTw3f 64</a> bit dll, to be in the path. 
+<BR>The F1QClean cleans or limits the freq spectrum to eliminate noise. In option = 0, the spectrum between first and second values in the frequency array is examined within span at each frequency . if median is more than original value, it is substituted by median value. In option = 1 , the maximum value within a span around the specified frequency values are limited to the % age of original. Up to ten noise spike frequencies can be specified in this option. An image is defined mostly by the low frequencies. As such general cleaning them may be avoided.Choose the first value as high as possible. </p>
+<br> Processes row by row using one dimensional fft.The freq values must correspond to what is indicated by ruler in F1QTest.
+<BR>For input format of RGB or YUV444 all 3 planes are processed. In case of other YUV formats only Y is processed. YUY2 is not accepted. 
+<P> parameters </P>
+<BR>
+
+<table border="2" bordercolorlight="#c0c0c0" bordercolordark="#000000">
+
+<caption align="top"><b>Details of parameters</b> </caption>
+<tr>
+       <td><b>Description</b></td>
+       <td><b>Name</b></td>
+       <td><b>Type</b></td>
+       <td><b>Limits</b></td>
+       <td><b>Default</b></td>
+</tr>
+<tr>
+       <td>Input clip</td>
+       <td></td>
+       <td>clip</td>
+       <td>YUY2 not accepted</td>
+       <td>none</td>
+</tr>
+
+<tr>
+       <td>Array of values</td>
+       <td></td>
+       <td>sets of integers. For option = 0, only 2 values (from and upto) can be specified. In option = 1, 1 to 10 frequencies can be specified. </td>
+       <td>2 for option = 0 and 1 to 10 for option = 1 must be specified.</td>
+       <td>none</td>
+</tr>
+<tr>
+       <td>option for clean or limit</td>
+       <td>option</td>
+       <td>integer</td>
+       <td>0 or 1</td>
+       <td>0</td>
+</tr>
+
+<tr>
+       <td>Span in which to examine </td>
+       <td>span</td>
+       <td>integer</td>
+       <td>5 to 49</td>
+       <td>7</td>
+</tr>
+
+<tr>
+       <td>Limiting %age for option = 1</td>
+       <td>limit</td>
+       <td>integer</td>
+       <td>0 to 99</td>
+       <td>1</td>
+</tr>
+
+</table>
+
+
+<BR>Usage examples:-
+<PRE>
+assumefieldbased()
+F1q = F1QTest(5,50,60,10)
+F1QClean(126,40,option = 0, span = 11)
+#F1QClean(36,60,150,170,220, option = 1,span = 11, limit = 0)
+#F1qa = F1QTest(5,50,60,10)
+#stackHorizontal (F1q, F1qa)
+
+</PRE>
+
+<table>
+
+<tr>
+       <td><a href="../index.html">To my index page</a></td>
+	   <td><a href="manyPlus.7z">down load plugin</a></td>
+       <td><a href="http://www.avisynth.nl">To Avisynth</a> </td>
+</tr>
+</table>
+	
+</body>
+</html>
+

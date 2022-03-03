@@ -12,7 +12,7 @@ function CPostProcessingMask(clip src, clip "bob", int "nt", bool "isBob")
 
 ### COLORSPACE CONVERSIONS ###
 
-function ToRGB24(clip src, bool "SD")
+function YV12ToRGB24(clip src, bool "SD")
 {
     SD = default(SD,false)
 
@@ -43,68 +43,6 @@ function CAA(clip src, int "factor", bool "chroma")
     return last
 }
 
-### DEHALO ###
-
-function CDeHalo(clip src, int "rad", float "lim")
-{
-    rad = default(rad,12)
-    lim = default(lim,1)
-
-    src
-    rad > 4 ? Removegrain(rad,-1) : FastBlur(rad)
-    mt_clamp(src,mt_expand(u=1,v=1),mt_inpand(u=1,v=1),lim,lim,u=1,v=1)
-    mt_logic(src,last,"min")
-    return last
-}
-
-function CHaloMask(clip src, int "rad", float "lim")
-{
-    rad = default(rad,2)
-    lim = default(lim,1)
-
-    src
-    mt_makediff(CDeHalo(rad,lim),last,u=1,v=1)
-    mt_lut("x 128 == 255 x ?")
-    return last
-}
-
-### SHARPENING ###
-
-function CSharpen(clip src, int "rad", float "lim", int "sig")
-{   
-    rad = default(rad,3)
-    lim = default(lim,1)
-    sig = default(sig,4)
-
-    src
-    A = mt_makediff(last,FastBlur(rad),u=1,v=1)
-    B = mt_makediff(last,Removegrain(12,-1),u=1,v=1)
-    mt_clamp(A,mt_expand(B,u=1,v=1),mt_inpand(B,u=1,v=1),lim,lim,u=1,v=1)
-    sig == 0 ? last : fft3dfilter(sigma=0,sigma2=sig/4.0,sigma3=sig/2.0,sigma4=sig,bt=1)
-    mt_average(SangNom2(1),SangNom2(2),u=1,v=1).TurnLeft()
-    mt_average(SangNom2(1),SangNom2(2),u=1,v=1).TurnRight()
-    mt_adddiff(src,last)
-    return last
-}
-
-# LF stands for low frequency
-
-function CLFSharpen(clip src, int "thr", int "rad", int "sig")
-{
-    thr = default(thr,3)
-    rad = default(rad,3)
-    sig = default(sig,4)
-
-    low = string(128 - thr)
-    high = string(128 + thr)
-
-    src
-    mt_makediff(last,FastBlur(rad),u=1,v=1)
-    sig == 0 ? last : fft3dfilter(sigma=0,sigma2=0,sigma3=sig/2.0,sigma4=sig,bt=1)
-    mt_lut("x "+high+" > 128 x "+low+" < 128 x ? ?",u=1,v=1)
-    mt_adddiff(src,last)
-}
-
 ### RESIZE ###
 
 function CSDResize(clip src, int "width", int "height",float "b", float "c", int "p", int "factor", bool "deHalo")
@@ -130,26 +68,6 @@ function CSDResize(clip src, int "width", int "height",float "b", float "c", int
 
 ### HELPER ###
 
-function Cn(clip src, int "frame")
-{
-    src
-    if(frame == 0)
-    {
-        DoubleWeave().SelectOdd().Trim(0,0)+Trim(1,0)
-    }
-    else
-    {
-        Trim(0,frame-1)+DoubleWeave().SelectOdd().Trim(frame,frame)+Trim(frame+1,0)
-    }
-    return last
-}
-
-function Intw(clip src)
-{
-    Interleave(src.SelectEven(),src.SelectOdd()).AssumeFieldBased().Weave()
-    return last
-}
-
 function CFieldSofter(clip src, int "rad")
 {
     rad = default(rad,1)
@@ -160,6 +78,7 @@ function CFieldSofter(clip src, int "rad")
     Interleave(SelectEven(),SelectOdd()).Weave()
     return last
 }
+
 ### INTERPOLATE ###
 
 function bClip(clip src)
