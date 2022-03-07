@@ -110,7 +110,7 @@ LoadPlugin(AviSynthPlugins64Dir + "26/YV12To422.dll")
 #Import(AviSynthPlugins64Dir + "26/MaskCrop.avsi")
 }
 
-AvsPlusVersionNumber < 3382 ? VersionNumber() < 2.60 ? Import(AviSynthPlugins64Dir + "25/QTGMC.avsi") : Import(AviSynthPlugins64Dir + "26/QTGMC.avsi") : nop()
+VersionNumber() < 2.60 ? Import(AviSynthPlugins64Dir + "25/QTGMC.avsi") : Import(AviSynthPlugins64Dir + "26/QTGMC.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/MasksPack.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/StabilizationToolsPack.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/GrainFactory3mod.avsi") : nop()
