@@ -1,6 +1,6 @@
 ###                                                            ##
 ###                                                            ##
-###           MasksPack 5.3 By Dogway  (05-02-2022)            ##
+###           MasksPack 6.0 By Dogway  (15-03-2022)            ##
 ###                    Masks + Limiters                        ##
 ###                                                            ##
 ###      https://forum.doom9.org/showthread.php?t=182881       ##
@@ -10,9 +10,10 @@
 ###      BoxMask                                               ##
 ###      FlatMask                                              ##
 ###      LumaMask                                              ##
+###      MotionMask                                            ##
 ###      ex_limitdif                                           ##
 ###      ex_limitchange                                        ##
-###                                                            ##
+###      Soothe                                                ##
 ###                                                            ##
 #################################################################
 
@@ -39,7 +40,7 @@
 ###    bool "invert"=false,
 ###    bool "show"=false,
 ###    bool "tv_out"=false,
-###    bool "UV"=3 (1 to 128 by 1),
+###    int "UV"=3 (1 to 128 by 1),
 ###    )
 ###
 ###########################
@@ -60,7 +61,7 @@ function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", boo
     show    = Default(show,   false)
     UV      = Default(UV,3)
 
-           Assert(IsVersionOrGreater(3,7,1), "BoxMask: Update AviSynth+ version")
+           Assert(IsVersionOrGreater(3,7,2), "BoxMask: Update AviSynth+ version")
     show ? Assert(UV!=1,                     "BoxMask: 'show' requires UV=2 or 3") : nop()
 
     x1      =     min(max(x1,0),w)
@@ -83,6 +84,10 @@ function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", boo
 
     ex_lutspa(mode="absolute", expr=Luma, cexpr=Chrm, UV=UV, fulld=!tv)
 
+    prop = ["_Matrix","_Primaries","_Transfer","_PictType"]
+    propCopy(clp, props=UV<4?prop:ArrayAdd(prop,"_ChromaLocation"), exclude=true)
+    propSet("_ColorRange", tv?1:0)
+
     !show ? last : ex_blend(clp,last,"softlight",0.5,tv_range=tv) }
 
 
@@ -92,7 +97,7 @@ function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", boo
 ### FlatMask() (23-12-2021)
 ###
 ###
-### This is a dual purpose filter for 2D cartoons to create either high quality edge/ridge masks or flat masks.
+### This is a dual purpose filter for 2D cartoons to create either flat masks or high-quality single line edge masks.
 ### One is the opposite of the other so you only have to tune the radius and scale settings to define
 ### to what extent the edge mask is applied.
 ### If 'filt' clip argument is not defined by default the output is the edge mask.
@@ -100,9 +105,9 @@ function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", boo
 ### Dependencies:
 ###     ExTools
 ###     ResizersPack
+###     GradePack
 ###     vsTCanny
 ###     SMDegrain (for ex_retinex)
-###         GradePack
 ###
 ### Example:
 ###     filt = YourFilter()
@@ -143,12 +148,14 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
     in    = Default(invert, false)
     fil   = Defined(filt)
 
+    Assert(IsVersionOrGreater(3,7,2), "FlatMask: Update AviSynth+ version")
+
     !isy() ? ExtractY() : last
     ConvertBits(8,dither=-1,fulls=fs)
     # 3x3 is too broad for SD so upscale
-    !isHD  ? BlackmanResize(w*2,h*2)                         : last
+    !isHD  ? BlackmanResize(w*2,h*2,taps=6)              : last
     # UHD size is too big for good performance
-     isUHD ? BicubicResize(nmod(w/2,2),nmod(h/2,2),-0.6,0.4) : last
+     isUHD ? BicubicResize(nmod(w/2),nmod(h/2),-0.6,0.4) : last
 
     ex_retinex(lvl=1,lo=lvl,tv_range=!fs)  # some issues here on flat areas (quantization)
     MSR=ex_median("IQM")                   # pre for full 'qprewitt'
@@ -156,7 +163,7 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
     # Prefilter (scale space)
     vsTCanny(sqrt(rd)/2.*sqrt(2),mode=-1,u=2,v=2)
 
-    # Pseudo Ridge Filter
+    # Second Derivatives Edge Mask
     xx1=    ex_lut(Format("x[-1,-1] x[1,1]  -"))
     xx1=xx1.ex_lut(Format("x[-1,-1] x[1,1]  -"))
     yy1=    ex_lut(Format("x[-1,1]  x[1,-1] -"))
@@ -183,15 +190,16 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
     ex_luts(mode="avg", pixels=ex_shape(ceil(rd/2.), mode="ring"), exprf="dup dup x > swap 128 > & swap 1.15 * x ?"+(in ? " range_max swap -" : ""))
 
     rd  = round(rd)
-    rd == 1 ? yy2                               : \
-    rd == 0 ? ex_edge(MSR,"qprewitt",invert=in) : last                           # Maybe add back qprewitt on top for rd==1 ?
+    rd == 1 ? yy2                                  : \
+    rd == 0 ? ex_edge(MSR,"qprewitt",invert=in)    : last                              # Maybe add back qprewitt on top for rd==1 ?
 
-    !isHD   ? BicubicResize(w,h,-0.5,0.25) : ex_smooth(2, mode="SG", sharp=true) # Clean up result. No need when resizing down
-     isUHD  ? BicubicResize(w,h,1/3.,1/3.) : last
+    !isHD   ? BicubicResize(w,h,0.0,0.5)           : ex_smooth(2,mode="SG",sharp=true) # Clean up result. No need when resizing down
+     isUHD  ? BicubicResize(w,h,0.679623,0.160189) : last
 
     msk8 = last
 
     ConvertBits(bi,fulls=true)
+    propDelete(["_Matrix","_Primaries","_Transfer","_PictType","_ChromaLocation"])
 
     if (fil) {
         # Merge with filtered through the edge mask
@@ -209,7 +217,7 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
 
 #####################################################################
 ###                                                                 #
-### LumaMask() (22-12-2021)                                         #
+### LumaMask() (05-03-2022)                                         #
 ###                                                                 #
 ### Two point remap of luma plane range for using as mask.
 ### Basically a lerp (linear interpolation) between 'b' (black point)
@@ -246,24 +254,80 @@ function LumaMask(clip a, int "lo", int "hi", bool "invert", int "UV") {
     LO     = Default(lo, 24)
     HI     = Default(hi, 48)
     inv    = Default(invert, false)
-    UV     = Default(UV,  !isy ? 128 : 2)
+    UV     = Default(UV,  !isy ? 128 : 2) # Use 3 to copy luma mask to chroma planes
+    UV2    = UV == 3 ? 1 : UV
 
-    Assert(IsVersionOrGreater(3,7,1), "LumaMask: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,2), "LumaMask: Update AviSynth+ version")
 
     bi32   = bi == 32 ? "0 1 clip" : ""
-    LO     = ex_bs(LO, 8, bi, fulls=fs)
-    HI     = ex_bs(HI, 8, bi, fulls=fs)
+    LO     = ex_bs(LO,  8, bi, fulls=true)
+    HI     = ex_bs(HI,  8, bi, fulls=true)
+    MX     = ex_bs(255, 8, bi, fulls=true, flt=true)
+    LIM    = MX / (inv ? HI - LO : LO - HI)
 
-    code   = inv ? Format("range_max range_max {HI} {LO} - / x {LO} - * - "+bi32) : \
-                   Format("0         range_max {LO} {HI} - / x {LO} - * - "+bi32)
+    code   = inv ? Format("range_max x {LO} - {LIM} * -   "+bi32) : \
+                   Format("          x {LO} - {LIM} * neg "+bi32)
 
     str    = ex_dlut(code, bi, true)
-    cstr   = ex_UVexpr("", max(7,UV), bi, rgb, true)
+    cstr   = ex_UVexpr("", UV2, bi, rgb, true)
 
-    isy     ?  Expr(a, str,       lut=lut) : \
-    UV == 1 ?  Expr(a, str, "",   lut=lut) : \
+    isy      ? Expr(a, str,       lut=lut) : \
+    UV2 == 1 ? Expr(a, str, "",   lut=lut) : \
                Expr(a, str, cstr, lut=lut)
-               PropSet("_ColorRange", 0)   }
+
+    UV  == 3 ? mskY_to_YYY(a, last, true, rgb, UV, bi) : last
+
+               prop = ["_Matrix","_Primaries","_Transfer","_PictType"]
+               propDelete(UV2<4?prop:ArrayAdd(prop,"_ChromaLocation"))
+               propSet("_ColorRange", 0)  }
+
+
+
+# Motion (occlusion) mask with selective direction; previous, next, or both (default) with radius of 1 or 2.
+# Own algorithm. Requires ExTools and ResizersPack.
+#
+# Similar to MVTools' MMask() but much faster.
+#
+function MotionMask(clip a, int "lo", int "hi", float "scale", int "sharpness", int "dir", int "UV") {
+
+    rgb  = isRGB(a)
+    isy  = isy(a)
+    w    = width(a)
+    h    = height(a)
+    bi   = BitsPerComponent(a)
+
+    lo   = Default(lo,       30)
+    hi   = Default(hi,      255)
+    sh   = Default(sharpness, 0)
+    sc   = Default(scale,     2)
+    dr   = Default(dir,      20) # Direction of the motion mask, -2 for previous+before, -1 for previous, 0 for both, 1 for next, 2 for next+following, 20 for both radius=2
+    UV   = Default(UV,  rgb ? 3 : 2)
+
+    ad   = abs(dr)
+    sc   = sc / (ad==1 ? 2. : ad==20 ? 5. : 4.)
+    lob  =     ex_bs(lo, 8, bi, fulls=true)
+    hib  = max(ex_bs(hi, 8, bi, fulls=true) / sc, lob)
+    th   = (lo == 0) && (hi == 255) ? sc == 2 ? ""    : Format(" {sc} *") : \
+           (lo == 0) ? Format(" range_max {hib} / *") : Format(" {lob} - range_max {hib} {lob} - / *")
+
+    UV = UV!=3 ? 1 : UV
+    UV==3 || isy ? a : a.ExtractY()
+    # 20x20 macroblocks (at 1080p)
+    RatioResize(96,"adjust2w",kernel="bicubic",b=-0.6,c=0.4)
+    # Temporal Stabilization
+    ex_FluxSmoothT(2,5,UV=uv)
+    # Directional Derivative
+    ad==1 ? ex_lutxy (selectevery(1,dr),                         "x y - abs               dup * "+th, UV=uv) : \
+    ad==2 ? ex_lutxyz(selectevery(1,dr),selectevery(1,sign(dr)), "x y - abs x z - abs max dup * "+th, UV=uv) : \
+    ad==0 ? ex_lutxyz(selectevery(1,-1),selectevery(1,       1), "x y - abs x z - abs max dup * "+th, UV=uv) : \
+            Expr(last,selectevery(1,-1),selectevery(1,       1),                                               \
+                      selectevery(1,-2),selectevery(1,       2), "x a - abs x b - abs max x y - abs max x z - abs max dup * "+th)
+    # Mask Dilate
+    ex_expand(1, "plus", UV=uv)
+    # Blur
+    GaussResize(w,h,p=round(w/213.33)+sh)
+    propDelete(["_Matrix","_Primaries","_Transfer","_PictType"])
+    propSet("_ColorRange", 0) }
 
 
 
@@ -295,22 +359,25 @@ function ex_limitdif(clip flt, clip src, clip "ref", float "thr", float "elast",
     thrc   = Default(thrc,                  thr)  # 0-255 (normally up to 10)
     sm     = Default(smooth,               true)
     elast  = Default(elast, sm ? 3.0 : 255./thr) # 1-255 (normally up to 10)
-    elast  = max(elast, 1.0)
+    elast  = max(elast, 1.001)
     bthr   = Default(brighten_thr,          thr)  # 0-255 (normally up to 10)
     Y      = Default( Y,       3 )
     UV     = Default( UV,      3 )
 
     sm     = elast==1.0 ? False : sm
 
-    thrc   = ex_bs(  thrc,     8, bi, true, flt=true)
+    thrc   = ex_bs(  thrc, 8, bi, true, flt=true)
     celast = elast * thrc
-    thr    = ex_bs(  thr,      8, bi, true, flt=true)
+    thr    = ex_bs(  thr,  8, bi, true, flt=true)
     telast = elast * thr
-    bthr   = ex_bs( bthr,      8, bi, true, flt=true)
+    bthr   = ex_bs( bthr,  8, bi, true, flt=true)
+    thelas = 1. / (telast - thr)
+    thcela = 1. / (celast - thrc)
 
-    Assert(IsVersionOrGreater(3,7,1), "ex_limitdif: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,2), "ex_limitdif: Update AviSynth+ version")
 
-    # from HQDeringmod_limit_dif()
+    # LOGIC (from HQDeringmod_limit_dif()):
+    #
     # diff   = filtered - original
     # alpha  = 1 / (thr * (elast - 1))
     # beta   = elast * thr
@@ -325,12 +392,12 @@ function ex_limitdif(clip flt, clip src, clip "ref", float "thr", float "elast",
     #                         original + thr * (diff / abs(diff))
 
     exprYref = bthr != thr ? Format("x z - abs DA@ x y - D2@    0 > {bthr} {thr} ? THR@ <= x DA THR {elast} * THRE@ >= y dup D2 THRE DA - * THRE THR - / + ? ?") : \
-                             Format("x z - abs DA@     {thr} <= x DA {telast} >= y dup x y - {telast} DA - * {telast} {thr} - / + ? ?")
+                             Format("x z - abs DA@     {thr} <= x DA {telast} >= y dup x y - {telast} DA - * {thelas} * + ? ?")
     exprY    = bthr != thr ? Format("x y - D1@ dup abs DA@ swap 0 > {bthr} {thr} ? THR@ <= x DA THR {elast} * THRE@ >= y dup D1 THRE DA - * THRE THR - / + ? ?") : \
-                             Format("x y - D1@ abs DA@ {thr} <= x DA {telast} >= y dup D1    {telast} DA - * {telast} {thr} - / + ? ?")
+                             Format("x y - D1@ abs DA@ {thr} <= x DA {telast} >= y dup D1    {telast} DA - * {thelas} * + ? ?")
 
-    dref ? ex_lutxyz(flt,src,ref, exprYref, Format("x z -     abs D@  {thrc} <= x D  {celast} >= y dup x y - {celast} D  - * {celast} {thrc} - / + ? ?"), Y=Y,UV=UV) : \
-           ex_lutxy (flt,src,     exprY,    Format("x y - D1@ abs DA@ {thrc} <= x DA {celast} >= y dup D1    {celast} DA - * {celast} {thrc} - / + ? ?"), Y=Y,UV=UV) }
+    dref ? ex_lutxyz(flt,src,ref, exprYref, Format("x z -     abs D@  {thrc} <= x D  {celast} >= y dup x y - {celast} D  - * {thcela} * + ? ?"), Y=Y,UV=UV) : \
+           ex_lutxy (flt,src,     exprY,    Format("x y - D1@ abs DA@ {thrc} <= x DA {celast} >= y dup D1    {celast} DA - * {thcela} * + ? ?"), Y=Y,UV=UV) }
 
 
 
@@ -353,7 +420,7 @@ function ex_limitchange(clip flt, clip src, float "limit", float "bias", float "
     Y       = Default( Y,       3 )
     UV      = Default( UV,      rgb?3:2 )
 
-    Assert(IsVersionOrGreater(3,7,1), "ex_limitchange: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,2), "ex_limitchange: Update AviSynth+ version")
 
     LIM1  = ex_bs(limit >0 ? round(limit *(100.0/bias) -1.0) : round(100.0/bias),  8, bi, fulls=fs)
     LIM1c = ex_bs(limitC>0 ? round(limitC*(100.0/biasC)-1.0) : round(100.0/biasC), 8, bi, fulls=fs)
@@ -372,3 +439,103 @@ function ex_limitchange(clip flt, clip src, float "limit", float "bias", float "
 
 
     ex_lutxy( flt, src, expr, exprC, Y=y, UV=uv, fulls=fs) }
+
+
+
+
+### Soothe()   by Didée (6th Sept 2005)
+### Small helper function to temporal stabilize sharpening for less temporal jitter
+### https://forum.doom9.org/showthread.php?t=99679
+###
+### MCSoothe() by Didée (14th July 2007)
+### https://forum.doom9.org/showthread.php?p=1367334#post1367334
+###
+### mod by Dogway (15-03-2022) - Merged Soothe(), SoothCL() and MCSoothe() plus optimizations.
+###
+###
+### "This is a small postprocessor function for sharpening filters. The goal is temporal stabilization of clips that have been sharpened before. It is reasonably fast (contains 3 different lutxy operations and one TemporalSoften - that's about the cheapest possibility for what is done. Plugin coders are welcome ), and seems to work pretty well.
+###
+### The introduction of jitter on the temporal axis is a general problem of sharpening operations, since sharpening (usually) considers spatial aspects only. Therefore, Soothe() does a very simple job: get the difference between [source] and [sharpened source], apply a TemporalSoften on this difference BUT allow only changes towards 128 ("neutral"), and then apply this temporally calmed difference back to the original clip.
+### Effectively, this will reduce the overall effect of sharpening - less in static areas, and more in moving areas.
+###
+### median=true uses a temporal median ( previously Clense() ) instead of temporal blur (TemporalSoften())"
+###
+### Advantages:
+### - more steady appearance (less "nervous")
+### - less bitrate required
+### - somewhat positive effect on detail that is, due to the sharpening, prone to aliasing
+### - smoother motion compared to plain-sharpening, since motion-blurred edges will be less sharpened
+### - less artefacts in moving areas
+### - LimitedSharpen can run faster, since one can get away with less supersampling
+### - should only help, never harm
+###
+### Disadvantages:
+### - overall sharpening effect is reduced, but this can be compensated by a little more initial sharpening
+###
+### Dependencies:
+###         ExTools
+###         MVTools
+###         MaskTools
+###         SMDegrain (for MC=true)
+###
+### Example:
+###     Soothe(orig,blurry,keep=0) # You can also use it to recover sharpness from a blurry filter
+###
+function Soothe(clip sharp, clip orig, int "keep", bool "median", bool "MC", int "UV", bool "tv_range") {
+
+    rgb  = sharp.isRGB()
+    w    = sharp.width()
+    h    = sharp.height()
+    isHD = (w > 1099 || h >  599)
+    isUHD= (w > 2599 || h > 1499)
+    bi   = BitsPerComponent(sharp)
+    fs   = propNumElements (sharp,"_ColorRange")  > 0 ? \
+           propGetInt      (sharp,"_ColorRange") == 0 : false
+
+    med  = Default(median,false)
+    MC   = Default(MC,    false)
+    keep = Default(keep,   MC ? 48 : 24)  # 0-100
+    UV   = Default(UV,        1)
+    tv   = Default(tv_range, !fs)
+    KP   = max(0,min(100,keep)) / 100.
+
+    Assert(IsVersionOrGreater(3,7,2),               "Soothe: Update AviSynth+ version")
+    Assert(w == orig.width() && h == orig.height(), "Soothe: clip dimensions must match!")
+
+    if (MC) {
+
+        isc = VarExist("b1c") && VarExist("f1c")
+        isv = VarExist("cb1") && VarExist("cf1")
+
+        if (!isc) {
+
+            blksize   = isUHD ? 32 : isHD ? 16 : 8
+
+            pre       = orig.ex_minblur(isHD ? 2 : 1, sharp=false, UV=uv)
+            DB        = ex_lutxyz(sharp,orig,pre,"x z - X@ y z - 1.49 * Y@ * 0 < z X abs Y abs < x Y z + ? ?",UV=uv,fulls=!tv)
+            pre       = pre.ConvertBits(8, dither=-1, fulls=!tv)
+            superfilt = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, chroma=UV==3, mt=true)
+            super     = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, chroma=UV==3, mt=true, levels=1)
+
+            cb  = superfilt.MAnalyse(isb = false,    chroma=false, blksize = blksize,   overlap=blksize/2, delta = 1, truemotion=true, mt=true, temporal=true)
+            cf  = superfilt.MAnalyse(isb = true,     chroma=false, blksize = blksize,   overlap=blksize/2, delta = 1, truemotion=true, mt=true, temporal=true )
+            cb1 = isv ? cb1 : super.Mrecalculate(cb, chroma=false, blksize = blksize/2, overlap=blksize/4, thSAD=110, truemotion=true, mt=true)
+            cf1 = isv ? cf1 : super.Mrecalculate(cf, chroma=false, blksize = blksize/2, overlap=blksize/4, thSAD=110, truemotion=true, mt=true)
+        }
+
+        cb1   = repair(isc ? b1c : sharp.MCompensate(super.ConvertBits(bi, fulls=!tv), cb1, thSCD1=255,thSCD2=255, mt=true), orig, 3, -1)
+        cf1   = repair(isc ? f1c : sharp.MCompensate(super.ConvertBits(bi, fulls=!tv), cf1, thSCD1=255,thSCD2=255, mt=true), orig, 3, -1)
+
+        diff  = interleave(cb1,DB,cf1)
+
+        diff2 = med ? diff.ex_median("medianT",UV=uv) : diff.temporalsoften(1,255,uv==3?255:0,32,2)
+        diff2 = diff2.selectevery(3,1)
+        ex_lutxyz(sharp,DB,diff2,Format("z y - X@ x y - Y@ * 0 < Y {KP} * y + X abs Y abs < x z - {KP} * z + x ? ?"),UV=uv,fulls=!tv)
+
+
+    } else {
+
+        diff  = ex_makediff(orig,  sharp, UV=uv, fulls=!tv)
+        diff2 = med ? diff.ex_median("medianT",UV=uv) : diff.temporalsoften(1,255,uv==3?255:0,32,2)
+        ex_lutxyz(orig,diff,diff2,Format("y range_half - Y@ z range_half - Z@ * 0 < Y {KP} * range_half + Y abs Z abs > y z - {KP} * z + y ? ? x swap - range_half +"),UV=uv,fulls=!tv).propCopy(a)
+    } }

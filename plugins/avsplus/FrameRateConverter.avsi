@@ -1,4 +1,4 @@
-# Frame Rate Converter mix mod
+# Frame Rate Converter ex mod
 # Version: 2.2.1  (05-02-2022)
 #
 # By Etienne Charland
@@ -30,7 +30,7 @@
 ## Increases the frame rate with interpolation and fine artifact removal.
 ##
 ## YV12/YV24/Y8 over any bitdepth
-## Requires: FrameRateConverter.dll, MaskTools2, MVTools, RgTools, GradePack and ExTools
+## Requires: FrameRateConverter.dll, MVTools, ExTools and GradePack
 ##
 ## @ NewNum      - The new framerate numerator (if FrameDouble = false, default = 60)
 ##
@@ -260,7 +260,7 @@ function ex_FrameRateConverter (clip C, int "NewNum", int "NewDen", string "Pres
 
 
     # Mask: Occlusion
-    EMocc = MaskOcc > 0 ? C_luma.MMask(bak, ml=MaskOcc, kind=2, gamma=1/gam, ysc=255, thSCD2=SkipOver).mt_inpand()       : Blank
+    EMocc = MaskOcc > 0 ? C_luma.MMask(bak, ml=MaskOcc, kind=2, gamma=1/gam, ysc=255, thSCD2=SkipOver).ex_inpand()       : Blank
     EM    = MaskOcc > 0 ? ex_blend(EM, EMocc,"lighten",0.4,UV=1,tv_range=false)                                          : EM
     EM    = dct_mult!=1 || dct_pow!=1 ? ex_lut(EM,Format("x {dct_mult} * {dct_pow} ^"), scale_inputs="allf", fulls=true) : EM
 
@@ -275,7 +275,7 @@ function ex_FrameRateConverter (clip C, int "NewNum", int "NewDen", string "Pres
     EM2    = CalcDiff ? MaskThr > 0 ? C_luma.MMask(bak2, ml=255,     kind=1, gamma=1/gam, ysc=255, thSCD2=SkipOver) : Blank : nop()
     EMfwd2 = CalcDiff ? MaskThr > 0 ? C_luma.MMask(fwd2, ml=255,     kind=1, gamma=1/gam,          thSCD2=SkipOver) : EM2   : nop()
     EM2    = CalcDiff ? MaskThr > 0 ? ex_blend(EM2,EMfwd2,"lighten",0.6,UV=1,tv_range=false)                        : EM2   : nop()
-    EMocc2 = CalcDiff ? MaskOcc > 0 ? C_luma.MMask(bak2, ml=MaskOcc, kind=2, gamma=1/gam, ysc=255, thSCD2=SkipOver).mt_inpand() : Blank : nop()
+    EMocc2 = CalcDiff ? MaskOcc > 0 ? C_luma.MMask(bak2, ml=MaskOcc, kind=2, gamma=1/gam, ysc=255, thSCD2=SkipOver).ex_inpand() : Blank : nop()
     EM2    = CalcDiff ? MaskOcc > 0 ? ex_blend(EM2,EMocc2,"lighten",0.4,UV=1,tv_range=false)                        : EM2   : nop()
 
     # Get difference mask between two versions
@@ -286,9 +286,9 @@ function ex_FrameRateConverter (clip C, int "NewNum", int "NewDen", string "Pres
     \       .GaussResize(w, h, p=3.5) : nop()
 
     # Apply mask to Flow / EM
-    EMdiff = CalcDiff ? OutFps ? EMdiff.ChangeFPS(NewNum, NewDen)         : EMdiff : nop()
-    Flow   = CalcDiff ? mt_merge(Flow, Flow2, EMdiff, luma=true, U=3,V=3) : Flow
-    EM     = CalcDiff ? mt_merge(EM,     EM2, EMdiff, luma=true, U=3,V=3) : EM
+    EMdiff = CalcDiff ? OutFps ? EMdiff.ChangeFPS(NewNum, NewDen)      : EMdiff : nop()
+    Flow   = CalcDiff ? ex_merge(Flow, Flow2, EMdiff, luma=true, UV=3) : Flow
+    EM     = CalcDiff ? ex_merge(EM,     EM2, EMdiff, luma=true, UV=3) : EM
 
 
     # Last mask frame is white. Replace with previous frame.
@@ -324,7 +324,7 @@ function ex_FrameRateConverter (clip C, int "NewNum", int "NewDen", string "Pres
     EMm    = mskY_to_YYY(Flow, EM,    true, false, 3, bi)
     EMstpm = mskY_to_YYY(Flow, EMstp, true, false, 3, bi)
     M      = OutFps && Stp ? ex_lutxyza(Flow, B, EMm, EMstpm, "x dup y - z range_max / * - dup y - a range_max / * -", UV=3, fulls=!tv) : \
-             OutFps        ? mt_merge  (Flow, B, EM, luma=true, U=3,V=3) : Flow
+             OutFps        ? ex_merge  (Flow, B, EM, luma=true, UV=3) : Flow
 
     ## Apply BlendOver and SkipOver
     SO = ex_bs(SkipOver ,8,bi,fulls=true)
