@@ -10,21 +10,6 @@ function CPostProcessingMask(clip src, clip "bob", int "nt", bool "isBob")
     mt_merge(isBob ? src : Interleave(src,src),bob,last,u=3,v=3)
 }
 
-### COLORSPACE CONVERSIONS ###
-
-function YV12ToRGB24(clip src, bool "SD")
-{
-    SD = default(SD,false)
-
-    src
-    Y = ConvertToY()
-    U = UToY().nnedi3_rpow2(2,cshift="spline36resize")
-    V = VToY().nnedi3_rpow2(2,cshift="spline36resize")
-    YToUV(U,V,Y)
-    ConvertToRGB24(matrix=SD ? "Rec601" : "Rec709",interlaced=false,chromaresample="spline36")
-    return last
-}
-
 ### ANTIALIASING ###
 
 function CAA(clip src, int "factor", bool "chroma")
@@ -45,91 +30,52 @@ function CAA(clip src, int "factor", bool "chroma")
 
 ### RESIZE ###
 
-function CSDResize(clip src, int "width", int "height",float "b", float "c", int "p", int "factor", bool "deHalo")
+function CResize(clip src, int "width", int "height", float "b", float "c", int "aastr")
 {
-    width = default(width,720)
-    height = default(height,480)
-    b = default(b,1.0)
-    c = default(c,1.0)
-    p = default(p,10)
-    factor = default(factor,2)
-    deHalo = default(deHalo,false)
+    width = default(width, 720)
+    height = default(height, 480)
+    b = default(b, 1.0)
+    c = default(c, 1.0)
+    aastr = default(aastr, 1)
 
     src
-    b = bicubicresizeMT(width,height,b,0)
-    c = bicubicresizeMT(width,height,0,c)
-    s = deHalo ? mt_merge(b,c,CHaloMask(c,12)) : c
-    g = GaussResizeMT(width,height,p=p)
-    mt_makediff(g,s,u=1,v=1)
-    CAA(factor)
-    mt_makediff(g,last,u=1,v=1)
-    return mergechroma(b)
+    A = BicubicResizeMT(720,480,0,c)
+    B = BicubicResizeMT(720,480,b,0)
+    mt_makediff(A,B,u=3,v=3)
+    aastr > 0 ? CAntiAliasing(0,0,true,true,true) : last
+    aastr > 1 ? CAntiAliasing(0,0,true,true,true) : last
+    aastr > 2 ? CAntiAliasing(0,0,true,true,true) : last
+    mt_adddiff(B,last,u=3,v=3)
+    return last
 }
 
 ### HELPER ###
 
-function CFieldSofter(clip src, int "rad")
+function CFieldSofter(clip src, int "mode")
 {
-    rad = default(rad,1)
+    mode = default(mode, 20)
 
     src
     SeparateFields()
-    FastBlur(rad)
-    Interleave(SelectEven(),SelectOdd()).Weave()
+    Removegrain(mode)
+    Weave()
     return last
 }
 
 ### INTERPOLATE ###
 
-function bClip(clip src)
-{
-    src
-    mt_average(trim(1,0),u=3,v=3)
-    return last
-}
-
-function iClip(clip src)
-{
-    src
-    super = MSuper()
-    backvec = MAnalyse(super,blksize=4,overlap=2,isb=true,delta=1)
-    forwvec = MAnalyse(super,blksize=4,overlap=2,isb=false,delta=1)
-    MFlowInter(src,super,backvec,forwvec,blend=false,time=50)
-    return last
-}
-
-function iClip2(clip src)
-{
-    src
-    super = MSuper()
-    backvec = MAnalyse(super,blksize=64,overlap=32,isb=true,delta=1)
-    forwvec = MAnalyse(super,blksize=64,overlap=32,isb=false,delta=1)
-    MFlowInter(src,super,backvec,forwvec,blend=false,time=50)
-    return last
-}
-
 #30fps or 60fps to 24fps
 
-function iClip3(clip src, int "p")
+function xTo24fps(clip src, int "p", int "blksize")
 {
+    p = default(p, 0)
+    blksize = default(blksize, 8)
+
     src
     super = MSuper()
-    backvec = MAnalyse(super,blksize=4,overlap=2,isb=true,delta=1)
-    forwvec = MAnalyse(super,blksize=4,overlap=2,isb=false,delta=1)
+    backvec = MAnalyse(super,blksize=blksize,overlap=blksize/2,isb=true,delta=1)
+    forwvec = MAnalyse(super,blksize=blksize,overlap=blksize/2,isb=false,delta=1)
     MFlowFps(src,super,backvec,forwvec,blend=false,num=120000,den=1001)
     SelectEvery(5,p)
-    return last
-}
-
-function SCClip(clip src, bool "SD",int "thSCD1", int "thSCD2")
-{
-    SD = default(SD,false)
-    thSCD1 = default(thSCD1,400)
-    thSCD2 = default(thSCD2,130)
-
-    src
-    super = MSuper()
-    forwvec = MAnalyse(super,blksize=SD ? 8 : 64,overlap=SD ? 4 : 32,isb=false,delta=1)
-    MSCDetection(forwvec,thSCD1=thSCD1,thSCD2=thSCD2)
     return last
 }

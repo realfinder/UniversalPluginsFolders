@@ -1,67 +1,31 @@
-function CDuplicate(clip clip, float "thr", int "nt", clip "dClip", bool "write")
+function CDuplicate(clip clip, float "thr", float "thr2", int "nt", bool "fields", clip "dClip", bool "write")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CDuplicate(clip, thr, nt, dClip, write)
+    CDuplicate(clip, thr, thr2, nt, fields, dClip, write)
 }
 
-function CFieldDuplicate(clip clip, float "thr", float "thr2", int "nt", clip "dClip", bool "write", bool "inputTxt")
+function CReplaceDuplicate(clip clip, bool "drop")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CFieldDuplicate(clip, thr, thr2, nt, dClip, write, inputTxt)
+    CReplaceDuplicate(clip, drop)
 }
 
-function CDropFrame(clip clip)
+function CInterpolateDuplicate(clip clip, float "thr", int "nt", clip "dClip", clip "iClip")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CDropFrame(clip)
+    CInterpolateDuplicate(clip, thr, nt, dClip, iClip)
 }
 
-function CReplaceFrame(clip clip)
+function CFieldDeBlend(clip clip, float "thr", float "thr2", int "nt", int "thrC", int "blksize", int "blkthr", float "sstr", clip "dClip")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CReplaceFrame(clip)
+    CFieldDeBlend(clip, thr, thr2, nt, thrC, blksize, blkthr, sstr, dClip)
 }
 
-function CInterpolate(clip clip, float "thr", int "nt", clip "dClip", clip "iClip", bool "write", bool "inputTxt")
+function CSceneChange(clip clip, clip "sClip", int "blksize", int "thSCD1", int "thSCD2", int "minKey", int "maxLuma", bool "write", bool "inputTxt")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CInterpolate(clip, thr, nt, dClip, iClip, write, inputTxt)
-}
-
-function CTelecine(clip clip, int "thr", int "thr2", int "blkthr", int "blksize", int "mode", int "metric", int "nt", bool "sse", clip "edeint", clip "edeint2", bool "write", bool "inputTxt", bool "match")
-{
-LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CTelecine(clip, thr, thr2, blkthr, blksize, mode, metric, nt, sse, edeint, edeint2, write, inputTxt, match)
-}
-
-function CTelecine2(clip clip, int "thr", int "thr2", int "blkthr", int "blksize", int "mode", int "metric", int "nt", bool "sse", clip "edeint", clip "edeint2", bool "write", bool "inputTxt")
-{
-LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CTelecine2(clip, thr, thr2, blkthr, blksize, mode, metric, nt, sse, edeint, edeint2, write, inputTxt)
-}
-
-function CFieldDeBlend(clip clip, float "thr", int "nt", clip "dClip", bool "prev", bool "bob")
-{
-LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CFieldDeBlend(clip, thr, nt, dClip, prev, bob)
-}
-
-function CDecimate(clip clip, bool "CTelecine", bool "CDuplicate")
-{
-LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CDecimate(clip, CTelecine, CDuplicate)
-}
-
-function CSceneChange(clip clip, bool "write")
-{
-LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CSceneChange(clip, write)
-}
-
-function CDecimate2(clip clip)
-{
-LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CDecimate2(clip)
+    CSceneChange(clip, sClip, blksize, thSCD1, thSCD2, minKey, maxLuma, write, inputTxt)
 }
 
 function CSetPattern(clip clip, int "start", int "end", bool "CCCCC", bool "NNCCC", bool "CNNCC", bool "CCNNC", bool "CCCNN", bool "NCCCN")
@@ -70,56 +34,50 @@ LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
     CSetPattern(clip, start, end, CCCCC, NNCCC, CNNCC, CCNNC, CCCNN, NCCCN)
 }
 
-function CGuessPattern(clip clip)
+function CTelecine(clip clip, bool "bob", int "mode", int "nt", int "ntN", bool "sse", float "thr60i", int "nt60i", float "sstr", float "mode2thr", clip "dClip", bool "write", bool "inputTxt")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CGuessPattern(clip)
+    CTelecine(clip, bob, mode, nt, ntN, sse, thr60i, nt60i, sstr, mode2thr, dClip, write, inputTxt)
 }
 
-function CFieldDifference(clip clip, int "mode", int "nt", bool "sse", bool "write", clip "dClip")
+function CDecimate(clip clip, bool "isBob", bool "error", bool "heuristic", clip "iClip")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CFieldDifference(clip, mode, nt, sse, write, dClip)
+    CDecimate(clip, isBob, error, heuristic)
 }
 
-function CTelecineNew(clip clip, float "sstr", int "nt", int "ntN", bool "bob", bool "write", bool "inputTxt", float "thr60i", int "nt60i", int "mode", float "mode2thr", bool "sse")
+function CPostProcessing(clip clip, int "thr", int "thr2", int "mode", int "blksize", int "blkthr", bool "isBob", float "sstr", int "nt", int "ntMask", clip "edeint", clip "edeint2", clip "dClip")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CTelecineNew(clip, sstr, nt, ntN, bob, write, inputTxt, thr60i, nt60i, mode, mode2thr, sse)
+    CPostProcessing(clip, thr, thr2, mode, blksize, blkthr, isBob, sstr, nt, ntMask, edeint, edeint2, dClip)
 }
 
-function CDecimateNew(clip clip, bool "isBob", bool "error", bool "heuristic", clip "iClip")
+function CSharpen(clip clip, clip blur, int "nt", int "mode", bool "Y", bool "U", bool "V")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CDecimateNew(clip, isBob, error, heuristic)
+    CSharpen(clip, blur, nt, mode, Y, U, V)
 }
 
-function CPostProcessing(clip clip, float "thr", float "thr2", float "sstr", int "ntC", int "ntM", bool "isBob", clip "edeint", clip "edeint2")
+function CDeHalo(clip clip, clip blur, int "nt", int "mode", bool "Y", bool "U", bool "V")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CPostProcessing(clip, thr, thr2, sstr, ntC, ntM, isBob, edeint, edeint2)
+    CDeHalo(clip, blur, nt, mode, Y, U, V)
 }
 
-function CSharpen(clip clip, clip blur, int "nt", int "mode")
+function CDegrain(clip clip, int "radius", int "nt", int "thr", int "blksize", clip "dClip")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CSharpen(clip, blur, nt, mode)
+    CDegrain(clip, radius, nt, thr, blksize, dClip)
 }
 
-function CDeHalo(clip clip, clip blur, int "nt", int "mode")
+function CAntiAliasing(clip clip, int "nt", int "mode", bool "Y", bool "U", bool "V")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CDeHalo(clip, blur, nt, mode)
+    CAntiAliasing(clip, nt, mode, Y, U, V)
 }
 
-function CDegrain(clip clip, int "radius", int "nt", int "thr", clip "dClip")
+function CTemporalSoften(clip clip, int "radius", bool "isb", bool "Y", bool "U", bool "V")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CDegrain(clip, radius, nt, thr, dClip)
-}
-
-function CAntiAliasing(clip clip, int "nt", int "mode")
-{
-LoadPlugin(AviSynthPlugins64PDir + "36x/CTools.dll")
-    CAntiAliasing(clip, nt, mode)
+    CTemporalSoften(clip, radius, isb, Y, U, V)
 }
