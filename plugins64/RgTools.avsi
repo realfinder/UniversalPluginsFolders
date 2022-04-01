@@ -1,7 +1,8 @@
-function VerticalCleaner(clip clip, int "mode", int "modeY", int "modeU", int "modeV", bool "planar") 
+function VerticalCleaner(clip clip, int "mode", int "modeU", int "modeV", bool "planar") 
 {
-VersionNumber() < 2.60 ? LoadPlugin(AviSynthPlugins64Dir + "25/VerticalCleaner.dll") : LoadPlugin(AviSynthPlugins64Dir + "26/RgTools.dll")
-        VerticalCleaner(clip, mode, modeY, modeU, modeV, planar) 
+sisavs26=!(VersionNumber() < 2.60)
+!sisavs26 ? LoadPlugin(AviSynthPlugins64Dir + "25/VerticalCleaner.dll") : LoadPlugin(AviSynthPlugins64Dir + "26/RgTools.dll")
+        !sisavs26 ? VerticalCleaner(clip, mode, mode, modeU, modeV, planar) : VerticalCleaner(clip, mode, modeU, modeV, planar)
 }
 
 function Repair(clip clip1, clip clip2, int "mode", int "modeU", int "modeV", bool "planar")
