@@ -12,7 +12,7 @@
 ###                                                                                          ###
 ###                             HBD Performance mod by Dogway                                ###
 ###                                                                                          ###
-###                                v5.2 mix - 05 March 2022                                  ###
+###                                v5.5 mix - 14 May 2022                                    ###
 ###                                                                                          ###
 ################################################################################################
 ###
@@ -34,13 +34,22 @@
 ### | CHANGELOG |
 ### +-----------+
 ###
+### v5.5mx : - No changes (sync with EX mod)
+###
+### v5.4mx : - Typo in Secure expression
+###          - Fix 'super' clip in Lmode=6 for single plane sources
+###          - Convert 'pre' to 8-bit in Lmode=6 for optimization
+###
+### v5.3mx : - Update Temporal Limiting settings
+###          - Fix 'super' in Lmode=6 format when reading from Globals
+###
 ### v5.2mx : - Update resizer kernels
 ###
 ### v5.1mx : - Optimize 'secure' expression
 ###          - Update propCopy() call to AVS+ v3.7.2 test8
 ###          - Changed downscaling kernels
 ###          - Add function definitions
-###          - Change name to LSFplus
+###          - Change name from LSFmod to LSFplus
 ###
 ### v5.0mx : - Remove 'smode=5' (old 'smode=4') as it was flawed
 ###          - Add 'smode=3' (plain ex_unsharp() sharpener) and pass supersampling to its 'Fc' arg. Shift up index for all other modes
@@ -207,14 +216,12 @@
 ###
 ### -> MaskTools2     (v2.2.30 or up)
 ### -> RgTools        (v1.2 or up)
-### -> ExTools        (v8.0 or up)
-### -> ResizersPack   (v8.0 or up)
-### -> SMDegrain      (v3.4.7 or up)   [for preblur="ON"]
+### -> ExTools        (v8.5 or up)
+### -> ResizersPack   (v9.3 or up)
+### -> SMDegrain      (v3.5.0 or up)   [for preblur="ON"]
 ### -> MVTools        (v2.7.45 or up)  [for preblur="ON" or Lmode=6]
-### -> SharpenersPack (v4.1 or up)     [for Smode=1, Smode=2 and Smode=3]
+### -> SharpenersPack (v4.2 or up)     [for Smode=1, Smode=2 and Smode=3]
 ### -> CAS                             [for Smode=6]
-### -> if you use AviSynth+ then make sure it's the latest one
-###
 ###
 ###
 ###
@@ -244,8 +251,8 @@
 ### Smode [int: 1,2,3,4,5,6]
 ### ----------------------
 ### Sharpen mode:
-###    =1 : Unsharp masking (from warpsharp)     (now ex_unsharp())
-###    =2 : Unsharp masking (from variableblur)  (now ex_unsharp())
+###    =1 : Unsharp masking (from warpsharp)     (now parametrized ex_unsharp())
+###    =2 : Unsharp masking (from variableblur)  (now parametrized ex_unsharp())
 ###    =3 : Unsharp masking (from ex_unsharp())
 ###    =4 : Range sharpening
 ###    =5 : Nonlinear sharpening (corrected version)
@@ -562,25 +569,25 @@
 ### Function Definitions:
 ###     (
 ###     clip input,
-###     float "strength"=50.0 (1.0 to 300.0 by 1.0),
-###     string "preset"="LSF" ("LSF" / "fast"/ "medium"/ "slow"),
-###     [int "Smode"=3 (1 to 6 by 1)],
-###     [int "Smethod"=2 (1 to 6 by 1)],
+###     float "strength"=50.0 (1.0 to 300.0 by 1),
+###     string "preset"="LSF" ("LSF"/ "fast"/ "medium"/ "slow"),
+###     [int "Smode"=4 (1 / 2 / 3 / 4 / 5 / 6)],
+###     [int "Smethod"=2 (1 / 2 / 3 / 4 / 5 / 6)],
 ###     string "preblur"="OFF" ("OFF"/ "ON"),
-###     [int "Szrp"=16 (1 to 255 by 1)],
-###     [float "Spwr"=3.0 (1.0 to 10.0 by 1.0)],
-###     [float "SdmpLo"=2.0 (0.0 to 255.0 by 1.0)],
-###     [float "SdmpHi"=0.0 (0.0 to 255.0 by 1.0)],
-###     [int "Lmode"=1 (-1 to 6 by 1)],
-###     [float "overshoot"=1.0 (0.0 to 255.0 by 1.0)],
-###     [float "undershoot"=1.0 (0.0 to 255.0 by 1.0)],
-###     [float "overshoot2"=2.0 (0.0 to 255.0 by 1.0)],
-###     [float "undershoot2"=2.0 (0.0 to 255.0 by 1.0)],
-###     int "soft"=0 (-2 to 100 by 1),
+###     [int "Szrp"=16 (1 to 255)],
+###     [float "Spwr"=3.0 (1.0 to 10.0 by 1)],
+###     [float "SdmpLo"=2.0 (0.0 to 255.0 by 1)],
+###     [float "SdmpHi"=0.0 (0.0 to 255.0 by 1)],
+###     [int "Lmode"=1 (-1 to 6)],
+###     [float "overshoot"=1.0 (0.0 to 255.0 by 1)],
+###     [float "undershoot"=1.0 (0.0 to 255.0 by 1)],
+###     [float "overshoot2"=2.0 (0.0 to 255.0 by 1)],
+###     [float "undershoot2"=2.0 (0.0 to 255.0 by 1)],
+###     int "soft"=0 (-2 to 100),
 ###     bool "soothe"=false,
-###     [int "keep"=25 (0 to 100 by 1)],
-###     [int "edgemode"=0 (-1 to 2 by 1)],
-###     bool "show"=false,
+###     [int "keep"=25 (0 to 100)],
+###     [int "edgemode"=0 (-1 to 2)],
+###     bool "show"=false
 ###     )
 ###
 ###
@@ -597,7 +604,7 @@ function LSFplus(clip inclip, float "strength", int "Smode", int "Smethod",
 
 
     ### PRESETS
-    version = "v5.2mix"
+    version = "v5.5mix"
 
     rgb    = isRGB(inclip)
     ox     = inclip.width()
@@ -723,7 +730,7 @@ function LSFplus(clip inclip, float "strength", int "Smode", int "Smethod",
     \      :                             method
     method = Smode>3 || preblur=="OFF" ? method : tmp.ex_lutxyz(pre,method,"x y z - "+bi32p+" - "+bi32p, UV=1, fulls=!tv)
 
-    secur  = secure ? Format("y dup z == swap dup y z - sgn 0.51 * + ?") : "y"
+    secur  = secure ? Format("y dup z == swap dup z y - sgn 0.51 * + ?") : "y"
     prebl  = preblur=="ON" ? "x z "+secur+" - - " : secur
 
 
@@ -756,24 +763,25 @@ function LSFplus(clip inclip, float "strength", int "Smode", int "Smethod",
     ### Temporal limiting
     if (Lmode==6) {
 
-        isg = VarExist("cb1") && VarExist("cf1") # if Lmode=6; reuse MAnalyze'd global vectors if exist (and SS is not used) otherwise create them below
+        isg   = VarExist("cb1") && VarExist("cf1") # if Lmode=6; reuse MAnalyze'd global vectors if exist (and SS is not used) otherwise create them below
+        super = isg && VarExist("super") ? isy(super) ? super : super.ExtractY() : nop()
 
         if (!isg || SS) {
 
-            blksize   = (ox > 2599 ||  oy > 1499) ? 32 : isHD ? 16 : 8
-
+            blksize   = (ox > 2599 || oy > 1499) ? 32 : isHD ? 16 : 8
             pre       = pre.ConvertBits(8, dither=-1, fulls=!tv)
-            superfilt = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, chroma=false, mt=true)
-            super     = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, chroma=false, mt=true, levels=1)
 
-            cb1 = superfilt.MAnalyse(isb = false, chroma=false, blksize = blksize,   overlap=blksize/2, delta = 1, temporal=true, truemotion=true, mt=true)
-            cf1 = superfilt.MAnalyse(isb = true,  chroma=false, blksize = blksize,   overlap=blksize/2, delta = 1, temporal=true, truemotion=true, mt=true)
-            cb1 =     super.Mrecalculate(cb1,     chroma=false, blksize = blksize/2, overlap=blksize/4, thSAD=110,                 truemotion=true, mt=true)
-            cf1 =     super.Mrecalculate(cf1,     chroma=false, blksize = blksize/2, overlap=blksize/4, thSAD=110,                 truemotion=true, mt=true)
+            superfilt = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, sharp=2, rfilter=3, chroma=false, mt=true)
+            super     = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, sharp=2, rfilter=3, chroma=false, mt=true, levels=1)
+
+            cb1 = superfilt.MAnalyse(isb = false, chroma=false, blksize = blksize,   overlap=blksize/2, delta = 1, truemotion=true, mt=true, dct=0, search=4, pglobal=13, temporal=true, global=true, plevel=0)
+            cf1 = superfilt.MAnalyse(isb = true,  chroma=false, blksize = blksize,   overlap=blksize/2, delta = 1, truemotion=true, mt=true, dct=0, search=4, pglobal=13, temporal=true, global=true, plevel=0)
+            cb1 =     super.Mrecalculate(cb1,     chroma=false, blksize = blksize/2, overlap=blksize/4, thSAD=190, truemotion=true, mt=true, dct=5, search=0)
+            cf1 =     super.Mrecalculate(cf1,     chroma=false, blksize = blksize/2, overlap=blksize/4, thSAD=190, truemotion=true, mt=true, dct=5, search=0)
             }
 
-        cb1     = repair(pre.MCompensate(super, cb1, thSAD=220, mt=true), pre, 3, -1).ConvertBits(bi, fulls=!tv)
-        cf1     = repair(pre.MCompensate(super, cf1, thSAD=220, mt=true), pre, 3, -1).ConvertBits(bi, fulls=!tv)
+        cb1     = repair(pre.MCompensate(super, cb1, thSAD=220, thSCD1=round(6.25*8*8), thSCD2=round(2.03*8*8), mt=true), pre, 3, -1).ConvertBits(bi, fulls=!tv)
+        cf1     = repair(pre.MCompensate(super, cf1, thSAD=220, thSCD1=round(6.25*8*8), thSCD2=round(2.03*8*8), mt=true), pre, 3, -1).ConvertBits(bi, fulls=!tv)
         os      = ex_bs(overshoot, 8, bi, fulls=!tv, flt=true)  us = ex_bs(undershoot, 8, bi, fulls=!tv, flt=true)
         os      = os  == 0 ? "" : Format("{os}  +")             us = us  == 0 ? "" : Format("{us}  -")
         normalT = ex_lutxyza(tmp,normsharp,cb1,cf1,Format("y x z max a max "+os+" min x z min a min "+us+" max"),UV=1)
@@ -818,21 +826,21 @@ function LSFplus(clip inclip, float "strength", int "Smode", int "Smethod",
     ### SOOTHE
     diff  = ex_makediff(tmp, PP1, UV=1, fulls=!tv)
     diff2 = diff.temporalsoften(1,255,0,32,2)
-    diff3 = ex_lutxyz(tmp,diff,diff2,Format("y "+bi32m+" A@ z "+bi32m+" B@ * 0 < A {keep} 0.01 * * "+bi32p+" A abs B abs > y {keep} * z 100 {keep} - * + 0.01 * y ? ? x swap - "+bi32p), UV=1, fulls=!tv)
+    diff3 = ex_lutxyz(tmp,diff,diff2,Format( "y "+bi32m+" A@ z "+bi32m+" B@ * 0 < A {keep} 0.01 * * "+bi32p+"  A abs B abs > y {keep} * z 100 {keep} - * + 0.01 * y ? ? x swap - "+bi32p), UV=1, fulls=!tv)
 
     PP2 = soothe ? diff3 : PP1
 
 
     ### OUTPUT
-    out = sisupscale ?  PP2.blackmanresize(dest_x, dest_y,taps=6)   : \
-                  SS ?  PP2.bicubicresize(dest_x, dest_y,-0.5,0.25) : PP2
+    out = sisupscale ?        PP2.blackmanresize(dest_x, dest_y, taps=6)    : \
+                  SS ?        PP2.bicubicresize (dest_x, dest_y, -0.5,0.25) : PP2
 
     ### CONTRA
     if (sode) {
 
-        in  = sisupscale ?     input.blackmanresize(dest_x, dest_y,taps=6) : input
-        no  =              normsharp.bicubicresize (dest_x, dest_y,-0.5,0.25)
-        src = sisupscale ?    source.blackmanresize(dest_x, dest_y,taps=6) : source
+        in  = sisupscale ?  input.blackmanresize(dest_x, dest_y, taps=6)    : input
+        no  =           normsharp.bicubicresize (dest_x, dest_y, -0.5,0.25)
+        src = sisupscale ? source.blackmanresize(dest_x, dest_y, taps=6)    : source
 
         srcD   = ex_makediff(in, src, UV=1, fulls=!tv)
         shrpD  = ex_makediff(in, no,  UV=1, fulls=!tv)

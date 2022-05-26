@@ -74,6 +74,9 @@ Import(AviSynthPlugins64Dir + "26/vsTTempSmooth.avsi")
 Import(AviSynthPlugins64Dir + "26/yadifmod2.avsi")
 Import(AviSynthPlugins64Dir + "26/Rainbow_smooth2.avsi")
 Import(AviSynthPlugins64Dir + "26/YUY2toYV12i and YV12toYUY2i.avsi")
+Import(AviSynthPlugins64Dir + "26/sbr.avsi")
+Import(AviSynthPlugins64Dir + "26/FrostyBorders.avsi")
+Import(AviSynthPlugins64Dir + "26/ImageBorders.avsi")
 LoadPlugin(AviSynthPlugins64Dir + "26/FrameSel.dll")
 }
 

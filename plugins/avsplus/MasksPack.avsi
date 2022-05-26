@@ -1,6 +1,6 @@
 ###                                                            ##
 ###                                                            ##
-###           MasksPack 6.1 By Dogway  (21-03-2022)            ##
+###           MasksPack 6.4 by Dogway  (01-05-2022)            ##
 ###                    Masks + Limiters                        ##
 ###                                                            ##
 ###      https://forum.doom9.org/showthread.php?t=182881       ##
@@ -34,14 +34,14 @@
 ### Function Definition:
 ###    (
 ###    clip,
-###    int x1=0 (0 to 1920 by 1),
-###    int x2=0 (0 to 1920 by 1),
-###    int y1=0 (0 to 1080 by 1),
-###    int y2=0 (0 to 1080 by 1),
-###    bool "invert"=false,
-###    bool "show"=false,
-###    bool "tv_out"=false,
-###    int "UV"=3 (1 to 128 by 1),
+###    int x1=0 (0 to 1920),
+###    int x2=100 (0 to 1920),
+###    int y1=0 (0 to 1080),
+###    int y2=100 (0 to 1080),
+###    [bool "invert"=false],
+###    [bool "show"=false],
+###    [bool "tv_out"=false],
+###    [int "UV"=3 (1 to 128)]
 ###    )
 ###
 ###########################
@@ -119,11 +119,11 @@ function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", boo
 ###    (
 ###    clip,
 ###    float rad=3.0 (1.0 to 4.0 by 0.5),
-###    float "scale"=5.0 (1.0 to 10.0 by 0.5),
-###    int "lo"=4 (0 to 32 by 1),
-###    int "MSR"=40 (0 to 128 by 1),
-###    bool "invert"=false,
-###    bool "show"=false,
+###    [float "scale"=5.0 (1.0 to 10.0 by 0.5)],
+###    [int "lo"=4 (0 to 32)],
+###    [int "MSR"=40 (0 to 128)],
+###    [bool "invert"=false],
+###    [bool "show"=false]
 ###    )
 ###
 ###########################
@@ -154,11 +154,11 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
     !isy() ? ExtractY() : last
     ConvertBits(8,dither=-1,fulls=fs)
     # 3x3 is too broad for SD so upscale
-    !isHD  ? BlackmanResize(w*2,h*2,taps=6)              : last
+    !isHD  ? BlackmanResize(w*2,h*2,taps=6)                : last
     # UHD size is too big for good performance
-     isUHD ? BicubicResize(nmod(w/2),nmod(h/2),-0.6,0.4) : last
+     isUHD ? BicubicResize(nmod(w/2),nmod(h/2),-0.99,0.06) : last
 
-    ex_retinex(lvl=1,lo=lvl,tv_range=!fs)  # some issues here on flat areas (quantization)
+    ex_retinex(lvl=1,lo=lvl,tv_in=!fs)     # some issues here on flat areas (quantization)
     MSR=ex_median("IQM")                   # pre for full 'qprewitt'
 
     # Prefilter (scale space)
@@ -179,12 +179,12 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
     # Pre for 'Fill holes'
     ex_contrast(scl>9?yy2.ex_median("median"):yy2,1,pivot=80,tv_range=false)
     # Fill holes
-    ex_expand(1, mode="disk")
+    ex_expand(1, mode="disk") # Basically a 'plus'
     ex_inpand(1, mode="disk")
     # Expand
     rd > 2                             ? \
     ex_expand(round(rd-2),mode="disk") : last
-    # Merge with basic qprewitt for robustness and faint lines
+    # Merge 'last' with basic qprewitt (over 'MSR') for robustness and faint lines
     ex_lutxy(MSR,last,Format("x[-1,-1] A@ x[-1,0] x[-1,1] F@ + + x[1,-1] C@ - x[1,0] - x[1,1] H@ - dup *
                               A C x[0,-1] + + F - H - x[0,1] - dup * + sqrt {lo} 2.5 * - {rd} 3 / 1 + * y max" ))
     # Close gaps
@@ -236,9 +236,9 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
 ### Function Definition:
 ###    (
 ###    clip,
-###    int "lo"=24 (0 to 255 by 1),
-###    int "hi"=48 (0 to 255 by 1),
-###    bool "invert"=false,
+###    int "lo"=24 (0 to 255),
+###    int "hi"=48 (0 to 255),
+###    [bool "invert"=false]
 ###    )
 ###
 ##############################################################
@@ -286,17 +286,16 @@ function LumaMask(clip a, int "lo", int "hi", bool "invert", int "UV") {
 # CornerMask()
 # Pseudo-Harris corner detection
 #
-# Dependencies:
-#               vsTCanny
+# Dependencies: vsTCanny
 #               GradePack (for show=true)
 #
 #
 # Function Definition:
 #    (
 #    clip,
-#    float "th"=0.2 (0.1 to 0.9 by 0.1),
-#    float "sigma"=1.0 (0.5 to 3.0 by 0.1),
-#    bool "show"=false,
+#    float "th"=0.2 (0.1 to 0.9),
+#    float "sigma"=1.0 (0.5 to 3.0),
+#    [bool "show"=false]
 #    )
 #
 function CornerMask(clip a, float "th", float "sigma", bool "show") {
@@ -348,6 +347,16 @@ function CornerMask(clip a, float "th", float "sigma", bool "show") {
 #
 # Similar to MVTools' MMask() but much faster.
 #
+# Function Definition:
+#    (
+#    clip,
+#    int "lo"=24 (0 to 255),
+#    int "hi"=48 (0 to 255),
+#    int "dir"=20 (-2 / -1 / 0 / 1 / 2 / 20),
+#    [float "scale"=2.0 (1.0 to 10.0)],
+#    [int "sharpness"=0 (0 to 10)]
+#    )
+#
 function MotionMask(clip a, int "lo", int "hi", float "scale", int "sharpness", int "dir", int "UV") {
 
     rgb  = isRGB(a)
@@ -363,6 +372,8 @@ function MotionMask(clip a, int "lo", int "hi", float "scale", int "sharpness", 
     dr   = Default(dir,      20) # Direction of the motion mask, -2 for previous+before, -1 for previous, 0 for both, 1 for next, 2 for next+following, 20 for both radius=2
     UV   = Default(UV,  rgb ? 3 : 2)
 
+    dr   = dr>2?20:dr
+    sc   = max(1,sc)
     ad   = abs(dr)
     sc   = sc / (ad==1 ? 2. : ad==20 ? 5. : 4.)
     lob  =     ex_bs(lo, 8, bi, fulls=true)
@@ -535,8 +546,17 @@ function ex_limitchange(clip flt, clip src, float "limit", float "bias", float "
 ### Dependencies:
 ###         ExTools
 ###         MVTools
-###         MaskTools
 ###         SMDegrain (for MC=true)
+###
+###
+### Function Definition:
+###     (
+###     clip sharp,
+###     clip orig,
+###     int "keep"=24 (0 to 100)
+###     [bool "median"=false],
+###     [bool "MC"=false]
+###     )
 ###
 ### Example:
 ###     Soothe(orig,blurry,keep=0) # You can also use it to recover sharpness from a blurry filter
@@ -557,6 +577,7 @@ function Soothe(clip sharp, clip orig, int "keep", bool "median", bool "MC", int
     keep = Default(keep,   MC ? 48 : 24)  # 0-100
     UV   = Default(UV,        1)
     tv   = Default(tv_range, !fs)
+    UV3  = UV==3
     KP   = max(0,min(100,keep)) / 100.
 
     Assert(IsVersionOrGreater(3,7,2),               "Soothe: Update AviSynth+ version")
@@ -574,21 +595,21 @@ function Soothe(clip sharp, clip orig, int "keep", bool "median", bool "MC", int
             pre       = orig.ex_minblur(isHD ? 2 : 1, sharp=false, UV=uv)
             DB        = ex_lutxyz(sharp,orig,pre,"x z - X@ y z - 1.49 * Y@ * 0 < z X abs Y abs < x Y z + ? ?",UV=uv,fulls=!tv)
             pre       = pre.ConvertBits(8, dither=-1, fulls=!tv)
-            superfilt = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, chroma=UV==3, mt=true)
-            super     = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, chroma=UV==3, mt=true, levels=1)
+            superfilt = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, sharp=2, rfilter=3, chroma=UV3, mt=true)
+            super     = MSuper(pre, pel=isHD?1:2, hpad = 0, vpad = 0, sharp=2, rfilter=3, chroma=UV3, mt=true, levels=1)
 
-            cb  = superfilt.MAnalyse(isb = false,    chroma=false, blksize = blksize,   overlap=blksize/2, delta = 1, truemotion=true, mt=true, temporal=true)
-            cf  = superfilt.MAnalyse(isb = true,     chroma=false, blksize = blksize,   overlap=blksize/2, delta = 1, truemotion=true, mt=true, temporal=true )
-            cb1 = isv ? cb1 : super.Mrecalculate(cb, chroma=false, blksize = blksize/2, overlap=blksize/4, thSAD=110, truemotion=true, mt=true)
-            cf1 = isv ? cf1 : super.Mrecalculate(cf, chroma=false, blksize = blksize/2, overlap=blksize/4, thSAD=110, truemotion=true, mt=true)
+            cb  = superfilt.MAnalyse(isb = false,    chroma=UV3, blksize = blksize,   overlap=blksize/2, delta = 1, truemotion=true, mt=true, dct=0, search=4, pglobal=13, temporal=true, global=true, plevel=0)
+            cf  = superfilt.MAnalyse(isb = true,     chroma=UV3, blksize = blksize,   overlap=blksize/2, delta = 1, truemotion=true, mt=true, dct=0, search=4, pglobal=13, temporal=true, global=true, plevel=0)
+            cb1 = isv ? cb1 : super.Mrecalculate(cb, chroma=UV3, blksize = blksize/2, overlap=blksize/4, thSAD=190, truemotion=true, mt=true, dct=5, search=0)
+            cf1 = isv ? cf1 : super.Mrecalculate(cf, chroma=UV3, blksize = blksize/2, overlap=blksize/4, thSAD=190, truemotion=true, mt=true, dct=5, search=0)
         }
 
-        cb1   = repair(isc ? b1c : sharp.MCompensate(super.ConvertBits(bi, fulls=!tv), cb1, thSCD1=255,thSCD2=255, mt=true), orig, 3, -1)
-        cf1   = repair(isc ? f1c : sharp.MCompensate(super.ConvertBits(bi, fulls=!tv), cf1, thSCD1=255,thSCD2=255, mt=true), orig, 3, -1)
+        cb1   = ex_repair(isc ? b1c : sharp.MCompensate(super.ConvertBits(bi, fulls=!tv), cb1, thSCD1=round(6.25*8*8), thSCD2=round(2.03*8*8), mt=true), orig, "undot3", UV=1)
+        cf1   = ex_repair(isc ? f1c : sharp.MCompensate(super.ConvertBits(bi, fulls=!tv), cf1, thSCD1=round(6.25*8*8), thSCD2=round(2.03*8*8), mt=true), orig, "undot3", UV=1)
 
         diff  = interleave(cb1,DB,cf1)
 
-        diff2 = med ? diff.ex_median("medianT",UV=uv) : diff.temporalsoften(1,255,uv==3?255:0,32,2)
+        diff2 = med ? diff.ex_median("medianT",UV=uv) : diff.temporalsoften(1,255,UV3?255:0,32,2)
         diff2 = diff2.selectevery(3,1)
         ex_lutxyz(sharp,DB,diff2,Format("z y - X@ x y - Y@ * 0 < Y {KP} * y + X abs Y abs < x z - {KP} * z + x ? ?"),UV=uv,fulls=!tv)
 
@@ -596,6 +617,6 @@ function Soothe(clip sharp, clip orig, int "keep", bool "median", bool "MC", int
     } else {
 
         diff  = ex_makediff(orig,  sharp, UV=uv, fulls=!tv)
-        diff2 = med ? diff.ex_median("medianT",UV=uv) : diff.temporalsoften(1,255,uv==3?255:0,32,2)
-        ex_lutxyz(orig,diff,diff2,Format("y range_half - Y@ z range_half - Z@ * 0 < Y {KP} * range_half + Y abs Z abs > y z - {KP} * z + y ? ? x swap - range_half +"),UV=uv,fulls=!tv).propCopy(a)
+        diff2 = med ? diff.ex_median("medianT",UV=uv) : diff.temporalsoften(1,255,UV3?255:0,32,2)
+        ex_lutxyz(orig,diff,diff2,Format("y range_half - Y@ z range_half - Z@ * 0 < Y {KP} * range_half + Y abs Z abs > y z - {KP} * z + y ? ? x swap - range_half +"),UV=uv,fulls=!tv).propCopy(sharp)
     } }

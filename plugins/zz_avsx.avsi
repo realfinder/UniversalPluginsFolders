@@ -83,6 +83,9 @@ Import(AviSynthPluginsDir + "26/vsTTempSmooth.avsi")
 Import(AviSynthPluginsDir + "26/yadifmod2.avsi")
 Import(AviSynthPluginsDir + "26/Rainbow_smooth2.avsi")
 Import(AviSynthPluginsDir + "26/YUY2toYV12i and YV12toYUY2i.avsi")
+Import(AviSynthPluginsDir + "26/sbr.avsi")
+Import(AviSynthPluginsDir + "26/FrostyBorders.avsi")
+Import(AviSynthPluginsDir + "26/ImageBorders.avsi")
 LoadPlugin(AviSynthPluginsDir + "26/FrameSel.dll")
 }
 
@@ -164,7 +167,9 @@ AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/Grade
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/Logo.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/SafeMotionMask.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/SwipeSubs.avsi")
-AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/TransformsPack.avsi")
+AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/TransformsPack - Main.avsi")
+AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/TransformsPack - Models.avsi")
+AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/TransformsPack - Transfers.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/yugefunc.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/FillMissing.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/FrameRateConverter.avsi")
@@ -182,6 +187,8 @@ AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/Simil
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/GradFun3mod.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/CToolsp.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/CTools.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/libdescale.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/grayworld.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")
