@@ -1,6 +1,6 @@
 #############################################################
 ###                                                       ###
-###  GradFun3plus MIX mod by Dogway (15-03-2022)          ###
+###  GradFun3plus MIX mod by Dogway (08-07-2022)          ###
 ###                                                       ###
 ###                                                       ###
 ###  A simple port of:                                    ###
@@ -68,8 +68,8 @@
 ### 3   Undocumented mode.
 ###
 ### show:
-### 0   Normal output, without debugging information.
-### 1   Shows the detail/edge mask.
+### false  Normal output, without debugging information.
+### true   Shows the detail/edge mask.
 ###
 ### ref:
 ### Reference clip used to limit changes. Allows cascading multiple GradFun3 calls (for example by combining small and large radius settings) without going too far from the original picture.
@@ -85,7 +85,7 @@
 ###     int "mask"=2 (0 to 4),
 ###     int "smode"=0 (0 / 1 / 2 / 3),
 ###     [float "thr_det"=2.00 (0.00 to 10.00)],
-###     [int "show"=0 (0 to 1)],
+###     [bool "show"=false],
 ###     [float "thrc"=0.35 (0.10 to 2.00)],
 ###     [int "radiusc"=8 (1 to 128)],
 ###     [float "elastc"=3.00 (1.00 to 6.00)],
@@ -95,11 +95,12 @@
 ###     )
 ###
 ###
-function GradFun3plus (clip src, float "thr", int "radius", float "elast", int "mask", int "smode", float "thr_det", int "show", float "thrc", int "radiusc", float "elastc", int "Y", int "UV", clip "ref") {
+function GradFun3plus (clip src, float "thr", int "radius", float "elast", int "mask", int "smode", float "thr_det", bool "show", float "thrc", int "radiusc", float "elastc", int "Y", int "UV", clip "ref") {
 
     w     = src.width ()
     h     = src.height()
     is42  = src.is420()
+    rgb   = src.isRGB()
     bi    = BitsPerComponent(src)
     fs    = propNumElements (src,"_ColorRange")  > 0 ? \
             propGetInt      (src,"_ColorRange") == 0 : false
@@ -113,7 +114,7 @@ function GradFun3plus (clip src, float "thr", int "radius", float "elast", int "
     mask    = Default (mask,         2)
     smode   = Default (smode,        0)
     thr_det = Default (thr_det, 2 + round(max(thr - 0.35, 0) / 0.3))
-    debug   = Default (show,        0)
+    sh      = Default (show,     false)
     refd    = Defined (ref)
     mask    = min(mask, 4) # 'circle' shape max radius ('disk' used up to 3)
 
@@ -139,8 +140,8 @@ function GradFun3plus (clip src, float "thr", int "radius", float "elast", int "
 
     # Main debanding
 
-    yp      = (!Defined (y)  || (y  == 3)) ? 3 : 1
-    uvp     = (!Defined (uv) || (uv == 3)) ? 3 : 1
+    yp      = rgb || (!Defined (y)  || (y  == 3)) ? 3 : 1
+    uvp     = rgb || (!Defined (uv) || (uv == 3)) ? 3 : 1
 
     c_flag1 = thrc != thr || elastc != elast
     c_flag2 = yp == 3 && uvp == 3 && (is42 && 0 < smode < 3 ? c_flag1 || radiusc != radius : c_flag1)
@@ -156,16 +157,26 @@ function GradFun3plus (clip src, float "thr", int "radius", float "elast", int "
     td_hi  = ex_bs(max(thr_det,        1), 8, bi, fs, flt=true) + 0.0001
     td_df  = 1. / (td_hi - td_lo)
 
-    dmask  = (mask > 0 && yv411_flag) ? src.ExtractY()              : src
+    dmask  = (mask > 0 && yv411_flag) ? src.ExtractY()                  : src
     dmask  = (mask > 0) ? dmask.ex_luts(mode="rng", pixels=ex_shape(mask,mode=mask==4?"circle":"disk"), exprf=Format(" {td_lo} - {td_df} * range_max *"), clamp_float=true) : dmask
-    dmask  = (mask > 0) ? dmask.removegrain(22, -1)                 : dmask # "cartoon" median blur
-    dmask  = (mask > 1) ? dmask.removegrain(12, -1)                 : dmask
-    dmask  = (mask > 2) ? dmask.removegrain(20, -1)                 : dmask
-    dmask  = (mask > 0 && yv411_flag) ? dmask.ConvertToYV411 ()     : dmask
+    dmask  = (mask > 0) ? dmask.removegrain(22, rgb ? Undefined() : -1) : dmask # "cartoon" median blur
+    dmask  = (mask > 1) ? dmask.removegrain(12, rgb ? Undefined() : -1) : dmask
+    dmask  = (mask > 2) ? dmask.removegrain(20, rgb ? Undefined() : -1) : dmask
+    dmask  = (mask > 0 && yv411_flag) ? dmask.ConvertToYV411 ()         : dmask
 
     result = (mask > 0) ? mt_merge(flt, src, dmask, luma=true, y=yp, u=uvp, v=uvp) : flt
 
-    (debug == 1       ) ? dmask.GreyScale () : result }
+    !sh ? result : Subtitle(dmask.GreyScale(),      \
+                            Format("\n "            \
+                            +"thr:{thr}\n "         \
+                            +"thrc:{thrc}\n "       \
+                            +"radius:{radius}\n "   \
+                            +"radiusc:{radiusc}\n " \
+                            +"elast:{elast}\n "     \
+                            +"elastc:{elastc}\n "   \
+                            +"mask:{mask}\n "       \
+                            +"smode:{smode}\n "     \
+                            +"thr_det:{thr_det}"), size=w/50,lsp=4) }
 
 
 
@@ -229,15 +240,15 @@ function SmoothGradPlus(clip a, int "radius", float "thr", float "elast", clip "
     Assert(rad <=  156,               "SmoothGradPlus: max "+chr(34)+"radius" +chr(34)+" value is 156.")
 
     rad   = max(rad, 2)
-    th2   = min(max(thr,    0.1 ), 10.0)
-    el2   = min(max(el,     1.01), 10.0)
+    th2   = clamp(thr,        0.1, 10.0)
+    el2   = clamp(el,        1.01, 10.0)
     thr_1 = int(th2       * 128.0 + 0.5)
     thr_2 = int(th2 * el2 * 128.0 + 0.5)
 
     min_thr_dif = 2
-    thr_dif     = max    (thr_2 - thr_1,     min_thr_dif)
-    thr_1       = min(max(thr_1, 0), 32767 - min_thr_dif)
-    thr_2       = min    (thr_1 + thr_dif, 32767)
+    thr_dif     = max  (thr_2 - thr_1,           min_thr_dif)
+    thr_1       = clamp(thr_1,      0,   32767 - min_thr_dif)
+    thr_2       = min  (thr_1 + thr_dif, 32767)
 
     thr_slope   = 32768. / (thr_2 - thr_1)
     thr_offset  = thr_1 * thr_slope + 32768
@@ -247,7 +258,7 @@ function SmoothGradPlus(clip a, int "radius", float "thr", float "elast", clip "
     thr_2       = ex_bs(thr_2,        16, bi, fs, flt=true)
     hhr         = 1 / ex_bs(32768/2., 16, bi, fs, flt=true)
 
-    val_filt    = ex_GaussianBlur(a, 0.635*(rad-1)+0.6,Y=Y, UV=UV) # Reparametrized to roughly mimic Dither_box_filter16()
+    val_filt    = ex_GaussianBlur(a, 0.635*(rad-1)+0.6, Y=Y, UV=UV) # Reparametrized to roughly mimic Dither_box_filter16()
 
     rfd ? ex_lutxyz(a,val_filt,ref,Format("y z - 0.5 *     abs D@ {thr_1} < y D {thr_2} > x D {thr_slope} * {thr_offset} - y x - 0.5 {hhr} * * * x swap - ? ? "),Y=Y,UV=UV) : \
           ex_lutxy (a,val_filt,    Format("y x - 0.5 * D1@ abs D@ {thr_1} < y D {thr_2} > x D {thr_slope} * {thr_offset} - D1      * {hhr} *     x swap - ? ? "),Y=Y,UV=UV) }

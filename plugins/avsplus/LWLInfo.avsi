@@ -34,6 +34,7 @@ The list below shows what the frame properties values corresponds to:
 "2020_12" (15)
 "st2084" (16)
 "std-b67" (18)
+"prophoto" (30)
 
 ####### primaries #######
 "709" (1)
@@ -48,6 +49,7 @@ The list below shows what the frame properties values corresponds to:
 "st431-2" (11)
 "st432-1" (12)
 "jedec-p22" (22)
+"prophoto" (30)
 
 ####### color range #######
 "limited" (1)
@@ -73,6 +75,10 @@ false (0)
 
 
 ### Changelog ###
+# - Added add_text (additional text) and add_text_pos (top or bottom position of the additional text) parameters.
+####
+# - Added info about prophoto transfer and primaries.
+####
 # - Fixed missed default values.
 ####
 # - Added new D2VSource frame properties (_FieldOperation, _FieldOrder, _Film, _ProgressiveFrame, _RFF, _TFF).
@@ -137,7 +143,9 @@ Function LWLInfo(
 \ int "spc",
 \ int "lsp",
 \ float "fontwidth",
-\ float "fontangle")
+\ float "fontangle",
+\ string "add_text",
+\ string "add_text_pos")
 {
     framenum = Default(framenum, true)
     sarnum = Default(sarnum, false)
@@ -186,6 +194,10 @@ Function LWLInfo(
     fontangle = Default(fontangle, 0)
     x = Default(x, Defined(align) ? (align == 1 || align == 4 || align == 7) ? 8 : (align == 2 || align == 5 || align == 8) ? -1 : (align == 3 || align == 6 || align == 9) ? width(c) - 8 : NOP() : 8)
     y = Default(y, Defined(align) ? (align == 4 || align == 5 || align == 6) ? -1 : (align == 7 || align == 8 || align == 9) ? 0 : (align == 1 || align == 2 || align == 3) ? height(c) - 1 : NOP() : 0)
+    add_text = Default(add_text, "")
+    add_text_pos = Default(add_text_pos, "bottom")
+
+    Assert(add_text_pos == "top" || add_text_pos == "bottom", "LWLInfo: add_text_pos must be either top or bottom.")
 
     ScriptClip(c, """
         font_ = """"+ font +""""
@@ -199,6 +211,8 @@ Function LWLInfo(
         fontangle_ = """+ String(fontangle) +"""
         x_ = """+ String(x) +"""
         y_ = """+ String(y) +"""
+        add_text_ = """"+ add_text +""""
+        add_text_pos_ = """"+ add_text_pos +""""
 
         temp_prop = ""
 
@@ -244,6 +258,11 @@ Function LWLInfo(
         if ("""+ String(progressiveframe) +""") { if (propGetType("_ProgressiveFrame") > 0) { temp_prop = temp_prop + "Progressive Frame: " + String(propGetInt("_ProgressiveFrame")) + "\n" } }
         if ("""+ String(rff) +""") { if (propGetType("_RFF") > 0) { temp_prop = temp_prop + "RFF: " + String(propGetInt("_RFF")) + "\n" } }
         if ("""+ String(tff) +""") { if (propGetType("_TFF") > 0) { temp_prop = temp_prop + "TFF: " + String(propGetInt("_TFF")) + "\n" } }
+
+        if (add_text_ != "")
+        {
+            temp_prop = (add_text_pos_ == "bottom") ? (temp_prop + add_text_ + "\n") : (add_text_ + "\n" + temp_prop)
+        }
 
     return Subtitle(temp_prop, x=x_, y=y_, font=font_, size=size_, text_color=textcolor_, halo_color=halocolor_, align=align_, spc=spc_, lsp=lsp_, font_width=fontwidth_, font_angle=fontangle_) """, after_frame=true)
 }

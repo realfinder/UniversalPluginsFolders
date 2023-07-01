@@ -15,7 +15,7 @@
 
 <table class="n">
 <tr><td class="n"><b>Authors:     </b></td><td class="n">&nbsp;</td><td class="n">Firesledge (aka Cretindesalpes)</td></tr>
-<tr><td class="n"><b>Version:     </b></td><td class="n">&nbsp;</td><td class="n">r29</td></tr>
+<tr><td class="n"><b>Version:     </b></td><td class="n">&nbsp;</td><td class="n">r30</td></tr>
 <tr><td class="n"><b>Download:    </b></td><td class="n">&nbsp;</td><td class="n"><a href="http://ldesoras.free.fr/prod.html#src_fmtconv">http://ldesoras.free.fr/prod.html</a></td></tr>
 <tr><td class="n"><b>Category:    </b></td><td class="n">&nbsp;</td><td class="n">Format tools</td></tr>
 <tr><td class="n"><b>Requirements:</b></td><td class="n">&nbsp;</td><td class="n"><a href="http://www.vapoursynth.com/">Vapoursynth r55</a> or <a href="https://avs-plus.net/">Avisynth+ 3.7.0</a></td></tr>
@@ -129,7 +129,7 @@ c.set_output ()</pre>
 <p>Bobbing an interlaced stream (here, Top Field First):</p>
 
 <pre class="src">c = c.std.SeparateFields (tff=True)
-c = c.fmtc.resample (scalev=2, kernel="cubic", interlaced=True, interlacedd=False)</pre>
+c = c.fmtc.resample (scalev=2, kernel="cubic", interlaced=1, interlacedd=0)</pre>
 
 <p>Converting a progressive stream from YUV 4:2:2 to 4:2:0 and back to 8 bits:</p>
 
@@ -140,7 +140,7 @@ c = c.fmtc.bitdepth (bits=8)</pre>
 
 <pre class="src">tff = True
 c = c.std.SeparateFields (tff=tff)
-c = c.fmtc.resample (css="420", interlaced=True)
+c = c.fmtc.resample (css="420", interlaced=1)
 c = c.fmtc.bitdepth (bits=8)
 c = c.std.DoubleWeave (tff=tff)
 c = c.std.SelectEvery (cycle=2, offsets=0)</pre>
@@ -251,7 +251,8 @@ make install</pre>
 <p>You can add some options to the <code>configure</code> command:</p>
 <ul>
 <li><code>--enable-debug</code> to activate debugging code</li>
-<li><code>--enable-clang</code> to use Clang instead of the default compiler which is usually GCC</li>
+<li><code>CXX='clang++' CC='clang'</code> to use Clang instead of the default
+compiler which is usually GCC</li>
 </ul>
 <p>Only the Vapoursynth plug-in can be built in the GNU-based environment.</p>
 
@@ -622,7 +623,7 @@ For meaningful results, convert to R’G’B’ then to linear RGB and use
 </code>primaries</code> to perform the intermediary conversion.</p>
 
 <p>The <code>_ColorRange</code> frame property is set if the <var>fulld</var>
-parameter has been explicitely defined.
+parameter has been explicitely defined or if a preset is used.
 If the destination colorspace is a standardized one (as deduced from the
 specified matrix), the <code>_Matrix</code> and <code>_ColorSpace</code>
 properties are set, otherwise they are deleted from the frame.</p>
@@ -958,6 +959,7 @@ Supersedes the bitdepth from <var>csp</var>.</p>
 	wd    : float[]: opt;
 	prims : data   : opt;
 	primd : data   : opt;
+	wconv : int    : opt; (False)
 	cpuopt: int    : opt; (-1)
 )</pre></td>
 <td class="n"><pre class="proto">fmtc_primaries (
@@ -972,6 +974,7 @@ Supersedes the bitdepth from <var>csp</var>.</p>
 	arrayf wd (undefined),
 	string prims (undefined),
 	string primd (undefined),
+	bool   wconv (False),
 	int    cpuopt (-1)
 )</pre></td>
 </tr>
@@ -1046,11 +1049,13 @@ Possible values are:</p>
 <tr><td><b><code>&quot;ciergb&quot;</code></b></td><td>R<br />G<br />B<br />W (E)</td><td>0.7347,<br />0.2738,<br />0.1666,<br />1 / 3</td><td>0.2653<br />0.7174<br />0.0089<br />1 / 3</td><td>CIE RGB (1931)</td></tr>
 <tr><td><b><code>&quot;ciexyz&quot;</code></b></td><td>R<br />G<br />B<br />W (E)</td><td>1.0,<br />0.0,<br />0.0,<br />1 / 3</td><td>0.0<br />1.0<br />0.0<br />1 / 3</td><td>CIE XYZ (1931)</td></tr>
 <tr><td><b><code>&quot;p3dci&quot;</code></b></td><td>R<br />G<br />B<br />W</td><td>0.680,<br />0.265,<br />0.150,<br />0.314</td><td>0.320<br />0.690<br />0.060<br />0.351</td><td>SMPTE ST 2113 P3-DCI<br />SMPTE RP 431-2</td></tr>
-<tr><td><b><code>&quot;p3d65&quot;</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.680,<br />0.265,<br />0.150,<br />0.3127</td><td>0.320<br />0.690<br />0.060<br />0.3290</td><td>SMPTE ST 2113 P3-D65<br />SMPTE EG 432-1</td></tr>
+<tr><td><b><code>&quot;p3d65&quot;</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.680,<br />0.265,<br />0.150,<br />0.3127</td><td>0.320<br />0.690<br />0.060<br />0.3290</td><td>SMPTE ST 2113 P3-D65<br />SMPTE EG 432-1<br />Apple Display P3</td></tr>
 <tr><td><b><code>&quot;p3d60&quot;</code></b></td><td>R<br />G<br />B<br />W (D60)</td><td>0.680,<br />0.265,<br />0.150,<br />0.32168</td><td>0.320<br />0.690<br />0.060<br />0.33767</td><td>ACES P3-D60</td></tr>
+<tr><td><b><code>&quot;p3p&quot;</code></b></td><td>R<br />G<br />B<br />W</td><td>0.740,<br />0.220,<br />0.090,<br />0.314,</td><td>0.270<br />0.780<br />&minus;0.090<br />0.351</td><td>DCI P3+</td></tr>
+<tr><td><b><code>&quot;cinegam&quot;</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.740,<br />0.170,<br />0.080,<br />0.3127,</td><td>0.270<br />1.140<br />&minus;0.100<br />0.329</td><td>Cinema Gamut</td></tr>
 <tr><td><b><code>&quot;3213&quot;</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.630,<br />0.295,<br />0.155,<br />0.3127</td><td>0.340<br />0.605<br />0.077<br />0.3290</td><td>EBU Tech. 3213-E</td></tr>
 <tr><td><b><code>&quot;aces&quot;</code></b></td><td>R<br />G<br />B<br />W (D60)</td><td>0.7347,<br />0.0,<br />0.0001,<br />0.32168,</td><td>0.2653<br />1.0<br />-0.077<br />0.33767</td><td>ACES<br />SMPTE ST 2065-1</td></tr>
-<tr><td><b><code>&quot;ap1&quot;</code></b></td><td>R<br />G<br />B<br />W (D60)</td><td>0.713,<br />0.165,<br />0.128,<br />0.32168,</td><td>0.293<br />0.830<br />-0.044<br />0.33767</td><td>ACEScc/ACESproxy AP1</td></tr>
+<tr><td><b><code>&quot;ap1&quot;<br />&quot;acescc&quot;<br />&quot;acescct&quot;</code></b></td><td>R<br />G<br />B<br />W (D60)</td><td>0.713,<br />0.165,<br />0.128,<br />0.32168,</td><td>0.293<br />0.830<br />-0.044<br />0.33767</td><td>ACESproxy AP1<br />ACEScc<br />ACEScct</td></tr>
 <tr><td><b><code>&quot;sgamut&quot;</code></b> or<br /><b><code>&quot;sgamut3&quot;</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.730,<br />0.140,<br />0.100,<br />0.3127</td><td>0.280<br />0.855<br />-0.050<br />0.3290</td><td>Sony S-Gamut<br />Sony S-Gamut3</td></tr>
 <tr><td><b><code>&quot;sgamut3cine&quot;</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.766,<br />0.225,<br />0.089,<br />0.3127</td><td>0.275<br />0.800<br />-0.087<br />0.3290</td><td>Sony S-Gamut3.Cine</td></tr>
 <tr><td><b><code>&quot;alexa&quot;</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.6840,<br />0.2210,<br />0.0861,<br />0.3127</td><td>0.3130<br />0.8480<br />-0.1020<br />0.3290</td><td>Arri ALEXA</td></tr>
@@ -1066,6 +1071,21 @@ Possible values are:</p>
 <tr><td><b><code>&quot;red4&quot;</code></b></td><td>R<br />G<br />B<br />W (D60)</td><td>0.70118,<br />0.30060,<br />0.14533,<br />0.32168,</td><td>0.32901<br />0.68379<br />0.05162<br />0.33767</td><td>REDcolor4</td></tr>
 <tr><td><b><code>&quot;redwide&quot;</code></b></td><td>R<br />G<br />B<br />W (D65)</td><td>0.780308,<br />0.121595,<br />0.095612,<br />0.3217,</td><td>0.304253<br />1.493994<br />&minus;0.084589<br />0.3290</td><td>REDWideGamutRGB</td></tr>
 </table>
+
+<p class="var">wconv</p>
+<p>Indicates we want a full conversion for the white point.</p>
+<p>If set to <code>False</code>, chromatic adaptation will be used, so the
+white will stay white on the destination illuminant and colors will be adapted
+to implement a real illuminant change.
+This is generally what you want when converting between gamuts: the eye adapts
+to the new white and colors should be matched accordingly.</p>
+<p>If set to <code>True</code>, the chromatic adaptation is bypassed.
+The white from the source colorspace will appear with a tint if the target
+colorspace has a different white point.
+Use this if you want to emulate what a picture displayed with a monitor using
+the source illuminant looks like on a display using the target illuminant.
+This is also what you want when converting to and from XYZ for further
+operations in this colorspace.</p>
 
 <p class="var">cpuopt</p>
 <p>Limits the CPU instruction set.
@@ -1760,11 +1780,11 @@ cd/m<sup>2</sup>, whereas scene-referred linear scales are arbitrary.</p>
 <tr><td><b><code>&quot;log316&quot;    </code></b></td><td>0&hellip;1</td><td></td><td></td><td>Logarithmic transfer characteristic (100&radic;10:1 range)</td></tr>
 <tr><td><b><code>&quot;61966-2-4&quot; </code></b></td><td>Unspecified</td><td>OETF</td><td>SDR</td><td>IEC 61966-2-4, xvYCC. Same as BT.709, but with an extended range, including negative values.</td></tr>
 <tr><td><b><code>&quot;1361&quot;      </code></b></td><td>&minus;0.25&hellip;1.33</td><td></td><td></td><td>ITU-R BT.1361 extended colour gamut system</td></tr>
-<tr><td><b><code>&quot;61966-2-1&quot;<br />&quot;srgb&quot;<br />&quot;sycc&quot;</code></b></td><td>0&hellip;1</td><td>EOTF</td><td>SDR</td><td>IEC 61966-2-1, sRGB or sYCC</td></tr>
+<tr><td><b><code>&quot;61966-2-1&quot;<br />&quot;srgb&quot;<br />&quot;sycc&quot;</code></b></td><td>0&hellip;1</td><td>EOTF</td><td>SDR</td><td>IEC 61966-2-1, sRGB or sYCC<br />Apple Display P3</td></tr>
 <tr><td><b><code>&quot;2020_10&quot;   </code></b></td><td>0&hellip;1</td><td></td><td>SDR</td><td>ITU-R BT.2020 for 10-bit system</td></tr>
 <tr><td><b><code>&quot;2020_12&quot;<br />&quot;2020&quot;</code></b></td><td>0&hellip;1</td><td></td><td>SDR</td><td>ITU-R BT.2020 for 12-bit system</td></tr>
 <tr><td><b><code>&quot;pq&quot;<br />&quot;2084&quot;</code></b></td><td>0&hellip;1</td><td>EOTF</td><td>HDR</td><td>SMPTE ST 2084 for 10, 12, 14 and 16-bit systems<br />ITU-R BT.2100-2 PQ (perceptual quantization)<br />Linear 1.0 is peak white and corresponds to a display luminance level of 10&nbsp;000 cd/m<sup>2</sup>. Reference white is 203 cd/m<sup>2</sup>.</td></tr>
-<tr><td><b><code>&quot;428&quot;<br />&quot;428-1&quot;</code></b></td><td>0&hellip;1</td><td></td><td>SDR</td><td>SMPTE ST 428-1<br />Linear 48&nbsp;/&nbsp;52.37 corresponds to a reference display luminance level of 48&nbsp;cd/m<sup>2</sup>.</td></tr>
+<tr><td><b><code>&quot;428&quot;<br />&quot;428-1&quot;</code></b></td><td>0&hellip;1</td><td></td><td>SDR</td><td>SMPTE ST 428-1, DCI-P3 (with XYZ values)<br />Linear 48&nbsp;/&nbsp;52.37 corresponds to a reference display luminance level of 48&nbsp;cd/m<sup>2</sup>.</td></tr>
 <tr><td><b><code>&quot;hlg&quot;       </code></b></td><td>0&hellip;1</td><td>OETF</td><td>HDR</td><td>ITU-R BT.2100 HLG (hybrid log-gamma), ARIB STD-B67<br />Reference white is at 75&nbsp;% of the coding range, giving 203&nbsp;cd/m<sup>2</sup> when peak white is set to 1000&nbsp;cd/m<sup>2</sup>. Set <var>lw</var> to specify explicitely the peak white luminance.</td></tr>
 <tr><td><b><code>&quot;1886&quot;      </code></b></td><td>0&hellip;1</td><td>EOTF</td><td>SDR</td><td>ITU-R BT.1886. Intended to mimicing a CRT display curve. Peak white is 100 cd/m<sup>2</sup>.</td></tr>
 <tr><td><b><code>&quot;1886a&quot;     </code></b></td><td>0&hellip;1</td><td>EOTF</td><td>SDR</td><td>ITU-R BT.1886, alternative approximation</td></tr>
@@ -1777,7 +1797,8 @@ cd/m<sup>2</sup>, whereas scene-referred linear scales are arbitrary.</p>
 <tr><td><b><code>&quot;canonlog&quot;  </code></b></td><td>0&hellip;8.00903</td><td>OETF</td><td></td><td>Canon-Log<br />Peak white is 8.00903 in linear scale and 1.08676 in compressed scale.</td></tr>
 <tr><td><b><code>&quot;adobergb&quot;  </code></b></td><td>0&hellip;1</td><td></td><td>SDR</td><td>Adobe RGB (1998 and Wide Gamut).<br />Reference white is 160&nbsp;cd/m<sup>2</sup>.</td></tr>
 <tr><td><b><code>&quot;romm&quot;      </code></b></td><td>0&hellip;1</td><td></td><td>SDR</td><td>ProPhoto, ROMM.<br />Reference white is 142&nbsp;cd/m<sup>2</sup>.</td></tr>
-<tr><td><b><code>&quot;acescc&quot;    </code></b></td><td>&minus;65504&hellip;65504</td><td></td><td></td><td>ACEScc. Values are actually bounded to the ACES 16-bit float range.</td></tr>
+<tr><td><b><code>&quot;acescc&quot;    </code></b></td><td>&minus;65504&hellip;65504</td><td>OETF</td><td></td><td>ACEScc. Values are actually bounded to the ACES 16-bit float range.</td></tr>
+<tr><td><b><code>&quot;acescct&quot;   </code></b></td><td>&minus;65504&hellip;65504</td><td>OETF</td><td></td><td>ACEScct. Values are actually bounded to the ACES 16-bit float range.</td></tr>
 <tr><td><b><code>&quot;erimm&quot;     </code></b></td><td>0&hellip;316.2</td><td>OETF</td><td></td><td>ERIMM</td></tr>
 <tr><td><b><code>&quot;vlog&quot;      </code></b></td><td>0&hellip;1</td><td></td><td></td><td>Panasonic V-Log</td></tr>
 <tr><td><b><code>&quot;davinci&quot;   </code></b></td><td>&minus;0.01&hellip;100</td><td>OETF</td><td></td><td>Blackmagic Design DaVinci Intermediate</td></tr>
@@ -1968,6 +1989,16 @@ and 16-bit integer for <code>nativetostack16</code>.</p>
 
 
 <h2><a id="changelog"></a>V) Changelog</h2>
+
+<p><b>r30, 2022-08-29</b></p>
+<ul>
+<li><code>matrix</code>: The <code>_ColorRange</code> frame property is now set when a matrix preset is used.</li>
+<li><code>transfer</code>: Added ACEScct transfer function.</li>
+<li><code>primaries</code>: Added DCI P3+ and Cinema Gamut presets.</li>
+<li><code>primaries</code>: Added <var>wconv</var> parameter for full conversion.</li>
+<li>Changed the <code>configure</code> options to compile with Clang.</li>
+<li>Updated datatypes in the examples.</li>
+</ul>
 
 <p><b>r29, 2022-04-11</b></p>
 <ul>

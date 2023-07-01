@@ -12,7 +12,7 @@
 ###                                                                                          ###
 ###                             HBD Performance mod by Dogway                                ###
 ###                                                                                          ###
-###                                v5.5 mix - 14 May 2022                                    ###
+###                                v6.0 mix - 24 February 2023                               ###
 ###                                                                                          ###
 ################################################################################################
 ###
@@ -33,6 +33,11 @@
 ### +-----------+
 ### | CHANGELOG |
 ### +-----------+
+###
+### v6.0mx : - Revert 5.6mx as handling of interlaced content is better dealt as stacked fields
+###          - Promote to 6.0mx and wrap up
+###
+### v5.6mx : - Support for globals of interlaced clips on temporal limiting
 ###
 ### v5.5mx : - No changes (sync with EX mod)
 ###
@@ -207,6 +212,7 @@
 ###        - changed some code (cosmetic)
 ###        - added "defaults" parameter (to switch between original and modded version)
 ###        - added documentation
+###        - LSFmod: An update/mod of LimitedSharpen (20-06-2005) and LimitedSharpenFaster (29-10-2005) by Didée
 ###
 ###
 ###
@@ -215,12 +221,12 @@
 ### +--------------+
 ###
 ### -> MaskTools2     (v2.2.30 or up)
-### -> RgTools        (v1.2 or up)
-### -> ExTools        (v8.5 or up)
-### -> ResizersPack   (v9.3 or up)
-### -> SMDegrain      (v3.5.0 or up)   [for preblur="ON"]
+### -> RgTools        (v1.2    or up)
+### -> ExTools        (v10.2   or up)
+### -> ResizersPack   (v12.0   or up)
+### -> SMDegrain      (v4.4.0  or up)  [for preblur="ON"]
 ### -> MVTools        (v2.7.45 or up)  [for preblur="ON" or Lmode=6]
-### -> SharpenersPack (v4.2 or up)     [for Smode=1, Smode=2 and Smode=3]
+### -> SharpenersPack (v5.1    or up)  [for Smode=1, Smode=2 and Smode=3]
 ### -> CAS                             [for Smode=6]
 ###
 ###
@@ -568,7 +574,7 @@
 ###
 ### Function Definitions:
 ###     (
-###     clip input,
+###     clip,
 ###     float "strength"=50.0 (1.0 to 300.0 by 1),
 ###     string "preset"="LSF" ("LSF"/ "fast"/ "medium"/ "slow"),
 ###     [int "Smode"=4 (1 / 2 / 3 / 4 / 5 / 6)],
@@ -604,7 +610,7 @@ function LSFplus(clip inclip, float "strength", int "Smode", int "Smethod",
 
 
     ### PRESETS
-    version = "v5.5mix"
+    version = "v6.0mix"
 
     rgb    = isRGB(inclip)
     ox     = inclip.width()
@@ -624,7 +630,7 @@ function LSFplus(clip inclip, float "strength", int "Smode", int "Smethod",
              preset=="medium" ? 2 : \
              preset=="fast"   ? 3 : 4
 
-    Assert(IsVersionOrGreater(3,7,2), "LSFplus: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,3), "LSFplus: Update AviSynth+ version")
     Assert(num != 4,      chr(10) + """LSFplus: Preset must be "LSF", "slow", "mid" or "fast" !""" + chr(10))
 
     #                                                                         LSF                  SLOW                 MEDIUM                  FAST

@@ -86,6 +86,7 @@ Import(AviSynthPluginsDir + "26/YUY2toYV12i and YV12toYUY2i.avsi")
 Import(AviSynthPluginsDir + "26/sbr.avsi")
 Import(AviSynthPluginsDir + "26/FrostyBorders.avsi")
 Import(AviSynthPluginsDir + "26/ImageBorders.avsi")
+Import(AviSynthPluginsDir + "26/FCBI.avsi")
 LoadPlugin(AviSynthPluginsDir + "26/FrameSel.dll")
 }
 
@@ -189,6 +190,16 @@ AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/CTool
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/CTools.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/libdescale.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/grayworld.avsi")
+AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/NNEDI3CL.avsi")
+AvsPlusVersionNumber < 3682 ? nop() : Import(AviSynthPluginsDir + "avsplus/avs_libplacebo.avsi")
+AvsPlusVersionNumber < 3682 ? nop() : Import(AviSynthPluginsDir + "avsplus/w2xncnnvk.avsi")
+AvsPlusVersionNumber < 3682 ? nop() : Import(AviSynthPluginsDir + "avsplus/lfdeband.avsi")
+AvsPlusVersionNumber < 3682 ? nop() : Import(AviSynthPluginsDir + "avsplus/f3kpf.avsi")
+AvsPlusVersionNumber < 3682 ? nop() : Import(AviSynthPluginsDir + "avsplus/Drawrect_.avsi")
+AvsPlusVersionNumber < 3682 ? nop() : Import(AviSynthPluginsDir + "avsplus/SantiagMod.avsi")
+AvsPlusVersionNumber < 3682 ? nop() : Import(AviSynthPluginsDir + "avsplus/ChromaReconstructorMod.avsi")
+AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/FilmGrain+.avsi")
+AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/sBordersFill.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")

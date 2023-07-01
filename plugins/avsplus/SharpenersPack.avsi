@@ -1,6 +1,6 @@
 #############################################################################
 ###                                                                       ###
-###        Sharpeners Pack v4.2  (15-03-2022)                             ###
+###        Sharpeners Pack v5.1  (20-03-2023)                             ###
 ###                                                                       ###
 ###        Collection of high quality sharpeners for AviSynth+            ###
 ###                                                                       ###
@@ -34,6 +34,7 @@
 ###       DelicateSharp                                                   ###
 ###       RegularSharp                                                    ###
 ###   Other:                                                              ###
+###       LindaSharp                                                      ###
 ###       DGSharpen2                                                      ###
 ###       SharpenComplex2 (uncredited)                                    ###
 ###       MultiSharpen2                                                   ###
@@ -497,7 +498,7 @@ function Adaptive_Sharpen(clip a, float "str", float "slope", float "H_over", fl
 ### Equivalences:
 ### unsharpmask(strength=str,radius=rad,threshold=0) --> ex_unsharp(str=str*0.007,                        Fc=width()/max(1,0.76*exp(0.26*rad),th=0)
 ### unsharp    (strength=str,vary=rad)               --> ex_unsharp(str=str/(1.489*pow(rad,-1.112)+0.51), Fc=width()*0.8,                     th=0)
-### Internal Sharpen(0.75)            roughly matches    ex_unsharp(2.5,width()*1.5,0,UV=3)
+### Internal's Sharpen(0.75)          roughly matches    ex_unsharp(2.5,width()*1.5,0,UV=3)
 ###
 ###
 ### Dependencies:
@@ -534,7 +535,7 @@ function ex_unsharp(clip a, float "str", float "strv", float "Fc", float "th", b
     Y     = Default( Y,      3)
     UV    = Default(UV,rgb ? 3 : 1)
 
-    Fc    = (Fs/Fc)
+    Fc    = Fs / Fc
     rad   = ceil(Fc)-1
 
     strv  = sf ? strv*0.5 + strv : strv
@@ -593,21 +594,21 @@ function ex_unsharp(clip a, float "str", float "strv", float "Fc", float "th", b
     scl   = BitSal(1,bi-8)
     sclf  = bi == 8 ? "" : (bi == 32 ? "0.003921568" : string(     scl)) + " * "
     sclr  = bi == 8 ? "" : (bi == 32 ? "255"         : string(1. / scl)) + " * "
-    sfs   = !sf   ? "" : sclr + " dup abs dup "+atanT()+" swap sqrt * swap sgn * " + sclf
+    sfs   = !sf     ? "" : sclr + " dup abs dup "+atanT()+" swap sqrt * swap sgn * " + sclf
     # Deconvolution
     dcnv1 = dcnv1 ? "" : "swap"
     dcnv2 = dcnv2 ? "" : "swap"
     strd  = strh != strv
-    th1   = !strd ? "" : "x "+dcnv1+" - {strv} * " + sfs + (th > 0 ?            thsv                : " x +")
-    th2   = !strd ?      "y "+dcnv2+" - {strh} * " + sfs + (th > 0 ? ReplaceStr(thsh, " x ", " y ") : " y +") : \
-                         "x "+dcnv2+" - {strh} * " + sfs + (th > 0 ?            thsh                : " x +")
+    th1   = !strd ? "" : Format("x "+dcnv1+" - {strv} * ") + sfs + (th > 0 ?            thsv                : " x +")
+    th2   = !strd ?      Format("y "+dcnv2+" - {strh} * ") + sfs + (th > 0 ? ReplaceStr(thsh, " x ", " y ") : " y +") : \
+                         Format("x "+dcnv2+" - {strh} * ") + sfs + (th > 0 ?            thsh                : " x +")
     strv1 = krnv  + plsv  + " Z@ "  + string((1./divy) *0.8) + " * "
     strh1 = krnh  + plsh  + " Z@ "  + string((1./divx) *0.8) + " * "
     strv2 = krnv2 + " Z + " + plsv2 + string((1./divy2)*0.2) + " * + "
     strh2 = krnh2 + " Z + " + plsh2 + string((1./divx2)*0.2) + " * + "
 
-    strvf = strv1 + strv2 + Format(th1)
-    strhf = strh1 + strh2 + Format(th2)
+    strvf = strv1 + strv2 + th1
+    strhf = strh1 + strh2 + th2
 
     a     = Fc < 2.0 ? a.blackmanresize(nmod(w*(2./Fc),2),nmod(h*(2./Fc),2),taps=6) : a # replace with butterworth fractional rad (n=300 or so) for subpixel sharpening
 
@@ -631,7 +632,7 @@ function ex_unsharp(clip a, float "str", float "strv", float "Fc", float "th", b
 
 
 
-# Port and optimization of UnsharpMask_avsi.avsi by real.finder (84% faster with rad<3)
+# Port and optimization of UnsharpMask_avsi.avsi by real.finder (84% faster for rad<3)
 
 function UnsharpMask_HBD(clip clp, float "str", int "rad", float "thres", int "UV") {
 
@@ -655,9 +656,9 @@ function UnsharpMask_HBD(clip clp, float "str", int "rad", float "thres", int "U
 
 
 /*
-// LICENSE
+// MIT LICENSE
 // =======
-// Copyright (c) 2017-2019 Advanced Micro Devices, Inc. All rights reserved.
+// Copyright (c) 2020 Advanced Micro Devices, Inc. All rights reserved.
 // -------
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 // files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
@@ -686,7 +687,7 @@ function CASP(clip a, float "strength", int "UV") {
     str = Default(strength,   0.5)  # 0: no sharpening, to 1: full sharpening. Scaled by the sharpness knob while being transformed to a negative lobe (values from -1/5 to -1/8 for A=1)
     UV  = Default(UV, rgb ? 3 : 1)
 
-    str = max(min(str, 1), 0)
+    str = clamp(str, 0, 1)
     str = 1. / (8+str*(5-8))  # reciprocal of lerp
 
     do  = 2. * ex_bs(255, 8, bi, fulls=true)
@@ -731,7 +732,7 @@ function NVSharpen(clip a, float "str", float "th", float "rat", float "boost", 
     str = Default(str, 0.5)  # 0: no sharpening, to 1: full sharpening.
     UV  = Default(UV,    1)
 
-    sharpness = max(min(1.0, str), 0)
+    sharpness = clamp(str, 0, 1)
     sharpen_slider = sharpness - 0.5   # Map 0 to 1 to -0.5 to +0.5
 
     # Different range for 0 to 50% vs 50% to 100%
@@ -887,10 +888,10 @@ function RSharpen(clip clp, float "str", int "mode", float "strUV", int "modeUV"
 ###
 ###  Contra()                   (15 Dec 2007) by Didée
 ###
-###  https://forum.doom9.org/showthread.php?p=1076276#post1076276
-###  https://forum.doom9.org/showthread.php?p=1076491#post1076491
+###  https://forum.doom9.org/showthread.php?p=1076276
+###  https://forum.doom9.org/showthread.php?p=1076491
 ###
-###  ex_ContraSharpening() v3.5 (12 Dec 2021)
+###  ex_ContraSharpening() v4.0 (24 Feb 2023)
 ###  - Mod and port to ExTools by Dogway
 ###
 ###
@@ -898,7 +899,7 @@ function RSharpen(clip clp, float "str", int "mode", float "strUV", int "modeUV"
 ### Enable 'MC' (default false) for temporal limiting sharpening versus the default spatial limiting. (Requires motion vectors globals)
 ###
 ### In final version 2.0d ContraHD() was merged, to allow proper HD sharpening.
-### When using 'MC' (temporal limiting) global variables of (before denoising), source MSuper and forward and
+### When using 'MC' (temporal limiting) global variables of (prior denoising) source MSuper and forward and
 ### backward compensated motion vectors are necessary as: Super, cb1 and cf1, if used as a standalone function.
 ### Don't know who made (mod) it, so I can't give proper credits, sorry.
 
@@ -917,7 +918,6 @@ function ex_ContraSharpening(clip denoised, clip original, bool "HD", bool "MC",
 
     isg = MC ? VarExist("cb1") && VarExist("cf1") : false   # if MC=true; reuse motion vector frames if created (in SMDegrain or elsewhere with same global var name)
     isc = MC ? VarExist("b1c") && VarExist("f1c") : false   # if MC=true; reuse compensated   frames if created (in SMDegrain or elsewhere with same global var name)
-
 
     s   = denoised.ex_MinBlur(HD?2:1,UV=1)                                                                    # Damp down remaining spots of the denoised clip.
     ssD = ex_makediff(s,HD?s.removegrain(12,-1).\
@@ -952,12 +952,14 @@ function ex_ContraSharpening(clip denoised, clip original, bool "HD", bool "MC",
 ###
 ###  SeeSaw v0.3i (02 Jan 2006) by Didée
 ###
-###  https://forum.doom9.org/showthread.php?p=760935#post760935
+###  https://forum.doom9.org/showthread.php?p=760935
 ###
+###    0.0  (02 Oct 2005) by Didée
 ###    0.3f (13 Dec 2006) by foxyshadis (port to masktools2)
 ###    0.3g (15 Dec 2015) by StainlessS (Force int call arguments to user script function float params to be explicit floats)
 ###    0.3h (31 Jan 2020) by real.finder (Update to avs+ and HBD)
 ###    0.3i (29 Jan 2022) by Dogway (Sanitize, port to ExTools -MIX mod-, optimize expressions, add HD support)
+###    0.3j (10 Jan 2022) by Dogway (better Default to 'bias' to fix a non-continuity)
 ###
 ###  (Full Name: "Denoiser-and-Sharpener-are-riding-the-SeeSaw" )
 ###
@@ -1002,18 +1004,21 @@ function SeeSaw( clip  input, clip "denoised",
     fs  = propNumElements (input,"_ColorRange")  > 0 ? \
           propGetInt      (input,"_ColorRange") == 0 : rgb
 
+    denD     = Defined( denoised )
+    NRl2D    = Defined( NRlimit2 )
     ssx      = Default( ssx,           1.0 )      # supersampling factor x  /  SeeSaw doesn't require supersampling urgently.
     ssy      = Default( ssy,           ssx )      # supersampling factor y  /  if at all, small values ~1.25 seem to be enough.
     NRlimit  = Default( NRlimit,         2 )      # absolute limit for pixel change by denoising
     NRlimit2 = Default( NRlimit2, NRlimit+1)      # limit for intermediate denoising
-    Sstr     = Default( Sstr,          1.5 )      # Sharpening strength (don't touch this too much)
+    Sstr     = Default( Sstr,            1 )      # Sharpening strength (don't touch this too much)
     Slimit   = Default( Slimit,  NRlimit+2 )      # positive: absolute limit for pixel change by sharpening
                                                   # negative: pixel's sharpening difference is reduced to diff=pow(diff,1/abs(limit))
     Spower   = Default( Spower,          4 )      # exponent for modified sharpener
     Szp      = Default( Szp,          16+2 )      # zero point - below: overdrive sharpening - above: reduced sharpening
     SdampLo  = Default( SdampLo,   Spower+1)      # reduces overdrive sharpening for very small changes
     SdampHi  = Default( SdampHi,        24 )      # further reduces sharpening for big sharpening changes. Try 15~30. "0" disables.
-    bias     = Default( bias,           49 )      # bias towards detail ( >= 50 ),  or towards calm result ( < 50 )
+    br       = -10.734*pow((NRl2D?NRlimit2-1:NRlimit),-0.302)+54.578
+    bias     = Default( bias, denD ? br : 49 )    # bias towards detail ( >= 50 ),  or towards calm result ( < 50 )
     Smode    = Default( Smode, ssx<1.35 ? 12 : 20 )
     sootheT  = Default( sootheT,        49 )      # 0=minimum, 100=maximum soothing of sharpener's temporal instableness.
                                                   # (-100 .. -1 : will chain 2 instances of temporal soothing.)
@@ -1072,6 +1077,8 @@ function SeeSaw2( clip  input, clip "denoised",
     fs  = propNumElements (input,"_ColorRange")  > 0 ? \
           propGetInt      (input,"_ColorRange") == 0 : rgb
 
+    denD     = Defined( denoised )
+    NRl2D    = Defined( NRlimit2 )
     PAL      = Default( PAL,   false )
     ssx      = Default( ssx, PAL ? 1.17 : 1.24 ) # supersampling factor "x". Set this to 1.24 for NTSC supersampling. Set this to 1.17 for PAL SS. For superspeed, set ssx to 1.00
     ssy      = Default( ssy,      ssx )          # supersampling factor "y". If at all, small values ~1.25 seem to be enough.
@@ -1084,7 +1091,8 @@ function SeeSaw2( clip  input, clip "denoised",
     Szp      = Default( Szp,        1 )          # zero point - below: overdrive sharpening - above: reduced sharpening
     SdampLo  = Default( SdampLo,   25 )          # reduces overdrive sharpening for very small changes
     SdampHi  = Default( SdampHi,   52 )          # further reduces sharpening for big sharpening changes. Try 15~30. "0" disables.
-    bias     = Default( bias,      49 )          # bias towards detail ( >= 50 ) ,  or towards calm result ( < 50 )
+    br       = -10.734*pow((NRl2D?NRlimit2-1:NRlimit),-0.302)+54.578
+    bias     = Default( bias, denD ? br : 49 )    # bias towards detail ( >= 50 ),  or towards calm result ( < 50 )
     Smode    = Default( Smode, ssx<1.35 ? 12 : 20 )
     sootheT  = Default( sootheT,   55 )          # 0=minimum, 100=maximum soothing of sharpener's temporal instableness.
                                                  # (-100 .. -1 : will chain 2 instances of temporal soothing.)
@@ -1183,7 +1191,7 @@ function ex_SootheSS2(clip sharp, clip orig, int "sootheT", int "sootheS", bool 
     Calls SeeSaw() multiple times. Requires SeeSaw script + SeeSaw requirements.
 
     https://forum.doom9.org/showthread.php?t=174309&page=2
-    Inspired by InGoldie: https://forum.doom9.org/showthread.php?p=1748707#post1748707 (as usual, thread deleted)
+    Inspired by InGoldie: https://forum.doom9.org/showthread.php?p=1748707 (as usual, thread deleted)
 
     Times, Number of iterations.
     IG, smoother/soother, can be:-
@@ -1234,9 +1242,9 @@ function SeeSawMulti(clip  c, int "Times", val "IG",
 
 #######################################
 ###
-###          FineSharpPlus by Dogway (05-02-2021)
+###          FineSharpPlus by Dogway (05-03-2022)
 ### a mod of FineSharp     by Didée  (08-04-2012)
-### (https://forum.doom9.org/showthread.php?p=1569035#post1569035)
+### (https://forum.doom9.org/showthread.php?p=1569035)
 ###
 ### "Small and relatively fast realtime-sharpening function,
 ###  for 1080p, or after scaling 720p -> 1080p during playback (to make 720p look more like being 1080p)
@@ -1248,47 +1256,51 @@ function SeeSawMulti(clip  c, int "Times", val "IG",
 ###
 ### - Didée
 ###      mod 2020.04.12 HBD by real.finder
-### mix  mod 2021.08.16     by Dogway (ported to ExTools and optmized expression)
+### mix  mod 2021.08.16     by Dogway (ported to ExTools and optimized expression)
 ### plus mod 2022.03.05     by Dogway (merged the non-linear sharpening from LSFplus)
+### plus mod 2023.03.20     by Dogway (remapped values to conform to LSFplus' non-linear sharpening)
 ###
 ###
 ### Function Definition:
 ###    (
 ###    clip,
 ###    float sstr=1.0 (0.0 to 5.0),
-###    string mode=1 (-3 / -2 / -1 / 0 / 1 / 2 / 3),
-###    [float cstr=1.00 (0.50 to 1.25)],
-###    float "xstr"=0.19 (0.00 to 0.25),
-###    [float "lstr"=1.49 (0.00 to 2.00)],
-###    [float "pstr"=1.272 (0.00 to 2.00)],
-###    [float "ldmp"=1.10 (0.00 to 8.00)],
-###    [float "hdmp"=0.01 (0.00 to 8.00)]
+###    int mode=1 (3 / 2 / 1 / 0 / -1 / -2 / -3),
+###    [float cstr=0.10 (0.00 to 1.25)],
+###    float "xstr"=0.00 (0.00 to 0.25),
+###    [float "lstr"=1.60 (0.00 to 2.00)],
+###    [float "pstr"=2.00 (0.00 to 2.00)],
+###    [float "ldmp"=2.00 (0.00 to 8.00)],
+###    [int "hdmp"=0 (0 to 30)]
 ###    )
 ###
-function FineSharpPlus(clip c, float "sstr", int "mode", float "cstr", float "xstr", float "lstr", float "pstr", float "ldmp", float "hdmp") {
+function FineSharpPlus(clip c, float "sstr", int "mode", float "cstr", float "xstr", float "lstr", float "pstr", float "ldmp", int "hdmp") {
 
     bi    = BitsPerComponent(c)
 
-    sstr  = Default(sstr, 1.0 )     #  strength of sharpening, 0.0 up to ??
-    mode  = Default(mode, 1   )     #  1 to 3, weakest to strongest. When negative -1 to -3, a broader kernel for equalisation is used.
+    sstr  = Default(sstr, 1.0  )                     #  strength of sharpening, 0.0 up to 5.0
+    sstr  = max(0,0.256*(sstr+1)-0.5)
+    mode  = Default(mode,clamp(round(2*sstr-1),1,3)) #  1 to 3, weakest to strongest. When negative -1 to -3, a broader kernel for equalisation is used.
 
     _cstr = spline(sstr, 0,0, 0.5,0.1, 1.0,0.6, 2.0,0.9, 2.5,1.00, 3.0,1.09, 3.5,1.15, 4.0,1.19, 8.0,1.249, 255.0,1.5)
     _cstr = (mode>0) ? _cstr : pow(_cstr,1/1.25)
 
-    cstr  = Default(cstr, _cstr)    #  strength of equalisation (recommended 0.5 to 1.25)
-    xstr  = Default(xstr, 0.19 )    #  strength of XSharpen-style final sharpening, 0.0 to 1.0 (but, better don't go beyond 0.249 ...)
+    cstr  = Default(cstr, _cstr)                     #  strength of equalisation (recommended 0.5 to 1.25)
+    xstr  = Default(xstr, 0.00 )                     #  strength of XSharpen-style final sharpening, 0.0 to 1.0 (but, better don't go beyond 0.249 ...)
 
     #  Viscera parameters
-    lstr  = Default(lstr, 1.49 )    #  modifier for non-linear sharpening
-    pstr  = Default(pstr, 1.272)    #  exponent for non-linear sharpening
-    ldmp  = Default(ldmp, sstr+0.1) # "low damp", to not overenhance very small differences (noise coming out of flat areas)
-    hdmp  = Default(hdmp,     0.01) # "high damp", this damping term has a larger effect than ldmp when the sharp-difference is larger than 1, vice versa.
+    lstr  = Default(lstr, 1.6  )                     #  modifier for non-linear sharpening
+    pstr  = Default(pstr, 2.0  )                     #  exponent for non-linear sharpening
+    ldmp  = Default(ldmp, max(2,5*sstr-5))           # "low damp", to not overenhance very small differences (noise coming out of flat areas)
+    hdmp  = Default(hdmp, 0    )                     # "high damp", further reduces sharpening when the sharp-difference is larger than 1. Try 15~30. "0" disables
 
-    SZRP  = lstr
-    SZRP2 = lstr*lstr
-    SZRP3 = lstr*sstr
-    SZRPR = 1. / lstr
+    HDMPR = 1. / HDMP
+    SSTR  = sstr * 50
+    LSTR  = lstr * 10
+    LSTRR = 1. / lstr
     PSTRR = 1. / pstr
+    LSTR2 = lstr*lstr
+    LSTRS = lstr*((sstr+30)/100.)
 
     rg    = mode>0 ? 12 : 20
 
@@ -1296,13 +1308,14 @@ function FineSharpPlus(clip c, float "sstr", int "mode", float "cstr", float "xs
     \ : (abs(mode)==2) ? c.removegrain(4, -1).removegrain(12,-1)
     \ : (abs(mode)==3) ? c.removegrain(4, -1).removegrain(12,-1).removegrain(4,-1) : c
 
-    shrp  = (cstr<0.01) ?  "x + " : "0 max range_half +"
-    shrpD = ex_lutxy(c,b,Format("x y - A@ abs B@ {SZRPR} * {PSTRR} ^ {SZRP3} * A sgn * A dup * C@ {SZRP2} {LDMP} + * C {LDMP} + {SZRP2} * / * {SZRP} {HDMP} * 4 ^ 1 + B {HDMP} * 4 ^ 1 + / * "+shrp), UV=1, fulls=true, scale_inputs="allf")
+    HDMPS = (hdmp>0)   ? Format("{LSTR} {HDMPR} * 4 ^ 1 + B {HDMPR} * 4 ^ 1 + / * ") : ""
+    shrpD = ex_lutxy(c,b,Format("x dup y == swap dup y - A@ abs B@ {LSTRR} * {PSTRR} ^ {LSTRS} * A sgn * A 2 ^ C@ {LSTR2} {LDMP} + * C {LDMP} + {LSTR2} * / * "+HDMPS+" x + ?"), UV=1, fulls=false, scale_inputs="all")
 
-    shrp = (cstr<0.01) ? shrpD : ex_lutxyz(c,shrpD,shrpD.ex_lut(Format("x range_half - {CSTR} * range_half +"),fulls=true).removegrain(rg,-1), "x y + z -", UV=1, fulls=true)
+    shrp = (cstr<0.01) ? shrpD      : ex_lutxy(shrpD,shrpD.ex_lutxy(c,Format("x y - {CSTR} * range_half +"),fulls=true).removegrain(rg,-1), "x y - range_half +", UV=1, fulls=true)
 
-           (xstr<0.01) ? shrp  : ex_lutxy (shrp, shrp.removegrain(20,-1),"x dup y - 9.69 * +", UV=1, fulls=true).repair(shrp,12,0).mergeluma(shrp,1.0-xstr)
-           (sstr<0.01) ?    c  : last }
+           (xstr<0.01) ? shrp       : ex_lutxy (shrp, shrp.removegrain(20,-1),"x dup y - 9.69 * +", UV=1, fulls=true).repair(shrp,12,0).mergeluma(shrp,1.0-xstr)
+           (sstr<0.01) ? c : hdmp>0 ? ex_luts  (last, c, mode="clamp",pixels=ex_shape()) : last }
+
 
 
 
@@ -1312,15 +1325,15 @@ function FineSharpPlus(clip c, float "sstr", int "mode", float "cstr", float "xs
 ## NonlinUSM: local contrast by Didée, (01-02-2012)
 ##
 ## Non-Linear Unsharp Masking
-##     https://forum.doom9.org/showthread.php?p=1555234#post1555234
+##     https://forum.doom9.org/showthread.php?p=1555234
 ##
 ## Local Contrast Enhancement function:
 ## Something to play with - the "nonlinear" sharpening from SeeSaw, just with a wide-range gaussian instead of a small-range kernel.
 ##
 ## (modded Raffriff42 - lowered strength of effect if "str" < 1.0)
 ## following header comments by raffriff42
-## https://forum.doom9.org/showthread.php?p=1821086#post1821086
-## https://forum.doom9.org/showthread.php?p=1690165#post1690165
+## https://forum.doom9.org/showthread.php?p=1821086
+## https://forum.doom9.org/showthread.php?p=1690165
 ##
 ## mod by Dogway (05-03-2022)
 ## - Ported to ExTools
@@ -1400,7 +1413,7 @@ function NonlinUSM(clip o, float "str", float "pow", float "z", float "rad", flo
 #
 # SlopeBend()  (SlopeBender? SlopeTwist? SlopeTwister? SlopeSharpen?)
 #
-# https://forum.doom9.org/showthread.php?p=680658#post680658
+# https://forum.doom9.org/showthread.php?p=680658
 #
 # A sharpening experiment by Didée  (10-08-2004). Usage is NOT RECOMMENDED.
 #                     mod by Dogway (16-08-2021)
@@ -1443,14 +1456,14 @@ function SlopeBend( clip a, int "str", int "rad", float "ss_x", float "ss_y", bo
     fs   = propNumElements (a,"_ColorRange")  > 0 ? \
            propGetInt      (a,"_ColorRange") == 0 : rgb
 
-    str       = Default( str,       75 )
-    rad       = Default( rad,        1 )
-    ss_x      = Default( ss_x,     1.0 )
-    ss_y      = Default( ss_y,     1.0 )
-    soft      = Default( soft,   false )
+    str       = Default( str,     75 )
+    rad       = Default( rad,      1 )
+    ss_x      = Default( ss_x,   1.0 )
+    ss_y      = Default( ss_y,   1.0 )
+    soft      = Default( soft, false )
 
     Sstr      = str/100.0
-    rad       = max(min(rad,5),1)
+    rad       = clamp(rad, 1, 5)
     ox        = a.width ()
     oy        = a.height()
     ss        = ss_x != 1.0 || ss_y != 1.0
@@ -1488,7 +1501,7 @@ function SlopeBend( clip a, int "str", int "rad", float "ss_x", float "ss_y", bo
 
 
 # Didée's Median Enhancer Sharpener (12-10-2012)
-# https://forum.doom9.org/showthread.php?p=1595531#post1595531
+# https://forum.doom9.org/showthread.php?p=1595531
 #
 # ExTools port  by Dogway           (05-09-2021)
 #
@@ -1499,9 +1512,9 @@ function MedianSharp (clip a, int "str", float "pow", int "UV") {
 
     bi  = BitsPerComponent(a)
 
-    str = Default( str,      3 )
-    pwr = Default( pow,   1.62 )
-    UV  = Default( UV,       3 )
+    str = Default( str,    3 )
+    pwr = Default( pow, 1.62 )
+    UV  = Default( UV,     3 )
 
     rpwr = 1. / pwr
     Zs   = 1. / ex_bs(pow(pwr, 2), 8, bi, fulls=true, flt=true)
@@ -1515,10 +1528,10 @@ function MedianSharp (clip a, int "str", float "pow", int "UV") {
            str==3 ? a.ex_median("median7", UV=UV) : \
                     a.medianblur(str,pass,pass)
 
-    c    = a.repair(b,1,rc?1:-1)
+    c      = a.repair(b,1,rc?1:-1)
 
     for (i = 0, max(0,pass-1), 1) {
-        c = c.repair(c,1,rc?1:-1) }
+         c = c.repair(c,1,rc?1:-1) }
 
     ex_lutxy(a, c, Format("x dup y - A@ abs B@ {Zs} * {rpwr} ^ {Z} * A B {pwr} + / * +"), UV=UV) }
 
@@ -1533,7 +1546,7 @@ function MedianSharp (clip a, int "str", float "pow", int "UV") {
 #  AVS+ backport  by Dogway       (16-08-2021)
 #
 #  From: https://forum.doom9.org/showthread.php?t=163598
-#  From: https://forum.doom9.org/showthread.php?p=1537261#post1537261
+#  From: https://forum.doom9.org/showthread.php?p=1537261
 #  Didée: Wanna some sharpening that causes no haloing, without any edge masking?
 #
 #  Args:
@@ -1584,8 +1597,6 @@ function DetailSharpen(clip c, float "str", int "pow", int "z", int "ldmp", int 
 
 
 
-
-
 #######################
 ###                 ###
 ###   *.mp4 guy     ###
@@ -1596,7 +1607,7 @@ function DetailSharpen(clip c, float "str", int "pow", int "z", int "ldmp", int 
 ### SSSharpFaster() (Super Slow Sharpen Faster)
 ### SSSharp's mod by LaTo (12-10-2012)
 ###
-### https://forum.doom9.org/showthread.php?t=142682&page=4#post1218074
+### https://forum.doom9.org/showthread.php?p=1218074
 ###
 ### port by Dogway (05-09-2021)
 ###
@@ -1677,12 +1688,12 @@ function SSSharp(clip c, float "rad", bool "ssw", float "strength", int "iter", 
 # Without dependencies except aWarpSharpMT
 function SSSharpEX(clip c, float "rad", bool "ssw", float "strength", int "iter", bool "ss", int "denoise") {
 
-    rad     = Default(rad,    0.25)                     # Rad should be multiple of 0.25 when ss=true (stepping of 0.25)
-    ssw     = Default(ssw,    true)
-    str     = Default(strength,  4)
-    iter    = Default(iter,      1)
-    ss      = Default(ss,     true)
-    denoise = Default(denoise,iter)
+    rad     = Default(rad,     0.25)                    # Rad should be multiple of 0.25 when ss=true (stepping of 0.25)
+    ssw     = Default(ssw,     true)
+    str     = Default(strength,   4)
+    iter    = Default(iter,       1)
+    ss      = Default(ss,      true)
+    denoise = Default(denoise, iter)
 
     rad     = ss ? rad-Fmod(rad-0.125, 0.25)+0.125 : 1  #  Force stepping of 0.25
     c
@@ -1699,9 +1710,9 @@ function SSSharpEX(clip c, float "rad", bool "ssw", float "strength", int "iter"
         us = "ex_merge(ex_unsharp(str/2.,Fc=max(w,h)/(1.01-0.2*rad), th=0, UV=1), SSWC, spline16resize(ss_f*w, ss_f*h).                         \
                                                                                         halomaskM(hbias=-128, hthr=256, agmrad=round(rad*ss_f)).\
                                                                                         bicubicresize(w, h, 0, 0.5), UV=1)"
-        for (k = 0, denoise, 1) {
+        for (k  = 0, denoise, 1) {
             dot = i == denoise ? "" : "."
-            us = us + """.ex_median(mode="DGM3", UV=1)""" + dot
+            us  = us + """.ex_median(mode="DGM3", UV=1)""" + dot
     } }
     Return Eval(us) }
 
@@ -1752,7 +1763,7 @@ function SSW(clip c) {
 ###
 ### ReCon()   by *.mp4 guy (18-06-2010)
 ### ReConvolution - Makes things sharp by mixing pixels together
-### https://forum.doom9.org/showthread.php?p=1409582#post1409582
+### https://forum.doom9.org/showthread.php?p=1409582
 ###
 ### Optimized and ported by Dogway (04-09-2021)
 ###
@@ -1843,7 +1854,7 @@ function ReCon(clip C, float "str", float "strv", float "rad", float "radv", int
 
 
 ### blah()   by *.mp4 guy (09-06-2010)
-### https://forum.doom9.org/showthread.php?p=1406843#post1406843
+### https://forum.doom9.org/showthread.php?p=1406843
 ###
 ### Optimized and ported by Dogway (04-09-2021)
 ###
@@ -1957,7 +1968,7 @@ function blah(Clip c, int "str", int "strv", float "de", float "dev", float "re"
 ###          v0.2 by *.mp4 guy (11-08-2010)
 ###          v0.1 by *.mp4 guy (06-03-2010)
 ###
-### Soft thresholded median sharpening function (superseeded by ReCon) (https://forum.doom9.org/showthread.php?p=1425066#post1425066)
+### Soft thresholded median sharpening function (superseeded by ReCon) (https://forum.doom9.org/showthread.php?p=1425066)
 ###
 ### 1. calculate difference between center pixel and median neighborhood pixels
 ### 2. soft-limit each difference
@@ -2089,12 +2100,12 @@ function NLHH2(Clip C, bool "fulls") {
     isy = isy(c)
     bi  = BitsPerComponent(c)
 
-    fs = Default(fulls, false)
+    fs  = Default(fulls, false)
 
-    B1 = C.BlurH(1, 0.833)
-    B2 = C.BlurH(2, 0.750)
-    B3 = C.BlurH(3, 0.944)
-    B4 = C.BlurH(4, 0.981)
+    B1  = C.BlurH(1, 0.833)
+    B2  = C.BlurH(2, 0.750)
+    B3  = C.BlurH(3, 0.944)
+    B4  = C.BlurH(4, 0.981)
 
     Expr(C, B1, B2, B3, B4, "x y - S@ abs X^  z x - T@ abs Y^  S T X Y * A@ 1 + * A Y 0.75 * X - 0 max  X 0 > X -1 S / ^ 1 ? / 0 max + 1 + / +  S@ abs X^
                                               x a - T@ abs Y^  S T X Y * A@ 1 + * A Y 2.25 * X - 0 max  X 0 > X -1 S / ^ 1 ? / 0 max + 1 + / +  S@ abs X^
@@ -2106,12 +2117,12 @@ function NLHV2(Clip C, bool "fulls") {
     isy = isy(c)
     bi  = BitsPerComponent(c)
 
-    fs = Default(fulls, false)
+    fs  = Default(fulls, false)
 
-    B1 = C.BlurH(1, 0.833)
-    B2 = C.BlurH(2, 0.750)
-    B3 = C.BlurH(3, 0.944)
-    B4 = C.BlurH(4, 0.981)
+    B1  = C.BlurH(1, 0.833)
+    B2  = C.BlurH(2, 0.750)
+    B3  = C.BlurH(3, 0.944)
+    B4  = C.BlurH(4, 0.981)
 
     Expr(C, B1, B2, B3, B4, "x y - S@ abs X^  z x - T@ abs Y^  S T X Y * A@ 1 + * A Y 0.75 * X - 0 max  X 0 > X -1 S / ^ 1 ? / 0 max + 1 + / +  S@ abs X^
                                               x a - T@ abs Y^  S T X Y * A@ 1 + * A Y 2.25 * X - 0 max  X 0 > X -1 S / ^ 1 ? / 0 max + 1 + / +  S@ abs X^
@@ -2127,10 +2138,10 @@ function NLLH(Clip C, int "rad", bool "var4", bool "fulls") {
     v4  = Default(var4,  false)
     fs  = Default(fulls, false)
 
-    B1 = C.BlurH(    1   *rad, 0.439)
-    B2 = C.BlurH((v4?2:3)*rad, 0.833)
-    B3 = C.BlurH((v4?3:5)*rad, 0.934)
-    B4 = C.BlurH((v4?4:7)*rad, 0.983)
+    B1  = C.BlurH(    1   *rad, 0.439)
+    B2  = C.BlurH((v4?2:3)*rad, 0.833)
+    B3  = C.BlurH((v4?3:5)*rad, 0.934)
+    B4  = C.BlurH((v4?4:7)*rad, 0.983)
 
     Expr(C, B1, B2, B3, B4, "y x - S@ abs X^  x z - T@ abs Y^  S T X Y * A@ 1 + * A Y 1.915 * X - 0 max  X 0 > X -1 S / ^ 1 ? / 0 max + 1 + / +  S@ abs X^
                                               a x - T@ abs Y^  S T X Y * A@ 1 + * A Y 2.025 * X - 0 max  X 0 > X -1 S / ^ 1 ? / 0 max + 1 + / +  S@ abs X^
@@ -2146,10 +2157,10 @@ function NLLV(Clip C, int "rad", bool "var4", bool "fulls") {
     v4  = Default(var4,  false)
     fs  = Default(fulls, false)
 
-    B1 = C.BlurV(    1   *rad, 0.439)
-    B2 = C.BlurV((v4?2:3)*rad, 0.833)
-    B3 = C.BlurV((v4?3:5)*rad, 0.934)
-    B4 = C.BlurV((v4?4:7)*rad, 0.983)
+    B1  = C.BlurV(    1   *rad, 0.439)
+    B2  = C.BlurV((v4?2:3)*rad, 0.833)
+    B3  = C.BlurV((v4?3:5)*rad, 0.934)
+    B4  = C.BlurV((v4?4:7)*rad, 0.983)
 
     Expr(C, B1, B2, B3, B4, "y x - S@ abs X^  x z - T@ abs Y^  S T X Y * A@ 1 + * A Y 1.915 * X - 0 max  X 0 > X -1 S / ^ 1 ? / 0 max + 1 + / +  S@ abs X^
                                               a x - T@ abs Y^  S T X Y * A@ 1 + * A Y 2.025 * X - 0 max  X 0 > X -1 S / ^ 1 ? / 0 max + 1 + / +  S@ abs X^
@@ -2215,8 +2226,8 @@ function YAHR(clip clp) {
 ###                          ###
 ################################
 
-# Note: Most of feisty2's filters (these or Plum, Oyster, Vine, etc) are benchmarked against SD 4:3 clips (namely old music clips)
-#       So keep that in mind when evaluating quality on HD or performance.
+# Note: Most of feisty2's filters (these or Plum, Oyster, Vine, etc) are modeled after SD 4:3 clips (namely old music clips)
+#       So keep that in mind when evaluating performance on HD or its quality.
 #
 # Dependencies:
 #              ExTools
@@ -2251,8 +2262,7 @@ function DelicateSharp (clip src, bool "relaxed", bool "coarse", int "lowpass") 
 #               RgTools      (for median=false, Default)
 #               vsTCanny     (for median=false, Default) (calls vsTCanny      in HaloNR())
 #               SMDegrain    (for median=false, Default) (calls ex_KNLMeansCL in HaloNR())
-#               nnedi3       (for median=false, Default) (in genpelclip())
-#               SysInfo      (for median=false, Default) (in genpelclip())
+#               NNEDI3CL     (for median=false, Default) (in genpelclip())
 #
 function RegularSharp (clip src, bool "median", int "lowpass", int "a", float "h", float "thr", float "elast") {
 
@@ -2307,8 +2317,8 @@ function RegularSharp (clip src, bool "median", int "lowpass", int "a", float "h
 # Example:
 #     soft = last
 #     RegularSharp()
-#     dif = ex_makediff(soft, dif=true)
-#     lcl = Merge(ex_expand(soft), ex_inpand(soft)) # or ex_luts(mode="minmax")
+#     dif  = ex_makediff(soft, dif=true)
+#     lcl  = Merge(ex_expand(soft), ex_inpand(soft)) # or ex_luts(mode="minmax")
 #     SharpFinal(last,soft,lcl)
 
 function SharpFinal (clip soft, clip dif, clip limit, clip "peldif", clip "pellimit", int "pel", int "tr", int "thsad", int "thscd1", int "thscd2", float "str", int "lowpass", int "a", float "h", float "thr", float "elast") {
@@ -2409,14 +2419,11 @@ function HaloNR (clip src, int "a", float "h", float "thr", float "elast", int "
 ##                  ExTools
 ##                  MVTools
 ##                  RgTools
-##                  nnedi3
 ##                  ResizersPack
-##                  manyPlus
+##                  NNEDI3CL
 ##                  KNLMeansCL
-##                  SysInfo
+##                  manyPlus
 ##
-
-
 
 function plum_Super(clip src, int "pel") {
 
@@ -2431,15 +2438,12 @@ function plum_Super(clip src, int "pel") {
     Assert(isint(pel),           "plum_Super: pel has to be an integer!")
     Assert(pel == 2 || pel == 4, "plum_Super: pel has to be 2 or 4!")
 
-    cores   = SI_PhysicalCores()
-    threads = SI_LogicalCores()
-
     src.ConvertBits(8, dither=-1, fulls=fs)
     AssumeFrameBased()
     rgb ? RGB_to_OPP() : isy() ? last : ExtractY()
 
     PadBorders(64, 64, 64, 64, "Dilate")
-    nnedi3_rpow2(rfactor=pel,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2,range=fs?1:2)
+    nnedi3wrap(pel,nns=1,nsize=0,qual=1)
 
     return last }
 
@@ -2460,21 +2464,21 @@ function plum_Basic(clip src, float "strength", int "a", float "h1", float "h2",
     fs    = propNumElements (src, "_ColorRange")  > 0 ? \
             propGetInt      (src, "_ColorRange") == 0 : rgb
 
-    Assert(isclip(src),              "plum_Basic: src has to be a video clip!")
-    Assert(bi == 32,                 "plum_Super: the sample type of src has to be single precision!")
-    Assert(isfloat(strength),        "plum_Basic: strength has to be a real number!")
-    Assert(strength>1,               "plum_Basic: strength has to be greater than 0!")
-    Assert(isint(a),                 "plum_Basic: a has to be an integer!")
-    Assert(isfloat(h1),              "plum_Basic: h1 has to be a real number!")
-    Assert(isfloat(h2),              "plum_Basic: h2 has to be a real number!")
-    Assert(h1>0,                     "plum_Basic: h1 has to be greater than 0!")
-    Assert(h2>0,                     "plum_Basic: h2 has to be greater than 0!")
-    Assert(isint(radius),            "plum_Basic: radius has to be an integer!")
-    Assert(radius>0,                 "plum_Basic: radius has to be greater than 0!")
-    Assert(isfloat(wn),              "plum_Basic: wn has to be a real number!")
-    Assert(isfloat(scale),           "plum_Basic: scale has to be a real number!")
-    Assert(isint(cutoff),            "plum_Basic: radius has to be an integer!")
-    Assert(cutoff>0 && cutoff<=100,  "plum_Basic: cutoff must fall in (0, 100]!")
+    Assert(isclip(src),             "plum_Basic: src has to be a video clip!")
+    Assert(bi == 32,                "plum_Basic: the sample type of src has to be single precision!")
+    Assert(isfloat(strength),       "plum_Basic: strength has to be a real number!")
+    Assert(strength>1,              "plum_Basic: strength has to be greater than 0!")
+    Assert(isint(a),                "plum_Basic: a has to be an integer!")
+    Assert(isfloat(h1),             "plum_Basic: h1 has to be a real number!")
+    Assert(isfloat(h2),             "plum_Basic: h2 has to be a real number!")
+    Assert(h1>0,                    "plum_Basic: h1 has to be greater than 0!")
+    Assert(h2>0,                    "plum_Basic: h2 has to be greater than 0!")
+    Assert(isint(radius),           "plum_Basic: radius has to be an integer!")
+    Assert(radius>0,                "plum_Basic: radius has to be greater than 0!")
+    Assert(isfloat(wn),             "plum_Basic: wn has to be a real number!")
+    Assert(isfloat(scale),          "plum_Basic: scale has to be a real number!")
+    Assert(isint(cutoff),           "plum_Basic: radius has to be an integer!")
+    Assert(cutoff>0 && cutoff<=100, "plum_Basic: cutoff must fall in (0, 100]!")
 
     src32 = rgb ? src.RGB_to_OPP() : src.isy() ? src : src.ExtractY()
     src   = src32.ConvertBits(8, dither=-1, fulls=fs)
@@ -2489,12 +2493,10 @@ function plum_Basic(clip src, float "strength", int "a", float "h1", float "h2",
     strength_ceil       = ceil (strength)
 
     function inline(clip src, int a, float h1, float h2, int radius, float wn, int cutoff_1, float scale, bool fs) {
-        cores           = SI_PhysicalCores()
-        threads         = SI_LogicalCores()
         sharp           = Deconvolution(src, radius, wn, int(a / 2. + 0.5), scale)
-#        sharp           = nnedi3_rpow2(sharp,rfactor=2,nns=4,nsize=0,qual=2,threads=8/2,prefetch=8,SetAffinity=true,MaxPhysCore=false)
-        sharp           = nnedi3_rpow2(sharp,rfactor=2,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2,range=fs?1:2)
-        ref             = nnedi3_rpow2(src,  rfactor=2,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2,range=fs?1:2)
+#       sharp           = nnedi3_rpow2(sharp,rfactor=2,nns=4,nsize=0,qual=2,threads=8/2,prefetch=8,SetAffinity=true,MaxPhysCore=false)
+        sharp           = nnedi3wrap(sharp,2,nns=1,nsize=0,qual=1)
+        ref             = nnedi3wrap(src,  2,nns=1,nsize=0,qual=1)
         sharp           = NLErrors(ref, a, h1, sharp).ConvertBits(32, fulls=fs)
         dif             = ex_makediff(sharp, ref, fulls=fs)
         dif             = GaussResize(dif, src.width(), src.height(), src_left=-0.5, src_top=-0.5, p=100) # like PointResize but keeping image center. -0.5 to correct image center from nnedi3()
@@ -2502,8 +2504,8 @@ function plum_Basic(clip src, float "strength", int "a", float "h1", float "h2",
         src32           = src.ConvertBits(32, fulls=fs)
         sharp           = CutOff(src32, sharp, cutoff_1, 0)
         local_error     = NLErrors(src32, radius, h2, src32)
-#        local_limit     = ex_makeadddiff(src, local_error)
-#        limited         = ex_lutxyz(sharp, local_limit, src, "x z - abs y z - abs > y x ?")
+#       local_limit     = ex_makeadddiff(src, local_error)
+#       limited         = ex_lutxyz(sharp, local_limit, src, "x z - abs y z - abs > y x ?")
         limited         = ex_lutxyz(sharp, src32, local_error, "x y - abs y z - Y@ abs > Y x ?")
         clp             = Shrink(limited)
         return clp }
@@ -2549,7 +2551,7 @@ function plum_Final(clip src, clip ref, clip "super", clip "superf", int "radius
     isS ? \
     Assert(isclip(super),        "plum_Final: super has to be a video clip or None!") : nop()
     isS ? \
-    Assert(isy(super),           "plum_Final: corrupted super clip!") : nop()
+    Assert(isy(super),           "plum_Final: corrupted super clip!")  : nop()
     isF ? \
     Assert(isy(super),           "plum_Final: corrupted superf clip!") : nop()
     Assert(pel == 1 || pel == 2 || pel == 4, "plum_Final: pel has to be 1, 2 or 4!")
@@ -2598,7 +2600,7 @@ function plum_Final(clip src, clip ref, clip "super", clip "superf", int "radius
     averaged_dif       = blankdif.MDegrainN(superdif, vmulti, radius, thsad=10000, plane=0, thscd1=8*8*255, thscd2=255, mt=true)
 #   averaged_dif       = XYClosest(averaged_dif, ref, blankdif)
     averaged_dif       = ex_lutxy(averaged_dif, ref, blankdif, "x z - abs y z - abs > y x ?")
-#    averaged_dif       = ex_lutxy(averaged_dif, ref, "x y min") # blankdif is 0, so actually XYClosest() computes "x y min"
+#   averaged_dif       = ex_lutxy(averaged_dif, ref, "x y min") # blankdif is 0, so actually XYClosest() computes "x y min"
     compensated        = MCompensate(src, superflex, vmulti, thsad=sad, thscd1=8*8*255, thscd2=255).ConvertBits(32, fulls=fs)
     src                = Crop(src,          64, 64, -64, -64)
     averaged_dif       = Crop(averaged_dif, 64, 64, -64, -64)
@@ -2636,13 +2638,10 @@ function plum_Final(clip src, clip ref, clip "super", clip "superf", int "radius
         pel     = Default(pel, 4)
         src2d   = Defined(src2)
 
-        cores   = SI_PhysicalCores()
-        threads = SI_LogicalCores()
-
-        u2x     =                   nnedi3_rpow2(src, rfactor=2,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2,range=fs?1:2)
-        u2x2    = !src2d ? nop() :  nnedi3_rpow2(src2,rfactor=2,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2,range=fs?1:2)
-        u4x     =                   nnedi3_rpow2(src, rfactor=4,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2,range=fs?1:2)
-        u4x2    = !src2d ? nop() :  nnedi3_rpow2(src2,rfactor=4,nns=1,nsize=0,qual=1,threads=cores,prefetch=(threads+cores)/2,range=fs?1:2)
+        u2x     =                   nnedi3wrap(src, 2,nns=1,nsize=0,qual=1)
+        u2x2    = !src2d ? nop() :  nnedi3wrap(src2,2,nns=1,nsize=0,qual=1)
+        u4x     =                   nnedi3wrap(src, 4,nns=1,nsize=0,qual=1)
+        u4x2    = !src2d ? nop() :  nnedi3wrap(src2,4,nns=1,nsize=0,qual=1)
         dif     = !src2d ? nop() : (pel==2 ? ex_makediff (u2x, u2x2, fulls=fs) : ex_makediff (u4x, u4x2, fulls=fs))
         clp     =  src2d ? dif   : (pel==2 ? u2x : u4x)
         return clp }
@@ -2684,7 +2683,7 @@ function plum_Final(clip src, clip ref, clip "super", clip "superf", int "radius
 
         return clp }
 
-    # Strange filter, blurs mid-freqs of 'low' and replace its hi-freqs with those of 'hi'
+    # Strange filter; blurs mid-freqs of 'low' and replace its hi-freqs with those of 'hi'
     function CutOff(clip low, clip hi, int p, int margin) {
 
         clp1          = gauss(hi,  p+margin)
@@ -2758,7 +2757,7 @@ function plum_Final(clip src, clip ref, clip "super", clip "superf", int "radius
         return clp }
 
 
-    function ThrMerge(clip flt, clip src, clip "ref", float "thr", float "elast") {
+    function ThrMerge(clip flt, clip src, clip "ref", float "thr", float "elast", int "UV") {
 
         bi    = BitsPerComponent(flt)
         rgb   = isRGB(flt)
@@ -2768,18 +2767,18 @@ function plum_Final(clip src, clip ref, clip "super", clip "superf", int "radius
         thr   = Default(thr, 0.0009765625)
         ref   = Default(ref,   src)
         elast = Default(elast, thr / 2.)
+        UV    = Default(UV,      2)
 
         elast = ex_bs(elast, 32, bi, true, flt=true)
         thr   = ex_bs(thr,   32, bi, true, flt=true)
 
-        BDif  = ex_lut(src, "0", scale_inputs="none")
-        PBLD  = ex_lutxyza(src, BDif, flt, ref, Format("z x - 0 max {thr} {elast} + a z - 0 max Z@ - 2 {elast} * / * y {elast} Z + {thr} - 2 {elast} * / * +"), scale_inputs="none")
-        NBLD  = ex_lutxyza(src, BDif, flt, ref, Format("x z - 0 max {thr} {elast} + a z - 0 max Z@ - 2 {elast} * / * y {elast} Z + {thr} - 2 {elast} * / * +"), scale_inputs="none")
-        BLD   = ex_makeadddiff(PBLD, NBLD, src)
-        clp   = ex_lutxyza(flt, ref, BLD, src, Format("x y - abs X@ {thr} {elast} + < X {thr} {elast} - > z x ? a ?"), scale_inputs="none")
+        BDif  = ex_lut(src, "0", scale_inputs="none", UV=UV)
+        PBLD  = ex_lutxyza(src, BDif, flt, ref, Format("z x - 0 max {thr} {elast} + a z - 0 max Z@ - 2 {elast} * / * y {elast} Z + {thr} - 2 {elast} * / * +"), UV=UV, scale_inputs="none")
+        NBLD  = ex_lutxyza(src, BDif, flt, ref, Format("x z - 0 max {thr} {elast} + a z - 0 max Z@ - 2 {elast} * / * y {elast} Z + {thr} - 2 {elast} * / * +"), UV=UV, scale_inputs="none")
+        BLD   = ex_makeadddiff(PBLD, NBLD, src, UV=UV)
+        clp   = ex_lutxyza(flt, ref, BLD, src, Format("x y - abs X@ {thr} {elast} + < X {thr} {elast} - > z x ? a ?"), UV=UV, scale_inputs="none")
 
         return clp }
-
 
 
 #   function XYClosest(clip src1, clip src2, clip ref) {
@@ -2798,6 +2797,41 @@ function plum_Final(clip src, clip ref, clip "super", clip "superf", int "radius
 
 
 
+##################################
+#
+# LindaSharp() by Tempter57  (26-11-2012)
+#         mod  by Dogway     (13-09-2022)
+#
+#  From: https://forum.doom9.org/showthread.php?p=1602640
+#
+# Very similar to DetailSharpen() but only sharpening a difference of blurs (between ex_sbr() and a median blur)...
+# ...to minimize sharpening of noise inherent to high frequencies.
+#
+# For the mod, HBD support was added as well as the 'med' and the non-linear 'pow', 'z', and 'ldmp' arguments.
+#
+function LindaSharp (clip clp, float "str", int "pow", int "z", int "ldmp", bool "med") {
+
+    bi   = BitsPerComponent(clp)
+
+    z     = Default( z,      4 )
+    sstr  = Default( str, 0.85 )
+    power = Default( pow,    4 )
+    ldmp  = Default( ldmp,   1 )
+    med   = Default( med, true )     # Toggle between median or box blur. Default is LindaSharp's median blur.
+    str   = med ? str : str * 1.375  # Multiplier to resemble DetailSharpen() when !med
+
+    ldmp  = ex_bs(max(ldmp, 0), 8, bi, fulls=true)
+    strzi = ex_bs(sstr*z,       8, bi, fulls=true, flt=true)
+    zs    = 1. / ex_bs(z,       8, bi, fulls=true)
+    rpwr  = 1. / power
+
+    and   = clp.ex_sbr()
+    Peter = med ? and.ex_median (     "median") : \
+                  and.ex_boxblur(1,mode="mean")
+    go    = ex_makediff(and,Peter)
+    ex_lutxy(clp, go, Format("x y range_half - A@ abs B@ {zs} * {rpwr} ^ {strzi} * A B {ldmp} + / * +"), UV=1) }
+
+
 
 
 ## DGSharpen2() - Wrapper for DGSharpen by Donald A. Graft
@@ -2806,18 +2840,17 @@ function plum_Final(clip src, clip ref, clip "super", clip "superf", int "radius
 ## Supports YUV format in any bitdepth
 ##
 function DGSharpen2(clip a, float "str") {
-
-    w   = width (a)
-    h   = height(a)
-    is42= is420(a)
-    bi  = BitsPerComponent(a)
-    fs  = propNumElements (a,"_ColorRange")  > 0 ? \
-          propGetInt      (a,"_ColorRange") == 0 : false
-
-    str = Default(str,      1.0)
-    Assert(!isRGB(a), "DGSharpen2: clip has to be in YUV format")
-
     a
+    w    = width ()
+    h    = height()
+    is42 = is420()
+    bi   = BitsPerComponent()
+    fs   = propNumElements ("_ColorRange")  > 0 ? \
+           propGetInt      ("_ColorRange") == 0 : false
+
+    str  = Default(str,      1.0)
+    Assert(!isRGB(), "DGSharpen2: clip has to be in YUV format")
+
     !is42 ? ConverttoYUV420(chromaresample="point")       : last
     bi>8 && bi!= 16 ? ConvertBits(16, fulls=fs, fulld=fs) : last
 
@@ -2899,8 +2932,8 @@ function SharpenComplex2(clip src, float "str0", float "str1", float "k0", int "
 ## Simple sharpening without limiting
 function MultiSharpen2(clip C, int multi, float "sharpen", float "blur") {
 
-    shrp = Min(Max(0.0, Default(sharpen, 0.6)), 1.0)
-    blr  = Min(Max(0.0, Default(blur,    0.3)), 1.0)
+    shrp = clamp(Default(sharpen, 0.6), 0, 1)
+    blr  = clamp(Default(blur,    0.3), 0, 1)
 
     C
     for (i=multi, 1, -1) {
@@ -2914,7 +2947,7 @@ function MultiSharpen2(clip C, int multi, float "sharpen", float "blur") {
 ##  pSharpen() by ilpippo80 (02-07-2005)
 ##  Performs two-point sharpening to avoid overshoot.
 ##
-##  https://forum.doom9.org/showthread.php?p=681194#post681194
+##  https://forum.doom9.org/showthread.php?p=681194
 ##
 ##  ported to MaskTools2 by colours     (02-08-2015)
 ##  ss_x and ss_y fix    by colours     (16-03-2016)
@@ -2946,15 +2979,15 @@ function pSharpen (clip clp, int "strength", int "threshold", float "ss_x", floa
     fs  = propNumElements (clp,"_ColorRange")  > 0 ? \
           propGetInt      (clp,"_ColorRange") == 0 : rgb
 
-    strength  = Default(strength,  25)    # 0 to 100. Strength of the sharpening (up until the overshoot correction threshold, see below). Value of 100 will set all pixels to either their local min or max; value of 0 will make the filter do nothing.
-    threshold = Default(threshold, 75)    # 0 to 100. How close to the min/max a pixel can be sharpened before the overshoot correction (compression) kicks in. Higher values make the overshoot correction more of a hard limiting, while lower values soften the compression. Value of 0 makes the filter do nothing.
+    strength  = Default(strength,    25)  # 0 to 100. Strength of the sharpening (up until the overshoot correction threshold, see below). Value of 100 will set all pixels to either their local min or max; value of 0 will make the filter do nothing.
+    threshold = Default(threshold,   75)  # 0 to 100. How close to the min/max a pixel can be sharpened before the overshoot correction (compression) kicks in. Higher values make the overshoot correction more of a hard limiting, while lower values soften the compression. Value of 0 makes the filter do nothing.
     ss_x      = Float(Default(ss_x, 1.0)) # The horizontal and vertical supersampling factors, respectively. Higher values will reduce aliasing, at the expense of speed.
     ss_y      = Float(Default(ss_y, 1.0))
     dest_x    = Default(dest_x, ox)       # Final image size; defaults to the dimensions of the input clip.
     dest_y    = Default(dest_y, oy)
 
-    strength  = min(100,max(0,strength))
-    threshold = min(100,max(0,threshold))
+    strength  = clamp(strength, 0,100)
+    threshold = clamp(threshold,0,100)
     ss_x      = max(1.0, ss_x)
     ss_y      = max(1.0, ss_y)
 
@@ -2999,8 +3032,8 @@ function XSharpenPlus(clip clp, float "strength", float "threshold", int "UV") {
     thr = Default(threshold,  8)
     UV  = Default(UV,  rgb ? 3 : 1)
 
-    thr  = ex_bs(thr, 8, bi, fulls=true, flt=true)
-    str  = str / 256.
+    thr = ex_bs(thr, 8, bi, fulls=true, flt=true)
+    str = str / 256.
 
     ex_lut(clp, Format("x[-1,1] A@ x[0,1] B@ max x[1,1] C@ max x[-1,0] D@ max x[0,0] E@ max x[1,0] F@ max x[-1,-1] G@ max x[0,-1] H@ max x[1,-1] I@ max M@
                          x - Y@ x A B min C min D min E min F min G min H min I min N@ - X@ min {thr} < X Y < N M ? x - {str} * x + x ?"), UV=UV) }

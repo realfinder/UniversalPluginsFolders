@@ -1,6 +1,6 @@
 ###                                                            ##
 ###                                                            ##
-###           MasksPack 6.4 by Dogway  (01-05-2022)            ##
+###           MasksPack 6.6 by Dogway  (26-08-2022)            ##
 ###                    Masks + Limiters                        ##
 ###                                                            ##
 ###      https://forum.doom9.org/showthread.php?t=182881       ##
@@ -65,10 +65,10 @@ function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", boo
            Assert(IsVersionOrGreater(3,7,2), "BoxMask: Update AviSynth+ version")
     show ? Assert(UV!=1,                     "BoxMask: 'show' requires UV=2 or 3") : nop()
 
-    x1      =     min(max(x1,0),w)
-    x2      = max(min(max(x2,0),w),x1)
-    y1      =     min(max(y1,0),h)
-    y2      = max(min(max(y2,0),h),y1)
+    x1      =     clamp(x1,0,w)
+    x2      = max(clamp(x2,0,w),x1)
+    y1      =     clamp(y1,0,h)
+    y2      = max(clamp(y2,0,h),y1)
 
     UV = UV!=3 && !rgb ? 128 : UV
 
@@ -95,10 +95,10 @@ function BoxMask(clip clp, int "x1", int "x2", int "y1", int "y2", int "UV", boo
 
 ##################
 ###
-### FlatMask() (23-12-2021)
+### FlatMask() (28-06-2022)
 ###
 ###
-### This is a dual purpose filter for 2D cartoons to create either flat masks or high-quality single line edge masks.
+### This is a dual purpose filter for 2D cartoons to create either flat masks or high-quality single line (Ridge Filter) edge masks.
 ### One is the opposite of the other so you only have to tune the radius and scale settings to define
 ### to what extent the edge mask is applied.
 ### If 'filt' clip argument is not defined by default the output is the edge mask.
@@ -132,6 +132,7 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
 
     a
     rgb   = isRGB()
+    isy   = isy()
     w     = width ()
     h     = height()
     bi    = BitsPerComponent()
@@ -151,30 +152,28 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
 
     Assert(IsVersionOrGreater(3,7,2), "FlatMask: Update AviSynth+ version")
 
-    !isy() ? ExtractY() : last
+    !isy ? ExtractY() : last
     ConvertBits(8,dither=-1,fulls=fs)
     # 3x3 is too broad for SD so upscale
     !isHD  ? BlackmanResize(w*2,h*2,taps=6)                : last
     # UHD size is too big for good performance
      isUHD ? BicubicResize(nmod(w/2),nmod(h/2),-0.99,0.06) : last
 
-    ex_retinex(lvl=1,lo=lvl,tv_in=!fs)     # some issues here on flat areas (quantization)
-    MSR=ex_median("IQM")                   # pre for full 'qprewitt'
+    ex_retinex(lvl=1,lo=lvl,tv_in=!fs,tv_out=false) # some issues here on flat areas (quantization) (Apply SmoothGrad?)
+    MSR=ex_median("IQM")                            # pre for full 'qprewitt'
 
     # Prefilter (scale space)
     vsTCanny(sqrt(rd)/2.*sqrt(2),mode=-1,u=2,v=2)
 
     # Second Derivatives Edge Mask
-    xx1=    ex_lut(Format("x[-1,-1] x[1,1]  -"))
-    xx1=xx1.ex_lut(Format("x[-1,-1] x[1,1]  -"))
-    yy1=    ex_lut(Format("x[-1,1]  x[1,-1] -"))
-    yy1=yy1.ex_lut(Format("x[-1,1]  x[1,-1] -"))
-
-    xx2=    ex_lut(Format("x[-1,-1] x[1,1]  swap -"))
-    xx2=xx2.ex_lut(Format("x[-1,-1] x[1,1]  swap -"))
-    yy2=    ex_lut(Format("x[-1,1]  x[1,-1] swap -"))
+    xx1=    ex_lut(Format("x[-1,-1] x[1,1]   -"))
+    yy1=    ex_lut(Format("x[-1,1]  x[1,-1]  -"))
+    xx2=    ex_lut(Format("x[1,1]   x[-1,-1] -"))
+    yy2=    ex_lut(Format("x[1,-1]  x[-1,1]  -"))
     yy2=yy2.ex_lutxyza(xx1,yy1,xx2,            \
-                   Format("x[-1,1]  x[1,-1] swap - 0 max dup * y dup * z dup * a dup * + + + sqrt {scl} * dup {lo} {scl} * > swap 0 ?"+(in && rd==1 ? " range_max swap -" : "")))
+                   Format("y[-1,-1] y[1,1] - 0 max dup *   z[-1,1] z[1,-1] - 0 max dup * +
+                           a[1,1] a[-1,-1] - 0 max dup * + x[1,-1] x[-1,1] - 0 max dup * +
+                           sqrt {scl} * dup {lo} {scl} * > swap 0 ?"+(in && rd==1 ? " range_max swap -" : "")))
 
     # Pre for 'Fill holes'
     ex_contrast(scl>9?yy2.ex_median("median"):yy2,1,pivot=80,tv_range=false)
@@ -197,9 +196,9 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
     !isHD   ? BicubicResize(w,h,0.0,0.5)           : ex_smooth(2,mode="SG",sharp=true) # Clean up result. No need when resizing down
      isUHD  ? BicubicResize(w,h,0.679623,0.160189) : last
 
+    ConvertBits(bi,fulls=true)
     msk8 = last
 
-    ConvertBits(bi,fulls=true)
     propDelete(["_Matrix","_Primaries","_Transfer","_PictType","_ChromaLocation"])
 
     if (fil) {
@@ -210,7 +209,7 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
 
     if (sh) {
         src = fil ? last : a
-        msk = mskY_to_YYY(src, msk8, false, false, 128, bi)
+        msk = isy ? msk8 : mskY_to_YYY(src, msk8, false, false, 128, bi)
         StackHorizontal(padresize(src,w/2,h,biasW=w/4),padresize(msk,w/2,h,biasW=-w/4)) } }
 
 
@@ -230,7 +229,7 @@ function FlatMask(clip a, float "rad", float "scale", int "lo", int "MSR", clip 
 ###
 ### Remaps value 0 to 50 and 255 to 100, clipping above and below.
 ### Useful to protect dark/bright areas from certain filters without
-### a hard threshold like ex_binarize()
+### a hard threshold like ex_binarize(75)
 ###
 ###
 ### Function Definition:
@@ -407,7 +406,7 @@ function MotionMask(clip a, int "lo", int "hi", float "scale", int "sharpness", 
 ### Ported from slimit_dif() and HQDeringmod_limit_dif(). Description from Dither_limit_dif16
 ###
 ### Compare a filtered clip with its original version, and keeps the filtered pixels only if the difference between the filtered pixel and the reference pixel is below the given threshold.
-### This is a building block of SmoothGrad, GradFun3, nnedi3_resize16() and deep_resize().
+### This is a building block of SmoothGrad, GradFun3plus and deep_resize().
 ###
 ### flt:   Filtered clip.
 ### src:   Original clip.
@@ -435,7 +434,7 @@ function ex_limitdif(clip flt, clip src, clip "ref", float "thr", float "elast",
     Y      = Default( Y,       3 )
     UV     = Default( UV,      3 )
 
-    sm     = elast==1.0 ? False : sm
+    sm     = elast == 1.0 ? false : sm
 
     thrc   = ex_bs(  thrc, 8, bi, true, flt=true)
     celast = elast * thrc
@@ -469,7 +468,6 @@ function ex_limitdif(clip flt, clip src, clip "ref", float "thr", float "elast",
 
     dref ? ex_lutxyz(flt,src,ref, exprYref, Format("x z -     abs D@  {thrc} <= x D  {celast} >= y dup x y - {celast} D  - * {thcela} * + ? ?"), Y=Y,UV=UV) : \
            ex_lutxy (flt,src,     exprY,    Format("x y - D1@ abs DA@ {thrc} <= x DA {celast} >= y dup D1    {celast} DA - * {thcela} * + ? ?"), Y=Y,UV=UV) }
-
 
 
 
@@ -519,7 +517,7 @@ function ex_limitchange(clip flt, clip src, float "limit", float "bias", float "
 ### https://forum.doom9.org/showthread.php?t=99679
 ###
 ### MCSoothe() by Didée (14th July 2007)
-### https://forum.doom9.org/showthread.php?p=1367334#post1367334
+### https://forum.doom9.org/showthread.php?p=1367334
 ###
 ### mod by Dogway (15-03-2022) - Merged Soothe(), SoothCL() and MCSoothe() plus optimizations.
 ###
@@ -578,7 +576,7 @@ function Soothe(clip sharp, clip orig, int "keep", bool "median", bool "MC", int
     UV   = Default(UV,        1)
     tv   = Default(tv_range, !fs)
     UV3  = UV==3
-    KP   = max(0,min(100,keep)) / 100.
+    KP   = clamp(keep,0,100) / 100.
 
     Assert(IsVersionOrGreater(3,7,2),               "Soothe: Update AviSynth+ version")
     Assert(w == orig.width() && h == orig.height(), "Soothe: clip dimensions must match!")
@@ -618,5 +616,7 @@ function Soothe(clip sharp, clip orig, int "keep", bool "median", bool "MC", int
 
         diff  = ex_makediff(orig,  sharp, UV=uv, fulls=!tv)
         diff2 = med ? diff.ex_median("medianT",UV=uv) : diff.temporalsoften(1,255,UV3?255:0,32,2)
-        ex_lutxyz(orig,diff,diff2,Format("y range_half - Y@ z range_half - Z@ * 0 < Y {KP} * range_half + Y abs Z abs > y z - {KP} * z + y ? ? x swap - range_half +"),UV=uv,fulls=!tv).propCopy(sharp)
+        expr  = bi==32 ? Format("y z * 0 < y {KP} * y abs z abs > y z - {KP} * z + y ? ? x swap -")                                                         : \
+                         Format("y range_half - Y@ z range_half - Z@ * 0 < Y {KP} * range_half + Y abs Z abs > y z - {KP} * z + y ? ? x swap - range_half +")
+        ex_lutxyz(orig,diff,diff2,expr,UV=uv,fulls=!tv).propCopy(sharp)
     } }

@@ -77,6 +77,7 @@ Import(AviSynthPlugins64Dir + "26/YUY2toYV12i and YV12toYUY2i.avsi")
 Import(AviSynthPlugins64Dir + "26/sbr.avsi")
 Import(AviSynthPlugins64Dir + "26/FrostyBorders.avsi")
 Import(AviSynthPlugins64Dir + "26/ImageBorders.avsi")
+Import(AviSynthPlugins64Dir + "26/FCBI.avsi")
 LoadPlugin(AviSynthPlugins64Dir + "26/FrameSel.dll")
 }
 
@@ -131,6 +132,7 @@ AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/ResizersPack.avs
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/YAHR.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "26/SmoothUV2.avsi") : nop()
 AvsPlusVersionNumber < 3276 ? VersionNumber() < 2.60 ? Import(AviSynthPlugins64Dir + "25/VSFilter.avsi") : Import(AviSynthPlugins64Dir + "26/VSFilter.avsi") : nop()
+AvsPlusVersionNumber < 3276 ? VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/FillMargins.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "cplugin/stab.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/Deblock_QED_MT2.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/NonlinUSM.avsi") : nop()

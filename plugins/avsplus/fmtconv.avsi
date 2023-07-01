@@ -16,7 +16,7 @@ LoadPlugin(AviSynthPluginsDir + "avsplus/fmtconv.dll")
         fmtc_matrix2020cl(c, full, csp, bits, cpuopt)
 }
 
-Function fmtc_primaries(clip c, val_array_nz "rs", val_array_nz "gs", val_array_nz "bs", val_array_nz "ws", val_array_nz "rd", val_array_nz "gd", val_array_nz "bd", val_array_nz "wd", string "prims", string "primd", int "cpuopt")
+Function fmtc_primaries(clip c, val_array_nz "rs", val_array_nz "gs", val_array_nz "bs", val_array_nz "ws", val_array_nz "rd", val_array_nz "gd", val_array_nz "bd", val_array_nz "wd", string "prims", string "primd", bool "wconv", int "cpuopt")
 {
 LoadPlugin(AviSynthPluginsDir + "avsplus/fmtconv.dll")
         fmtc_primaries(c, rs=rs, gs=gs, bs=bs, ws=ws, rd=rd, gd=gd, bd=bd, wd=wd, prims=prims, primd=primd, cpuopt=cpuopt)

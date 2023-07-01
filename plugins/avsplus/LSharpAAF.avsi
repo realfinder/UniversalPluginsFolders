@@ -20,6 +20,8 @@
 # v1.70 updated in 2021-12-18 (Dogway) Revert MT version for resizers. Optimized edge mask. Sanitized
 # v1.80 updated in 2021-12-23 (Dogway) Replace SangNom with SangNom2, and nnedi2 with nnedi3. Some cosmetics and better U/V plane handling
 # v1.81 updated in 2022-03-05 (Dogway) Rebase with latest LSFplus
+# v1.90 updated in 2022-06-24 (Dogway) Saturate default SangNom2 to 128. Update scaling kernels in LSharpAAF()
+# v1.91 updated in 2022-12-20 (Dogway) Remove SantiagMod, now as an independent script
 #
 #
 # Requirements (Plugins):
@@ -41,10 +43,10 @@
 #    nnedi
 #    nnedi2
 #    nnedi3
-#    UnFilter
+#    UnFilter (for AAA() )
 #
 #
-# All AA Scripts are in this script, so there's no need to download them separately.
+# All AA Scripts are in this script, so there's no need to download them separately (except of Santiag and SantiagMod)
 #
 # This is an Anti-Aliasing Combo with some Extras like FastLineDarkenMOD, Presharpening, Postsharpening and Postsmoothing
 #
@@ -115,17 +117,17 @@ function LSharpAAF(clip a, int "StrDrk", int "ShPre", int "ShPost", int "SmPost"
 
     preaa = (ShPre==0 && StrDrk==0) ? a                                                           : \
                          (ShPre==0) ? a.FastLineDarkenMOD(thinning=0, strength=StrDrk,prot=prot)  : \
-                        (StrDrk==0) ? a.LSFplus(preset="slow",preblur="ON",strength=float(ShPre)) : \
-                                      a.FastLineDarkenMOD(thinning=0, strength=StrDrk,prot=prot).LSFplus(preset="slow",preblur="ON",strength=float(ShPre))
+                        (StrDrk==0) ? a.LSFplus(preset="slow",preblur="ON",strength=ShPre)        : \
+                                      a.FastLineDarkenMOD(thinning=0, strength=StrDrk,prot=prot).LSFplus(preset="slow",preblur="ON",strength=ShPre)
 
-    ant=(aatype=="EEDI2")        ? preaa.TurnLeft().EEDI2(       ).TurnRight().EEDI2(       ).Spline36Resize(w,h,0.5,-0.5,2*w+.001,2*h+.001)
-    \ : (aatype=="EEDI3")        ? preaa.TurnLeft().EEDI3(U=f,V=f).TurnRight().EEDI3(U=f,V=f).Spline36Resize(w,h)
+    ant=(aatype=="EEDI2")        ? preaa.TurnLeft().EEDI2(       ).TurnRight().EEDI2(       ).bicubicresize(w,h,-0.5,0.25,0.5,-0.5,2*w+.001,2*h+.001)
+    \ : (aatype=="EEDI3")        ? preaa.TurnLeft().EEDI3(U=f,V=f).TurnRight().EEDI3(U=f,V=f).bicubicresize(w,h,-0.5,0.25)
     \ : (aatype=="EdiAA")        ? preaa.ediaa()
-    \ : (aatype=="nnedi")        ? preaa.NNEDI (dh=true,field=1,               U=f,V=f).TurnRight().NNEDI (dh=true,field=1,               U=f,V=f).TurnLeft().Spline36Resize(w,h)
-    \ : (aatype=="nnedi2")       ? preaa.NNEDI2(dh=true,field=1,nsize=2,qual=3,U=f,V=f).TurnRight().NNEDI2(dh=true,field=1,nsize=2,qual=3,U=f,V=f).TurnLeft().Spline36Resize(w,h,0.5,-0.5,2*w+.001,2*h+.001)
-    \ : (aatype=="nnedi3")       ? preaa.NNEDI3(dh=true,field=1,nsize=2,qual=2,U=f,V=f).TurnRight().NNEDI3(dh=true,field=1,nsize=2,qual=2,U=f,V=f).TurnLeft().Spline36Resize(w, h)
+    \ : (aatype=="nnedi")        ? preaa.NNEDI (dh=true,field=1,               U=f,V=f).TurnRight().NNEDI (dh=true,field=1,               U=f,V=f).TurnLeft().bicubicresize(w,h,-0.5,0.25)
+    \ : (aatype=="nnedi2")       ? preaa.NNEDI2(dh=true,field=1,nsize=2,qual=3,U=f,V=f).TurnRight().NNEDI2(dh=true,field=1,nsize=2,qual=3,U=f,V=f).TurnLeft().bicubicresize(w,h,-0.5,0.25,0.5,-0.5,2*w+.001,2*h+.001)
+    \ : (aatype=="nnedi3")       ? preaa.NNEDI3(dh=true,field=1,nsize=2,qual=2,U=f,V=f).TurnRight().NNEDI3(dh=true,field=1,nsize=2,qual=2,U=f,V=f).TurnLeft().bicubicresize(w,h,-0.5,0.25)
     \ : (aatype=="NediAA")       ? preaa.NediAA()
-    \ : (aatype=="SangNom")      ? preaa.Spline64Resize(w*2,h*2).TurnLeft().SangNom2(aa=255,chroma=false).TurnRight().SangNom2(aa=255,chroma=false).Spline36Resize(w,h)
+    \ : (aatype=="SangNom")      ? preaa.blackmanresize(w*2,h*2,taps=6).TurnRight().SangNom2(aa=128, chroma=false).TurnLeft().SangNom2(aa=128, chroma=false) .bicubicresize(w,h,-0.5,0.25)
     \ : (aatype=="aaf")          ? preaa.aaf(aam=-0.7,rep=true)
     \ : (aatype=="aaa")          ? preaa.aaa()
     \ : (aatype=="daa")          ? preaa.daa()
@@ -568,46 +570,8 @@ function NediAA(clip c) {
  #          #
  ############
 
-#Antialiasing function by Archimedes,
-function SantiagMod(clip input, int "strh", int "strv", string "type") {
-
-    type = Default(type, "NNEDI3")
-    strh = Default(strh, 1)
-    strv = Default(strv, strh)
-
-    input
-
-    strh > 0 ? SantiagMod_helper(type=type, strength=strh) : nop()
-    TurnLeft()
-    strv > 0 ? SantiagMod_helper(type=type, strength=strv) : nop()
-    TurnRight() }
-
-function SantiagMod_helper(clip input, string "type", int "strength") {
-
-    input
-    w = width()
-    h = height()
-
-    if (type == "EEDI3") {
-      EEDI3(dh=True, field=0)
-      for (i = 2, strength) {
-        EEDI3(dh=False, field=(i + 1) % 2)
-      }
-    }
-    else if (type == "NNEDI2") {
-      NNEDI2(dh=True, field=0)
-      for (i = 2, strength) {
-        NNEDI2(dh=False, field=(i + 1) % 2)
-      }
-    }
-    else {
-      NNEDI3(dh=True, field=0,qual=2)
-      for (i = 2, strength) {
-        NNEDI3(qual=2,dh=False, field=(i + 1) % 2)
-      }
-    }
-
-  Spline36Resize(w, h, 0, 0.5, w, h * 2) }
+# Archimedes mod of cretindesalpes' Santiag.
+# Download from: https://github.com/Dogway/Avisynth-Scripts/blob/master/MIX%20mods/SantiagMod.avsi
 
 
  ##########

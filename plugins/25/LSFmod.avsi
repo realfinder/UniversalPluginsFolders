@@ -129,7 +129,7 @@
 ### Smode [int: 1,2,3,4,5,6]
 ### ----------------------
 ### Sharpen mode:
-###    =1 : Unsharp masking (from warpsharp)
+###    =1 : Unsharp masking (from UnsharpMask_avsi)
 ###    =2 : Unsharp masking (from variableblur) 
 ###    =3 : Range sharpening
 ###    =4 : Nonlinear sharpening (original  version)
@@ -214,19 +214,19 @@
 ###    =3 : Limit to zero on edges and to over/undershoot on not-edges
 ###    =4 : Limit to over/undershoot on edges and to over/undershoot2 on not-edges
 ###
-### overshoot [int]
+### overshoot [float]
 ### ---------------
 ### Limit for pixels that get brighter during sharpening
 ###
-### undershoot [int]
+### undershoot [float]
 ### ----------------
 ### Limit for pixels that get darker during sharpening
 ###
-### overshoot2 [int]
+### overshoot2 [float]
 ### ----------------
 ### Same as overshoot, only for Lmode=4
 ###
-### undershoot2 [int]
+### undershoot2 [float]
 ### -----------------
 ### Same as undershoot, only for Lmode=4
 ###
@@ -435,7 +435,7 @@ function LSFmod( clip inclip, float "strength", int "Smode", int "Smethod", int 
 sisphbd = AvsPlusVersionNumber > 2294
 
 ### DEFAULTS
-version  = "v2.189"
+version  = "v2.193"
 defaults = default(defaults,"fast")
 num      = defaults=="old" ? 0 : defaults=="slow" ? 1 : defaults=="fast" ? 2 : 3
 
@@ -645,7 +645,7 @@ output = edgemode!=-1    ? output
    \                  float "strength", int "Smode", int "Smethod", int "kernel",
    \                  string "preblur", bool "secure", string "source",
    \                  float "Szrp", float "Spwr", float "SdmpLo", float "SdmpHi",
-   \                  int "Lmode", float "overshoot", float "undershoot", float "overshoot2", int "undershoot2",
+   \                  int "Lmode", float "overshoot", float "undershoot", float "overshoot2", float "undershoot2",
    \                  int "soft", bool "soothe", int "keep",
    \                  int "edgemode", bool "edgemaskHQ",
    \                  float "ss_x", float "ss_y", int "dest_x", int "dest_y",

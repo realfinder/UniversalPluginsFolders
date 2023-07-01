@@ -1,7 +1,7 @@
 ###########################################################
 ###                                                      ##
 ###                                                      ##
-###           Grade Pack v7.1 (29-04-2022)               ##
+###           Grade Pack v9.0 (13-04-2023)               ##
 ###                                                      ##
 ###    https://forum.doom9.org/showthread.php?t=182881   ##
 ###                                                      ##
@@ -30,7 +30,8 @@
 ###                                                      ##
 ###########################################################
 ###
-### Look transforms pack for grading and look tone adjustments.
+###
+### Pack of artistic look transform functions for grading and look tone adjustments.
 ###
 ###
 ####################################
@@ -57,7 +58,7 @@
 ###     Saturation: Simple saturation operator without any masks
 ###     Vibrance:   Masks high saturation so you can lower or raise saturation where is low (Default)
 ###     Dullness:   Masks low  saturation so you can lower or raise saturation where is high
-###     Recover:    Recover lost saturation between source and reference clip
+###     Recover:    Recover lost saturation (full or partial) between source and reference clip.
 ###
 ###
 ### Examples:
@@ -67,7 +68,7 @@
 ###
 ###     ex_vibrance(0.5)                       # Lower saturation where is low
 ###
-###     ex_vibrance(2.0, mode="Dullness")      # Lower saturation where is high
+###     ex_vibrance(2.0, mode="Dullness")      # Lower saturation where is high (could help for out-of-gamut cases)
 ###
 ###     ex_vibrance(1.0, mode="Recover", Rc=b) # Recover saturation from clip 'b'
 ###
@@ -100,7 +101,7 @@ function ex_vibrance (clip a, float "sat", string "mode", float "bias", clip "Rc
     sat   = max(sat, 0)
     Rec   = FindStr(LCase(md),"recover") > 0
 
-          Assert(IsVersionOrGreater(3,7,2), "ex_vibrance: Update AviSynth+ version")
+          Assert(IsVersionOrGreater(3,7,3), "ex_vibrance: Update AviSynth+ version")
           Assert(!isRGB(a),                 "ex_vibrance: RGB format not supported")
     Rec ? Assert(Defined(Rc),               "ex_vibrance: 'Recover' mode requires a clip defined in the 'Rc' parameter to recover saturation from") : nop()
 
@@ -155,25 +156,25 @@ function ex_vibrance (clip a, float "sat", string "mode", float "bias", clip "Rc
         if (sh==1) {
 
             bi > 8 ? ConvertBits(8,dither=1,fulls=!tv) : last
-            sw = nmod(w/3.75)
-            sh = sw*2
             lvl = Histogram(mode="levels",keepsource=false)
-            lvl = StackVertical(lvl,Vectorscope()).GaussResize(sw,sh,p=100)
-            lvl = PadBorders(tv?lvl.SMPTE_Legal(false):lvl,0,0,0,h-sh,mode="[0,128,128]")
+            lvl = StackVertical(lvl,Vectorscope()).RatioResize(h/512.,"%",kernel="gauss",p=100)
+            lvl = tv?lvl.SMPTE_Legal(false):lvl
             StackHorizontal(GamutWarning(),lvl)
 
         } else if (sh>1) {
             ExtractU()
             propDelete(["_Matrix","_Primaries","_Transfer","_PictType"])
             propSet("_ColorRange", 0)
-            sh==2 ? BicubicResize(w,h,0.679623,0.160189) : last } } } }
+            sh==2 ? BicubicResize(w,h,0.679623,0.160189) : last } } }
+
+    propNumElements("_SceneStatsU") > 0 ? propDelete(["_SceneStatsU","_SceneStatsV"]) : last }
 
 
 
 
 ###
 ###
-### ex_contrast() - v7.1 (07-01-2022)
+### ex_contrast() - v7.2 (29-10-2022)
 ###
 ###
 ### Applies contrast in the "S" (sigmoidal) curve fashion.
@@ -185,7 +186,9 @@ function ex_vibrance (clip a, float "sat", string "mode", float "bias", clip "Rc
 ###
 ### Apply over gamma encoded clip
 ###
-### Example: ex_contrast(0.7)  # Default pivot=125.5 is mid-grey for TV range sources (Color range read from frameprops)
+### Examples:
+###     ex_contrast(0.7)             # Default pivot=125.5 is mid-grey for TV range sources (Color range read from frameprops)
+###     ex_contrast(0.786,pivot=83)  # DCP Tone Curve - Adobe Camera Raw's default fallback film curve
 ###
 ### Function Definition:
 ###    (
@@ -208,15 +211,15 @@ function ex_contrast (clip c, float "cont", float "sat", float "pivot", bool "tv
             propGetInt      (c,"_ColorRange") == 0 : rgb
     lut   = isRunTime(c,rgb) || bi == 32 ? 0 : 1
 
-    UV    = Default(UV, (Defined(sat) ? sat!=1 : Defined(sat)) || rgb ? 3 : 1)
+    UV    = Default(UV, Defined(sat) && sat!=1 || rgb ? 3 : 1)
     cont  = Default(cont, 0.0)                     # [-1.0 to +1.0] can set further though
-    sat   = Default(sat,  (cont+3)/3)              # [ 0.0 to +inf] By default can't be disabled in RGB
+    sat   = Default(sat,  (cont+3)/3)              # [ 0.0 to +inf] 1.0 is noop. By default can't be disabled in RGB
     sh    = Default(show,      false)              # Show the contrast curve
     tv    = Default(tv_range, !fs)                 # TV or PC. Color range of your source
     pivot = Default(pivot,    !tv ? 127.5 : 125.5) # Pivot: 64 to 192 (roughly)
-    si    = bi == 32 || tv ? "none" : "intf"
+    si    = bi == 32 || tv ? ex_UVf(rgb, bi) : "intf"
 
-    # Storing for 'show'
+    # Pointer for 'show'
     sc = cont
     ss = sat
     sp = pivot
@@ -224,12 +227,12 @@ function ex_contrast (clip c, float "cont", float "sat", float "pivot", bool "tv
 
     pivot = ex_bs(pivot, 8, 32, tv_in=tv || tv && 125.4 < pivot <= 126, tv_out=false) # Pivot to float PC levels
 
-    Assert(IsVersionOrGreater(3,7,2), "ex_contrast: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,3), "ex_contrast: Update AviSynth+ version")
 
-    rangePC  = tv ? "ymin - ymax ymin - /"                     : ""
+    rangePC  = tv ? "x ymin - ymax ymin - /"                   : "x "
     rangeTV  = tv ? "ymax ymin - * ymin +"                     : ""
-    rangePCc = tv ? "x range_half - range_max cmax cmin - / *" : "x"
-    rangeTVc = tv ? "cmax cmin - range_max / * range_half +"   : ""
+    rangePCc = tv ? "x range_half - range_max cmax cmin - / *" : "x range_half -"
+    rangeTVc = tv ? "cmax cmin - range_max / * range_half  +"  : "  range_half +"
 
     cont   = pow(cont + sign(cont), 3.)
     rcont  = 1. / (cont + ep)
@@ -239,35 +242,38 @@ function ex_contrast (clip c, float "cont", float "sat", float "pivot", bool "tv
     shmkn  = shldr - knee
     rshmkn = 1. / shmkn
 
-    ycont  = "f32 1 1 {cont} {pivot} x "+rangePC+" - * exp + / {knee} - {rshmkn} * "+rangeTV
-    yconti = "f32 {pivot} 1 x "+rangePC+" {shmkn} * {knee} + / 1 - log {rcont} * - "+rangeTV
+    ycont  = "f32 1 1 {cont} {pivot} "+rangePC+" - * exp + / {knee} - {rshmkn} * "+rangeTV
+    yconti = "f32 {pivot} 1 "+rangePC+" {shmkn} * {knee} + 0.01 max / 1 - log {rcont} * - "+rangeTV
     str    = cont != 0. ? ex_dlut(Format(cont > 0. ? ycont : yconti), bi, !tv) : ""
 
     cstr = sat != 1. ? Format(rangePCc+" {sat} * "+rangeTVc) : ""
-    cstr = rgb ? str : sat==1 ? "" : ex_UVexpr(cstr, UV, bi, rgb, !tv)
+    cstr = rgb ? str : sat==1 ? "" : ex_UVexpr(cstr, UV, bi, rgb, !tv, si)
 
     isy     ? Expr(c, str      , lut=lut, scale_inputs=si) : \
     UV == 1 ? Expr(c, str, ""  , lut=lut, scale_inputs=si) : \
               Expr(c, str, cstr, lut=lut, scale_inputs=si)
 
+    propNumElements("_SceneStats") > 0 ? propDelete("_SceneStats") : last
+
     if (sh) {
         bi > 8 ? ConvertBits(8,dither=1,fulls=!tv) : last
         w   = c.width()
         h   = c.height()
-        sw  = nmod(w/5.)   sh = sw
-        plt = GradientLinear(last,zoom=1, positive=true, smooth=true, tv_range=tv)
+        sw  = nmod(w/5.)   sh = min(h,sw)
+        plt = GradientLinear(last,zoom=1, precision=2, positive=true, smooth=true, tv_range=tv)
         plt = ex_contrast (plt,sc,ss,sp,tv,128)
-        plt = HistoCurve(plt,size=1,gradient=false).BicubicResize(sw,sh,-0.5,0.25)
-        plt = PadBorders(plt,w-sw,0,0,h-sh)
-        plt = Merge(last,rgb ? plt.ConverttoPlanarRGB() : plt)
+        plt = HistoCurve(plt,size=2,gradient=false).BicubicResize(sw,sh,-0.5,0.25)
+        plt = rgb ? plt.ConvertToPlanarRGB() : plt
+        plt = Merge(PadBorders(plt,w-sw,0,0,h-sh))
         ex_merge(plt,BoxMask(w-sw,w,0,sh),UV=3)
     } }
 
 
 
+
 ###
 ###
-### ex_levels() - v4.2 (14-04-2022)
+### ex_levels() - v4.4 (19-02-2023)
 ###
 ###
 ### Works like internal Levels() but with HBD support out of the box (using autoscaling)
@@ -280,7 +286,7 @@ function ex_contrast (clip c, float "cont", float "sat", float "pivot", bool "tv
 ###
 ### Example: ex_levels(23, 1.200, 255, 0, 255, tv_range=true)
 ###
-### Formula = (input - input_low) / (input_high - input_low)] ^ (1/gamma) * (output_high - output_low) + output_low
+### Formula = ((input - input_low) / (input_high - input_low)) ^ (1/gamma) * (output_high - output_low) + output_low
 ###
 ### Function Definition:
 ###    (
@@ -301,41 +307,43 @@ function ex_contrast (clip c, float "cont", float "sat", float "pivot", bool "tv
 ###
 ####################################
 
-function ex_levels (clip c, float "input_low", float "gamma", float "input_high", float "output_low", float "output_high", bool "tv_range", int "UV", bool "show", bool "clamp_float") {
+function ex_levels (clip c, float "input_low", float "gamma", float "input_high", float "output_low", float "output_high", bool "tv_range", int "UV", bool "show", bool "reStats", bool "clamp_float") {
 
     rgb  = isRGB(c)
     isy  = isy(c)
     bi   = BitsPerComponent(c)
+    ist  = propNumElements (c,"_SceneStats")  > 0
     fs   = propNumElements (c,"_ColorRange")  > 0 ? \
            propGetInt      (c,"_ColorRange") == 0 : rgb
     bi32 = bi == 32
-    lut  = isRunTime(c,rgb) || bi32 ? 0 : 1
+    isrn = isRunTime(c,rgb)
+    lut  = isrn || bi32 ? 0 : 1
 
-    ilo  = Default(input_low,      0)
-    gam  = Default(gamma,        1.0)
-    ihi  = Default(input_high,   255)
-    olo  = Default(output_low,     0)
-    ohi  = Default(output_high,  255)
-    tv   = Default(tv_range,     !fs)
-    sh   = Default(show,       false)
-    cf   = Default(clamp_float, bi32)
-    UV   = Default(UV,   rgb ? 3 : 2)
+    ilo  = Default(input_low,       0)
+    gam  = Default(gamma,         1.0)
+    ihi  = Default(input_high,    255)
+    olo  = Default(output_low,      0)
+    ohi  = Default(output_high,   255)
+    tv   = Default(tv_range,      !fs)
+    sh   = Default(show,        false)
+    rs   = Default(reStats,ist&&!isrn) # Recalculate Stats from input args (could save from re-running SceneStats() at the cost of accuracy)
+    cf   = Default(clamp_float,  bi32)
+    UV   = Default(UV,    rgb ? 3 : 1) # if UV=3, for YUV it will compensate chroma according to levels range expansion/reduction
     si   = ex_UVf(rgb, bi)
 
     # Storing for 'show'
     silo = ilo
-    sgam = gam
     sihi = ihi
     solo = olo
     sohi = ohi
     ep   = 0.000001
 
-    Assert(IsVersionOrGreater(3,7,2), "ex_levels: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,3), "ex_levels: Update AviSynth+ version")
 
-    rangePC  = tv ? "x ymin - range_max ymax ymin - / * "        : "x "
-    rangeTV  = tv ? " ymax ymin - range_max / * ymin + "         : ""
-    rangePCc = tv ? "x range_half - range_max cmax cmin - / * "  : "x range_half - "
-    rangeTVc = tv ? " cmax cmin - range_max / * range_half + "   : "  range_half + "
+    rangePC  = tv ? "x ymin - range_max ymax ymin - / * "       : "x "
+    rangeTV  = tv ? " ymax ymin - range_max / * ymin + "        : ""
+    rangePCc = tv ? "x range_half - range_max cmax cmin - / * " : "x range_half - "
+    rangeTVc = tv ? " cmax cmin - range_max / * range_half + "  : "  range_half + "
 
     ilo = ex_bs( ilo, 8, bi, tv_in=tv, tv_out=false, flt=true)
     ihi = ex_bs( ihi, 8, bi, tv_in=tv, tv_out=false, flt=true)
@@ -353,71 +361,134 @@ function ex_levels (clip c, float "input_low", float "gamma", float "input_high"
     crg  = ex_bs( tv ? 224 : 255, 8, bi, fulls=!tv)
     oho  = oho / (crg + ep)
     iho  = crg / (iho + ep)
-    rt   = oho * iho
-    cstr = ex_UVexpr(Format(rangePCc + " {rt} * " + rangeTVc), UV, bi, rgb, !tv, si)
+    rt   = pow(oho * iho, 1./gam)
+    cstr = rgb ? str : ex_UVexpr(Format(rangePCc + " {rt} * " + rangeTVc), UV, bi, rgb, !tv, si)
 
     isy     ? Expr(c, str      ,                  lut=lut, clamp_float=bi32) : \
-    UV == 1 ? Expr(c, str, ""  ,                  lut=lut, clamp_float=bi32) : \
+    UV != 3 ? Expr(c, str, ""  ,                  lut=lut, clamp_float=bi32) : \
               Expr(c, str, cstr, scale_inputs=si, lut=lut, clamp_float=bi32)
+
+    ST = """ sts  = propGetAsArray("_SceneStats")
+             sts  = ArrayOp(sts,1,Format("ex_bs(x,{bi},8,tv_in={tv},tv_out=false,fulls=true,flt=true)"))
+             rng  = (sihi   -   silo)
+             rngn = (sohi   -   solo)
+             mea  = (sts[4] -   silo) / rng                             # New scene average after normalization
+             med  = (sts[5] -   silo) / rng
+             iqm  = (sts[6] -   silo) / rng
+             gm1  = (log(sts[4]/255)/log(mea))/gam                      # Find exponent to keep gamma to scene's average
+
+           # New Metrics (workaround to avoid calling SceneStats() again)
+             pmnn = pow(max(0,(sts[0] - silo)) / rng, gm1)
+             pmxn = pow(      (sts[1] - silo)  / rng, gm1)
+             pmnt = pow(max(0,(sts[2] - silo)) / rng, gm1)
+             pmxt = pow(      (sts[3] - silo)  / rng, gm1)
+             nmea = pow(       mea,                   gm1)
+             nmed = pow(       med,                   gm1)
+             nIQM = pow(       iqm,                   gm1)
+             stsn = [pmnn,pmxn,pmnt,pmxt,nmea,nmed,nIQM]
+             stsn = ArrayOp(stsn,1,Format("ex_bs(x * {rngn} + {solo},8,{bi},tv_in=false,tv_out={tv},fulls=true,flt=true)"))
+
+             propSet("_SceneStats",stsn) """
+
+    ist ? rs ? isrn ? Eval(ST)    : \
+        ScriptClip(function [silo,gam,sihi,solo,sohi,bi,tv,ST] () {
+            Eval(ST)
+        } ) : propDelete("_SceneStats") : last
 
     if (sh) {
         bi > 8 ? ConvertBits(8,dither=1,fulls=!tv) : last
         w   = c.width()
         h   = c.height()
-        sw  = nmod(w/4.00)
-        sh  = sw*2
         lvl = Histogram(mode="levels",keepsource=false)
-        plt = GradientLinear(last,zoom=1, positive=true, smooth=true, tv_range=tv)
-        plt = ex_levels (plt,silo,sgam,sihi,solo,sohi,tv,128)
+        plt = GradientLinear(last, zoom=1, positive=true, precision=2, smooth=true, tv_range=tv)
+        plt = ex_levels (plt,silo,gam,sihi,solo,sohi,tv,128,false,false)
         plt = HistoCurve(plt,size=1,gradient=false)
-        plt = StackVertical(rgb ? plt.ConverttoPlanarRGB() : plt,lvl).BicubicResize(sw,sh,-0.5,0.25)
-        plt = PadBorders(tv?plt.SMPTE_Legal(false):plt,w-sw,0,0,h-sh)
+        pls = StackVertical(rgb ? plt.ConverttoPlanarRGB() : plt,lvl).RatioResize(h/512.,"%",b=-0.5,c=0.25)
+        plt = PadBorders(tv?pls.SMPTE_Legal(false):pls,w-width(pls),0,0,0)
         plt = Merge(plt)
-        ex_merge(last,plt,BoxMask(w-sw,w,0,sh),UV=3) } }
+        ex_merge(last,plt,BoxMask(w-width(pls),w,0,h),UV=3) } }
 
 
 ###
 ### ex_autolevels()
 ###
-### Wrapper for ex_levels() with SceneStats().
-### Performs auto-levels on a per-frame or per-scene basis.
+### Performs luma levels normalization on a per-scene basis (requires '_SceneStats' or at least '_SceneRange' frameprops)
+### With 'Deflicker' you can remove luma flicker (see example below).
+### 'Deflicker' performs global auto-levels on a per-frame and per-scene basis.
+### 'Deflicker' only works if the flicker frequency is higher than the content (ie. high motion), otherwise adjust the 'interval'.
 ###
-function ex_autolevels (clip c, float "interval", float "th", bool "tv_range") {
+### Example for a robust deflicker (double call):
+###     ex_autolevels(true ,true, true, Deflicker=true)
+###     ex_autolevels(false,true,false, Deflicker=true) # Second pass (recomputes '_SceneStats') to refine gamma deflicker
+###
+function ex_autolevels (clip c, bool "lo", bool "gamma", bool "hi", int "lift", bool "Deflicker", float "interval", float "th", bool "tv_in", bool "tv_out", bool "reStats") {
 
     c
     rgb  = isRGB()
-    isy  = isy()
     bi   = BitsPerComponent()
     rn   = propNumElements ("_SceneRange")  > 0
     st   = propNumElements ("_SceneStats")  > 0
     fs   = propNumElements ("_ColorRange")  > 0 ? \
            propGetInt      ("_ColorRange") == 0 : rgb
 
-    in   = Default(interval,  0.5)      # Interval in seconds for fetching frames
-    th   = Default(th,        0.1)      # 1/1000 threshold (0.1% or 1‰ -one per-mille-)
-    tv   = Default(tv_range,  !fs)
+    df   = Default(Deflicker, false)
+    lo   = Default(lo,         true)
+    gm   = Default(gamma,      true)
+    hi   = Default(hi,           df)      # True for deflicker, False for normalization
+    in   = Default(interval,    0.5)      # Interval in seconds for fetching frames
+    th   = Default(th,          0.1)      # 1/1000 threshold (0.1% or 1‰ -one per-mille-)
+    tv   = Default(tv_in,       !fs)
+    tvo  = Default(tv_out,       tv)
+    lf   = Default(lift, df ? 2 : 0)      # When using Deflicker thresholded minimum can be too low, use this bias to avoid crushing blacks
+    rs   = Default(reStats,     !df)      # Numerally recomputes new stats instead of rerunning SceneStats. Hard-coded off when deflicker is used
 
-    Assert(rn, "ex_autolevels: '_SceneRange' frame properties are required")
+    Assert(IsVersionOrGreater(3,7,3), "ex_autolevels: Update AviSynth+ version")
+    Assert(rn,                        "ex_autolevels: '_SceneRange' frame properties are required")
     !st ? SceneStats("Stats",in,th) : last
 
-    ScriptClip(function [tv,rgb] () {
+    ScriptClip(function [lo,gm,hi,df,tv,tvo,rgb,bi,lf,th,rs] () {
 
         sts  = propGetAsArray("_SceneStats")
-        pmin = sts[2]
-        pmax = sts[1]
+        sts  = bi>8 ? ArrayOp(sts,1,Format("ex_bs(x,{bi},8,fulls=true,flt=true)")) : sts
+        cst  = PlaneMinMaxStats(last,th,0,0,false)
+        cst  = bi>8 ? ArrayOp(cst,1,Format("ex_bs(x,{bi},8,fulls=true,flt=true)")) : cst
+        pmin = lo ? df ? cst[2]-lf : sts[2]-lf : tv ?  16 :   0
+        pmax = hi ? df ? cst[3]    : sts[3]    : tv ? 235 : 255       # By default a slight highlights normalization is performed even when hi=false
 
-        pmin > 0 || pmax < 255 ? ex_levels(pmin,1.0,pmax,0,255,tv,rgb?3:1) : last
+        if (gm) {
+            rng  = (pmax   -   pmin)
+            scn  = (sts[6] -   pmin) / rng                            # New scene average after normalization
+            cur  = (cst[5] - cst[2]) / (cst[3] - cst[2])              # New frame average after normalization
+
+            # Prolly I should replace gamma (+weighting to darks) with a simple midpoint remap function
+            lscn  = log(scn)
+            lcur  = log(cur)
+            # Keep gamma stable to new normalization
+            pavg1 = lscn/log(sts[6]/255)
+            # Keep original IQM gamma (removes flicker gamma)
+            pavg2 = lscn/lcur
+            # Second pass refinement ( 1/(pavg2+1) is the new frame average value using integrals with limits(0,1) )
+          # pavg2 = log((1/(pavg2+1)))/lcur                           # Commented as only worked on synthetic tests
+            # Lower the effect on extreme gammas
+            pavg2 = pavg2*clamp(1.1*sin(-pi*(0.56*pavg2-1.06)),0.7,1)
+            pavg  = df ? pavg1/pavg2 : pavg1                          # Exponent to keep gamma to scene's IQM average
+        } else { pavg = 1 }
+
+        tv!=tvo ? tvo ? ex_levels(pmin,pavg,pmax,16,235,false,!rgb&&df?1:3,false,df?false:rs) : \
+                        ex_levels(pmin,pavg,pmax,0 ,255,false,!rgb&&df?1:3,false,df?false:rs) : \
+                        ex_levels(pmin,pavg,pmax,0 ,255,tv,   !rgb&&df?1:3,false,df?false:rs)
     } )
- }
+    tv!=tvo && df && !rgb ? tvo ? SMPTE_Legal(true,Y=1) : SMPTE_Legal(false,Y=1) : last
+    tv!=tvo               ?       propSet("_ColorRange",tvo?1:0)                 : last }
 
 
 
 ###
 ###
-### ex_blend() - v4.2 (10-04-2022)
+### ex_blend() - v4.5 (02-04-2023)
 ###
 ###
-### Works like Overlay() but supports more modes (53 in total), better handling of TV range and performs much faster in either 8-bit or HBD (YUV or RGB).
+### Works like Overlay() but supports more modes (55 in total), better handling of TV range and performs much faster in either 8-bit or HBD (YUV or RGB).
 ###
 ###
 ### Dependencies: > ExTools
@@ -429,7 +500,7 @@ function ex_autolevels (clip c, float "interval", float "th", bool "tv_range") {
 ###    (
 ###    clip a,
 ###    clip b,
-###    string "mode"="multiply" ("normal"/ "blend"/ "interpolation"/ "harmonic"/ "geometric"/ "watermark"/ "--"/ "darker"/ "darken"/ "multiply"/ "multiply128"/ "softburn"/ "colorburn"/ "linearburn"/ "--"/ "lighter"/ "lighten"/ "screen"/ "softdodge"/ "colordodge"/ "lineardodge"/ "linearadd"/ "--"/ "overlay"/ "softoverlay"/ "hardoverlay"/ "softlight"/ "hardlight"/ "vividlight"/ "linearlight"/ "stamp"/ "pinlight"/ "hardmix"/ "reflect"/ "glow"/ "freeze"/ "heat"/ "--"/ "grainextract"/ "grainmerge"/ "--"/ "difference"/ "softdifference"/ "negation"/ "exclusion"/ "subtract"/ "linearsubtract"/ "from"/ "divide"/ "andn"/ "bleach"/ "extremity"/ "stain"/ "phoenix"/ "--"/ "hue"/ "saturation"/ "color"/ "luminosity"),
+###    string "mode"="multiply" ("normal"/ "blend"/ "interpolation"/ "harmonic"/ "geometric"/ "watermark"/ "--"/ "darker"/ "darken"/ "darkenS"/ "multiply"/ "multiply128"/ "softburn"/ "colorburn"/ "linearburn"/ "--"/ "lighter"/ "lighten"/ "lightenS"/ "screen"/ "softdodge"/ "colordodge"/ "lineardodge"/ "linearadd"/ "--"/ "overlay"/ "softoverlay"/ "hardoverlay"/ "softlight"/ "hardlight"/ "vividlight"/ "linearlight"/ "stamp"/ "pinlight"/ "hardmix"/ "reflect"/ "glow"/ "freeze"/ "heat"/ "--"/ "grainextract"/ "grainmerge"/ "--"/ "difference"/ "softdifference"/ "negation"/ "exclusion"/ "subtract"/ "linearsubtract"/ "from"/ "divide"/ "andn"/ "bleach"/ "extremity"/ "stain"/ "phoenix"/ "--"/ "hue"/ "saturation"/ "color"/ "value"),
 ###    float "opacity"=1.00 (0.00 to 1.00),
 ###    [float "watermark"=1.0 (0.0 to 2.0)],
 ###    [int "UV"=3 (1 / 2 / 3)]
@@ -454,6 +525,7 @@ function ex_autolevels (clip c, float "interval", float "th", bool "tv_range") {
 ### DARK
 ### darker         - (RGB only) Returns the RGB values from the Base or Top layers with the lowest absolute summed R+G+B value
 ### darken         - Keep only the darkest colors from either Base or Top layers
+### darkenS        - Keep only the darkest colors from either Base or Top layers using a "smooth min" polynomial (from Iñigo Quilez articles)
 ### multiply       - Multiply Base with Top layer (a * b)
 ### multiply128    -
 ### softburn       - A softer ColorBurn, actually a combination of ColorBurn and the inverse of ColorDodge.
@@ -463,6 +535,7 @@ function ex_autolevels (clip c, float "interval", float "th", bool "tv_range") {
 ### LIGHT
 ### lighter        - (RGB only) Returns the RGB values from the Base or Top layers with the highest absolute summed R+G+B value
 ### lighten        - Keep only the lightest colors from either Base or Top layers
+### lightenS       - Keep only the lightest colors from either Base or Top layers using a "smooth max" polynomial (from Iñigo Quilez articles)
 ### screen         - Multiply the complement (invert) of Base and Top layers and invert back the result.  1 - (1 - a) * (1 - b)
 ### softdodge      - A softer ColorDodge, actually a combination of ColorDodge and the inverse of ColorBurn.
 ### colordodge     - Opposite of Multiply, actually it's a divide with the complementary of the Top layer. a / (1 - b)
@@ -488,8 +561,8 @@ function ex_autolevels (clip c, float "interval", float "th", bool "tv_range") {
 ### heat           - Like Freeze but with Base and Top layers swapped, output is very contrasty. 1 - (1 - b)^2 / a
 ###
 ### ANTISYMMETRIC or INVERSION
-### grainextract   -
-### grainmerge     -
+### grainextract   - Difference of Base and Top layers centered at range_half
+### grainmerge     - Blend Top Layer -centered on range_half- with Base Layer
 ###
 ### difference     - Absolute difference of Base and Top layers
 ### softdifference -
@@ -506,10 +579,10 @@ function ex_autolevels (clip c, float "interval", float "th", bool "tv_range") {
 ### phoenix        -
 ###
 ### HSL COMPONENT
-### hue            - Keep LUMINANCE and SATURATION of the Base layer and inherit HUE                 of the Top layer
-### saturation     - Keep LUMINANCE and HUE        of the Base layer and inherit SATURATION          of the Top layer
-### color          - Keep LUMINANCE                of the Base layer and mix with HUE and SATURATION of the Top  layer
-### luminosity     - Keep LUMINANCE                of the Top  layer and mix with HUE and SATURATION of the Base layer
+### hue            - Keep BRIGHTNESS and SATURATION of the Base layer and inherit HUE                 of the Top  layer
+### saturation     - Keep BRIGHTNESS and HUE        of the Base layer and inherit SATURATION          of the Top  layer
+### color          - Keep BRIGHTNESS                of the Base layer and mix with HUE and SATURATION of the Top  layer
+### value          - Keep BRIGHTNESS                of the Top  layer and mix with HUE and SATURATION of the Base layer
 ###
 
 function ex_blend(clip a, clip b, string "mode", float "opacity", float "watermark", bool "tv_range", int "UV") {
@@ -528,14 +601,10 @@ function ex_blend(clip a, clip b, string "mode", float "opacity", float "waterma
     UV   = Default(UV,  rgb ? 3 : md == "normal" ? 4 : 1)
     si   = ex_UVf(rgb, bi)
 
-                                           Assert(IsVersionOrGreater(3,7,2), "ex_blend: Update AviSynth+ version")
-    md == "darker" || md == "lighter"    ? Assert(rgb && UV == 3,            "ex_blend: 'darker' and 'lighter' modes require RGB inputs and UV = 3") : nop()
-    md == "color"  || md == "luminosity" || \
-    md == "hue"    || md == "saturation" ? Assert(!rgb && !isy,              "ex_blend: 'hue', 'saturation', 'color' and 'luminosity' modes require YUV inputs") : nop()
-
-    op  = min(max(op,0.),1.)
+    op  = clamp(op,0,1)
     iso = op == 1.0
 
+    md = ReplaceStr(md," ","")
     md = md == "add"          ? "lineardodge"  : \
          md == "addition"     ? "lineardodge"  : \
          md == "plus"         ? "lineardodge"  : \
@@ -545,11 +614,22 @@ function ex_blend(clip a, clip b, string "mode", float "opacity", float "waterma
          md == "difference128"? "grainextract" : \
          md == "dodge"        ? "colordodge"   : \
          md == "burn"         ? "colorburn"    : \
+         md == "smoothmin"    ? "darkenS"      : \
+         md == "smoothmax"    ? "lightenS"     : \
          md == "average"      ? "blend"        : \
+         md == "colour"       ? "color"        : \
+         md == "luminosity"   ? "value"        : \
+         md == "brightness"   ? "value"        : \
+         md == "lightness"    ? "value"        : \
          md == "hypot"        ? "linearadd"    : \
-         md == "diagonal "    ? "linearadd"    : \
+         md == "diagonal"     ? "linearadd"    : \
          md == "minus"        ? "subtract"     : \
          md == "and"          ? "multiply"     : md
+
+                                           Assert(IsVersionOrGreater(3,7,3), "ex_blend: Update AviSynth+ version")
+    md == "darker" || md == "lighter"    ? Assert(rgb && UV == 3,            "ex_blend: 'darker' and 'lighter' modes require RGB inputs and UV = 3") : nop()
+    md == "color"  || md == "value"      || \
+    md == "hue"    || md == "saturation" ? Assert(!rgb && !isy,              "ex_blend: 'hue', 'saturation', 'color' and 'value' modes require YUV inputs") : nop()
 
     rngmx = tv   ? "ymax ymin -" : "range_max"
     srcmx = tv   ? "ymin -"      : ""
@@ -560,6 +640,7 @@ function ex_blend(clip a, clip b, string "mode", float "opacity", float "waterma
     # 'hue' mode is YUV (not RGB) based so it differs from Photoshop's
     # 'bleach' and 'stain' modes look the same in ffmpeg (bug?) ('stain' alike here)
     # 'hardoverlay' is close but not math exact to original, revise later
+    # Some modes still need clamping for overflow values, revise later
     str = Format(                                                                                                                                                                  \
                                                                                                                                                                                    \
         md == "--"            ? "x"                                                                                                                                              : \
@@ -572,33 +653,35 @@ function ex_blend(clip a, clip b, string "mode", float "opacity", float "waterma
                               \
         md == "darker"        ? "see footer"                                                                                                                                     : \
         md == "darken"        ? "x "+V+" y min "                                                                                                                                 : \
+        md == "darkenS"       ? "0.2 x "+srcmx+" A@ y "+srcmx+" B@ - abs "+rngmx+" / - 0 max 5 * 3 ^ 0.166666 0.2 "+rngmx+" * * * A B min swap - 0 max "                         : \
         md == "multiply"      ? "x "+srcmx+" "+V+" y "+srcmx+" * "+rngmx+" / "                                                                                                   : \
         md == "multiply128"   ? "x "+srcmx+" "+V+" range_half "+srcmx+" - y "+srcmx+" ymin 2 * / * range_half "+srcmx+" + 0 "+rngmx+" clip "                                     : \
         md == "softburn"      ? "y "+srcmx+" B@ x "+srcmx+" A@ + "+rngmx+" < B range_half "+srcmx+" * "+rngmx+" A - 0 max C@ / "+rngmx+" C range_half "+srcmx+" * B / - ? "      : \
-        md == "colorburn"     ? ""+rngmx+" dup x "+srcmx+" "+V+" - "+rngmx+" * 0 max y "+srcmx+" 0 max / - "                                                                     : \
+        md == "colorburn"     ? ""+rngmx+" dup x "+srcmx+" "+V+" - "+rngmx+" * 0 max y "+srcmx+" 0 max / - 0 max "                                                               : \
         md == "linearburn"    ? "x "+srcmx+" "+V+" y "+srcmx+" + B@ "+rngmx+" < 0 B "+rngmx+" - ? "                                                                              : \
                               \
         md == "lighter"       ? "see footer"                                                                                                                                     : \
         md == "lighten"       ? "x "+V+" y max "                                                                                                                                 : \
+        md == "lightenS"      ? "0.2 x "+srcmx+" A@ y "+srcmx+" B@ - abs "+rngmx+" / - 0 max 5 * 3 ^ 0.166666 0.2 "+rngmx+" * * * A B max + "                                    : \
         md == "screen"        ? ""+rngmx+" C@ dup x "+srcmx+" "+V+" - C y "+srcmx+" - * C / - "                                                                                  : \
         md == "softdodge"     ? "x "+srcmx+" A@ y "+srcmx+" B@ + "+rngmx+" < A range_half "+srcmx+" * "+rngmx+" B - C@ / "+rngmx+" C range_half "+srcmx+" * A / - ? "            : \
-        md == "colordodge"    ? "x "+srcmx+" "+V+" "+rngmx+" * "+rngmx+" y "+srcmx+" 0 max - / "                                                                                 : \
+        md == "colordodge"    ? "x "+srcmx+" "+V+" "+rngmx+" * "+rngmx+" y "+srcmx+" 0 max - / "+rngmx+" min "                                                                   : \
         md == "lineardodge"   ? "x "+srcmx+" "+V+" y "+srcmx+" + "+rngmx+" min "                                                                                                 : \
-        md == "linearadd"     ? "x "+srcmx+" "+V+" dup * y "+srcmx+" dup * + sqrt "                                                                                              : \
+        md == "linearadd"     ? "x "+srcmx+" "+V+" dup * y "+srcmx+" dup * + sqrt "+rngmx+" min "                                                                                : \
                               \
         md == "overlay"       ? "x "+srcmx+" A@ range_half "+srcmx+" < 2 A y "+srcmx+" B@ * "+rngmx+" / * "+rngmx+" 2 "+rngmx+" A - "+rngmx+" B - * "+rngmx+" / * - ? "          : \
         md == "softoverlay"   ? ""+rngmx+" C@ x "+srcmx+" A@ - A y "+srcmx+" B@ * C / * A C dup A - C B - * C / - * + C / "                                                      : \
         md == "hardoverlay"   ? "x "+srcmx+" A@ "+rngmx+" == "+rngmx+" y "+srcmx+" B@ "+rngmx+" * "+rngmx+" 2 * A 2 * - / 0.3333 * A B * 3 * "+rngmx+" 2 * / + "+rngmx+" min ? " : \
         md == "softlight"     ? ""+rngmx+" C@ y "+srcmx+" B@ - B x "+srcmx+" A@ * C / * B C dup B - C A - * C / - * + C / "                                                      : \
         md == "hardlight"     ? "y "+srcmx+" B@ range_half "+srcmx+" < 2 B x "+srcmx+" A@ * "+rngmx+" / * "+rngmx+" 2 "+rngmx+" B - "+rngmx+" A - * "+rngmx+" / * - ? "          : \
-        md == "vividlight"    ? "y "+srcmx+" B@ range_half "+srcmx+" C@ < B 0 <= 2 B * "+rngmx+" dup x "+srcmx+" A@ - "+rngmx+" * 2 B * / - ? 2 B C - * "+rngmx+" >= 2 B C - * A "+rngmx+" * "+rngmx+" 2 B C - * - / ? ? ": \
-        md == "linearlight"   ? "x "+srcmx+" A@ range_half "+srcmx+" < A 2 y "+srcmx+" B@ * + "+rngmx+" - A 2 B range_half "+srcmx+" - * + ? "                                   : \
+        md == "vividlight"    ? "y "+srcmx+" B@ range_half "+srcmx+" C@ < B 0 <= 2 B * "+rngmx+" dup x "+srcmx+" A@ - "+rngmx+" * 2 B * / - ? 2 B C - * "+rngmx+" >= 2 B C - * A "+rngmx+" * "+rngmx+" 2 B C - * - / ? ? 0 "+rngmx+" clip ": \
+        md == "linearlight"   ? "x "+srcmx+" A@ range_half "+srcmx+" < A 2 y "+srcmx+" B@ * + "+rngmx+" - A 2 B range_half "+srcmx+" - * + ? 0 "+rngmx+" clip "                  : \
         md == "stamp"         ? "x "+srcmx+" "+V+"     y "+srcmx+"         2 * + "+rngmx+"  - 0 "+rngmx+" clip "                                                                 : \
         md == "pinlight"      ? "y "+srcmx+" B@ range_half "+srcmx+" < x "+srcmx+" A@ 2 B * min A 2 B range_half "+srcmx+" - * max ? "                                           : \
         md == "hardmix"       ? "x "+srcmx+" "+V+" y "+srcmx+" + "+rngmx+" < 0 "+rngmx+" ? "                                                                                     : \
                               \
-        md == "reflect"       ? "x "+srcmx+" "+V+" dup * "+rngmx+" y "+srcmx+" 0 max - /  "                                                                                      : \
-        md == "glow"          ? "y "+srcmx+" dup * "+rngmx+" x "+srcmx+" "+V+" 0 max - / "                                                                                       : \
+        md == "reflect"       ? "x "+srcmx+" "+V+" dup * "+rngmx+" y "+srcmx+" 0 max - / "+rngmx+" min "                                                                         : \
+        md == "glow"          ? "y "+srcmx+" dup * "+rngmx+" x "+srcmx+" "+V+" 0 max - / "+rngmx+" min "                                                                         : \
         md == "freeze"        ? ""+rngmx+" dup x "+srcmx+" "+V+" - dup * y "+srcmx+" 0 max / "+rngmx+" min - "                                                                   : \
         md == "heat"          ? ""+rngmx+" dup y "+srcmx+" - dup * x "+srcmx+" 0 max "+V+" / "+rngmx+" min - "                                                                   : \
                               \
@@ -608,26 +691,26 @@ function ex_blend(clip a, clip b, string "mode", float "opacity", float "waterma
         md == "difference"    ? "x "+srcmx+" "+V+"  y "+srcmx+"                    - abs   "                                                                                     : \
         md == "softdifference"? "x "+srcmx+" A@     y "+srcmx+" B@ > B "+rngmx+" == 0 A B - "+rngmx+" * "+rngmx+" B - / 0 max ? B 0 == 0 B A - "+rngmx+" * B / 0 max ? ? "       : \
         md == "negation"      ? ""+rngmx+" dup    x "+srcmx+" "+V+" - y "+srcmx+" - abs - "                                                                                      : \
-        md == "exclusion"     ? "x "+srcmx+" A@ dup y "+srcmx+" B@ + A B * 2 * + + "+rngmx+" / "                                                                                 : \
-        md == "subtract"      ? "x "+srcmx+" "+V+"  y "+srcmx+"                    - "                                                                                           : \
+        md == "exclusion"     ? "x "+srcmx+" A@ dup y "+srcmx+" B@ + A B * 2 * + + "+rngmx+" / "+rngmx+" min "                                                                   : \
+        md == "subtract"      ? "x "+srcmx+" "+V+"  y "+srcmx+"                    - 0 max "                                                                                     : \
         md == "linearsubtract"? "x "+srcmx+" "+V+" dup * y "+srcmx+" dup * - sqrt "                                                                                              : \
-        md == "from"          ? "x "+srcmx+" "+V+"  y "+srcmx+" swap               - "                                                                                           : \
-        md == "divide"        ? ""+rngmx+" x "+srcmx+" "+V+" * y "+srcmx+" 0 max / "                                                                                             : \
-        md == "andn"          ? ""+rngmx+"        x "+srcmx+" "+V+" - y "+srcmx+" * "+rngmx+" / "                                                                                : \
-        md == "extremity"     ? ""+rngmx+"        x "+srcmx+" "+V+" - y "+srcmx+" - abs   "                                                                                      : \
-        md == "bleach"        ? ""+rngmx+" 2 *    x "+srcmx+" "+V+"   y "+srcmx+" + - "+rngmx+" - "                                                                              : \
-        md == "stain"         ? ""+rngmx+" 2 *    x "+srcmx+" "+V+"   y "+srcmx+" + - "+rngmx+" %     "                                                                          : \
-        md == "phoenix"       ? "x "+srcmx+" "+V+" y "+srcmx+" dup1 dup1 min swap2 max - "+rngmx+" + "                                                                           : \
+        md == "from"          ? "x "+srcmx+" "+V+"  y "+srcmx+" swap               - 0 max "                                                                                     : \
+        md == "divide"        ? ""+rngmx+" x "+srcmx+" "+V+" * y "+srcmx+" 0 max / "+rngmx+" min "                                                                               : \
+        md == "andn"          ? ""+rngmx+"          x "+srcmx+" "+V+" - y "+srcmx+" * "+rngmx+" / "                                                                              : \
+        md == "extremity"     ? ""+rngmx+"          x "+srcmx+" "+V+" - y "+srcmx+" - abs   "                                                                                    : \
+        md == "bleach"        ? ""+rngmx+" 2 *      x "+srcmx+" "+V+"   y "+srcmx+" + - "+rngmx+" - 0 max "                                                                      : \
+        md == "stain"         ? ""+rngmx+" 2 *      x "+srcmx+" "+V+"   y "+srcmx+" + - "+rngmx+" %     "                                                                        : \
+        md == "phoenix"       ? "x "+srcmx+" "+V+"  y "+srcmx+" dup1 dup1 min swap2 max - "+rngmx+" + "                                                                          : \
                               \
         md == "hue"           ? "see footer "                                                                                                                                    : \
         md == "saturation"    ? "see footer "                                                                                                                                    : \
         md == "color"         ? "see footer "                                                                                                                                    : \
-        md == "luminosity"    ? "see footer "                                                                                                                                    : \
+        md == "value"         ? "see footer "                                                                                                                                    : \
                               \
                                 Assert (false, "ex_blend: '"+md+"', unsupported blend mode") )
 
 
-    off = !tv || md == "--" || md == "normal" || md == "lighten" || md == "darken" ? "" : " ymin + "
+    off = !tv || md == "--" || md == "normal" || md == "blend" && iso || md == "lighten" || md == "darken" ? "" : " ymin +"
     str = iso || md == "--" || md == "normal" || md == "blend" ? str+off : \
                                                                  str+Format(" A - {op} * A + ")+off
 
@@ -642,12 +725,12 @@ function ex_blend(clip a, clip b, string "mode", float "opacity", float "waterma
 
         ex_merge(a, b, msk, luma=false, UV=3)
 
-    } else if (md == "hue" || md == "saturation" || md == "color" || md == "luminosity") {
+    } else if (md == "hue" || md == "saturation" || md == "color" || md == "value") {
 
         md == "color"      ? CombinePlanes(a, b, planes="YUV").propCopy(b,true,props=["_Matrix","_Primaries","_ChromaLocation"]) : \
-        md == "luminosity" ? CombinePlanes(b, a, planes="YUV").propCopy(a,true,props=["_Matrix","_Primaries","_ChromaLocation"]) : \
+        md == "value"      ? CombinePlanes(b, a, planes="YUV").propCopy(a,true,props=["_Matrix","_Primaries","_ChromaLocation"]) : \
         md == "saturation" ? ex_vibrance  (a, 1.0, mode="Recover2", Rc=b,    tv_range=tv) : \
-                             HSVxHSV(b, 1.0, "HUE", "LUM", 0.0,   1.00, 1.0, tv_range=tv, show=3)
+                             HSVxHSV(b, 1.0, "HUE", "VAL", 0.0,   1.00, 1.0, tv_range=tv, show=3)
 
         Ch = md == "hue"   ? ex_vibrance(a,bias=1,show=3).ex_lut("x range_half - abs") : nop()
              md == "hue"   ? Expr(last,ch,"","f32 x cos y *","f32 x sin y *",scale_inputs="intf",lut=lut,Format="YUV444P"+string(bi==32?"S":bi)) : last
@@ -699,7 +782,7 @@ function ex_glow(clip a, int "radius", int "thres", float "opacity", bool "tv_ra
            }
 
     Eval(str)
-    d = ex_makediff(last,b,dif=false,UV=uv,fulls=fs).moncurve_r(2.222222,0.0,false,tv,uv)
+    d = ex_makediff(last,b,dif=false,UV=uv,fulls=fs).moncurve_r(2.22,0.0,false,tv,uv)
     rd != 0 ? ex_blend(a,d,"screen",op,1,tv,uv) : a }
 
 
@@ -708,7 +791,7 @@ function ex_glow(clip a, int "radius", int "thres", float "opacity", bool "tv_ra
 ###
 ###
 ### ex_posterize() - ported from cretindesalpes':
-### https://forum.doom9.org/showthread.php?p=1516096#post1516096
+### https://forum.doom9.org/showthread.php?p=1516096
 ###
 ### Dependencies: > ExTools
 ###                 fmtconv
@@ -731,13 +814,19 @@ function ex_posterize (clip c, int "bits", int "mode", int "UV") {
     fs   = propNumElements (c,"_ColorRange")  > 0 ? \
            propGetInt      (c,"_ColorRange") == 0 : rgb
 
-    bits = Default(bits,     3)    # Valid range: 0 - 7
-    md   = Default(mode,    -1)    # Valid modes: -1: round  0: Bayer OD  1: Floyd-Steinberg ED  2: Sierra-2-4A ED  3: Stucki ED  4: Atkinson ED  5: Ostromoukhov ED  6: Void & Cluster OD  7: Quasirandom OD
     UV   = Default(UV, rgb ? 3 : 2)
-
+    bits = Default(bits,     3)    # Valid range: 0 - 7
     mul  = string(Pow (2, 8 - bits - 1))
-    bits = max(min(bits,7),0)
-
+    bits = clamp(bits,0,7)
+    md   = Default(mode,    -1)    # Valid modes: -1: Round (quantization)
+                                   #               0: Bayer OD
+                                   #               1: Floyd-Steinberg ED
+                                   #               2: Sierra-2-4A ED
+                                   #               3: Stucki ED
+                                   #               4: Atkinson ED
+                                   #               5: Ostromoukhov ED
+                                   #               6: Void & Cluster OD
+                                   #               7: Quasirandom OD
     ConvertBits(c,16, fulls=fs, fulld=fs)
 
     ex_lut ("x "+mul+" /", y=3, UV=UV, fulls=fs)
@@ -763,6 +852,11 @@ function ex_posterize (clip c, int "bits", int "mode", int "UV") {
 ### Segmentation of skin tones. Extracts a skin mask to use elsewhere.
 ### It does so in OkLab Jch space which is perceptually uniform (UCS).
 ###
+###
+### Example:
+###
+###     Skin_Qualifier(0.80, Delta=43, Q=0.70, blur=3.0, invert=false)
+###
 ### Function Definition:
 ###    (
 ###    clip,
@@ -786,30 +880,36 @@ function Skin_Qualifier (clip c, float "str", float "Delta", float "Q", float "b
     in  = Default (invert,    false)   # invert mask
     fs  = !ID[6]
 
-    Assert(IsVersionOrGreater(3,7,2), "Skin_Qualifier: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,3), "Skin_Qualifier: Update AviSynth+ version")
 
-    dg  = (-1 * dg) * (pi / 180)        # IPT HUE goes reverse so "-1 *"
+    dg  = (-1 * dg) * (pi / 180)       # IPT HUE goes reverse so "-1 *"
     LO  = 1-bw
     HI  = 1-bw/(3.01-min(str,1))
     mat = Color_fuzzy_search(ID[2])
-    gm  = moncurve_coef(mat[0])
+    U   = !rgb ? ExtractU(c).RatioResize(2,"%",kernel="bicubic") : nop()
+    V   = !rgb ? ExtractV(c).RatioResize(2,"%",kernel="bicubic") : nop()
 
     rgb ? IsPlanar(c) ? c : ConvertToPlanarRGB(c) : c
 
-    bi < 14 ? ConvertBits(14, fulls=fs)                                : last
-    !rgb    ? ConvertToPlanarRGB(matrix=mat[0])                        : last
-              moncurve_f(gm[0], gm[1], !rgb ? false : !fs, false, UV=3)
+    bi < 14 ? ConvertBits(14, fulls=fs)                                                      : last
+    !rgb    ? ConvertToPlanarRGB(matrix=mat[0],chromaresample="bicubic",param1=0,param2=0.5) : last
+              CCTF(mat[2], true, !rgb ? false : !fs, false)
 
     RGB_to_Oklab(matrix=mat[0], Jch=true, fulls=true)
 
-    C     = ExtractG()
-    H     = ExtractB()
+    C     = ExtractU()
+    H     = ExtractV()
     Cnorm = "x 0.28 - abs 1 swap - 0 swap 0.706 - -3.4 * -" # Centered at skin saturation and normalized
     in    = in ? "1 swap -" : ""
 
     ex_lutxy(C, H, Format("f32 y 6.283185 * pi - {dg} + cos "+Cnorm+" * 0 swap {LO} - 1 {LO} {HI} - / * - "+in), scale_inputs="intf", fulls=true, clamp_float=true)
 
     ConvertBits(bi, dither= bi==32 ? -1 : 1, fulls=true)
+
+    !rgb ? ex_lutxyz(U,V,"y range_max / 0.430 - 4 ^ -40000 * 1 + 0 max
+                          z range_max / 0.588 - 4 ^ -40000 * 1 + 0 max * range_max * x min") : last
+    !rgb ? ex_inpand(2).ex_expand(2) : false
+
     bl > 0 ? ex_gaussianblur(bl, pad=false, UV=3) : last
     propDelete(["_Matrix","_Primaries","_Transfer","_PictType"]) }
 
@@ -820,8 +920,9 @@ function Skin_Qualifier (clip c, float "str", float "Delta", float "Q", float "b
 ###
 ### HSVxHSV() - (11-01-2022)
 ###
-### 3x3 operator matrix. Adjust Hue, Saturation or Luminance based on Hue, Saturation or Luminance.
-### This is similar to internal Tweak(), but double the speed, easier to use and more modes (+5 modes involving 'LUM')
+### 3x3 operator matrix. Adjust Hue, Saturation or Value (modeB) based on Hue, Saturation or Value (modeA).
+### This is similar to internal Tweak(), but double the speed, easier to use and more modes (+5 modes involving 'VAL')
+### RGB not supported.
 ###
 ### Dependencies: > ExTools
 ###                 TransformsPack
@@ -831,21 +932,21 @@ function Skin_Qualifier (clip c, float "str", float "Delta", float "Q", float "b
 ### This includes the following 9 operators (modeA x modeB):
 ###   HUExHUE
 ###   HUExSAT
-###   HUExLUM
+###   HUExVAL
 ###   SATxHUE
 ###   SATxSAT (This is similar to ex_vibrance() )
-###   SATxLUM
-###   LUMxHUE
-###   LUMxSAT
-###   LUMxLUM
+###   SATxVAL
+###   VALxHUE
+###   VALxSAT
+###   VALxVAL
 ###
 ### Note:
 ###     Include the following function definition in AvsPmod to enable sliders.
 ###     (
 ###     clip yuv,
 ###     float str=1.0 (0.0 to 360.0),
-###     string "modeA"="HUE" ("HUE"/ "SAT"/ "LUM"),
-###     string "modeB"="SAT" ("HUE"/ "SAT"/ "LUM"),
+###     string "modeA"="HUE" ("HUE"/ "SAT"/ "VAL"),
+###     string "modeB"="SAT" ("HUE"/ "SAT"/ "VAL"),
 ###     float "Delta"=180.0 (0.0 to 360.0 by 1),
 ###     float "Q"=0.20 (0.01 to 1.00),
 ###     float "Opacity"=1.0 (0.0 to 1.0),
@@ -860,50 +961,52 @@ function HSVxHSV (clip c, float "str", string "modeA", string "modeB", float "De
     bi  = ID[7]
     bi32= bi==32
 
-    str = Default (str,     1.0)   # Strength of 'modeB' operator. 0-360 for 'L' and 'H' and 0.0-4.0 for 'S'
-    mA  = Default (modeA, "HUE")   # 'modeA' (HUE or H, SAT or S, LUM or L or V)
-    mB  = Default (modeB, "SAT")   # 'modeB' (HUE or H, SAT or S, LUM or L or V)
+    str = Default (str,     1.0)   # Strength of 'modeB' operator. 0-360 for 'V' and 'H' and 0.0-4.0 for 'S'
+    mA  = Default (modeA, "HUE")   # 'modeA' (HUE or H, SAT or S, VAL or L or V). Mask of the operator.
+    mB  = Default (modeB, "SAT")   # 'modeB' (HUE or H, SAT or S, VAL or L or V). Mode of the operator.
     dA  = Default (Delta, 180.0)   # Degrees of 'modeA' (isolate this area. 0-255 for 'L', 0-360 for for 'H' and 0.0-100.0 for 'S')
-    bA  = Default (Q,       0.2)   # Q-factor (Bandwidth) of 'modeA' Spread of the isolated area. 0.0-1.0
-    sA  = Default (opacity, 1.0)   # Scale   of 'modeA' Scale  of the isolated area (typical to scale down since by default it's white). 0.0-1.0
+    bA  = Default (Q,       0.2)   # Q-factor (Bandwidth) of 'modeA'. Spread of the isolated area. 0.0-1.0
+    sA  = Default (opacity, 1.0)   # Scale   of 'modeA'. Scale of the isolated area (typically to scale down since by default it's white). 0.0-1.0
     tv  = Default (tv_range, ID[6])
     sh  = Default (show,      0)   # 0: disabled, 1: show histogram, 2: show mask (resized to luma dimensions) 3: show mask at original size
     sm  = sh > 1
     si  = tv ? "int" : "intf"
 
-    Assert(IsVersionOrGreater(3,7,2), "HSVxHSV: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,3), "HSVxHSV: Update AviSynth+ version")
     Assert(!isy && !rgb,              "HSVxHSV: Only YUV format is supported")
 
     U   = ExtractU(c)
     V   = ExtractV(c)
     Yf  = ExtractY(c)
     Ys  = is444(c) ? Yf : Yf.BicubicResize(U.width(),U.height(),-0.5,0.25)
-    c4  = is444(c) ? c : c.ConverttoYUV444(matrix=ID[2],chromaresample="spline16")
+    c4  = is444(c) ?  c : c.ConverttoYUV444(matrix=ID[2],chromaresample="bicubic",param1=0,param2=0.5)
     c4U = ExtractU(c4)
     c4V = ExtractV(c4)
     Uc  = YtoUV(U,U,c4U)
     Vc  = YtoUV(V,V,c4V)
     Y   = YtoUV(Ys,Ys,Yf)
 
-    mA  = mA=="H" ? "HUE" : \
-          mA=="S" ? "SAT" : \
-          mA=="V" ? "LUM" : \
-          mA=="L" ? "LUM" : mA
-    mB  = mB=="H" ? "HUE" : \
-          mB=="S" ? "SAT" : \
-          mB=="V" ? "LUM" : \
-          mB=="L" ? "LUM" : mB
-    nul = mB=="SAT" ? str==1.0 : mB=="LUM" ? str==180. : str==0.0 || str==360.0
+    mA  = mA=="H"   ? "HUE" : \
+          mA=="S"   ? "SAT" : \
+          mA=="V"   ? "VAL" : \
+          mA=="L"   ? "VAL" : \
+          mA=="LUM" ? "VAL" : mA
+    mB  = mB=="H"   ? "HUE" : \
+          mB=="S"   ? "SAT" : \
+          mB=="V"   ? "VAL" : \
+          mB=="L"   ? "VAL" : \
+          mB=="LUM" ? "VAL" : mB
+    nul = mB=="SAT" ? str==1.0 : mB=="VAL" ? str==180. : str==0.0 || str==360.0
 
-    dA  = mA=="HUE" ? min(360,max(0,dA))/360. : \
-          mA=="LUM" ? min(255,max(0,dA))/255. : \
-          mA=="SAT" ? min(100,max(0,dA))/100. : dA
+    dA  = mA=="HUE" ? clamp(dA,0,360)/360. : \
+          mA=="VAL" ? clamp(dA,0,255)/255. : \
+          mA=="SAT" ? clamp(dA,0,100)/100. : dA
 
     sc  = 0.32*atan(0.32*tan((dA+0.507)/0.32))+0.5 # less granularity to extremes and more to center
     dA  = mA=="SAT" ? min(1,sc) : dA
 
     str = mB=="HUE" ? str * ( pi /180.)                        :          \
-          mB=="LUM" ? 1./((str/360.) * (0.5 + str/360.) + 0.5) : min(6,str)
+          mB=="VAL" ? 1./((str/360.) * (0.5 + str/360.) + 0.5) : min(6,str)
     sA  = sA < 1.0  ? string(sA)+" * "    : ""
 
     bA  = 1. / (mA=="SAT" ? dA < 0.5 ? bA/2 : bA/(2-4*pow(dA-0.5,2)) : bA)
@@ -918,16 +1021,16 @@ function HSVxHSV (clip c, float "str", string "modeA", string "modeB", float "De
     varY = mB=="HUE" ? " Y@" : mA=="HUE" && mB=="SAT" ? " Y@"      : ""
     varM = mB!="HUE" ?    "" : mA=="SAT" ? "S@" : mA=="HUE" ? "H@" : ""
 
-    clpB = mA=="LUM" && mB=="LUM" ? " X"           : \
-           mB=="LUM"              ? " x "+rangePC  : \
-           mA=="LUM" && mB!="HUE" ? " y "+rangePCc : \
-           mA=="HUE" ? mB=="SAT"  ? " X" :    " H" : \
+    clpB = mA=="VAL" && mB=="VAL" ? " X"           : \
+           mB=="VAL"              ? " x "+rangePC  : \
+           mA=="VAL" && mB!="HUE" ? " y "+rangePCc : \
+           mA=="HUE" ?  mB=="SAT" ? " X" :    " H" : \
            mB!="HUE"              ? " x "+rangePCc : mA=="SAT" ? " X Y atan2" : " y "+offS+rangePCc+varX+" z "+offS+rangePCc+varY+" atan2 "
 
-    msk  = mA=="LUM" ? Format("f32 x "     +rangePC+" X@                                                                  {dA} - abs 1 swap - {bA} ^       0 1 clip "+sA) : \
+    msk  = mA=="VAL" ? Format("f32 x "     +rangePC+" X@                                                                  {dA} - abs 1 swap - {bA} ^       0 1 clip "+sA) : \
            mA=="SAT" ? Format("f32 x "+offS+rangePCc+varX+" dup * y "+offS+rangePCc+varY+" dup * + sqrt 0.5 + "+varM+"    {dA} - abs 1 swap - {bA} ^ 0.5 - 0 1 clip "+sA) : \
                        Format("f32 x "+offS+rangePCc+varX+"       y "+offS+rangePCc+varY+" atan2 "+varM+" pi + 0.159155 * {dA} + 1 % {bA} ^ "+sA) # "0.159155 *" = "pi 2 * /"
-    op   = mB=="LUM" ? Format(clpB+" dup dup dup dup 0.005 > swap {str} ^ swap ? 0 1 clip    swap - swap swap2 * + "+rangeTV)  : \
+    op   = mB=="VAL" ? Format(clpB+" dup dup dup dup 0.005 > swap {str} ^ swap ? 0 1 clip    swap - swap swap2 * + "+rangeTV)  : \
            mB=="SAT" ? Format(clpB+" dup dup                      {str} *                    swap - swap swap2 * + "+rangeTVc) : \
                        Format(clpB+" dup dup                      {str} pi + + pi 2 * % pi - swap - swap swap2 * + " )
 
@@ -936,7 +1039,7 @@ function HSVxHSV (clip c, float "str", string "modeA", string "modeB", float "De
 
         msk = ReplaceStr(msk, "X@", "").ReplaceStr("Y@", "").ReplaceStr("^ 0.5 -", "^")
 
-        mA=="LUM" ? ex_lut  (c,   msk, UV=128, scale_inputs=si) : \
+        mA=="VAL" ? ex_lut  (c,   msk, UV=128, scale_inputs=si) : \
                     ex_lutxy(U,V, msk, UV=1,   scale_inputs=si)
                     propDelete(["_Matrix","_Primaries","_Transfer","_PictType"])
                     propSet("_ColorRange", 0)
@@ -946,7 +1049,7 @@ function HSVxHSV (clip c, float "str", string "modeA", string "modeB", float "De
 
         c
 
-    } else if (mB!="LUM" && (mA=="HUE" || mB=="HUE")) {
+    } else if (mB!="VAL" && (mA=="HUE" || mB=="HUE")) {
 
         if (mB=="HUE") {
 
@@ -957,8 +1060,8 @@ function HSVxHSV (clip c, float "str", string "modeA", string "modeB", float "De
             mBU   = msk+op+" sin "+clpS+" * "+bi32H+rangeTVc
             mBV   = msk+op+" cos "+clpS+" * "+bi32H+rangeTVc
 
-            U = mA=="LUM" ? ex_lutxyz(Ys,U,V,mBU,scale_inputs=si) : ex_lutxy(U,V,mBU,scale_inputs=si)
-            V = mA=="LUM" ? ex_lutxyz(Ys,U,V,mBV,scale_inputs=si) : ex_lutxy(U,V,mBV,scale_inputs=si)
+            U = mA=="VAL" ? ex_lutxyz(Ys,U,V,mBU,scale_inputs=si) : ex_lutxy(U,V,mBU,scale_inputs=si)
+            V = mA=="VAL" ? ex_lutxyz(Ys,U,V,mBV,scale_inputs=si) : ex_lutxy(U,V,mBV,scale_inputs=si)
             CombinePlanes(Yf, U, V, planes="YUV",Pixel_Type=PixelType(c))
 
         } else if (mA=="HUE") {
@@ -975,24 +1078,22 @@ function HSVxHSV (clip c, float "str", string "modeA", string "modeB", float "De
 
     } else {
 
-    msk = mA=="LUM" && mB!="LUM" && !bi32 ? ReplaceStr(msk," x ",  " x 0.5 + ")                   : \
-          mA!="LUM" && mB=="LUM"          ? ReplaceStr(msk," y ", " z ").ReplaceStr(" x ", " y ") : msk
+    msk = mA=="VAL" && mB!="VAL" && !bi32 ? ReplaceStr(msk," x ", " x 0.5 + ")                    : \
+          mA!="VAL" && mB=="VAL"          ? ReplaceStr(msk," y ", " z ").ReplaceStr(" x ", " y ") : msk
 
-    # In order: LUMxLUM, LUMxSAT, SATxLUM, HUExLUM, SATxSAT
-    mA=="LUM"   ? mB=="LUM" ? ex_lut   (c,                 msk+op,UV=2,   scale_inputs=si) : \
+    # In order: VALxVAL, VALxSAT, SATxVAL, HUExVAL, SATxSAT
+    mA=="VAL"   ? mB=="VAL" ? ex_lut   (c,                 msk+op,UV=2,   scale_inputs=si) : \
                               ex_lutxyz(Y,c,c.SwapUV(),"", msk+op,UV=3,   scale_inputs=si) : \
-                  mB=="LUM" ? ex_lutxyz(c,Uc,Vc,           msk+op,UV=2,   scale_inputs=si) : \
+                  mB=="VAL" ? ex_lutxyz(c,Uc,Vc,           msk+op,UV=2,   scale_inputs=si) : \
                               ex_lutxy (  c,c.SwapUV(),"", msk+op,UV=3,   scale_inputs=si) }
 
     if (sh==1) {
         bi > 8 ? ConvertBits(8,dither=1,fulls=!tv) : last
         w   = c.width()
         h   = c.height()
-        sw  = nmod(w/3.85)
-        sh  = sw*2
         lvl = Histogram(mode="levels",keepsource=false)
-        lvl = StackVertical(lvl,Vectorscope()).GaussResize(sw,sh,p=100)
-        lvl = PadBorders(tv?lvl.SMPTE_Legal(false):lvl,0,0,0,h-sh,mode="[0,128,128]")
+        lvl = StackVertical(lvl,Vectorscope()).RatioResize(h/512.,"%",kernel="gauss",p=100)
+        lvl = tv ? lvl.SMPTE_Legal(false) : lvl
         StackHorizontal(last,lvl) } }
 
 
@@ -1004,7 +1105,7 @@ function HSVxHSV (clip c, float "str", string "modeA", string "modeB", float "De
 ### GamutWarning() - (01-03-2022)
 ###
 ###
-### Shows pixels that fall out-of-gamut when converting YUV to RGB PC range.
+### Shows pixels that would fall out-of-gamut when converting YUV to RGB PC range (ie. for display presentation)
 ### Supported color spaces are "Rec709", "170M", "470M", "470BG/Rec601" and "2020NCL".
 ### Enable 'EBUR103' for relaxed thresholds based on the normative and write to '_OutGamut' frameprops.
 ###
@@ -1042,7 +1143,7 @@ function HSVxHSV (clip c, float "str", string "modeA", string "modeB", float "De
     both the following conditions are met:
 
     •LUMINANCE:   The luminance signal should lie inside the range -1% to 103% (ie. 14-242 for 8-bit legal, not implemented, use SoftLimiter() instead)
-    •CHROMINANCE: When matrixed to RGB, all of the R, G or B signals should lie inside the range -5% and 105% (ie. -12.75-267.75 when converted to 8-bit full range RGB - 5-246 for Studio RGB)
+    •CHROMINANCE: When matrixed to RGB, all of the R, G or B signals should lie inside the range -5% and 105% -EBU103 v1.1- (ie. -12.75-267.75 when converted to 8-bit full range RGB - 5-246 for Studio RGB)
     •Measuring equipment should indicate an “Out-of-Gamut” occurrence only after the error exceeds 1% of the image histogram for either luminance or chrominance within the preferred ranges described above
 
 # Horizontal Signal Filtering
@@ -1059,14 +1160,14 @@ function GamutWarning(clip yuv, string "matrix", bool "tv_range", bool "EBUR103"
 
     mat     = Default (matrix, propIDs[2])
     tv      = Default (tv_range,      !fs)
-    ebu     = Default (EBUR103,     false)  # Enable for EBU R103 (frameprops and less strict thresholds)
+    ebu     = Default (EBUR103,     false)  # Enable for EBU R103 ("_OutGamut" frameprops and less strict thresholds)
     sh      = Default (show,            0)  # 0: Show out-of-gamut overlay   1: Also show metric   2: Show mask so you can filter out those areas
 
-    Assert(IsVersionOrGreater(3,7,2), "GamutWarning: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,3), "GamutWarning: Update AviSynth+ version")
     Assert(!isRGB(yuv),               "GamutWarning: Only YUV format supported")
 
     mat     = Color_Fuzzy_search (mat)
-    coef    = Matrix_coef(mat[0])
+    coef    = color_coef(mat[0])
 
 
     clp = ExtractClip(!ebu ? yuv : yuv.ex_boxblur(5,1,mode="weighted",UV=3)) # EBU R103 standard lowpass (very similar to V: 1/4, 1/2, 1/4, and H: 1/16, 2/16, 3/16, 4/16, 3/16, 2/16, 1/16)
@@ -1103,6 +1204,7 @@ function GamutWarning(clip yuv, string "matrix", bool "tv_range", bool "EBUR103"
     sh>1 ? mskY_to_YYY(yuv, last, true, false, 3, bi).\
            propDelete(["_Matrix","_Primaries","_Transfer","_PictType"]) : last
 
+    # EBU R103 tag
     sh==2 || !ebu ? last : \
     ScriptClip( function[bi,tv] () {
 
@@ -1114,17 +1216,16 @@ function GamutWarning(clip yuv, string "matrix", bool "tv_range", bool "EBUR103"
 
         U >= 255 || V >= 255 ? propSet("_OutGamut", 1) : \
                                propSet("_OutGamut", 0) } )
-
+    # Stats Overlay
     if (sh==1) {
 
         bin = ex_lut("x range_size 1 - < 0 x ?",Y=1,UV=3)
         div = (ex_bs(256, 8, bi, !tv)-1)*(2/100.)
-        U   = bin.ExtractU()
-        V   = bin.ExtractV()
 
-        ScriptClip( function[bin,div,U,V] () {
-            U = U.AverageLuma()
-            V = V.AverageLuma()
+        ebu ? CombinePlanes(yuv, last, planes="YUV") : last
+        ScriptClip( function[bin,div] () {
+            U = bin.AverageChromaU()
+            V = bin.AverageChromaV()
             Subtitle("Out of Gamut: "+string((U+V)/div,"%1.3f")+"%") # In percentage
         } ) } }
 
@@ -1134,14 +1235,13 @@ function GamutWarning(clip yuv, string "matrix", bool "tv_range", bool "EBUR103"
 ###
 ### PseudoColor() - v1.2 (15-03-2022)
 ###
-### Rainbow color coded "heat map" based on clip's (gamma encoded) luminosity.
-### Useful for luminosity segmentation and augment luma ranges with color coded isoparams.
+### Rainbow color coded "heat map" based on clip's luma (gamma encoded luminosity).
+### Useful for segmentation and augment luma ranges with color coded isoparams.
 ### Also serves for debugging purposes in algorithms such as blend modes or gradient magnitudes.
 ### Cool colors represent low luminosity while warm colors represent high luminosity, green stands for neutral.
 ### 32-bit support is work in progress.
 ###
 ### Version 1.2 implements 'isoparam' mode, similar to "rainbow" but more granular and in black/white.
-### This mode is good to increase detail in shaded area so it's picked up in motion estimation.
 ### Somewhat similar to Histogram("luma") but not as extreme.
 ### I recommend using ex_luma_rebuild() prior to this mode.
 ###
@@ -1160,7 +1260,7 @@ function GamutWarning(clip yuv, string "matrix", bool "tv_range", bool "EBUR103"
 ###
 ### Benchmark:
 ### 100.0% PseudoColor("rainbow") (290fps)
-###  32.8% RGB().Cube("lutfile.cube").YV12()
+###  32.8% ConvertToPlanarRGB().Cube("false_color.cube").ConvertToYUV420()
 ###
 ####################################
 
@@ -1178,7 +1278,7 @@ function PseudoColor(clip a, string "mode", float "iso", bool "tv_range") {
     md   = Default(mode, "rainbow") # "rainbow" or "isoparam"
     iso  = Default(iso,   1.0)      # strength for "isoparam"
 
-    Assert(IsVersionOrGreater(3,7,2),            "PseudoColor: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,3),            "PseudoColor: Update AviSynth+ version")
     Assert((md=="rainbow" ? !isy : true) && !rgb,"PseudoColor: 'rainbow', only YUV format supported")
 
     if (md == "rainbow") {
@@ -1212,31 +1312,51 @@ function PseudoColor(clip a, string "mode", float "iso", bool "tv_range") {
 
 ###
 ###
-### Vignette() - v4.1 (31-03-2022)
+### Vignette() - v4.2 (13-04-2023)
 ###
 ###
-### Adds a vignette (darkening around the frame) to the source.
+### Adds a vignette (darkening and desaturation around the frame) to the source.
 ### Use show=true if you only want the mask.
+###
+###
+### Function Definition:
+###    (
+###    clip,
+###    float "size"=2.3 (0.0 to 3.0 by 0.1),
+###    float "range"=1.8 (0.0 to 3.0 by 0.1),
+###    bool "show"=false
+###    )
+###
 ###
 ### Dependencies: > ExTools
 ###
 ####################################
 
 
-function Vignette (clip c, float "Vignette", bool "show", bool "tv_range") {
+function Vignette (clip c, float "size", float "range", bool "tv_range", bool "show") {
 
-    str   = Default(Vignette, 0.5)
-    show  = Default(show,    false)
-    tv    = Default(tv_range, !show)
-    str   = pow((min(1,max(0,str)) + 0.5) / 1.5, 0.5)
+    rgb   = isRGB(c)
+    fs    = propNumElements(c,"_ColorRange")  > 0 ? \
+            propGetInt     (c,"_ColorRange") == 0 : rgb
 
-    Assert(IsVersionOrGreater(3,7,2), "Vignette: Update AviSynth+ version")
+    sz    = 3-Default(size,       1.0)
+    sm    = 3-Default(range,      1.0)
+    tv    =   Default(tv_range,   !fs)
+    show  =   Default(show,     false)
 
-    msk = ex_lutspa(c, Format("x  width 0.5 * - abs width 0.5 * / range_max * 1.5 {str} 0.5 * + ^ range_max / 0 max "+ \
-                              "y height 0.5 * - abs width 0.5 * / range_max * 1.5 {str} 0.5 * + ^ range_max / 0 max "+ \
-                              "+ range_max min range_max - abs")+(tv ? " ymax ymin - range_max / * ymin +" : ""), UV=128, fulld=!tv)
+    Assert(IsVersionOrGreater(3,7,3), "Vignette: Update AviSynth+ version")
 
-    show ? msk : ex_blend(c, msk, mode="multiply", UV=2, tv_range=tv) }
+    msk   = ex_lutspa(c, Format("width  0.5 * W@ x - abs W / {sz} * 2 ^
+                                 height 0.5 *    y - abs W / {sz} * 2 ^ +
+                                 1 swap - {sm} * 0 1 clip dup 2 ^ swap 2 * 3 swap - *
+                                " + (tv ? "ymax ymin - * ymax ymin - min " + (show ? "ymin +":"") : "range_max * range_max min")), fulld=!tv, UV=show?128:3)
+
+    rngmx = tv ? "ymax ymin -" : "range_max"
+    srcmx = tv ? "ymin -"      : ""
+    srcmn = tv ? "ymin +"      : ""
+
+    show ? msk : isY(c) ? ex_lutxy(c,msk,"x "+srcmx+" y * "+rngmx+" / "+srcmn,fulls=!tv) : \
+                          ex_lutxy(c,msk,"x "+srcmx+" y * "+rngmx+" / "+srcmn,rgb?"":"x range_half - y range_max / * range_half +",fulls=!tv) }
 
 
 
@@ -1246,7 +1366,7 @@ function Vignette (clip c, float "Vignette", bool "show", bool "tv_range") {
 ### greyscale_rgb()
 ###
 ###
-### Properly convert RGB to luminance (PC range gamma encoded)
+### Properly convert R'G'B' to luminance (in PC range linear space, then gamma reencoded)
 ###
 ### Dependencies: > ExTools
 ###                 TransformsPack
@@ -1260,21 +1380,20 @@ function greyscale_rgb (clip rgb, string "matrix", bool "tv_range") {
     tv     = Default (tv_range, ID[6])
     matrix = Default (matrix,   ID[2])
 
-    Assert(IsVersionOrGreater(3,7,2), "greyscale_rgb: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,3), "greyscale_rgb: Update AviSynth+ version")
     Assert(isRGB(rgb),                "greyscale_rgb: Only works on RGB format")
 
     rgb
     matrix = Color_fuzzy_search(matrix)
-    s_gam  = moncurve_coef(matrix[0])
-    coeffs = RGB_to_XYZ   (matrix[0], list=true)
+    coeffs = RGB_to_XYZ        (matrix[0], list=true, adaptXYZ=false) # non-conformant illuminants not supported
 
     ConvertToPlanarRGB()
 
-    moncurve_f(s_gam[0], s_gam[1], tv, false)
+    CCTF(matrix[2], true,      tv, false)
 
     DotClip(last, [coeffs[1],coeffs[4],coeffs[7]])
 
-    moncurve_r(s_gam[0], s_gam[1], false, false) }
+    CCTF(matrix[2], false, false, false) }
 
 
 
@@ -1283,7 +1402,7 @@ function greyscale_rgb (clip rgb, string "matrix", bool "tv_range") {
 ### FindTemp() - v1.0 (29-04-2022)
 ###
 ###
-### Find the correlated color temperature (CCT) in Kelvins of your source clip.
+### Find the correlated color temperature (CCT) in Kelvins of your YUV source clip.
 ### It won't work for graded pictures but for natural acquired images.
 ###
 ### If '_SceneStatsU' frameprops is present it will use that for calculating temperature in a scene basis.
@@ -1302,10 +1421,10 @@ function FindTemp (clip c, string "matrix", bool "show") {
     sh   = Default(show,      true )
     bi   = ID[7]   bi32 = bi==32
 
-    Assert(IsVersionOrGreater(3,7,2), "FindTemp: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,3), "FindTemp: Update AviSynth+ version")
 
     matrix = color_Fuzzy_Search (mat)[0]
-    coef   = Matrix_coef(matrix)
+    coef   = color_coef(matrix)
     toXYZ  = MatrixTranspose(RGB_to_XYZ(c,string(matrix), list=true))
     Kr     = 1. - coef[0]
     Kb     = 1. - coef[2]
@@ -1326,11 +1445,9 @@ function FindTemp (clip c, string "matrix", bool "show") {
         RGB = ArrayOp(RGB,2.222,"pow(x,y)")  # linearize (assumes 2.40 gamma)
         XYZ = MatrixDot(RGB,toXYZ)
 
-        CAT02  = [0.7328,  0.4296, -0.1624, \
-                 -0.7036,  1.6975,  0.0061, \
-                  0.0030, -0.0136,  0.9834]
+        LMS = XYZ_to_LMS("CAT02",true)
 
-        XYZ = MatrixDot([XYZ[0]/XYZ[1],1.,XYZ[2]/XYZ[1]], CAT02)
+        XYZ = MatrixDot([XYZ[0]/XYZ[1],1.,XYZ[2]/XYZ[1]], LMS)
         XYZ = ArrayOp(XYZ,0.333333,"*")
 
         xe  = 0.3366
@@ -1354,7 +1471,7 @@ function FindTemp (clip c, string "matrix", bool "show") {
 ###
 ### Remove color cast, including extreme cases like underwater shots.
 ### If "stats=true" it will compute scene stats given "_SceneRange" frameprops are present.
-### HBD processing is recommended (32-bit float not supported yet)
+### HBD processing is recommended (32-bit float not supported yet. RGB not supported)
 ###
 ### fast: When 'false' hue/colors don't get skewed nor clipped. Enable for speed ('fast=false' is Work in Progress)
 ###
@@ -1383,7 +1500,7 @@ function GreyWorld(clip a, bool "fast", bool "Rc", bool "stats", bool "show") {
     sts  = Default(stats,  rng) # Use scene stats to compute color deviation
     sh   = Default(show, false)
 
-    Assert(IsVersionOrGreater(3,7,2), "GreyWorld: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,3), "GreyWorld: Update AviSynth+ version")
     Assert(!rgb && !isy,              "GreyWorld: Only works on YUV formats")
     Assert(sts ? rng : true,          "GreyWorld: 'stats=true' requires '_SceneRange' frame properties")
 
@@ -1422,10 +1539,9 @@ function GreyWorld(clip a, bool "fast", bool "Rc", bool "stats", bool "show") {
         bi > 8 ? ConvertBits(8,dither=1,fulls=fs) : last
         w   = a.width()
         h   = a.height()
-        sw  = nmod(w/3.85)  sh = nmod(w/3.85*2)
         lvl = StackVertical(a.ConvertBits(8,dither=1,fulls=fs).Vectorscope().subtitle("before",text_color=$FFFFFF,size=12,x=15),\
-                                                               Vectorscope().subtitle("after" ,text_color=$FFFFFF,size=12,x=15)).GaussResize(sw,sh,p=100)
-        lvl = PadBorders(!fs?lvl.SMPTE_Legal(false):lvl,0,0,0,h-sh,mode="[0,128,128]")
+                                                               Vectorscope().subtitle("after" ,text_color=$FFFFFF,size=12,x=15)).RatioResize(h/512.,"%",kernel="gauss",p=100)
+        lvl = !fs ? lvl.SMPTE_Legal(false) : lvl
         StackHorizontal(last,lvl) } }
 
 
@@ -1436,73 +1552,174 @@ function GreyWorld(clip a, bool "fast", bool "Rc", bool "stats", bool "show") {
 ### WhitePoint()
 ###
 ###
-### Accurately adjust the color temperature of the image
+### Accurately adjust the color temperature of the image.
+### YUV or RGB, HBD recommended.
 ###
 ### Dependencies: > ExTools
 ###                 TransformsPack
 ###
+### Examples:
+###     Among the many uses either for artistic or technical reasons,
+###     one of the examples would be for photographs shot with a
+###     wrong white balance setting.
+###
+###     AWB:             Typically any value between 3000K and 7000K
+###     Daylight:        ~5200K or ~5600K
+###     Shade:           ~7000K
+###     Cloudy:          ~6000K
+###     Tungsten/Halogen:~3200K
+###     Incandescent:    ~2700K or ~2856K
+###     Fluorescent:     ~4000K
+###     Flash:           ~5500K or ~6000K
+###
+### So if you shot a tungsten lit room at night with Tungsten WB and decide
+### it looks too pale/cool compared to what you experienced, try the next call:
+###     WhitePoint(3200,6504)
+###     or simply
+###     WhitePoint(3200)
+###
+### In the contrary if you shot a sunny day with Cloudy WB, being the image a little too warm:
+###     WhitePoint(6000,5200)
+###
+###
 ### Function Definition:
 ###    (
 ###    clip,
-###    int temperature=6504 (4008 to 12024 by 24),
-###    string "matrix"="Rec709" ("470M"/ "470BG"/ "170M"/ "Rec709"/ "Rec2020CL"/ "Rec2020NCL"/ "Display-P3"/ "ACEScg"),
-###    bool "tv_range"=true
+###    float temperature=6504 (1704 to 14016 by 24),
+###    [float temp_source=6504 (1704 to 14016 by 24)],
+###    [string "matrix"="709" ("470M"/ "470BG"/ "170M"/ "709"/ "2020CL"/ "2020NCL"/ "Display-P3"/ "ACEScg")],
+###    [int "observer"=1931 (1931/ 1964)],
+###    [string "locus"="Daylight" ("Daylight"/ "Planckian")],
+###    [string "LMS"="CAT16" ("XYZ"/ "HPE -Hunt-Pointer-Estevez-"/ "HPE-E"/ "HPE-IPT"/ "HPE-DV"/ "CAT97/Bradford"/ "CAT00"/ "CAT00 Fairchild"/ "CAT02"/ "CAT02B"/ "CAT02CRA"/ "CAT16"/ "OkLab"/ "Sharp"/ "SharpSphere"/ "SharpSphereHUE"/ "Stockman"/ "Stockman10"/ "Cat5"/ "Cat9"/ "Bianco"/ "BiancoPC"/ "OPP")],
+###    [bool "tv_range"=true]
 ###    )
 ###
 ####################################
 
-function WhitePoint (clip c, int "temperature", string "matrix", bool "tv_range") {
+function WhitePoint (clip c, float "temperature", float "temp_source", string "matrix", string "locus", int "observer", string "LMS", bool "list", bool "tv_range") {
 
-    rgb  = isRGB(c)
-    rgbp = rgb ? isPlanar(c) : false
-    ID   = color_propGet (c)
+    rgb   = isRGB(c)
+    rgbp  = rgb ? isPlanar(c) : false
+    ID    = color_propGet (c)
 
-    temp = Default(temperature, 6504)  # Target temperature in Kelvin units (Default: D65 == nop())
-    mat  = Default(matrix,   ID[2] )
-    tv   = Default(tv_range, ID[6] )
+    temp1 = Default(temperature, 6504)  # 1900K ('Rec709' limit) to 25000K. Target temperature in Kelvin units (Default: D65 == nop())
+    temp2 = Default(temp_source, 6504)  # 1900K ('Rec709' limit) to 25000K. Source temperature in Kelvin units (Default: D65 == nop())
+    mat   = Default(matrix,    ID[2] )
+    loc   = Default(locus, temp1<5000?"Planckian":"Daylight")
+    LMS   = Default(LMS,   temp2<5000?"Cat5"     :"CAT16")
+    ob    = Default(observer,   1931 )  # Standard Observer 1931 or 2 for 2º Standard Observer. 1964 or 10 for 10º Standard Observer
+    tv    = Default(tv_range,  ID[6] )
+    lis   = Default(list,      false )  # Set to True to output [x,y,z] coordinates of the CCT (correlated color temperature)
 
-    Assert(IsVersionOrGreater(3,7,2), "WhitePoint: Update AviSynth+ version")
+    Assert(IsVersionOrGreater(3,7,3), "WhitePoint: Update AviSynth+ version")
 
     mat   = Color_fuzzy_search(mat)
-    s_gam = moncurve_coef(mat[0])
 
     rgb ? rgbp ? c : ConvertToPlanarRGB(c) : \
-    YUV_to_RGB(c, mat[0], tv_range_in=tv, tv_range_out=false, kernel="Point", cplace="")
+    YUV_to_RGB(c, mat[0], tv_in=tv, tv_out=false, kernel="lanczos", b=3)
 
-    temp3 = 1000.       /     temp
-    temp6 = 1000000.    / pow(temp, 2.)
-    temp9 = 1000000000. / pow(temp, 3.)
 
-    wpx = (temp <= 7000.) ? 0.244063 + 0.09911 * temp3 + 2.9678 * temp6 - 4.6070 * temp9 : \
-                            0.237040 + 0.24748 * temp3 + 1.9018 * temp6 - 2.0064 * temp9
+    function TemperatureXYZ(float temp, int ob, string loc) {
 
-    wpy = -3. * pow(wpx,2.) + 2.870 * wpx - 0.275
-    wpz =  1. - wpx - wpy
+        temp3 = 1000.       /     temp
+        temp6 = 1000000.    / pow(temp, 2)
+        temp9 = 1000000000. / pow(temp, 3)
 
-    CAT02 = [0.7328,  0.4296, -0.1624, \
-            -0.7036,  1.6975,  0.0061, \
-             0.0030, -0.0136,  0.9834]
+        # CIE 1931 2º Standard Observer
+        if (ob==1931||ob==2) {
 
-    fw1      = MatrixDot([0.950450,1.,1.088917],CAT02)
-    fw2      = MatrixDot([wpx/wpy, 1.,wpz/wpy] ,CAT02)
-    trans    = ArrayOp(fw2,fw1,"/")
+            if (loc=="Planckian"||loc=="Blackbody") {
 
-    vonkries = [trans[0], 0.0000,  0.0000,  \
-                0.0000, trans[1],  0.0000,  \
-                0.0000,   0.0000, trans[2]]
+                wpx = temp <= 2900 ? 0.142148 + 1.16453   * temp3 - 0.926236  * temp6 + 0.267565  * temp9 : \
+                      temp <= 4000 ? 0.17991  + 0.8776956 * temp3 - 0.2343589 * temp6 - 0.2661239 * temp9 : \
+                                     0.24039  + 0.2226347 * temp3 + 2.1070379 * temp6 - 3.0258469 * temp9
 
-    CAM      = MatrixDot(CAT02, MatrixDot(vonkries, MatrixInvert(CAT02)))
+                wpx2 = pow(wpx, 2)
+                wpx3 = pow(wpx, 3)
 
-    moncurve_f(s_gam[0], s_gam[1], false, false, 1)
+                wpy = temp <= 2222 ? -1.1063814 * wpx3 - 1.34811020 * wpx2 + 2.18555832 * wpx - 0.20219683 : \
+                      temp <= 2900 ? -2.7749800 * wpx3 + 1.10334000 * wpx2 + 0.97248300 * wpx              : \
+                      temp <= 4000 ? -0.9549476 * wpx3 - 1.37418593 * wpx2 + 2.09137015 * wpx - 0.16748867 : \
+                                     +3.0817580 * wpx3 - 5.87338670 * wpx2 + 3.75112997 * wpx - 0.37001483
 
-    mata = RGB_to_XYZ (mat[0], list=true)
-    matb = XYZ_to_RGB (mat[0], list=true)
-    MatrixClip( MatrixDot(MatrixDot(mata, CAM), matb) )
+            } else {
 
-    moncurve_r(s_gam[0], s_gam[1], false, false, 1)
+                # Valid in the range [0.250, 0.380] (>=4000K) (3000K-3200K range also works as it coincides with Planckian)
+                wpx = temp < 5500 ? 0.244058 + 0.0989971 * temp3 + 2.96545 * temp6 - 4.59673 * temp9 : \
+                      temp < 8000 ? 0.200033 + 0.9545630 * temp3 - 2.53169 * temp6 + 7.08578 * temp9 : \
+                                    0.237045 + 0.2437440 * temp3 + 1.94062 * temp6 - 2.11004 * temp9 # there's a dip around 7000K though
 
-    rgb ? rgbp ? last : MatchClip(c) : \
-    RGB_to_YUV( mat[0], tv_range_in=false, tv_range_out=tv, kernel="Point", pixel_type=PixelType(c), cplace="") }
+                wpy = -0.275275 + 2.87396 * wpx - 3.02034 * pow(wpx,2) + 0.0297408 * pow(wpx,3)
+
+        # CIE 1964 10º Standard Observer
+        } } else {
+
+            if (loc=="Planckian"||loc=="Blackbody") {
+
+            wpx = temp <= 4000 ? 0.132123 + 1.245000 * temp3 - 1.06779 * temp6 + 0.335515 * temp9 : \
+                                 0.240094 + 0.199403 * temp3 + 2.36932 * temp6 - 3.541520 * temp9
+
+            wpx2 = pow(wpx, 2)
+            wpx3 = pow(wpx, 3)
+
+            wpy = temp <= 2900 ? -2.885940 * wpx3 + 1.55652 * wpx2 + 0.640988 * wpx + 0.0649384 : \
+                  temp <= 4000 ? -0.813915 * wpx3 - 1.23629 * wpx2 + 1.89435  * wpx - 0.122346  : \
+                                  3.482430 * wpx3 - 5.92925 * wpx2 + 3.60717  * wpx - 0.331274
+
+            } else {
+
+                # Should not be used for < 4000K but technically it might be fine down to 2855.496K (Illuminant A)
+                wpx = -3.14504 * temp9 + 2.27982 * temp6 + 0.226414 * temp3 + 0.236388
+
+                wpy = -0.176938 + 2.22673 * wpx - 1.67187 * pow(wpx,2) - 0.848624 * pow(wpx, 3)
+        } }
+
+       [wpx,wpy,1 - wpx - wpy] }
+
+    TXYZs = TemperatureXYZ(temp2, ob, temp2<5000?"Planckian":"Daylight")
+    TXYZt = TemperatureXYZ(temp1, ob, loc)
+
+    if (lis) {
+
+        TXYZt
+
+    } else {
+
+        LMS      = XYZ_to_LMS(LMS,true)
+
+        fw1      = MatrixDot([TXYZs[0]/TXYZs[1],1.,TXYZs[2]/TXYZs[1]],LMS)
+        fw2      = MatrixDot([TXYZt[0]/TXYZt[1],1.,TXYZt[2]/TXYZt[1]],LMS)
+        vonKries = Broadcast(ArrayOp(fw2,fw1,"/"), "vonKries")
+
+        CAM      = MatrixDot(LMS, MatrixDot(vonKries, MatrixInvert(LMS)))
+
+        CCTF(mat[2],  true, false, false)
+
+        mata = RGB_to_XYZ (mat[0], list=true, adaptXYZ=false)
+        matb = XYZ_to_RGB (mat[0], list=true, adaptXYZ=false)
+
+        MatrixClip( MatrixDot(MatrixDot(mata, CAM), matb) )
+
+        CCTF(mat[2], false, false, false)
+
+        if (temp2==6504) {
+        2850 <= temp1 <= 2860 ? propSet("_Illuminant", 13) : \
+        5000 <= temp1 <= 5005 ? propSet("_Illuminant",  0) : \
+        5450 <= temp1 <= 5460 ? propSet("_Illuminant",  8) : \
+        5500 <= temp1 <= 5505 ? propSet("_Illuminant",  1) : \
+        6000 <= temp1 <= 6005 ? propSet("_Illuminant",  2) : \
+        6300 <= temp1 <= 6305 ? propSet("_Illuminant",  3) : \
+        6500 <= temp1 <= 6505 ? propSet("_Illuminant",  4) : \
+        6755 <= temp1 <= 6760 ? propSet("_Illuminant",  5) : \
+        7500 <= temp1 <= 7505 ? propSet("_Illuminant",  6) : \
+        5095 <= temp1 <= 5105 ? propSet("_Illuminant", 15) : \
+        6600 <= temp1 <= 6610 ? propSet("_Illuminant", 16) : \
+        8940 <= temp1 <= 8950 ? propSet("_Illuminant",  7) : last
+        }
+
+        rgb ? rgbp ? last : MatchClip(c,internal=true) : \
+        RGB_to_YUV( mat[0], tv_in=false, tv_out=tv, kernel="bicubic", b=-0.5, c=0.25, Jab=PixelType(c))
+    } }
 
 
 
@@ -1515,9 +1732,9 @@ function WhitePoint (clip c, int "temperature", string "matrix", bool "tv_range"
 ###                 ResizersPack
 ###
 ### Example:
-###    GradientLinear()
+###    GradientLinear(zoom=1,positive=true,precision=4)
 ###    # ex_contrast(cont=1,tv_range=false)  # Here the 32-bit aware curve expression (for not 32-bit aware expressions, you can use scale_inputs="float" to evaluate expression at 8-bit)
-###    HistoCurve()
+###    HistoCurve(size=2,gradient=true)
 ###
 ### Function Definition:
 ###    (
@@ -1525,23 +1742,25 @@ function WhitePoint (clip c, int "temperature", string "matrix", bool "tv_range"
 ###    int "zoom"=1 (1 to 6),
 ###    int "x"=0 (-50 to 50),
 ###    int "y"=0 (-50 to 50),
+###    int "precision"=1 (1 to 4),
 ###    bool "positive"=false,
 ###    bool "smooth"=true
 ###    )
 ###
 ######################
 
-function GradientLinear(clip "a", int "zoom", int "x", int "y", bool "positive", bool "smooth", bool "tv_range") {
+function GradientLinear(clip "a", int "zoom", int "x", int "y", bool "positive", int "precision", bool "smooth", bool "tv_range") {
 
     Da  = Defined (a)
     isy = Da ? isy(a)     : false
-    sm  = Default(smooth,   true)            # Enabled for most filters. Disable is you want to test 'blur' filters.
+    sm  = Default(smooth,   true)            # Enabled for most filters. Disable if you want to test 'blur' filters.
     tv  = Default(tv_range, false)
     global bt = Da ? BitsPerComponent(a) : 0
     global zm = Default(zoom, 2)             # Zoom out factor of the graph
     global xo = Default(x,    0)/(zm*10.)    # shift on x axis
     global yo = Default(y,    0)/(zm*10.)    # shift on x axis
     global ps = Default(positive, false)     # Disable to also show -x and -y axis
+    global pc = Default(precision, 1)        # Increase sampling precision
 
     px = Da ? a.is420() ? "YUV420" : \
               a.is422() ? "YUV422" : \
@@ -1549,7 +1768,7 @@ function GradientLinear(clip "a", int "zoom", int "x", int "y", bool "positive",
 
     of = zm
     zm = zm * 2.
-    BlankClip(Eval(Da ? "a" : "length=100"), width=256, height=256, pixel_type=isy?"Y32":px+"PS")
+    BlankClip(Eval(Da ? "a" : "length=100"), width=256*pc, height=256, pixel_type=isy?"Y32":px+"PS")
 
     !tv ? ex_lutspa(mode="relative", expr=sm?"x":"x 0.5 + 2 % 1 < 0 1 ?",                            UV=128, fulld=true) : \
           ex_lutspa(mode="relative", expr=sm?"x ymax ymin - * ymin +":"x 0.5 + 2 % 1 < ymin ymax ?", UV=128, fulld=false)
@@ -1557,7 +1776,7 @@ function GradientLinear(clip "a", int "zoom", int "x", int "y", bool "positive",
           ex_lut(Format("x {xo} - {zm} * {of}  -"),"")  }
 
 
-
+# Output is dithered 8-bit
 function HistoCurve(clip a, float "size", bool "gradient") {
 
     sz = Default(size,2.)
@@ -1565,29 +1784,34 @@ function HistoCurve(clip a, float "size", bool "gradient") {
 
     of = zm
     zm = zm * 2.
+    px = 256 * pc
+    py = pc > 1 ? 1024 : 256
     ps ? ex_lut(a,Format("x {of} /         {yo} -"),"") : \
          ex_lut(a,Format("x {of}  + {zm} / {yo} -"),"")
 
     TurnRight()
-    Histogram(mode="classic",keepsource=gr)
+    Histogram(mode="classic",keepsource=gr,markers=false,bits=pc>1?10:8)
     TurnLeft()
-    zm    = zm * (ps ? 1. : 2.)
-    clean = gr ? crop(0,0,0,-256) : last
-    grid  =            clean.ex_lutspa(mode="mix",expr=Format("sx {xo} neg 256 * + round X@ 256 {zm} 2 * / round % 0 ==
-                                                               sy {yo} neg 256 * + round Y@ 256 {zm} 2 * / round % 0 == or
-                                                               X 4 % 0 != Y 0 != Y 4 % 0 != and or 0.25 0 ? x 0.5 < 0 x ? B@ max B ?"), UV=128)
-    axis  = ps ? grid : grid.ex_lutspa(mode="mix",expr=Format("sx 128 {xo} 256 * + round abs ==
-                                                       sy 0 != sy 128 {yo} 256 * + round abs == and or 0.35 x max sy 255 == 0 x ? ?"),  UV=128)
-    grad  = gr ? crop(0,256,0,0) : last
-            gr ? StackHorizontal(grad,axis) : axis
 
-    RatioResize(sz,"%",kernel="Point")
+    zm    = zm * (ps ? 1. : 2.)
+    clean = SMPTE_legal(gr ? crop(0,0,0,-256) : last, false)
+    clean = pc > 1   ? clean.ex_luts  (mode="max",pixels=pc==2?ex_shape(0,1):ex_shape(1,mode="disk")).ex_smooth(pc==2?0:2) : clean
+    grd   =            clean.ex_lutspa(mode="mix",expr=Format("sx {xo} neg {px} * + round X@ {px} {zm} 2 * / round % 0 ==
+                                                               sy {yo} neg {py} * + round Y@ {py} {zm} 2 * / round % 0 == or
+                                                               X 4 {pc} * % 0 != Y 0 != Y 4 {pc} * % 0 != and or 0.25 0 ? x max x ?"+ ( pc>1 ?" {pc} * " : "")), UV=128)
+    axis  = ps ? grd : grd.ex_lutspa(mode="mix",expr=Format("sx {px} 0.5 * {xo} {px} * + round abs ==
+                                                     sy 0 != sy {py} 0.5 * {yo} {py} * + round abs == and or 0.35 x max sy {py} 1 - == 0 x ? ?"),       UV=128)
+    grad  = gr ? crop(0,py,0,0) : last
+            gr ? StackHorizontal(PadResize(grad,px,py,mode="Dilate"),axis) : axis
+
+    pc == 1 ? RatioResize(sz,"%",kernel="Point") : \
+    BicubicResize(round(256*sz*(gr?2:1)),round(256*sz),0.378216,0.310892)
+
     ConvertBits(bt>0?bt:8,dither=bt>0?bt==32?-1:1:-1,fulls=true) }
 
 
 
 function Vectorscope(clip a) {
-
     a
     Histogram(mode="color2",keepsource=false)
     ex_lutspa("sx 128 == sy 128 == or range_max x - 0.5 * x ?",UV=2) # axis
@@ -1595,4 +1819,4 @@ function Vectorscope(clip a) {
     subtitle("V+\n90º" ,lsp=1,align=2,text_color=$FFFFFF,size=12,x=128+3,y=256-20)
     subtitle("U-\n180º",lsp=1,align=4,text_color=$FFFFFF,size=12)
     subtitle("V-\n270º",lsp=1,align=8,text_color=$FFFFFF,size=12,x=128+3,y=+6)
-}
+    }
