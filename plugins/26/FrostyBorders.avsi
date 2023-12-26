@@ -1,177 +1,310 @@
 # ===============================================================================
 # ===============================================================================
-#	     FrostyBorders 2021-12-09
+#            FrostyBorders 2023-10-28
 # ===============================================================================
 # ===============================================================================
 
 function FrostyBorders(clip Source, \
-int "OutWidth", int "OutHeight", val "InDAR", val "InSAR", int "Mod", \
-bool "Frosty", int "FrostyStatic", int "Clone", bool "FrostyGradient", bool "FrostyPlain", bool "Plain", \
+int "OutWidth", int "OutHeight", \
+float "CL", float "CT", float "CR", float "CB", \
+val "CropDAR", float "TCRatio", val "InDAR", val "InSAR", int "Mod", \
+bool "Frosty", int "FrostyStatic", int "Clone", \
+bool "FrostyGradient", bool "FrostyPlain", bool "Plain", \
 val "BColor", int "BDivider", val "BDColor", int "Feather", \
-float "Bright", float "Cont", float "Sat", float "Blend", float "Blur", float "VBlur", int "Iterations", \
-int "GPlugin", float "Texture", float "TextureC", int "TSoft", bool "Faster", \
-string "Resizer", string "RStr", bool "Info")  {
+float "Bright", float "Cont", float "Sat", \
+float "Blend", float "Blur", float "VBlur", int "Iterations", \
+int "GPlugin", float "Texture", float "TextureC", bool "StaticT", \
+int "TSoft", bool "Faster", string "Resizer", string "RStr", bool "Info")  {
 
 # ===============================================================================
-#	     Source
-# ===============================================================================
-
-SourceWidth = width(Source)
-F_SourceWidth = float(SourceWidth)
-SourceHeight = height(Source)
-F_SourceHeight = float(SourceHeight)
-
-FB = " FrostyBorders " + chr(10)
-assert(HasVideo(Source) && (SourceWidth > 48) && (SourceHeight > 48), FB + \
-" No video found or the source width or height is too small " + chr(10))
-TotalFrames = FrameCount(source) - 1
-SourceAudio = !HasAudio(Source) ? Source : Source.KillVideo()
-Source = Source.KillAudio()
 
 AvsVerStrLC = LCase(VersionString())
-IsAvsPlus = (FindStr(AvsVerStrLC, "avisynth+") > 0)
-IsAvsNeo = (FindStr(AvsVerStrLC, "avisynth neo") > 0)
-AvsStrNum = IsAvsPlus || IsAvsNeo ? FindStr(AvsVerStrLC, "(r") + 2 : 0
+IsAvsPlus = (FindStr(AvsVerStrLC, "avisynth+") > 0) || (FindStr(AvsVerStrLC, "avisynth neo") > 0)
+AvsStrNum = IsAvsPlus ? FindStr(AvsVerStrLC, "(r") + 2 : 0
 AvsBuildNum = (AvsStrNum > 2) ? int(value(MidStr(AvsVerStrLC, AvsStrNum))) : 0
 IsAvsHBD = (AvsBuildNum > 2294)
 
+Source_Width = width(Source)
+F_Source_Width = float(Source_Width)
+Source_Height = height(Source)
+F_Source_Height = float(Source_Height)
+
+FB = " FrostyBorders " + chr(10)
+Assert(HasVideo(Source) && (Source_Width > 48) && (Source_Height > 48), \
+FB + " No video found or the source width or height is too small " + chr(10))
+Assert(!IsRGB(Source), FB + " RGB video is not supported " + chr(10))
+
+TotalFrames = FrameCount(Source)
+LastFrame = TotalFrames - 1
+Source_Bits = IsAvsHBD ? BitsPerComponent(Source) : 8
+SourceAudio = !HasAudio(Source) ? Source : Source.KillVideo()
+Source = Source.KillAudio()
 Color_Format = PixelType(Source)
-ModTwoHeight = IsYV12(Source) || (IsAvsHBD && Is420(Source))
-ModTwoWidth = ModTwoHeight || IsYV16(Source) || IsYUY2(Source) || (IsAvsHBD && Is422(Source))
-ModFourWidth = IsYV411(Source)
+WidthMod = IsYV411(Source) ? 4 : \
+(IsAvsHBD && (Is420(Source) || Is422(Source))) || IsYV12(Source) || IsYV16(Source) || IsYUY2(Source) ? 2 : 1
+HeightMod = (IsAvsHBD && Is420(Source)) || IsYV12(Source) ? 2 : 1
+F_WidthMod = float(WidthMod)
+F_HeightMod = float(HeightMod)
 
-PWMod = default(Mod, ModTwoWidth ? 4 : ModFourWidth ? 8 : 2)
-PHMod = default(Mod, ModTwoHeight ? 4 : 2)
-F_PWMod = float(PWMod)
-F_PHMod = float(PHMod)
-BWMod = ModTwoWidth ? 2 : ModFourWidth ? 4 : 1
-BHMod = ModTwoHeight ? 2 : 1
-F_BWMod = float(BWMod)
-F_BHMod = float(BHMod)
-
-# ===============================================================================
-#	     Aspect & Dimensions
-# ===============================================================================
-
-InDAR = default(InDAR, 0.0)
-InSAR = default(InSAR, 0.0)
-IsInDAR = (InDAR > 0)
-IsInSAR = (InSAR > 0)
-
-SourceDAR = \
-IsInDAR ? InDAR : IsInSAR ? F_SourceWidth * InSAR / F_SourceHeight : F_SourceWidth / F_SourceHeight
-SourceSAR = IsInDAR ? F_SourceHeight * InDAR / F_SourceWidth : IsInSAR ? InSAR : 1.0
-
-ModSourceWidth = !IsInDAR && !IsInSAR ? floor(F_SourceWidth / F_PWMod) * PWMod : IsInDAR ? \
-floor(F_SourceHeight * InDAR / F_PWMod) * PWMod : floor(F_SourceWidth * InSAR / F_PWMod) * PWMod
-ModSourceStorageAR = float(ModSourceWidth) / F_SourceHeight
-
-OutWidth = (default(OutWidth, 0) == 0) ? ModSourceWidth : default(OutWidth, 0)
-OutHeight = (default(OutHeight, 0) == 0) ? SourceHeight : default(OutHeight, 0)
+OutWidth = default(OutWidth, 0)
+OutHeight = default(OutHeight, 0)
 F_OutWidth = float(OutWidth)
 F_OutHeight = float(OutHeight)
-OutStorageAR = F_OutWidth / F_OutHeight
-
-IsBorders = (abs(OutStorageAR - SourceDAR) >= 0.000005)
-IsPillarBox = IsBorders && (OutStorageAR >= ModSourceStorageAR)
-IsLetterBox = IsBorders && (OutStorageAR < ModSourceStorageAR)
+CL = default(CL, 0)
+CT = default(CT, 0)
+CR = default(CR, 0)
+CB = default(CB, 0)
+CR = (CR == 0) ? 0 : (CR < 0) ? -CR : Source_Width - CL - CR
+CB = (CB == 0) ? 0 : (CB < 0) ? -CB : Source_Height - CT - CB
+CRTest = ((CL + CR) < Source_Width)
+CBTest = ((CT + CB) < Source_Height)
+CropDAR = default(CropDAR, 0.0)
+TCRatio = default(TCRatio, 0.5)
+IsInDAR = defined(InDAR)
+IsInSAR = defined(InSAR)
+InDAR = default(InDAR, 0.0)
+InSAR = default(InSAR, 0.0)
+IsMod = defined(Mod)
+Mod = default(Mod, 2 * WidthMod)
+HMod = IsMod ? Mod : 2 * HeightMod
+F_Mod = float(Mod)
+F_HMod = float(HMod)
+Info = default(Info, false)
 
 # ===============================================================================
-#	     Configure Resizing
+#            Insist
 # ===============================================================================
 
-IsAvsHBD ? Eval("""  IsResampleMT = FunctionExists("Spline36ResizeMT")  """) : \
-Eval("""  Try{  Test = Source.Spline36ResizeMT(640,480)   IsResampleMT = true  }
-catch(err){  IsResampleMT = false  }  """)
+Assert((OutWidth == 0) || (WidthMod != 2) || (OutWidth % 2 == 0), \
+FB + " " + Color_Format + " requires a Mod2 OutWidth " + chr(10))
+Assert((OutWidth == 0) || (WidthMod != 4) || (OutWidth % 4 == 0), \
+FB + " " + Color_Format + " requires a Mod4 OutWidth " + chr(10))
+Assert((OutHeight == 0) || (HeightMod != 2) || (OutHeight % 2 == 0), \
+FB + " " + Color_Format + " requires a Mod4 OutHeight " + chr(10))
+
+Assert(CRTest, FB + " Left plus right cropping must be less than the source width " + chr(10))
+Assert(CBTest, FB + " Top plus bottom cropping must be less than the source height " + chr(10))
+Assert((CL >= 0) && (CT >= 0), FB + " CL & CT must be greater than, or equal to zero " + chr(10))
+Assert(IsFloat(CropDAR) && ((CropDAR == 0) || (!IsInt(CropDAR) && (CropDAR > 0))), \
+FB + " CropDAR must be zero or a positive floating point number " + chr(10) + \
+" (16.0/9.0 or 1.7778 etc)" + chr(10))
+Assert((0.0 <= TCRatio <= 1.0), FB + " The valid range for TCRatio is 0 to 1.0 " + chr(10))
+
+Assert(IsFloat(InDAR) && ((InDAR == 0) || (!IsInt(InDAR) && (InDAR > 0))), \
+FB + " InDAR must be zero or a positive floating point number " + chr(10) + \
+" (16.0/9.0 or 1.7778 etc)" + chr(10))
+Assert(IsFloat(InSAR) && ((InSAR == 0) || (!IsInt(InSAR) && (InSAR > 0))), \
+FB + " InSAR must be zero or a positive floating point number " + chr(10) + \
+" (64.0/45.0 or 1.4222 etc)" + chr(10))
+Assert((InDAR == 0) || (InSAR == 0), FB + " InDAR & InSAR can't be specified together " + chr(10))
+
+Assert((Mod == 1) || (Mod == 2) || (Mod == 4) || (Mod == 8) || (Mod == 16), \
+FB + " Mod must be 1, 2, 4, 8 or 16 " + chr(10))
+Assert((Mod % 2 == 0) || (WidthMod != 2), \
+FB + " " + Color_Format + " requires a minimum width Mod of 2 " + chr(10))
+Assert((Mod % 4 == 0) || (WidthMod != 4), FB + \
+FB + " " + Color_Format + " requires a minimum width Mod of 4 " + chr(10))
+Assert((HMod % 2 == 0) || (HeightMod != 2), FB + \
+FB + " " + Color_Format + " requires a minimum height Mod of 2 " + chr(10))
+
+# ===============================================================================
+#            Configure Resizer
+# ===============================================================================
+
+IsResampleMT = IsAvsHBD ? FunctionExists("Spline36ResizeMT") : Eval("""  Try{  Spline36ResizeMT(xx=0)  }
+Catch(err){  (FindStr(LCase(err), "there is no function named") == 0)  }  """)
 
 IsResizer = defined(Resizer)
 Resizer = default(Resizer, FB_Default_Resizer())
-Resizer = (Resizer != "") ? Resizer : IsResampleMT ? "Spline36ResizeMT" : "Spline36Resize"
-RStr = default(RStr, !IsResizer ? FB_Default_RStr() : "")
-ResStr = (RStr == "") ? RStr : ", " + RStr
+Resizer = (Resizer != "") ? Resizer : "Spline36"
 
 IsResizeMTAppended = (RightStr(Resizer, 8) == "ResizeMT") || (RightStr(Resizer, 8) == "MTResize")
 IsMTAppended = (RightStr(Resizer, 2) == "MT")
+IsResizeMT = IsResizeMTAppended || IsMTAppended
 IsResizeAppended = (RightStr(Resizer, 6) == "Resize")
 
-Resizer = IsResizeMTAppended ? LeftStr(Resizer, StrLen(Resizer) - 8) : \
+Kernel = IsResizeMTAppended ? LeftStr(Resizer, StrLen(Resizer) - 8) : \
 IsMTAppended ? LeftStr(Resizer, StrLen(Resizer) - 2) : \
 IsResizeAppended ? LeftStr(Resizer, StrLen(Resizer) - 6) : Resizer
 
-IsAvsResizer = (Resizer == "Bilinear") || (Resizer == "Bicubic") || (Resizer == "Blackman") || \
-(Resizer == "Gauss") || (Resizer == "Lanczos") || (Resizer == "Lanczos4") || (Resizer == "Point") || \
-(Resizer == "Spline16") || (Resizer == "Spline36") || (Resizer == "Spline64") || (Resizer == "Sinc")
+IsAVSKernel = \
+(Kernel == "Bicubic") || (Kernel == "Bilinear") || (Kernel == "Blackman") || (Kernel == "Gauss") || \
+(Kernel == "Lanczos") || (Kernel == "Lanczos3") || (Kernel == "Lanczos4") || (Kernel == "Point") || \
+(Kernel == "Spline16") || (Kernel == "Spline36") || (Kernel == "Spline64") || (Kernel == "Sinc")
 
-Resizer = IsResizeMTAppended || IsMTAppended ? Resizer + "ResizeMT" : \
-IsAvsResizer || IsResizeAppended ? Resizer + "Resize"  : Resizer
+Resizer = !IsAVSKernel ? Resizer : (Kernel == "Lanczos3") ? "Lanczos" : Kernel
+Resizer = !IsAVSKernel ? Resizer : Resizer + (IsResizeMT || IsResampleMT ? "ResizeMT" : "Resize")
 
-!IsBorders ? Eval("""
-
-# ===============================================================================
-#	     No Borders Resizing
-# ===============================================================================
-
-Resized = (OutWidth == SourceWidth) && (OutHeight == SourceHeight) ? Source : Eval("Source." + \
-Resizer + "(OutWidth, OutHeight, src_left=0, src_top=0, src_width=0, src_height=0" + ResStr + ")")
-
-""", "No Borders Eval") : IsPillarBox ? Eval("""
+RStr = default(RStr, IsResizer ? "" : FB_Default_RStr())
+ResStr = (RStr == "") ? "" : ", " + RStr
 
 # ===============================================================================
-#	     PillarBox Resizing
+#            Aspect & Dimensions
 # ===============================================================================
 
-F_NewWidth = IsInDAR ? (F_OutHeight * InDAR) : \
-IsInSAR ? (F_OutHeight * F_SourceWidth * InSAR / F_SourceHeight) : \
-(F_OutHeight * F_SourceWidth / F_SourceHeight)
+PropsNum = (AvsBuildNum >= 3593) ? Source.propGetAny("_SARNum") : undefined()
+PropsDen = (AvsBuildNum >= 3593) ? Source.propGetAny("_SARDen") : undefined()
+PropsNum = defined(PropsNum) && IsInt(PropsNum) ? PropsNum : 0
+PropsDen = defined(PropsDen) && IsInt(PropsDen) ? PropsDen : 0
+PropsSAR = (PropsNum > 0 < PropsDen) && !IsInDAR && !IsInSAR ? float(PropsNum) / float(PropsDen) : 0
+InSAR = (InSAR > 0) ? InSAR : (PropsSAR > 0) && (PropsSAR != 1) ? PropsSAR : 0
+IsAnamorphicInput = (InDAR > 0) || (InSAR > 0)
+IsBorders = (OutWidth > 0) && (OutHeight > 0)
 
-ResizingWidth = floor(F_NewWidth / F_PWMod) * PWMod
-F_ResizingWidth = float(ResizingWidth)
+Cropped_Source_Width = Source_Width - CL - CR
+Cropped_Source_Height = Source_Height - CT - CB
+F_Cropped_Source_Width = float(Cropped_Source_Width)
+F_Cropped_Source_Height = float(Cropped_Source_Height)
 
-LRCrop = max(0, (SourceWidth - (F_SourceHeight * F_ResizingWidth / F_OutHeight / SourceSAR)) / 2.0)
-ResizerCropLR = max(0, LRCrop - (floor(LRCrop / F_PWMod) * PWMod))
-CropLR = max(0, round(LRCrop - ResizerCropLR))
+Cropped_Source_DAR = !IsAnamorphicInput ? F_Cropped_Source_Width / F_Cropped_Source_Height : \
+(InDAR > 0) ? F_Cropped_Source_Width * F_Source_Height * InDAR / F_Cropped_Source_Height / F_Source_Width : \
+F_Cropped_Source_Width * InSAR / F_Cropped_Source_Height
 
-Resized = Eval("Source.Crop(CropLR, 0, -CropLR, 0)." + Resizer + "(ResizingWidth, OutHeight, \
-src_left=ResizerCropLR, src_top=0, src_width=-ResizerCropLR, src_height=0" + ResStr + ")")
+Mod_Cropped_Resized_Width = !IsAnamorphicInput ? floor(F_Cropped_Source_Width / F_Mod) * Mod : \
+(InDAR > 0) ? floor(F_Cropped_Source_Width * F_Source_Height * InDAR / F_Source_Width / F_Mod) * Mod : \
+floor(F_Cropped_Source_Width * InSAR / F_Mod) * Mod
 
-AdditionalWidth = OutWidth - ResizingWidth
-BL = min(AdditionalWidth, floor(float(AdditionalWidth) / 2.0 / F_BWMod) * BWMod)
-BR = AdditionalWidth - BL
+Mod_Cropped_Height = floor(F_Cropped_Source_Height / F_HMod) * HMod
 
-""", "PillarBox Resizing Eval") : Eval("""
+Resizing_Width = (OutWidth > 0) ? OutWidth : Mod_Cropped_Resized_Width
+Resizing_Height = (OutHeight > 0) ? OutHeight : Mod_Cropped_Height
+F_Resizing_Width = float(Resizing_Width)
+F_Resizing_Height = float(Resizing_Height)
 
-# ===============================================================================
-#	     LetterBox Resizing
-# ===============================================================================
+Resizing_DAR = (CropDAR > 0) ? CropDAR : Cropped_Source_DAR
 
-F_NewHeight = IsInDAR ? (F_OutWidth / InDAR) : \
-IsInSAR ? (F_OutWidth * F_SourceHeight / F_SourceWidth / InSAR) : \
-(F_OutWidth * F_SourceHeight / F_SourceWidth)
+Height_From_Width = IsBorders ? (Resizing_DAR >= (F_Resizing_Width / F_Resizing_Height)) : \
+(OutWidth > 0) ? true : (OutHeight > 0) ? false : true
 
-ResizingHeight = floor(F_NewHeight / F_PHMod) * PHMod
-F_ResizingHeight = float(ResizingHeight)
-
-TBCrop = max(0, (SourceHeight - (F_SourceWidth * F_ResizingHeight * SourceSAR / F_OutWidth)) / 2.0)
-ResizerCropTB = max(0, TBCrop - (floor(TBCrop / F_PHMod) * PHMod))
-CropTB = max(0, round(TBCrop - ResizerCropTB))
-
-Resized = Eval("Source.Crop(0, CropTB, 0, -CropTB)." + Resizer + "(OutWidth, ResizingHeight, \
-src_left=0, src_top=ResizerCropTB, src_width=0, src_height=-ResizerCropTB" + ResStr + ")")
-
-AdditionalHeight = OutHeight - ResizingHeight
-BT = min(AdditionalHeight, floor(float(AdditionalHeight) / 2.0 / F_BHMod) * BHMod)
-BB = AdditionalHeight - BT
-
-""", "LetterBox Resizing Eval")
+Height_From_Width ? Eval("""
 
 # ===============================================================================
+#            Height Calculated From Width
+# ===============================================================================
 
-RatioW = IsPillarBox ? F_ResizingWidth / F_SourceWidth : \
-IsLetterBox ? F_OutWidth / F_SourceWidth : F_OutWidth / F_SourceWidth
-RatioH  = IsPillarBox ? F_OutHeight / F_SourceHeight : \
-IsLetterBox ? F_ResizingHeight / F_SourceHeight : F_OutHeight / F_SourceHeight
+F_Aspect_Height = F_Resizing_Width / Resizing_DAR
+F_Aspect_Height = FB_IsEqual(F_Aspect_Height, round(F_Aspect_Height)) && \
+(round(F_Aspect_Height) % HeightMod == 0) ? float(round(F_Aspect_Height)) : F_Aspect_Height
+
+F_Height_Adjust = F_Aspect_Height - (floor(F_Aspect_Height / F_HMod) * HMod)
+F_Height_Up = F_Aspect_Height + F_HMod - F_Height_Adjust
+F_Height_Down = F_Aspect_Height - F_Height_Adjust
+
+F_Resizing_Height = \
+((F_Height_Up - F_Aspect_Height) < (F_HMod / 2.0)) ? F_Height_Up : F_Height_Down
+Resizing_Height = round(F_Resizing_Height)
+
+""", "Height From Width Resizing Eval") : Eval("""
 
 # ===============================================================================
+#            Width Calculated From Height
+# ===============================================================================
+
+F_Aspect_Width = F_Resizing_Height * Resizing_DAR
+F_Aspect_Width = FB_IsEqual(F_Aspect_Width, round(F_Aspect_Width)) && \
+(round(F_Aspect_Width) % WidthMod == 0) ? float(round(F_Aspect_Width)) : F_Aspect_Width
+
+F_Width_Adjust = F_Aspect_Width - (floor(F_Aspect_Width / F_Mod) * Mod)
+F_Width_Up = F_Aspect_Width + F_Mod - F_Width_Adjust
+F_Width_Down = F_Aspect_Width - F_Width_Adjust
+
+F_Resizing_Width = \
+((F_Width_Up - F_Aspect_Width) < (F_Mod / 2.0)) ? F_Width_Up : F_Width_Down
+Resizing_Width = round(F_Resizing_Width)
+
+""", "Width From Height Resizing Eval")
+
+# ===============================================================================
+#            Cropping & Resizing
+# ===============================================================================
+
+TCRatio = (CropDAR == 0) || (CropDAR <= Cropped_Source_DAR) ? 0.5 : TCRatio
+Cropping_DAR = F_Resizing_Width / F_Resizing_Height
+
+F_Extra_Width_Crop = FB_IsEqual(Cropping_DAR, Cropped_Source_DAR) || \
+(Cropping_DAR > Cropped_Source_DAR) ? 0.0 : \
+max(0.0, !IsAnamorphicInput ? F_Cropped_Source_Width - \
+(F_Cropped_Source_Height * F_Resizing_Width / F_Resizing_Height) : \
+(InDAR > 0) ? F_Cropped_Source_Width - \
+(F_Cropped_Source_Height * F_Resizing_Width * \
+F_Source_Width / InDAR / F_Resizing_Height / F_Source_Height) : \
+F_Cropped_Source_Width - \
+(F_Cropped_Source_Height * F_Resizing_Width / F_Resizing_Height / InSAR))
+
+F_Extra_Height_Crop = FB_IsEqual(Cropping_DAR, Cropped_Source_DAR) || \
+(Cropping_DAR < Cropped_Source_DAR) ? 0.0 : \
+max(0.0, !IsAnamorphicInput ? F_Cropped_Source_Height - \
+(F_Cropped_Source_Width * F_Resizing_Height / F_Resizing_Width) : \
+(InDAR > 0) ? F_Cropped_Source_Height - \
+(F_Cropped_Source_Width * F_Resizing_Height * \
+F_Source_Height * InDAR / F_Resizing_Width / F_Source_Width) : \
+F_Cropped_Source_Height - \
+(F_Cropped_Source_Width * F_Resizing_Height * InSAR / F_Resizing_Width))
+
+F_Extra_Crop_LR = max(0.0, F_Extra_Width_Crop / 2.0)
+F_Extra_Crop_LR = FB_IsEqual(F_Extra_Crop_LR, round(F_Extra_Crop_LR)) ? \
+round(F_Extra_Crop_LR) : F_Extra_Crop_LR
+
+F_Extra_Crop_T = max(0.0, (TCRatio == 0.5) ? F_Extra_Height_Crop / 2.0 : \
+F_Extra_Height_Crop * TCRatio)
+F_Extra_Crop_T = FB_IsEqual(F_Extra_Crop_T, round(F_Extra_Crop_T)) ? \
+round(F_Extra_Crop_T) : F_Extra_Crop_T
+
+F_Extra_Crop_B = max(0.0, (TCRatio == 0.5) ? F_Extra_Height_Crop / 2.0 : \
+F_Extra_Height_Crop - F_Extra_Crop_T)
+F_Extra_Crop_B = FB_IsEqual(F_Extra_Crop_B, round(F_Extra_Crop_B)) ? \
+round(F_Extra_Crop_B) : F_Extra_Crop_B
+
+CCL = round(max(0, float(CL) + F_Extra_Crop_LR - fmod(float(CL) + F_Extra_Crop_LR, WidthMod)))
+CCR = round(max(0, float(CR) + F_Extra_Crop_LR - fmod(float(CR) + F_Extra_Crop_LR, WidthMod)))
+CCT = round(max(0, float(CT) + F_Extra_Crop_T - fmod(float(CT) + F_Extra_Crop_T, HeightMod)))
+CCB = round(max(0, float(CB) + F_Extra_Crop_B - fmod(float(CB) + F_Extra_Crop_B, HeightMod)))
+RCL = max(0.0, float(CL) + F_Extra_Crop_LR - CCL)
+RCR = max(0.0, float(CR) + F_Extra_Crop_LR - CCR)
+RCT = max(0.0, float(CT) + F_Extra_Crop_T - CCT)
+RCB = max(0.0, float(CB) + F_Extra_Crop_B - CCB)
+
+F_Cropped_Width = F_Source_Width - CCL - CCR - RCL - RCR
+F_Cropped_Height = F_Source_Height - CCT - CCB - RCT - RCB
+
+Cropped = (0 == CCL == CCT == CCR == CCB) ? Source : Source.crop(CCL, CCT, -CCR, -CCB)
+
+Resized = Cropped.Eval(Resizer + "(Resizing_Width, Resizing_Height, \
+src_left=RCL, src_top=RCT, src_width=F_Cropped_Width, src_height=F_Cropped_Height" + ResStr + ")")
+
+# ===============================================================================
+#            Border Size
+# ===============================================================================
+
+IsBorders ? Eval("""
+
+CroppedMoreLeft = (CL > CR)
+Additional_Width = OutWidth - Resizing_Width
+EvenWidthSplit = ((Additional_Width % (WidthMod * 2)) == 0)
+F_WidthSplit = float(Additional_Width) / 2.0
+BL_Adjust = F_WidthSplit - (floor(F_WidthSplit / F_WidthMod) * WidthMod)
+BL_Adjust_Up = min(Additional_Width, round(F_WidthSplit + WidthMod - BL_Adjust))
+BL_Adjust_Down = F_WidthSplit - BL_Adjust
+BL = round(EvenWidthSplit ? Additional_Width / 2 : CroppedMoreLeft ? BL_Adjust_Up : BL_Adjust_Down)
+BR = Additional_Width - BL
+
+CroppedMoreTop = (CT > CB)
+Additional_Height = OutHeight - Resizing_Height
+EvenHeightSplit = ((Additional_Height % (HeightMod * 2)) == 0)
+F_HeightSplit = float(Additional_Height) / 2.0
+BT_Adjust = F_HeightSplit - (floor(F_HeightSplit / F_HeightMod) * HeightMod)
+BT_Adjust_Up = min(Additional_Height, round(F_HeightSplit + HeightMod - BT_Adjust))
+BT_Adjust_Down = F_HeightSplit - BT_Adjust
+BT = round(EvenHeightSplit ? Additional_Height / 2 : CroppedMoreTop ? BT_Adjust_Up : BT_Adjust_Down)
+BB = Additional_Height - BT
+
+# ===============================================================================
+#            Frosty Defaults
+# ===============================================================================
+
+IsPillarBox = (BL > 0) || (BR > 0)
+IsLetterBox = (BT > 0) || (BB > 0)
+IsBorders = IsPillarBox || IsLetterBox
 
 Frosty = default(Frosty, true)
 IsFrostyStatic = defined(FrostyStatic)
@@ -186,185 +319,165 @@ Plain = default(Plain, false)
 BDivider = default(BDivider, 0)
 BDColor = default(BDColor, $000000)
 Feather = default(Feather, 0)
-IsBright = defined(Bright)
-IsCont = defined(Cont)
-IsSat = defined(Sat)
 IsBlur = defined(Blur)
 IsVBlur = defined(VBlur)
-IsBlend = defined(Blend)
 Iterations = default(Iterations, 3)
 GPlugin = default(GPlugin, 1)
-IsTSoft = defined(TSoft)
+StaticT = default(StaticT, true)
+DynamicT = StaticT ? false : true
 Faster = default(Faster, false)
-Info = default(Info, false)
 
-# ===============================================================================
-#	     Insist
-# ===============================================================================
+BorderMin = Frosty || IsFrostyStatic || FrostyGradient ? (IsPillarBox && (WidthMod == 4) ? 32 : 16) : \
+Clone1 || Clone2 || Clone3 ? (IsPillarBox && (WidthMod == 4) ? 8 : 4) : IsPillarBox ? WidthMod : HeightMod
 
-FBM = FB + " " + Color_Format + " requires a" + (IsPillarBox && ModFourWidth ? " Mod4 " : " Mod2 ")
-assert(!IsRGB(Source), FB + " The FrostyBorders function doesn't support RGB " + chr(10))
-
-assert(!IsFrostyStatic || (0 <= FrostyStatic < TotalFrames), FB + \
-string(TotalFrames, " FrostyStatic must be from zero to final frame number (0 - %.0f) ") + chr(10))
-assert((0 <= Clone <= 3), FB + " The value for Clone can only be 0, 1, 2 or 3 " + chr(10))
-
-assert(((BDivider == 0) || !IsPillarBox) || \
-(((BWMod != 2) || (BDivider % 2 == 0)) && ((BWMod != 4) || (BDivider % 4 == 0))), \
-FBM + "BDivider for pillarbox borders " + chr(10))
-assert(((BDivider == 0) || IsPillarBox) || ((BHMod != 2) || (BDivider % 2 == 0)), \
-FBM + "BDivider for letterbox borders " + chr(10))
-assert((Feather == 0) || !FrostyGradient, \
-FB + " Feather can't be greater than zero when FrostyGradient=true " + chr(10))
-assert((Feather == 0) || (BDivider == 0), FB + \
-" Feather and BDivider can't be used together (one must equal zero) " + chr(10))
-
-assert(!IsBright || (-255 <= Bright <= 255), FB + " The valid range for Bright is -255 thru 255 " + chr(10))
-assert(!IsCont || (0 <= Cont <= 10), FB + " The valid range for Cont is 0.0 thru 10.0 " + chr(10))
-assert(!IsSat || (0 <= Sat <= 10), FB + " The valid range for Sat is 0.0 thru 10.0 " + chr(10))
-assert(!IsBlend || (0 <= Blend <= 1), FB + " The valid range for Blend is 0.0 to 1.0 " + chr(10))
-assert((0 <= GPlugin <= 2), FB + \
-" The valid choices for GPlugin are " + chr(10) + " 0 (no added grain), 1 (AddGrainC) or 2 (neo_f3kdb) " + chr(10))
-assert(!IsTSoft || (0 <= TSoft <= 7), FB + " The valid range for TSoft is 0 to 7 " + chr(10))
-
-assert((InDAR == 0) || (InSAR == 0), FB + " InDAR & InSAR can't be specified together " + chr(10))
-assert(((IsFloat(InDAR) && (InDAR == 0)) || (IsFloat(InDAR) && !IsInt(InDAR) && (InDAR > 0))) && \
-((IsFloat(InSAR) && (InSAR == 0)) || (IsFloat(InSAR) && !IsInt(InSAR) && (InSAR > 0))), \
-FB + " InDAR & InSAR must be zero or a positive floating point number " + chr(10) + \
-" 16.0/9.0 or 1.7778 etc " + chr(10))
-
-assert((PWMod == 1) || (PWMod == 2) || (PWMod == 4) || (PWMod == 8) || (PWMod == 16), \
-FB + " Mod must be 1, 2, 4, 8 or 16 " + chr(10))
-assert(!IsPillarBox || (((BWMod != 2) || (PWMod % 2 == 0)) && ((BWMod != 4) || (PWMod % 4 == 0))), \
-FBM + "picture width " + chr(10))
-assert(!IsLetterBox || ((BHMod != 2) || (PHMod % 2 == 0)), FBM + "picture height " + chr(10))
-assert((OutWidth == 0) || \
-(((BWMod != 2) || (OutWidth % 2 == 0)) && ((BWMod != 4) || (OutWidth % 4 == 0))), \
-FBM + "OutWidth " + chr(10))
-assert((OutHeight == 0) || ((BHMod != 2) || (OutHeight % 2 == 0)), FBM + "OutHeight " + chr(10))
-
-!IsBorders ? Eval("""
-
-# ===============================================================================
-#	     No Borders
-# ===============================================================================
-
-FrostyOut = Resized
-
-# ===============================================================================
-#	     PillarBox Borders
-# ===============================================================================
-
-""") : IsPillarBox ? Eval("""
-
-# -------------------------------------------------------------------------------
-#	     PillarBox Defaults
-# -------------------------------------------------------------------------------
-
-BWMin = Frosty || IsFrostyStatic || FrostyGradient ? ((BWMod == 4) ? 32 : 16) : \
-Clone1 || Clone2 || Clone3 ? ((BWMod == 4) ? 8 : 4) : BWMod
-WidthTest = (BL >= BWMin <= BR)
-IsBDivider = (BDivider > 0) && (BL > BWMin < BR)
-IsFeather = (Feather > 0) && (BL >= BWMod <= BR)
+SizeTest = \
+(IsPillarBox && (BL >= BorderMin <= BR)) || (IsLetterBox && (BT >= BorderMin <= BB))
+IsBDivider = \
+(BDivider > 0) && ((IsPillarBox && (BL > BorderMin < BR)) || (IsLetterBox && (BT > BorderMin < BB)))
+IsFeather = \
+(Feather > 0) && ((IsPillarBox && (BL >= WidthMod <= BR)) || (IsLetterBox && (BT >= HeightMod <= BB)))
 
 FrostyPlain = FrostyPlain && !Plain
-FrostyGradient = FrostyGradient && !FrostyPlain && !Plain && WidthTest
-Clone1 = Clone1 || (Clone2 && !IsFeather) && !FrostyGradient && !FrostyPlain && !Plain && WidthTest
-Clone2 = Clone2 && !FrostyGradient && !FrostyPlain && !Plain && WidthTest && IsFeather
-Clone3 = Clone3 && !FrostyGradient && !FrostyPlain && !Plain && WidthTest
+FrostyGradient = FrostyGradient && !FrostyPlain && !Plain && SizeTest
+Clone1 = Clone1 || (Clone2 && !IsFeather) && !FrostyGradient && !FrostyPlain && !Plain && SizeTest
+Clone2 = Clone2 && IsFeather && !FrostyGradient && !FrostyPlain && !Plain && SizeTest
+Clone3 = Clone3 && !FrostyGradient && !FrostyPlain && !Plain && SizeTest
 IsClone = Clone1 || Clone2 || Clone3
-IsFrostyStatic = IsFrostyStatic && !FrostyGradient && !FrostyPlain && !Plain && !IsClone && WidthTest
-Frosty = Frosty && !FrostyGradient && !FrostyPlain && !Plain && !IsClone && WidthTest
+IsFrostyStatic = IsFrostyStatic && !FrostyGradient && !FrostyPlain && !Plain && !IsClone && SizeTest
+Frosty = Frosty && !FrostyGradient && !FrostyPlain && !Plain && !IsClone && SizeTest
 IsFrosty = Frosty || IsFrostyStatic
-Plain = Plain || (!FrostyPlain && !FrostyGradient && !IsClone && !IsFrosty)
-IsPlain = FrostyPlain || Plain
+Plain = Plain || (!FrostyGradient && !FrostyPlain && !IsClone && !IsFrosty)
+IsPlain = Plain || FrostyPlain
 
-BClip = IsClone ? Resized : ((RatioW * RatioH) >= 1) ? Source : Resized
+Ratio = (IsPillarBox ? F_Resizing_Width : F_OutWidth) * \
+(IsPillarBox ? F_OutHeight : F_Resizing_Height) / F_Source_Width / F_Source_Height
+
+BClip = IsClone || (InDAR > 0) || ((InSAR > 0) && (InSAR != 1)) || (Ratio < 1) ? Resized : Cropped
 BClipWidth = width(BClip)
 F_BClipWidth = float(BClipWidth)
 BClipHeight = height(BClip)
 F_BClipHeight = float(BClipHeight)
+F_VidSize = IsPillarBox ? F_BClipHeight : F_BClipWidth
+
+Feather = !IsFeather ? 0 : IsPillarBox ? \
+min((Feather < WidthMod) ? WidthMod : Feather, floor(F_Resizing_Width / 6.0 / F_WidthMod) * WidthMod) : \
+min((Feather < HeightMod) ? HeightMod : Feather, floor(F_Resizing_Height / 6.0 / F_HeightMod) * HeightMod)
 
 BColor = default(BColor, FrostyGradient || FrostyPlain ? $008080 : $000000)
-Feather = IsFeather ? \
-min((Feather < BWMod) ? BWMod : Feather, floor(F_ResizingWidth / 6.0 / F_BWMod) * BWMod) : nop()
-Bright = IsBright ? Bright : 0.0
-Cont = IsCont ? Cont : 1.0
-Sat = IsSat ? Sat : !Plain ? 0.85 : 1.0
-Blend = IsBlend ? Blend : IsFrostyStatic ? 0.5 : IsFrosty ? 0.2 : 0.0
-Blur = IsBlur ? ((Blur >= 0) ? Blur : -Blur * F_BClipHeight / 720.0) : \
-Clone1 || Clone2 ? F_BClipHeight / 75.0 : Clone3 ? F_BClipHeight / 25.0 : 0.0
-VBlur = IsVBlur ? ((VBlur >= 0) ? VBlur : -VBlur * F_BClipHeight / 720.0) : IsBlur || IsClone ? Blur : 0.0
-Texture = defined(Texture) ? ((Texture >= 0) ? Texture : -Texture * F_OutHeight / 720.0) : \
-IsClone ? F_OutHeight / 200 : !Plain ? F_OutHeight / 100.0 : 0.0
-TextureC = defined(TextureC) ? ((TextureC >= 0) ? TextureC : -TextureC * F_OutHeight / 720.0) : 0.0
-TSoft = IsTSoft ? TSoft : IsFrosty ? 5 : Clone3 ? 1 : 0
+Bright = default(Bright, IsPillarBox || Plain ? 0.0 : -25.0)
+Cont = default(Cont, IsPillarBox || Plain ? 1.0 : 0.66)
+Sat = default(Sat, Plain ? 1.0 : IsPillarBox ? 0.85 : 0.66)
+Blend = default(Blend, IsFrostyStatic ? 0.5 : IsFrosty ? 0.2 : 0.0)
 
-BL = !IsBDivider ? BL : BL - BDivider
-BR = !IsBDivider ? BR : BR - BDivider
-FL = IsFeather ? max(BL, floor((BL + (Feather * 3)) / F_BWMod) * BWMod) : nop()
-FR = IsFeather ? max(BR, floor((BR + (Feather * 3)) / F_BWMod) * BWMod) : nop()
-Texture = (GPlugin == 0) ? 0 : (GPlugin == 1) ? Texture : floor(Texture * 6.0) * 8
-TextureC = (GPlugin == 0) ? 0 : (GPlugin == 1) ? TextureC : floor(TextureC * 6.0) * 8
+Blur = \
+IsBlur ? ((Blur >= 0) ? Blur : -Blur * F_VidSize / 720.0) : \
+Clone1 || Clone2 ? F_VidSize / 75.0 : Clone3 ? F_VidSize / 25.0 : 0
+VBlur = \
+IsVBlur ? ((VBlur >= 0) ? VBlur : -VBlur * F_VidSize / 720.0) : IsBlur || IsClone ? Blur : 0
+
+Texture = default(Texture, IsClone ? 2.5 : !Plain ? 5.0 : 0.0)
+Texture = (Texture == 0) || (GPlugin == 0) ? 0 : (GPlugin == 1) ? Texture : round(Texture * 64.0)
+TextureC = default(TextureC, 0.0)
+TextureC = (TextureC == 0) || (GPlugin == 0) ? 0 : (GPlugin == 1) ? TextureC : round(TextureC * 64.0)
+TSoft = default(TSoft, Frosty ? 5 : Clone3 ? 1 : 0)
+IsTSoft = (TSoft > 0) && (Frosty || IsClone)
+
+# ===============================================================================
+#            Insist
+# ===============================================================================
+
+Assert((0 <= FrostyStatic <= LastFrame), \
+FB + " The valid range for FrostyStatic is from zero to the final frame number " + \
+string(LastFrame, "(0 to %.0f) ") + chr(10))
+
+Assert(!IsPillarBox || (BDivider <= 0) || (WidthMod != 2) || (BDivider % 2 == 0), \
+FB + " " + Color_Format + " requires a Mod2 BDivider for pillarbox borders " + chr(10))
+Assert(!IsPillarBox || (BDivider <= 0) || (WidthMod != 4) || (BDivider % 4 == 0), \
+FB + " " + Color_Format + " requires a Mod4 BDivider for pillarbox borders " + chr(10))
+Assert(!IsLetterBox || (BDivider <= 0) || (HeightMod != 2) || (BDivider % 2 == 0), \
+FB + " " + Color_Format + " requires a Mod2 BDivider for letterbox borders " + chr(10))
+
+Assert((Feather == 0) || (BDivider == 0), \
+FB + " Feather and BDivider can't be used together (one must equal zero) " + chr(10))
+Assert((Feather == 0) || !FrostyGradient, \
+FB + " Feather can't be greater than zero when FrostyGradient=true " + chr(10))
+
+Assert((0 <= GPlugin <= 2), FB + " The valid choices for GPlugin are " + chr(10) + \
+" 0 (no added grain), 1 (AddGrainC) or 2 (neo_f3kdb) " + chr(10))
+
+Assert((0 <= Clone <= 3), FB + " Clone can only be 0 (disabled), 1, 2 or 3 " + chr(10))
+Assert((-255 <= Bright <= 255), FB + " The valid range for Bright is -255 thru 255 " + chr(10))
+Assert((0 <= Cont <= 10), FB + " The valid range for Cont is 0.0 thru 10.0 " + chr(10))
+Assert((0 <= Sat <= 10), FB + " The valid range for Sat is 0.0 thru 10.0 " + chr(10))
+Assert((0 <= Blend <= 1), FB + " The valid range for Blend is 0.0 to 1.0 " + chr(10))
+Assert((0 <= Texture) && (0 <= TextureC), FB + " Texture and TextureC cannot be negative " + chr(10))
+Assert((0 <= TSoft <= 7), FB + " The valid range for TSoft is 0 to 7 " + chr(10))
+
+""", "Borders & Frosty Defaults Eval") : nop()
+
+# ===============================================================================
+#            PillarBox Borders
+# ===============================================================================
+
+IsBorders && IsPillarBox ? Eval("""
+
+BL = IsBDivider ? BL - BDivider : BL
+BR = IsBDivider ? BR - BDivider : BR
+FL = IsFeather ? max(BL, floor((BL + (Feather * 3)) / F_WidthMod) * WidthMod) : nop()
+FR = IsFeather ? max(BR, floor((BR + (Feather * 3)) / F_WidthMod) * WidthMod) : nop()
 
 # -------------------------------------------------------------------------------
-#	     PillarBox Strings
+#            PillarBox Strings
 # -------------------------------------------------------------------------------
 
-FastBlurS = (IsPlain && !IsFeather) || FrostyGradient ? "" : \
-".FastBlur(Blur, y_blur=VBlur, iterations=Iterations, dither=true)"
-FBordS = ".AddBorders(0, 0, ResizingWidth-FL+BL-FR+BR, 0),"
+ResizedStr = !IsBDivider ? ",Resized," : ",Resized.AddBorders(BDivider, 0, BDivider, 0, color=BDColor),"
 
-GaussLS = !IsPlain ? \
-(IsResampleMT ? ".GaussResizeMT(BL, OutHeight)" : ".GaussResize(BL, OutHeight)") : nop()
-GaussRS = !IsPlain ? \
-(IsResampleMT ? ".GaussResizeMT(BR, OutHeight)" : ".GaussResize(BR, OutHeight)") : nop()
-FGaussLS = IsFeather ? \
-(IsResampleMT ? ".GaussResizeMT(FL, OutHeight)" : ".GaussResize(FL, OutHeight)") : nop()
-FGaussRS = IsFeather ? \
-(IsResampleMT ? ".GaussResizeMT(FR, OutHeight)" : ".GaussResize(FR, OutHeight)") : nop()
+FastBlurStr = ".FastBlur(Blur, y_blur=VBlur, iterations=Iterations, dither=true)"
 
-Gauss3LS = Clone3 ? (IsResampleMT ? \
-".GaussResizeMT(max(BL, floor(WidthCloneBorderL * RatioL / F_BWMod) * BWMod), \
-max(OutHeight, floor(OutHeight * RatioL / F_BHMod) * BHMod))" : \
-".GaussResize(max(BL, floor(WidthCloneBorderL * RatioL / F_BWMod) * BWMod), \
-max(OutHeight, floor(OutHeight * RatioL / F_BHMod) * BHMod))") : nop()
-Gauss3RS = Clone3 ? (IsResampleMT ? \
-".GaussResizeMT(max(BR, floor(WidthCloneBorderR * RatioR / F_BWMod) * BWMod), \
-max(OutHeight, floor(OutHeight * RatioR / F_BHMod) * BHMod))" : \
-".GaussResize(max(BR, floor(WidthCloneBorderR * RatioR / F_BWMod) * BWMod), \
-max(OutHeight, floor(OutHeight * RatioR / F_BHMod) * BHMod))") : nop()
+FBordStr = ".AddBorders(0, 0, Resizing_Width-FL+BL-FR+BR, 0),"
+GaussMTStr = ".GaussResize" + (!IsResampleMT ? "" : "MT")
 
-GPlugS = (GPlugin == 1) ? ".AddGrain(var=Texture, uvar=TextureC, constant=true)" : \
-(GPlugin == 2) ? ".neo_f3kdb(range=0, grainY=Texture, grainC=TextureC, dither_algo=1)" : ""
+GaussLStr = !IsPlain ? GaussMTStr + "(BL, OutHeight)" : nop()
+GaussRStr = !IsPlain ? GaussMTStr + "(BR, OutHeight)" : nop()
+FGaussLStr = IsFeather ? GaussMTStr + "(FL, OutHeight)" : nop()
+FGaussRStr = IsFeather ? GaussMTStr + "(FR, OutHeight)" : nop()
 
-LoopS = ".Trim(1, 1).Loop(TotalFrames)"
-ResizedS = !IsBDivider ? ",Resized," : ",Resized.AddBorders(BDivider, 0, BDivider, 0, color=BDColor),"
-StaticLS = IsFrostyStatic ? ".Trim(FrostyStatic, end=FrostyStatic).Loop(TotalFrames)" : ""
-TSoftS = (TSoft > 0) && (IsFrosty || IsClone) ? ".TemporalSoften(TSoft, 255, 255, 20, 2)" : ""
-TweakS = (Bright != 0.0) || (Cont != 1.0) || (Sat != 1.0) ? ".Tweak(bright=Bright, cont=Cont, sat=Sat)" : ""
+Gauss3LStr = Clone3 ? GaussMTStr + "(max(BL, floor(WidthCloneBorderL * RatioL / F_WidthMod) * WidthMod), \
+max(OutHeight, floor(OutHeight * RatioL / F_HeightMod) * HeightMod))" : nop()
+Gauss3RStr = Clone3 ? GaussMTStr + "(max(BR, floor(WidthCloneBorderR * RatioR / F_WidthMod) * WidthMod), \
+max(OutHeight, floor(OutHeight * RatioR / F_HeightMod) * HeightMod))" : nop()
 
-TwkBlrGrS = TweakS + FastBlurS + GPlugS
-TweakBlurS = TweakS + FastBlurS
+GrainStr = ((Texture == 0) && (TextureC == 0)) || (GPlugin == 0) ? "" : \
+(GPlugin == 1) ? ".AddGrain(var=Texture, uvar=TextureC, constant=StaticT)" : \
+".neo_f3kdb(grainY=Texture, grainC=TextureC, dither_algo=1, " + \
+"dynamic_grain=DynamicT, output_depth=Source_Bits)"
+
+LoopStr = ".Trim(1, 1).Loop(TotalFrames)"
+SLoopStr = IsFrostyStatic ? ".Trim(FrostyStatic, end=FrostyStatic).Loop(TotalFrames)" : ""
+TSoftStr = IsTSoft ? ".TemporalSoften(TSoft, 255, 255, 20, 2)" : ""
+TweakStr = (Bright != 0.0) || (Cont != 1.0) || (Sat != 1.0) ? ".Tweak(bright=Bright, cont=Cont, sat=Sat)" : ""
+
+TBStr = TweakStr + FastBlurStr
+TBGStr = TweakStr + FastBlurStr + GrainStr
 
 # -------------------------------------------------------------------------------
-#	     PillarBox Frosty Borders
+#            PillarBox Frosty Borders
 # -------------------------------------------------------------------------------
 
-FrostyCrop = IsFrosty && (TSoft > 0) ? \
-BClipWidth - max(BWMin, round(F_BClipWidth / (!Faster ? 5.0 : 10.0) / F_BWMod) * BWMod) : nop()
-FrostyLR = IsFrosty && (TSoft > 0) ? \
-Eval("StackHorizontal(BClip.crop(0, 0, -FrostyCrop, 0), BClip.crop(FrostyCrop, 0, 0, 0))" + TSoftS) : nop()
-WidthFrostyLR = IsFrosty && (TSoft > 0) ? width(FrostyLR) : nop()
+FrostyCrop = IsFrosty && IsTSoft ? \
+BClipWidth - max(BorderMin, round(F_BClipWidth / (!Faster ? 5.0 : 10.0) / F_WidthMod) * WidthMod) : nop()
 
-FrostyCrop = IsFrosty && (TSoft > 0) ? \
-WidthFrostyLR - max(BWMin, round(float(WidthFrostyLR) / (!Faster ? 16.0 : 8.0) / F_BWMod) * BWMod) : \
-IsFrosty ? BClipWidth - max(BWMin, round(F_BClipWidth / 80.0 / F_BWMod) * BWMod) : nop()
+FrostyLR = IsFrosty && IsTSoft ? \
+Eval("StackHorizontal(BClip.crop(0, 0, -FrostyCrop, 0), BClip.crop(FrostyCrop, 0, 0, 0))" + TSoftStr) : nop()
+WidthFrostyLR = IsFrosty && IsTSoft ? width(FrostyLR) : nop()
 
-FrostyL = IsFrosty ? ((TSoft > 0) ? \
-FrostyLR.crop(0, 0, -FrostyCrop, 0) : BClip.crop(0, 0, -FrostyCrop, 0)) : nop()
-FrostyR = IsFrosty ? ((TSoft > 0) ? \
-FrostyLR.crop(FrostyCrop, 0, 0, 0) : BClip.crop(FrostyCrop, 0, 0, 0)) : nop()
+FrostyCrop = IsFrosty ? (IsTSoft ? WidthFrostyLR - \
+max(BorderMin, round(float(WidthFrostyLR) / (!Faster ? 16.0 : 8.0) / F_WidthMod) * WidthMod) : \
+BClipWidth - max(BorderMin, round(F_BClipWidth / 80.0 / F_WidthMod) * WidthMod)) : nop()
+
+FrostyL = IsFrosty ? (IsTSoft ? FrostyLR : BClip).crop(0, 0, -FrostyCrop, 0) : nop()
+FrostyR = IsFrosty ? (IsTSoft ? FrostyLR : BClip).crop(FrostyCrop, 0, 0, 0) : nop()
+
 WidthFrostyL = IsFrosty ? width(FrostyL) : nop()
 WidthFrostyR = IsFrosty ? width(FrostyR) : nop()
 
@@ -376,37 +489,38 @@ Overlay(FrostyR, FlipHorizontal(FrostyL), Opacity=Blend)) : nop()
 Blur = IsBlur ? Blur : IsFrosty ? max(WidthFrostyL, WidthFrostyR) + (!IsFeather ? 0 : Feather) : Blur
 VBlur = IsVBlur ? VBlur : IsFrosty ? F_BClipHeight / 10.0 : VBlur
 
-FrostyL = Frosty ? Eval("FrostyBlendL" + TweakBlurS + GaussLS + GPlugS + StaticLS) : nop()
-FrostyR = Frosty ? Eval("FrostyBlendR" + TweakBlurS + GaussRS + GPlugS + StaticLS) : nop()
+FastBlurStr = (Blur == 0 == VBlur) || FrostyGradient || (IsPlain && !IsFeather) ? "" : FastBlurStr
 
-FFrostyL = IsFeather && Frosty ? Eval("FrostyBlendL" + TweakBlurS + FGaussLS + GPlugS + StaticLS) : nop()
-FFrostyR = IsFeather && Frosty ? Eval("FrostyBlendR" + TweakBlurS + FGaussRS + GPlugS + StaticLS) : nop()
+FrostyL = Frosty ? Eval("FrostyBlendL" + TBStr + GaussLStr + GrainStr + SLoopStr) : nop()
+FrostyR = Frosty ? Eval("FrostyBlendR" + TBStr + GaussRStr + GrainStr + SLoopStr) : nop()
+
+FFrostyL = Frosty && IsFeather ? Eval("FrostyBlendL" + TBStr + FGaussLStr + GrainStr + SLoopStr) : nop()
+FFrostyR = Frosty && IsFeather ? Eval("FrostyBlendR" + TBStr + FGaussRStr + GrainStr + SLoopStr) : nop()
 
 # -------------------------------------------------------------------------------
-#	     PillarBox Clone Borders
+#            PillarBox Clone Borders
 # -------------------------------------------------------------------------------
 
-MaxCloneC = (IsFrosty && IsFeather) || IsClone ? floor(F_BClipWidth / 2.0 / F_BWMod) * BWMod : nop()
-CloneCropL = (IsFrosty && IsFeather) || IsClone ? max(MaxCloneC, BClipWidth - BL) : nop()
-CloneCropR = (IsFrosty && IsFeather) || IsClone ? max(MaxCloneC, BClipWidth - BR) : nop()
-CloneBorderL = (IsFrosty && IsFeather) || IsClone ? Resized.crop(0, 0, -CloneCropL, 0) : nop()
-CloneBorderR = (IsFrosty && IsFeather) || IsClone ? Resized.crop(CloneCropR, 0, 0, 0) : nop()
-WidthCloneBorderL = (IsFrosty && IsFeather) || IsClone ? width(CloneBorderL) : nop()
-WidthCloneBorderR = (IsFrosty && IsFeather) || IsClone ? width(CloneBorderR) : nop()
+MaxCloneC = IsClone || (IsFrosty && IsFeather) ? floor(F_BClipWidth / 2.0 / F_WidthMod) * WidthMod : nop()
+CloneCropL = IsClone || (IsFrosty && IsFeather) ? max(MaxCloneC, BClipWidth - BL) : nop()
+CloneCropR = IsClone || (IsFrosty && IsFeather) ? max(MaxCloneC, BClipWidth - BR) : nop()
+CloneBorderL = IsClone || (IsFrosty && IsFeather) ? Resized.crop(0, 0, -CloneCropL, 0) : nop()
+CloneBorderR = IsClone || (IsFrosty && IsFeather) ? Resized.crop(CloneCropR, 0, 0, 0) : nop()
+WidthCloneBorderL = IsClone || (IsFrosty && IsFeather) ? width(CloneBorderL) : nop()
+WidthCloneBorderR = IsClone || (IsFrosty && IsFeather) ? width(CloneBorderR) : nop()
 
-FlipCloneL = (IsFrosty && IsFeather) || IsClone ? \
-FlipHorizontal(((WidthCloneBorderL == BL) ? CloneBorderL : Eval("CloneBorderL" + GaussLS))) : nop()
-FlipCloneR = (IsFrosty && IsFeather) || IsClone ? \
-FlipHorizontal(((WidthCloneBorderR == BR) ? CloneBorderR : Eval("CloneBorderR" + GaussRS))) : nop()
+FlipCloneL = IsClone || (IsFrosty && IsFeather) ? \
+FlipHorizontal(((WidthCloneBorderL == BL) ? CloneBorderL : Eval("CloneBorderL" + GaussLStr))) : nop()
+FlipCloneR = IsClone || (IsFrosty && IsFeather) ? \
+FlipHorizontal(((WidthCloneBorderR == BR) ? CloneBorderR : Eval("CloneBorderR" + GaussRStr))) : nop()
 
-CloneLR = \
-(TSoft > 0) && (Clone1 || Clone3) ? Eval("StackHorizontal(CloneBorderL, CloneBorderR)" + TSoftS) : nop()
-WidthCloneLR = (TSoft > 0) && (Clone1 || Clone3) ? width(CloneLR) : nop()
+CloneLR = (Clone1 || Clone3) && IsTSoft ? Eval("StackHorizontal(CloneBorderL, CloneBorderR)" + TSoftStr) : nop()
+WidthCloneLR = (Clone1 || Clone3) && IsTSoft ? width(CloneLR) : nop()
 
-CloneL = (TSoft > 0) && (Clone1 || Clone3) ? \
-CloneLR.crop(0, 0, -WidthCloneLR+WidthCloneBorderL, 0) : (Clone1 || Clone3) ? CloneBorderL : nop()
-CloneR = (TSoft > 0) && (Clone1 || Clone3) ? \
-CloneLR.crop(WidthCloneLR-WidthCloneBorderR, 0, 0, 0) : (Clone1 || Clone3) ? CloneBorderR : nop()
+CloneL = \
+Clone1 || Clone3 ? (IsTSoft ? CloneLR.crop(0, 0, -WidthCloneLR+WidthCloneBorderL, 0) : CloneBorderL) : nop()
+CloneR = \
+Clone1 || Clone3 ? (IsTSoft ? CloneLR.crop(WidthCloneLR-WidthCloneBorderR, 0, 0, 0) : CloneBorderR) : nop()
 
 CloneBlendL = Clone1 || Clone3 ? ((Blend == 0) ? CloneL : (Blend == 1) ? CloneR : \
 Overlay(CloneL, FlipHorizontal(CloneR), Opacity=Blend)) : nop()
@@ -414,17 +528,17 @@ CloneBlendR = Clone1 || Clone3 ? ((Blend == 0) ? CloneR : (Blend == 1) ? CloneL 
 Overlay(CloneR, FlipHorizontal(CloneL), Opacity=Blend)) : nop()
 
 FCloneL = \
-IsFeather && Clone1 ? ((WidthCloneBorderL == BL) ? CloneBlendL : Eval("CloneBlendL" + GaussLS)) : nop()
+Clone1 && IsFeather ? ((WidthCloneBorderL == BL) ? CloneBlendL : Eval("CloneBlendL" + GaussLStr)) : nop()
 FCloneR = \
-IsFeather && Clone1 ? ((WidthCloneBorderR == BR) ? CloneBlendR : Eval("CloneBlendR" + GaussRS)) : nop()
+Clone1 && IsFeather ? ((WidthCloneBorderR == BR) ? CloneBlendR : Eval("CloneBlendR" + GaussRStr)) : nop()
 
-CloneL = !IsFeather && Clone1 ? ((WidthCloneBorderL == BL) ? \
-Eval("CloneBlendL" + TwkBlrGrS) : Eval("CloneBlendL" + TweakBlurS + GaussLS + GPlugS)) : nop()
-CloneR = !IsFeather && Clone1 ? ((WidthCloneBorderR == BR) ? \
-Eval("CloneBlendR" + TwkBlrGrS) : Eval("CloneBlendR" + TweakBlurS + GaussRS + GPlugS)) : nop()
+CloneL = Clone1 && !IsFeather ? ((WidthCloneBorderL == BL) ? \
+Eval("CloneBlendL" + TBGStr) : Eval("CloneBlendL" + TBStr + GaussLStr + GrainStr)) : nop()
+CloneR = Clone1 && !IsFeather ? ((WidthCloneBorderR == BR) ? \
+Eval("CloneBlendR" + TBGStr) : Eval("CloneBlendR" + TBStr + GaussRStr + GrainStr)) : nop()
 
 # -------------------------------------------------------------------------------
-#	     PillarBox Clone2 Borders
+#            PillarBox Clone2 Borders
 # -------------------------------------------------------------------------------
 
 Clone2CropL = Clone2 ? max(MaxCloneC, BClipWidth - FL) : nop()
@@ -434,243 +548,189 @@ Clone2BR = Clone2 ? BClip.crop(Clone2CropR, 0, 0, 0) : nop()
 WidthClone2BL = Clone2 ? width(Clone2BL) : nop()
 WidthClone2BR = Clone2 ? width(Clone2BR) : nop()
 
-FlipClone2L = Clone2 ? FlipHorizontal(((WidthClone2BL == FL) ? Clone2BL : Eval("Clone2BL" + FGaussLS))) : nop()
-FlipClone2R = Clone2 ? FlipHorizontal(((WidthClone2BR == FR) ? Clone2BR : Eval("Clone2BR" + FGaussRS))) : nop()
+FlipClone2L = Clone2 ? FlipHorizontal(((WidthClone2BL == FL) ? Clone2BL : Eval("Clone2BL" + FGaussLStr))) : nop()
+FlipClone2R = Clone2 ? FlipHorizontal(((WidthClone2BR == FR) ? Clone2BR : Eval("Clone2BR" + FGaussRStr))) : nop()
 
-Clone2LR = (TSoft > 0) && Clone2 ? Eval("StackHorizontal(Clone2BL, Clone2BR)" + TSoftS) : nop()
-WidthClone2LR = (TSoft > 0) && Clone2 ? width(Clone2LR) : nop()
+Clone2LR = Clone2 && IsTSoft ? Eval("StackHorizontal(Clone2BL, Clone2BR)" + TSoftStr) : nop()
+WidthClone2LR = Clone2 && IsTSoft ? width(Clone2LR) : nop()
 
-Clone2L = (TSoft > 0) && Clone2 ? \
-Clone2LR.crop(0, 0, -WidthClone2LR+WidthClone2BL, 0) : Clone2 ? Clone2BL : nop()
-Clone2R = (TSoft > 0) && Clone2 ? \
-Clone2LR.crop(WidthClone2LR-WidthClone2BR, 0, 0, 0) : Clone2 ? Clone2BR : nop()
+Clone2L = Clone2 ? (IsTSoft ? Clone2LR.crop(0, 0, -WidthClone2LR+WidthClone2BL, 0) : Clone2BL) : nop()
+Clone2R = Clone2 ? (IsTSoft ? Clone2LR.crop(WidthClone2LR-WidthClone2BR, 0, 0, 0) : Clone2BR) : nop()
 
 Clone2BlendL = Clone2 ? ((Blend == 0) ? Clone2L : (Blend == 1) ? Clone2R : \
 Overlay(Clone2L, FlipHorizontal(Clone2R), Opacity=Blend)) : nop()
 Clone2BlendR = Clone2 ? ((Blend == 0) ? Clone2R : (Blend == 1) ? Clone2L : \
 Overlay(Clone2R, FlipHorizontal(Clone2L), Opacity=Blend)) : nop()
 
-Clone2L = Clone2 ? ((WidthClone2BL == FL) ? Eval("Clone2BlendL" + TwkBlrGrS) : \
-Eval("Clone2BlendL" + TweakBlurS + FGaussLS + GPlugS)) : nop()
-Clone2R = Clone2 ? ((WidthClone2BR == FR) ? Eval("Clone2BlendR" + TwkBlrGrS) : \
-Eval("Clone2BlendR" + TweakBlurS + FGaussRS + GPlugS)) : nop()
+Clone2L = Clone2 ? ((WidthClone2BL == FL) ? Eval("Clone2BlendL" + TBGStr) : \
+Eval("Clone2BlendL" + TBStr + FGaussLStr + GrainStr)) : nop()
+Clone2R = Clone2 ? ((WidthClone2BR == FR) ? Eval("Clone2BlendR" + TBGStr) : \
+Eval("Clone2BlendR" + TBStr + FGaussRStr + GrainStr)) : nop()
 
 # -------------------------------------------------------------------------------
-#	     PillarBox Clone3 Borders
+#            PillarBox Clone3 Borders
 # -------------------------------------------------------------------------------
 
-RatioL = Clone3 ? (WidthCloneBorderL - BL >= 0) ? 1.618 : float(BL) / float(WidthCloneBorderL) : nop()
-RatioR = Clone3 ? (WidthCloneBorderR - BR >= 0) ? 1.618 : float(BR) / float(WidthCloneBorderR) : nop()
+RatioL = Clone3 ? (((WidthCloneBorderL - BL) >= 0) ? 1.618 : float(BL) / float(WidthCloneBorderL)) : nop()
+RatioR = Clone3 ? (((WidthCloneBorderR - BR) >= 0) ? 1.618 : float(BR) / float(WidthCloneBorderR)) : nop()
 
-Clone3L = Clone3 ? Eval("CloneBlendL" + Gauss3LS) : nop()
-Clone3R = Clone3 ? Eval("CloneBlendR" + Gauss3RS) : nop()
+Clone3L = Clone3 ? Eval("CloneBlendL" + Gauss3LStr) : nop()
+Clone3R = Clone3 ? Eval("CloneBlendR" + Gauss3RStr) : nop()
 WidthClone3L = Clone3 ? width(Clone3L) : nop()
 HeightClone3L = Clone3 ? height(Clone3L) : nop()
 WidthClone3R = Clone3 ? width(Clone3R) : nop()
 HeightClone3R = Clone3 ? height(Clone3R) : nop()
 
-Clone3L_CL = Clone3 ? max(0, floor((WidthClone3L - BL) / F_BWMod / 2.0) * BWMod) : nop()
+Clone3L_CL = Clone3 ? max(0, floor((WidthClone3L - BL) / F_WidthMod / 2.0) * WidthMod) : nop()
 Clone3L_CR = Clone3 ? max(0, WidthClone3L - BL - Clone3L_CL) : nop()
-Clone3L_CT = Clone3 ? max(0, floor((HeightClone3L - BClipHeight) / F_BHMod / 2.0) * BHMod) : nop()
+Clone3L_CT = Clone3 ? max(0, floor((HeightClone3L - BClipHeight) / F_HeightMod / 2.0) * HeightMod) : nop()
 Clone3L_CB = Clone3 ? max(0, HeightClone3L - BClipHeight - Clone3L_CT) : nop()
-Clone3R_CL = Clone3 ? max(0, floor((WidthClone3R - BR) / F_BWMod / 2.0) * BWMod) : nop()
+Clone3R_CL = Clone3 ? max(0, floor((WidthClone3R - BR) / F_WidthMod / 2.0) * WidthMod) : nop()
 Clone3R_CR = Clone3 ? max(0, WidthClone3R - BR - Clone3R_CL) : nop()
-Clone3R_CT = Clone3 ? max(0, floor((HeightClone3R - BClipHeight) / F_BHMod / 2.0) * BHMod) : nop()
-Clone3R_CB = Clone3 ? max(0, HeightClone3R - BClipHeight - Clone3L_CT) : nop()
+Clone3R_CT = Clone3 ? max(0, floor((HeightClone3R - BClipHeight) / F_HeightMod / 2.0) * HeightMod) : nop()
+Clone3R_CB = Clone3 ? max(0, HeightClone3R - BClipHeight - Clone3R_CT) : nop()
 
 Clone3L = Clone3 ? Clone3L.crop(Clone3L_CL, Clone3L_CT, -Clone3L_CR, -Clone3L_CB) : nop()
 Clone3R = Clone3 ? Clone3R.crop(Clone3R_CL, Clone3R_CT, -Clone3R_CR, -Clone3R_CB) : nop()
 
-FClone3L = IsFeather && Clone3 ? Clone3L : nop()
-FClone3R = IsFeather && Clone3 ? Clone3R : nop()
+FClone3L = Clone3 && IsFeather ? Clone3L : nop()
+FClone3R = Clone3 && IsFeather ? Clone3R : nop()
 
-Clone3L = !IsFeather && Clone3 ? Eval("Clone3L" + TwkBlrGrS) : nop()
-Clone3R = !IsFeather && Clone3 ? Eval("Clone3R" + TwkBlrGrS) : nop()
+Clone3L = Clone3 && !IsFeather ? Eval("Clone3L" + TBGStr) : nop()
+Clone3R = Clone3 && !IsFeather ? Eval("Clone3R" + TBGStr) : nop()
 
 # -------------------------------------------------------------------------------
-#	     PillarBox FrostyGradient Borders
+#            PillarBox FrostyGradient Borders
 # -------------------------------------------------------------------------------
 
 GradientLR = \
 FrostyGradient ? BlankClip(BClip, width=88, height=OutHeight).AddBorders(8, 0, 0, 0, color=BColor)\
 .Tweak(bright=Bright, cont=Cont, sat=Sat).FastBlur(50, y_blur=0, iterations=3, dither=true) : nop()
-GradientL = FrostyGradient ? Eval("FlipHorizontal(GradientLR)" + GaussLS + GPlugS + LoopS) : nop()
-GradientR = FrostyGradient ? Eval("GradientLR" + GaussRS + GPlugS + LoopS) : nop()
+GradientL = FrostyGradient ? Eval("FlipHorizontal(GradientLR)" + GaussLStr + GrainStr + LoopStr) : nop()
+GradientR = FrostyGradient ? Eval("GradientLR" + GaussRStr + GrainStr + LoopStr) : nop()
 
 # -------------------------------------------------------------------------------
-#	     PillarBox Plain Borders
+#            PillarBox Plain Borders
 # -------------------------------------------------------------------------------
 
-PlainL = IsPlain && (BL >= BWMod) ? \
-Eval("BlankClip(Resized, width=BL, color=BColor)" + TweakS + GPlugS + LoopS) : nop()
-PlainR = IsPlain && (BR >= BWMod) ? \
-Eval("BlankClip(Resized, width=BR, color=BColor)" + TweakS + GPlugS + LoopS) : nop()
+PlainL = IsPlain && (BL >= WidthMod) ? \
+Eval("BlankClip(Resized, width=BL, color=BColor)" + TweakStr + GrainStr + LoopStr) : nop()
+PlainR = IsPlain && (BR >= WidthMod) ? \
+Eval("BlankClip(Resized, width=BR, color=BColor)" + TweakStr + GrainStr + LoopStr) : nop()
 
-PlainL2 = IsFeather && IsPlain ? Eval("BlankClip(Resized, width=BL, color=BColor)" + TweakS + LoopS) : nop()
-PlainR2 = IsFeather && IsPlain ? Eval("BlankClip(Resized, width=BR, color=BColor)" + TweakS + LoopS) : nop()
+PlainL2 = IsPlain && IsFeather ? Eval("BlankClip(Resized, width=BL, color=BColor)" + TweakStr + LoopStr) : nop()
+PlainR2 = IsPlain && IsFeather ? Eval("BlankClip(Resized, width=BR, color=BColor)" + TweakStr + LoopStr) : nop()
 
 # -------------------------------------------------------------------------------
-#	     PillarBox Frosty Video
+#            PillarBox Frosty Clip
 # -------------------------------------------------------------------------------
 
 FrostyBL = !IsFeather ? (IsFrosty ? FrostyL : Clone1 ? CloneL : Clone3 ? Clone3L : \
-FrostyGradient ? GradientL : IsPlain && (BL >= BWMod) ? PlainL : nop()) : \
-IsFrosty || Clone1 || Clone2 || Clone3 ? FlipCloneL : IsPlain && (BL >= BWMod) ? PlainL2 : nop()
+FrostyGradient ? GradientL : IsPlain && (BL >= WidthMod) ? PlainL : nop()) : \
+IsFrosty || Clone1 || Clone2 || Clone3 ? FlipCloneL : IsPlain && (BL >= WidthMod) ? PlainL2 : nop()
 
 FrostyBR = !IsFeather ? (IsFrosty ? FrostyR : Clone1 ? CloneR : Clone3 ? Clone3R : \
-FrostyGradient ? GradientR :IsPlain && (BR >= BWMod) ? PlainR : nop()) : \
-IsFrosty || Clone1 || Clone2 || Clone3 ? FlipCloneR : IsPlain && (BR >= BWMod) ? PlainR2 : nop()
+FrostyGradient ? GradientR :IsPlain && (BR >= WidthMod) ? PlainR : nop()) : \
+IsFrosty || Clone1 || Clone2 || Clone3 ? FlipCloneR : IsPlain && (BR >= WidthMod) ? PlainR2 : nop()
 
-FrostyOut = IsFrosty || IsClone || FrostyGradient || (IsPlain && (BL >= BWMod <= BR)) ? \
-Eval("StackHorizontal(FrostyBL" + ResizedS + "FrostyBR)") : \
-IsPlain && (BL >= BWMod) ? StackHorizontal(FrostyBL, Resized) : \
-IsPlain && (BR >= BWMod) ? StackHorizontal(Resized, FrostyBR) : Resized
+FrostyClip = IsFrosty || IsClone || FrostyGradient || (IsPlain && (BL >= WidthMod <= BR)) ? \
+Eval("StackHorizontal(FrostyBL" + ResizedStr + "FrostyBR)") : \
+IsPlain && (BL >= WidthMod) ? StackHorizontal(FrostyBL, Resized) : \
+IsPlain && (BR >= WidthMod) ? StackHorizontal(Resized, FrostyBR) : Resized
 
 # -------------------------------------------------------------------------------
-#	     PillarBox Feather Mask
+#            PillarBox Feather Mask
 # -------------------------------------------------------------------------------
 
-FeatherMask = IsFeather ? BlankClip(Resized, width=ResizingWidth-(Feather*2))\
+FeatherMask = IsFeather ? BlankClip(Resized, width=Resizing_Width-(Feather*2))\
 .AddBorders(BL+Feather, 0, BR+Feather, 0, color=$FFFFFF).ColorYUV(Levels="TV->PC")\
 .FastBlur(Feather/2.25, y_blur=0, iterations=3, dither=true) : nop()
 
-FeatherMask = IsFeather ? Eval("FeatherMask" + LoopS) : nop()
+FeatherMask = IsFeather ? Eval("FeatherMask" + LoopStr) : nop()
 
 # -------------------------------------------------------------------------------
-#	     PillarBox Feather Clip
+#            PillarBox Feather Clip
 # -------------------------------------------------------------------------------
 
 FeatherClip = IsFeather ? \
-(IsFrosty ? StackHorizontal(FFrostyL.AddBorders(0, 0, ResizingWidth-FL+BL-FR+BR, 0), FFrostyR) : \
-Clone1 ? Eval("StackHorizontal(StackHorizontal(FCloneL, Resized.crop(0, 0, -ResizingWidth+FL-BL, 0))" + \
-TwkBlrGrS + FBordS + \
-"StackHorizontal(Resized.crop(ResizingWidth-FR+BR, 0, 0, 0), FCloneR)" + TwkBlrGrS + ")")  : \
-Clone2 ? StackHorizontal(Clone2L.AddBorders(0, 0, ResizingWidth-FL+BL-FR+BR, 0), Clone2R) : \
-Clone3 ? Eval("StackHorizontal(StackHorizontal(FClone3L, Resized.crop(0, 0, -ResizingWidth+FL-BL, 0))" + \
-TwkBlrGrS + FBordS + \
-"StackHorizontal(Resized.crop(ResizingWidth-FR+BR, 0, 0, 0), FClone3R)" + TwkBlrGrS + ")") : \
-Eval("StackHorizontal(BlankClip(Resized, width=FL, color=BColor)" + TweakS + GPlugS + LoopS + \
-FBordS + "BlankClip(Resized, width=FR, color=BColor)" + TweakS + GPlugS + LoopS + ")")) : nop()
+(IsFrosty ? StackHorizontal(FFrostyL.AddBorders(0, 0, Resizing_Width-FL+BL-FR+BR, 0), FFrostyR) : \
+Clone1 ? Eval("StackHorizontal(StackHorizontal(FCloneL, Resized.crop(0, 0, -Resizing_Width+FL-BL, 0))" + \
+TBGStr + FBordStr + "StackHorizontal(Resized.crop(Resizing_Width-FR+BR, 0, 0, 0), FCloneR)" + TBGStr + ")")  : \
+Clone2 ? StackHorizontal(Clone2L.AddBorders(0, 0, Resizing_Width-FL+BL-FR+BR, 0), Clone2R) : \
+Clone3 ? Eval("StackHorizontal(StackHorizontal(FClone3L, Resized.crop(0, 0, -Resizing_Width+FL-BL, 0))" + \
+TBGStr + FBordStr + "StackHorizontal(Resized.crop(Resizing_Width-FR+BR, 0, 0, 0), FClone3R)" + TBGStr + ")") : \
+Eval("StackHorizontal(BlankClip(Resized, width=FL, color=BColor)" + TweakStr + GrainStr + LoopStr + \
+FBordStr + "BlankClip(Resized, width=FR, color=BColor)" + TweakStr + GrainStr + LoopStr + ")")) : nop()
 
 # -------------------------------------------------------------------------------
-#	     PillarBox Output
+#            PillarBox Output
 # -------------------------------------------------------------------------------
 
-FrostyOut = !IsFeather ? FrostyOut : Overlay(FrostyOut, FeatherClip, mask=FeatherMask)
+FrostyOut = IsFeather ? Overlay(FrostyClip, FeatherClip, mask=FeatherMask) : FrostyClip
+
+""", "Frosty PillarBox Eval") : IsBorders && IsLetterBox ? Eval("""
 
 # ===============================================================================
-#	     LetterBox Borders
+#            LetterBox Borders
 # ===============================================================================
 
-""", "Frosty PillarBox Eval") : Eval("""
+BT = IsBDivider ? BT - BDivider : BT
+BB = IsBDivider ? BB - BDivider : BB
+FT = IsFeather ? max(BT, floor((BT + (Feather * 3)) / F_HeightMod) * HeightMod) : nop()
+FB = IsFeather ? max(BB, floor((BB + (Feather * 3)) / F_HeightMod) * HeightMod) : nop()
 
 # -------------------------------------------------------------------------------
-#	     LetterBox Defaults
+#            LetterBox Strings
 # -------------------------------------------------------------------------------
 
-BHMin = Frosty || IsFrostyStatic || FrostyGradient ? 16 : Clone1 || Clone2 || Clone3 ? 4 : BHMod
-HeightTest = (BT >= BHMin <= BB)
-IsBDivider = (BDivider > 0) && (BL > BWMin < BR)
-IsFeather = (Feather > 0) && (BT >= BHMod <= BB)
+ResizedStr = !IsBDivider ? ",Resized," : ",Resized.AddBorders(0, BDivider, 0, BDivider, color=BDColor),"
 
-FrostyPlain = FrostyPlain && !Plain
-FrostyGradient = FrostyGradient && !FrostyPlain && !Plain && HeightTest
-Clone1 = Clone1 || (Clone2 && !IsFeather) && !FrostyGradient && !FrostyPlain && !Plain && HeightTest
-Clone2 = Clone2 && !FrostyGradient && !FrostyPlain && !Plain && HeightTest && IsFeather
-Clone3 = Clone3 && !FrostyGradient && !FrostyPlain && !Plain && HeightTest
-IsClone = Clone1 || Clone2 || Clone3
-IsFrostyStatic = IsFrostyStatic && !FrostyGradient && !FrostyPlain && !Plain && !IsClone && HeightTest
-Frosty = Frosty && !FrostyGradient && !FrostyPlain && !Plain && !IsClone && HeightTest
-IsFrosty = Frosty || IsFrostyStatic
-Plain = Plain || (!FrostyPlain && !FrostyGradient && !IsClone && !IsFrosty)
-IsPlain = FrostyPlain || Plain
+FastBlurStr = ".FastBlur(Blur, y_blur=VBlur, iterations=Iterations, dither=true)"
 
-BClip = IsClone ? Resized : ((RatioW * RatioH) >= 1) ? Source : Resized
-BClipWidth = width(BClip)
-F_BClipWidth = float(BClipWidth)
-BClipHeight = height(BClip)
-F_BClipHeight = float(BClipHeight)
+FBordStr = ".AddBorders(0, 0, 0, Resizing_Height-FT+BT-FB+BB),"
+GaussMTStr = ".GaussResize" + (!IsResizeMT ? "" : "MT")
 
-BColor = default(BColor, FrostyGradient || FrostyPlain ? $008080 : $000000)
-Feather = IsFeather ? \
-min((Feather < BHMod) ? BHMod : Feather, floor(F_ResizingHeight / 6.0 / F_BHMod) * BHMod) : nop()
-Bright = IsBright ? Bright : !Plain ? -25.0 : 0.0
-Cont = IsCont ? Cont : !Plain ? 0.66 : 1.0
-Sat = IsSat ? Sat : !Plain ? 0.66 : 1.0
-Blend = IsBlend ? Blend : IsFrostyStatic ? 0.5 : IsFrosty ? 0.2 : 0.0
-Blur = IsBlur ? ((Blur >= 0) ? Blur : -Blur * F_BClipWidth / 720.0) : \
-Clone1 || Clone2 ? F_BClipWidth / 75.0 : Clone3 ? F_BClipWidth / 25.0 : 0.0
-VBlur = IsVBlur ? ((VBlur >= 0) ? VBlur : -VBlur * F_BClipWidth / 720.0) : IsBlur || IsClone ? Blur : 0.0
-Texture = defined(Texture) ? ((Texture >= 0) ? Texture : -Texture * F_OutWidth / 720.0) : \
-IsClone ? F_OutWidth / 200 : !Plain ? F_OutWidth / 100.0 : 0.0
-TextureC = defined(TextureC) ? ((TextureC >= 0) ? TextureC : -TextureC * F_OutWidth / 720.0) : 0.0
-TSoft = IsTSoft ? TSoft : IsFrosty ? 5 : Clone3 ? 1 : 0
+GaussTStr = !IsPlain ? GaussMTStr + "(OutWidth, BT)" : nop()
+GaussBStr = !IsPlain ? GaussMTStr + "(OutWidth, BB)" : nop()
+FGaussTStr = IsFeather ? GaussMTStr + "(OutWidth, FT)" : nop()
+FGaussBStr = IsFeather ? GaussMTStr + "(OutWidth, FB)" : nop()
 
-BT = !IsBDivider ? BT : BT - BDivider
-BB = !IsBDivider ? BB : BB - BDivider
-FT = IsFeather ? max(BT, floor((BT + (Feather * 3)) / F_BHMod) * BHMod) : nop()
-FB = IsFeather ? max(BB, floor((BB + (Feather * 3)) / F_BHMod) * BHMod) : nop()
-Texture = (GPlugin == 0) ? 0 : (GPlugin == 1) ? Texture : floor(Texture * 6.0) * 8
-TextureC = (GPlugin == 0) ? 0 : (GPlugin == 1) ? TextureC : floor(TextureC * 6.0) * 8
+Gauss3TStr = Clone3 ? GaussMTStr + "(max(OutWidth, floor(OutWidth * RatioT / F_WidthMod) * WidthMod), \
+max(BT, floor(HeightCloneBorderT * RatioT / F_HeightMod) * HeightMod))" : nop()
+Gauss3BStr = Clone3 ? GaussMTStr + "(max(OutWidth, floor(OutWidth * RatioB / F_WidthMod) * WidthMod), \
+max(BB, floor(HeightCloneBorderB * RatioB / F_HeightMod) * HeightMod))" : nop()
+
+GrainStr = ((Texture == 0) && (TextureC == 0)) || (GPlugin == 0) ? "" : \
+(GPlugin == 1) ? ".AddGrain(var=Texture, uvar=TextureC, constant=StaticT)" : \
+".neo_f3kdb(grainY=Texture, grainC=TextureC, dither_algo=1, " + \
+"dynamic_grain=DynamicT, output_depth=Source_Bits)"
+
+LoopStr = ".Trim(1, 1).Loop(TotalFrames)"
+SLoopStr = IsFrostyStatic ? ".Trim(FrostyStatic, end=FrostyStatic).Loop(TotalFrames)" : ""
+TSoftStr = IsTSoft ? ".TemporalSoften(TSoft, 255, 255, 20, 2)" : ""
+TweakStr = (Bright != 0.0) || (Cont != 1.0) || (Sat != 1.0) ? ".Tweak(bright=Bright, cont=Cont, sat=Sat)" : ""
+
+TBStr = TweakStr + FastBlurStr
+TBGStr = TweakStr + FastBlurStr + GrainStr
 
 # -------------------------------------------------------------------------------
-#	     LetterBox Strings
+#            LetterBox Frosty Borders
 # -------------------------------------------------------------------------------
 
-FastBlurS = (IsPlain && !IsFeather) || FrostyGradient ? "" : \
-".FastBlur(Blur, y_blur=VBlur, iterations=Iterations, dither=true)"
-FBordS = ".AddBorders(0, 0, 0, ResizingHeight-FT+BT-FB+BB),"
+FrostyCrop = IsFrosty && IsTSoft ? \
+BClipHeight - max(BorderMin, round(F_BClipHeight / (!Faster ? 5.0 : 10.0) / F_HeightMod) * HeightMod) : nop()
 
-GaussTS = !IsPlain ? \
-(IsResampleMT ? ".GaussResizeMT(OutWidth, BT)" : ".GaussResize(OutWidth, BT)") : nop()
-GaussBS = !IsPlain ? \
-(IsResampleMT ? ".GaussResizeMT(OutWidth, BB)" : ".GaussResize(OutWidth, BB)") : nop()
-FGaussTS = IsFeather ? \
-(IsResampleMT ? ".GaussResizeMT(OutWidth, FT)" : ".GaussResize(OutWidth, FT)") : nop()
-FGaussBS = IsFeather ? \
-(IsResampleMT ? ".GaussResizeMT(OutWidth, FB)" : ".GaussResize(OutWidth, FB)") : nop()
+FrostyTB = IsFrosty && IsTSoft ? \
+Eval("StackVertical(BClip.crop(0, 0, 0, -FrostyCrop), BClip.crop(0, FrostyCrop, 0, 0))" + TSoftStr) : nop()
+HeightFrostyTB = IsFrosty && IsTSoft ? height(FrostyTB) : nop()
 
-Gauss3TS = Clone3 ? (IsResampleMT ? \
-".GaussResizeMT(max(OutWidth, floor(OutWidth * RatioT / F_BWMod) * BWMod), \
-max(BT, floor(HeightCloneBorderT * RatioT / F_BHMod) * BHMod))" : \
-".GaussResize(max(OutWidth, floor(OutWidth * RatioT / F_BWMod) * BWMod), \
-max(BT, floor(HeightCloneBorderT * RatioT / F_BHMod) * BHMod))") : nop()
-Gauss3BS = Clone3 ? (IsResampleMT ? \
-".GaussResizeMT(max(OutWidth, floor(OutWidth * RatioB / F_BWMod) * BWMod), \
-max(BB, floor(HeightCloneBorderB * RatioB / F_BHMod) * BHMod))" : \
-".GaussResize(max(OutWidth, floor(OutWidth * RatioB / F_BWMod) * BWMod), \
-max(BB, floor(HeightCloneBorderB * RatioB / F_BHMod) * BHMod))") : nop()
+FrostyCrop = IsFrosty ? (IsTSoft ? HeightFrostyTB - \
+max(BorderMin, round(float(HeightFrostyTB) / (!Faster ? 16.0 : 8.0) / F_HeightMod) * HeightMod) : \
+BClipHeight - max(BorderMin, round(F_BClipHeight / 80.0 / F_HeightMod) * HeightMod)) : nop()
 
-GPlugS = (GPlugin == 1) ? ".AddGrain(var=Texture, uvar=TextureC, constant=true)" : \
-(GPlugin == 2) ? ".neo_f3kdb(range=0, grainY=Texture, grainC=TextureC, dither_algo=1)" : ""
+FrostyT = IsFrosty ? (IsTSoft ? FrostyTB : BClip).crop(0, 0, 0, -FrostyCrop) : nop()
+FrostyB = IsFrosty ? (IsTSoft ? FrostyTB : BClip).crop(0, FrostyCrop, 0, 0) : nop()
 
-LoopS = ".Trim(1, 1).Loop(TotalFrames)"
-ResizedS = !IsBDivider ? ",Resized," : ",Resized.AddBorders(0, BDivider, 0, BDivider, color=BDColor),"
-StaticLS = IsFrostyStatic ? ".Trim(FrostyStatic, end=FrostyStatic).Loop(TotalFrames)" : ""
-TSoftS = (TSoft > 0) && (IsFrosty || IsClone) ? ".TemporalSoften(TSoft, 255, 255, 20, 2)" : ""
-TweakS = (Bright != 0.0) || (Cont != 1.0) || (Sat != 1.0) ? ".Tweak(bright=Bright, cont=Cont, sat=Sat)" : ""
-
-TwkBlrGrS = TweakS + FastBlurS + GPlugS
-TweakBlurS = TweakS + FastBlurS
-
-# -------------------------------------------------------------------------------
-#	     LetterBox Frosty Borders
-# -------------------------------------------------------------------------------
-
-FrostyCrop = IsFrosty && (TSoft > 0) ? \
-BClipHeight - max(BHMin, round(F_BClipHeight / (!Faster ? 5.0 : 10.0) / F_BHMod) * BHMod) : nop()
-FrostyTB = IsFrosty && (TSoft > 0) ? \
-Eval("StackVertical(BClip.crop(0, 0, 0, -FrostyCrop), BClip.crop(0, FrostyCrop, 0, 0))" + TSoftS) : nop()
-HeightFrostyTB = IsFrosty && (TSoft > 0) ? height(FrostyTB) : nop()
-
-FrostyCrop = IsFrosty && (TSoft > 0) ? \
-HeightFrostyTB - max(BHMin, round(float(HeightFrostyTB) / (!Faster ? 16.0 : 8.0) / F_BHMod) * BHMod) : \
-IsFrosty ? BClipHeight - max(BHMin, round(F_BClipHeight / 80.0 / F_BHMod) * BHMod) : nop()
-
-FrostyT = IsFrosty ? ((TSoft > 0) ? \
-FrostyTB.crop(0, 0, 0, -FrostyCrop) : BClip.crop(0, 0, 0, -FrostyCrop)) : nop()
-FrostyB = IsFrosty ? ((TSoft > 0) ? \
-FrostyTB.crop(0, FrostyCrop, 0, 0) : BClip.crop(0, FrostyCrop, 0, 0)) : nop()
 HeightFrostyT = IsFrosty ? height(FrostyT) : nop()
 HeightFrostyB = IsFrosty ? height(FrostyB) : nop()
 
@@ -682,37 +742,38 @@ Overlay(FrostyB, FlipVertical(FrostyT), Opacity=Blend)) : nop()
 Blur = IsBlur ? Blur : IsFrosty ? F_BClipWidth / 10.0 : Blur
 VBlur = IsVBlur ? VBlur : IsFrosty ? max(HeightFrostyT, HeightFrostyB) + (!IsFeather ? 0 : Feather) : VBlur
 
-FrostyT = Frosty ? Eval("FrostyBlendT" + TweakBlurS + GaussTS + GPlugS + StaticLS) : nop()
-FrostyB = Frosty ? Eval("FrostyBlendB" + TweakBlurS + GaussBS + GPlugS + StaticLS) : nop()
+FastBlurStr = (Blur == 0 == VBlur) || FrostyGradient || (IsPlain && !IsFeather) ? "" : FastBlurStr
 
-FFrostyT = IsFeather && Frosty ? Eval("FrostyBlendT" + TweakBlurS + FGaussTS + GPlugS + StaticLS) : nop()
-FFrostyB = IsFeather && Frosty ? Eval("FrostyBlendB" + TweakBlurS + FGaussBS + GPlugS + StaticLS) : nop()
+FrostyT = Frosty ? Eval("FrostyBlendT" + TBStr + GaussTStr + GrainStr + SLoopStr) : nop()
+FrostyB = Frosty ? Eval("FrostyBlendB" + TBStr + GaussBStr + GrainStr + SLoopStr) : nop()
+
+FFrostyT = Frosty && IsFeather ? Eval("FrostyBlendT" + TBStr + FGaussTStr + GrainStr + SLoopStr) : nop()
+FFrostyB = Frosty && IsFeather ? Eval("FrostyBlendB" + TBStr + FGaussBStr + GrainStr + SLoopStr) : nop()
 
 # -------------------------------------------------------------------------------
-#	     LetterBox Clone Borders
+#            LetterBox Clone Borders
 # -------------------------------------------------------------------------------
 
-MaxCloneC = (IsFrosty && IsFeather) || IsClone ? floor(F_BClipHeight / 2.0 / F_BHMod) * BHMod : nop()
-CloneCropT = (IsFrosty && IsFeather) || IsClone ? max(MaxCloneC, BClipHeight - BT) : nop()
-CloneCropB = (IsFrosty && IsFeather) || IsClone ? max(MaxCloneC, BClipHeight - BB) : nop()
-CloneBorderT = (IsFrosty && IsFeather) || IsClone ? Resized.crop(0, 0, 0, -CloneCropT) : nop()
-CloneBorderB = (IsFrosty && IsFeather) || IsClone ? Resized.crop(0, CloneCropB, 0, 0) : nop()
-HeightCloneBorderT = (IsFrosty && IsFeather) || IsClone ? height(CloneBorderT) : nop()
-HeightCloneBorderB = (IsFrosty && IsFeather) || IsClone ? height(CloneBorderB) : nop()
+MaxCloneC = IsClone || (IsFrosty && IsFeather) ? floor(F_BClipHeight / 2.0 / F_HeightMod) * HeightMod : nop()
+CloneCropT = IsClone || (IsFrosty && IsFeather) ? max(MaxCloneC, BClipHeight - BT) : nop()
+CloneCropB = IsClone || (IsFrosty && IsFeather) ? max(MaxCloneC, BClipHeight - BB) : nop()
+CloneBorderT = IsClone || (IsFrosty && IsFeather) ? Resized.crop(0, 0, 0, -CloneCropT) : nop()
+CloneBorderB = IsClone || (IsFrosty && IsFeather) ? Resized.crop(0, CloneCropB, 0, 0) : nop()
+HeightCloneBorderT = IsClone || (IsFrosty && IsFeather) ? height(CloneBorderT) : nop()
+HeightCloneBorderB = IsClone || (IsFrosty && IsFeather) ? height(CloneBorderB) : nop()
 
-FlipCloneT = (IsFrosty && IsFeather) || IsClone ? \
-FlipVertical(((HeightCloneBorderT == BT) ? CloneBorderT : Eval("CloneBorderT" + GaussTS))) : nop()
-FlipCloneB = (IsFrosty && IsFeather) || IsClone ? \
-FlipVertical(((HeightCloneBorderB == BB) ? CloneBorderB : Eval("CloneBorderB" + GaussBS))) : nop()
+FlipCloneT = IsClone || (IsFrosty && IsFeather) ? \
+FlipVertical(((HeightCloneBorderT == BT) ? CloneBorderT : Eval("CloneBorderT" + GaussTStr))) : nop()
+FlipCloneB = IsClone || (IsFrosty && IsFeather) ? \
+FlipVertical(((HeightCloneBorderB == BB) ? CloneBorderB : Eval("CloneBorderB" + GaussBStr))) : nop()
 
-CloneTB = \
-(TSoft > 0) && (Clone1 || Clone3) ? Eval("StackVertical(CloneBorderT, CloneBorderB)" + TSoftS) : nop()
-HeightCloneTB = (TSoft > 0) && (Clone1 || Clone3) ? height(CloneTB) : nop()
+CloneTB = (Clone1 || Clone3) && IsTSoft ? Eval("StackVertical(CloneBorderT, CloneBorderB)" + TSoftStr) : nop()
+HeightCloneTB = (Clone1 || Clone3) && IsTSoft ? height(CloneTB) : nop()
 
-CloneT = (TSoft > 0) && (Clone1 || Clone3) ? \
-CloneTB.crop(0, 0, 0, -HeightCloneTB+HeightCloneBorderT) : (Clone1 || Clone3) ? CloneBorderT : nop()
-CloneB = (TSoft > 0) && (Clone1 || Clone3) ? \
-CloneTB.crop(0, HeightCloneTB-HeightCloneBorderB, 0, 0) : (Clone1 || Clone3) ? CloneBorderB : nop()
+CloneT = \
+Clone1 || Clone3 ? (IsTSoft ? CloneTB.crop(0, 0, 0, -HeightCloneTB+HeightCloneBorderT) : CloneBorderT) : nop()
+CloneB = \
+Clone1 || Clone3 ? (IsTSoft ? CloneTB.crop(0, HeightCloneTB-HeightCloneBorderB, 0, 0) : CloneBorderB) : nop()
 
 CloneBlendT = Clone1 || Clone3 ? ((Blend == 0) ? CloneT : (Blend == 1) ? CloneB : \
 Overlay(CloneT, FlipVertical(CloneB), Opacity=Blend)) : nop()
@@ -720,17 +781,17 @@ CloneBlendB = Clone1 || Clone3 ? ((Blend == 0) ? CloneB : (Blend == 1) ? CloneT 
 Overlay(CloneB, FlipVertical(CloneT), Opacity=Blend)) : nop()
 
 FCloneT = \
-IsFeather && Clone1 ? ((HeightCloneBorderT == BT) ? CloneBlendT : Eval("CloneBlendT" + GaussTS)) : nop()
+Clone1 && IsFeather ? ((HeightCloneBorderT == BT) ? CloneBlendT : Eval("CloneBlendT" + GaussTStr)) : nop()
 FCloneB = \
-IsFeather && Clone1 ? ((HeightCloneBorderB == BB) ? CloneBlendB : Eval("CloneBlendB" + GaussBS)) : nop()
+Clone1 && IsFeather ? ((HeightCloneBorderB == BB) ? CloneBlendB : Eval("CloneBlendB" + GaussBStr)) : nop()
 
-CloneT = !IsFeather && Clone1 ? ((HeightCloneBorderT == BT) ? \
-Eval("CloneBlendT" + TwkBlrGrS) : Eval("CloneBlendT" + TweakBlurS + GaussTS + GPlugS)) : nop()
-CloneB = !IsFeather && Clone1 ? ((HeightCloneBorderB == BB) ? \
-Eval("CloneBlendB" + TwkBlrGrS) : Eval("CloneBlendB" + TweakBlurS + GaussBS + GPlugS)) : nop()
+CloneT = Clone1 && !IsFeather ? ((HeightCloneBorderT == BT) ? \
+Eval("CloneBlendT" + TBGStr) : Eval("CloneBlendT" + TBStr + GaussTStr + GrainStr)) : nop()
+CloneB = Clone1 && !IsFeather ? ((HeightCloneBorderB == BB) ? \
+Eval("CloneBlendB" + TBGStr) : Eval("CloneBlendB" + TBStr + GaussBStr + GrainStr)) : nop()
 
 # -------------------------------------------------------------------------------
-#	     LetterBox Clone2 Borders
+#            LetterBox Clone2 Borders
 # -------------------------------------------------------------------------------
 
 Clone2CropT = Clone2 ? max(MaxCloneC, BClipHeight - FT) : nop()
@@ -740,276 +801,353 @@ Clone2BB = Clone2 ? BClip.crop(0, Clone2CropB, 0, 0) : nop()
 HeightClone2BT = Clone2 ? height(Clone2BT) : nop()
 HeightClone2BB = Clone2 ? height(Clone2BB) : nop()
 
-FlipClone2T = Clone2 ? FlipVertical(((HeightClone2BT == FT) ? Clone2BT : Eval("Clone2BT" + FGaussTS))) : nop()
-FlipClone2B = Clone2 ? FlipVertical(((HeightClone2BB == FB) ? Clone2BB : Eval("Clone2BB" + FGaussBS))) : nop()
+FlipClone2T = Clone2 ? FlipVertical(((HeightClone2BT == FT) ? Clone2BT : Eval("Clone2BT" + FGaussTStr))) : nop()
+FlipClone2B = Clone2 ? FlipVertical(((HeightClone2BB == FB) ? Clone2BB : Eval("Clone2BB" + FGaussBStr))) : nop()
 
-Clone2TB = (TSoft > 0) && Clone2 ? Eval("StackVertical(Clone2BT, Clone2BB)" + TSoftS) : nop()
-HeightClone2TB = (TSoft > 0) && Clone2 ? height(Clone2TB) : nop()
+Clone2TB = Clone2 && IsTSoft ? Eval("StackVertical(Clone2BT, Clone2BB)" + TSoftStr) : nop()
+HeightClone2TB = Clone2 && IsTSoft ? height(Clone2TB) : nop()
 
-Clone2T = (TSoft > 0) && Clone2 ? \
-Clone2TB.crop(0, 0, 0, -HeightClone2TB+HeightClone2BT) : Clone2 ? Clone2BT : nop()
-Clone2B = (TSoft > 0) && Clone2 ? \
-Clone2TB.crop(0, HeightClone2TB-HeightClone2BB, 0, 0) : Clone2 ? Clone2BB : nop()
+Clone2T = Clone2 ? (IsTSoft ? Clone2TB.crop(0, 0, 0, -HeightClone2TB+HeightClone2BT) : Clone2BT) : nop()
+Clone2B = Clone2 ? (IsTSoft ? Clone2TB.crop(0, HeightClone2TB-HeightClone2BB, 0, 0) : Clone2BB) : nop()
 
 Clone2BlendT = Clone2 ? ((Blend == 0) ? Clone2T : (Blend == 1) ? Clone2B : \
 Overlay(Clone2T, FlipVertical(Clone2B), Opacity=Blend)) : nop()
 Clone2BlendB = Clone2 ? ((Blend == 0) ? Clone2B : (Blend == 1) ? Clone2T : \
 Overlay(Clone2B, FlipVertical(Clone2T), Opacity=Blend)) : nop()
 
-Clone2T = Clone2 ? ((HeightClone2BT == FT) ? Eval("Clone2BlendT" + TwkBlrGrS) : \
-Eval("Clone2BlendT" + TweakBlurS + FGaussTS + GPlugS)) : nop()
-Clone2B = Clone2 ? ((HeightClone2BB == FB) ? Eval("Clone2BlendB" + TwkBlrGrS) : \
-Eval("Clone2BlendB" + TweakBlurS + FGaussBS + GPlugS)) : nop()
+Clone2T = Clone2 ? ((HeightClone2BT == FT) ? Eval("Clone2BlendT" + TBGStr) : \
+Eval("Clone2BlendT" + TBStr + FGaussTStr + GrainStr)) : nop()
+Clone2B = Clone2 ? ((HeightClone2BB == FB) ? Eval("Clone2BlendB" + TBGStr) : \
+Eval("Clone2BlendB" + TBStr + FGaussBStr + GrainStr)) : nop()
 
 # -------------------------------------------------------------------------------
-#	     LetterBox Clone3 Borders
+#            LetterBox Clone3 Borders
 # -------------------------------------------------------------------------------
 
-RatioT = Clone3 ? (HeightCloneBorderT - BT >= 0) ? 1.618 : float(BT) / float(HeightCloneBorderT) : nop()
-RatioB = Clone3 ? (HeightCloneBorderB - BB >= 0) ? 1.618 : float(BB) / float(HeightCloneBorderB) : nop()
+RatioT = Clone3 ? (((HeightCloneBorderT - BT) >= 0) ? 1.618 : float(BT) / float(HeightCloneBorderT)) : nop()
+RatioB = Clone3 ? (((HeightCloneBorderB - BB) >= 0) ? 1.618 : float(BB) / float(HeightCloneBorderB)) : nop()
 
-Clone3T = Clone3 ? Eval("CloneBlendT" + Gauss3TS) : nop()
-Clone3B = Clone3 ? Eval("CloneBlendB" + Gauss3BS) : nop()
+Clone3T = Clone3 ? Eval("CloneBlendT" + Gauss3TStr) : nop()
+Clone3B = Clone3 ? Eval("CloneBlendB" + Gauss3BStr) : nop()
 WidthClone3T = Clone3 ? width(Clone3T) : nop()
 HeightClone3T = Clone3 ? height(Clone3T) : nop()
 WidthClone3B = Clone3 ? width(Clone3B) : nop()
 HeightClone3B = Clone3 ? height(Clone3B) : nop()
 
-Clone3T_CL = Clone3 ? max(0, floor((WidthClone3T - BClipWidth) / F_BWMod / 2.0) * BWMod) : nop()
+Clone3T_CL = Clone3 ? max(0, floor((WidthClone3T - BClipWidth) / F_WidthMod / 2.0) * WidthMod) : nop()
 Clone3T_CR = Clone3 ? max(0, WidthClone3T - BClipWidth - Clone3T_CL) : nop()
-Clone3T_CT = Clone3 ? max(0, floor((HeightClone3T - BT) / F_BHMod / 2.0) * BHMod) : nop()
+Clone3T_CT = Clone3 ? max(0, floor((HeightClone3T - BT) / F_HeightMod / 2.0) * HeightMod) : nop()
 Clone3T_CB = Clone3 ? max(0, HeightClone3T - BT - Clone3T_CT) : nop()
-Clone3B_CL = Clone3 ? max(0, floor((WidthClone3B - BClipWidth) / F_BWMod / 2.0) * BWMod) : nop()
+Clone3B_CL = Clone3 ? max(0, floor((WidthClone3B - BClipWidth) / F_WidthMod / 2.0) * WidthMod) : nop()
 Clone3B_CR = Clone3 ? max(0, WidthClone3B - BClipWidth - Clone3B_CL) : nop()
-Clone3B_CT = Clone3 ? max(0, floor((HeightClone3B - BB) / F_BHMod / 2.0) * BHMod) : nop()
+Clone3B_CT = Clone3 ? max(0, floor((HeightClone3B - BB) / F_HeightMod / 2.0) * HeightMod) : nop()
 Clone3B_CB = Clone3 ? max(0, HeightClone3B - BB - Clone3B_CT) : nop()
 
 Clone3T = Clone3 ? Clone3T.crop(Clone3T_CL, Clone3T_CT, -Clone3T_CR, -Clone3T_CB) : nop()
 Clone3B = Clone3 ? Clone3B.crop(Clone3B_CL, Clone3B_CT, -Clone3B_CR, -Clone3B_CB) : nop()
 
-FClone3T = IsFeather && Clone3 ? Clone3T : nop()
-FClone3B = IsFeather && Clone3 ? Clone3B : nop()
+FClone3T = Clone3 && IsFeather ? Clone3T : nop()
+FClone3B = Clone3 && IsFeather ? Clone3B : nop()
 
-Clone3T = !IsFeather && Clone3 ? Eval("Clone3T" + TwkBlrGrS) : nop()
-Clone3B = !IsFeather && Clone3 ? Eval("Clone3B" + TwkBlrGrS) : nop()
+Clone3T = Clone3 && !IsFeather ? Eval("Clone3T" + TBGStr) : nop()
+Clone3B = Clone3 && !IsFeather ? Eval("Clone3B" + TBGStr) : nop()
 
 # -------------------------------------------------------------------------------
-#	     LetterBox FrostyGradient Borders
+#            LetterBox FrostyGradient Borders
 # -------------------------------------------------------------------------------
 
 GradientTB = \
 FrostyGradient ? BlankClip(BClip, width=OutWidth, height=88).AddBorders(0, 8, 0, 0, color=BColor)\
 .Tweak(bright=Bright, cont=Cont, sat=Sat).FastBlur(0, y_blur=50, iterations=3, dither=true) : nop()
-GradientT = FrostyGradient ? Eval("FlipVertical(GradientTB)" + GaussTS + GPlugS + LoopS) : nop()
-GradientB = FrostyGradient ? Eval("GradientTB" + GaussBS + GPlugS + LoopS) : nop()
+GradientT = FrostyGradient ? Eval("FlipVertical(GradientTB)" + GaussTStr + GrainStr + LoopStr) : nop()
+GradientB = FrostyGradient ? Eval("GradientTB" + GaussBStr + GrainStr + LoopStr) : nop()
 
 # -------------------------------------------------------------------------------
-#	     LetterBox Plain Borders
+#            LetterBox Plain Borders
 # -------------------------------------------------------------------------------
 
-PlainT = IsPlain && (BT >= BHMod) ? \
-Eval("BlankClip(Resized, height=BT, color=BColor)" + TweakS + GPlugS + LoopS) : nop()
-PlainB = IsPlain && (BB >= BHMod) ? \
-Eval("BlankClip(Resized, height=BB, color=BColor)" + TweakS + GPlugS + LoopS) : nop()
+PlainT = IsPlain && (BT >= HeightMod) ? \
+Eval("BlankClip(Resized, height=BT, color=BColor)" + TweakStr + GrainStr + LoopStr) : nop()
+PlainB = IsPlain && (BB >= HeightMod) ? \
+Eval("BlankClip(Resized, height=BB, color=BColor)" + TweakStr + GrainStr + LoopStr) : nop()
 
-PlainT2 = IsFeather && IsPlain ? Eval("BlankClip(Resized, height=BT, color=BColor)" + TweakS + LoopS) : nop()
-PlainB2 = IsFeather && IsPlain ? Eval("BlankClip(Resized, height=BB, color=BColor)" + TweakS + LoopS) : nop()
+PlainT2 = IsPlain && IsFeather ? Eval("BlankClip(Resized, height=BT, color=BColor)" + TweakStr + LoopStr) : nop()
+PlainB2 = IsPlain && IsFeather ? Eval("BlankClip(Resized, height=BB, color=BColor)" + TweakStr + LoopStr) : nop()
 
 # -------------------------------------------------------------------------------
-#	     LetterBox Frosty Video
+#            LetterBox Frosty Clip
 # -------------------------------------------------------------------------------
 
 FrostyBT = !IsFeather ? (IsFrosty ? FrostyT : Clone1 ? CloneT : Clone3 ? Clone3T : \
-FrostyGradient ? GradientT : IsPlain && (BT >= BHMod) ? PlainT : nop()) : \
-IsFrosty || Clone1 || Clone2 || Clone3 ? FlipCloneT : IsPlain && (BT >= BHMod) ? PlainT2 : nop()
+FrostyGradient ? GradientT : IsPlain && (BT >= HeightMod) ? PlainT : nop()) : \
+IsFrosty || Clone1 || Clone2 || Clone3 ? FlipCloneT : IsPlain && (BT >= HeightMod) ? PlainT2 : nop()
 
 FrostyBB = !IsFeather ? (IsFrosty ? FrostyB : Clone1 ? CloneB : Clone3 ? Clone3B : \
-FrostyGradient ? GradientB : IsPlain && (BB >= BHMod) ? PlainB : nop()) : \
-IsFrosty || Clone1 || Clone2 || Clone3 ? FlipCloneB : IsPlain && (BB >= BHMod) ? PlainB2 : nop()
+FrostyGradient ? GradientB : IsPlain && (BB >= HeightMod) ? PlainB : nop()) : \
+IsFrosty || Clone1 || Clone2 || Clone3 ? FlipCloneB : IsPlain && (BB >= HeightMod) ? PlainB2 : nop()
 
-FrostyOut = IsFrosty || IsClone || FrostyGradient || (IsPlain && (BT >= BHMod <= BB)) ? \
-Eval("StackVertical(FrostyBT" + ResizedS + "FrostyBB)") : \
-IsPlain && (BT >= BHMod) ? StackVertical(FrostyBT, Resized) : \
-IsPlain && (BB >= BHMod) ? StackVertical(Resized, FrostyBB) : Resized
+FrostyClip = IsFrosty || IsClone || FrostyGradient || (IsPlain && (BT >= HeightMod <= BB)) ? \
+Eval("StackVertical(FrostyBT" + ResizedStr + "FrostyBB)") : \
+IsPlain && (BT >= HeightMod) ? StackVertical(FrostyBT, Resized) : \
+IsPlain && (BB >= HeightMod) ? StackVertical(Resized, FrostyBB) : Resized
 
 # -------------------------------------------------------------------------------
-#	     LetterBox Feather Mask
+#            LetterBox Feather Mask
 # -------------------------------------------------------------------------------
 
-FeatherMask = IsFeather ? BlankClip(Resized, height=ResizingHeight-(Feather*2))\
+FeatherMask = IsFeather ? BlankClip(Resized, height=Resizing_Height-(Feather*2))\
 .AddBorders(0, BT+Feather, 0, BB+Feather, color=$FFFFFF).ColorYUV(Levels="TV->PC")\
 .FastBlur(0, y_blur=Feather/2.25, iterations=3, dither=true) : nop()
 
-FeatherMask = IsFeather ? Eval("FeatherMask" + LoopS) : nop()
+FeatherMask = IsFeather ? Eval("FeatherMask" + LoopStr) : nop()
 
 # -------------------------------------------------------------------------------
-#	     LetterBox Feather Clip
+#            LetterBox Feather Clip
 # -------------------------------------------------------------------------------
 
 FeatherClip = IsFeather ? \
-(IsFrosty ? StackVertical(FFrostyT.AddBorders(0, 0, 0, ResizingHeight-FT+BT-FB+BB),  FFrostyB) : \
-Clone1 ? Eval("StackVertical(StackVertical(FCloneT, Resized.crop(0, 0, 0, -ResizingHeight+FT-BT))" + \
-TwkBlrGrS + FBordS + "StackVertical(Resized.crop(0, ResizingHeight-FB+BB, 0, 0), FCloneB)" + TwkBlrGrS + ")")  : \
-Clone2 ? StackVertical(Clone2T.AddBorders(0, 0, 0, ResizingHeight-FT+BT-FB+BB), Clone2B) : \
-Clone3 ? Eval("StackVertical(StackVertical(FClone3T, Resized.crop(0, 0, 0, -ResizingHeight+FT-BT))" + \
-TwkBlrGrS + FBordS + "StackVertical(Resized.crop(0, BClipHeight-FB+BB, 0, 0), FClone3B)" + TwkBlrGrS + ")") : \
-Eval("StackVertical(BlankClip(Resized, height=FT, color=BColor)" + TweakS + GPlugS + LoopS + \
-FBordS + "BlankClip(Resized, height=FB, color=BColor)" + TweakS + GPlugS + LoopS + ")")) : nop()
+(IsFrosty ? StackVertical(FFrostyT.AddBorders(0, 0, 0, Resizing_Height-FT+BT-FB+BB),  FFrostyB) : \
+Clone1 ? Eval("StackVertical(StackVertical(FCloneT, Resized.crop(0, 0, 0, -Resizing_Height+FT-BT))" + \
+TBGStr + FBordStr + "StackVertical(Resized.crop(0, Resizing_Height-FB+BB, 0, 0), FCloneB)" + TBGStr + ")")  : \
+Clone2 ? StackVertical(Clone2T.AddBorders(0, 0, 0, Resizing_Height-FT+BT-FB+BB), Clone2B) : \
+Clone3 ? Eval("StackVertical(StackVertical(FClone3T, Resized.crop(0, 0, 0, -Resizing_Height+FT-BT))" + \
+TBGStr + FBordStr + "StackVertical(Resized.crop(0, Resizing_Height-FB+BB, 0, 0), FClone3B)" + TBGStr + ")") : \
+Eval("StackVertical(BlankClip(Resized, height=FT, color=BColor)" + TweakStr + GrainStr + LoopStr + \
+FBordStr + "BlankClip(Resized, height=FB, color=BColor)" + TweakStr + GrainStr + LoopStr + ")")) : nop()
 
 # -------------------------------------------------------------------------------
-#	     LetterBox Output
+#            LetterBox Output
 # -------------------------------------------------------------------------------
 
-FrostyOut = !IsFeather ? FrostyOut : Overlay(FrostyOut, FeatherClip, mask=FeatherMask)
+FrostyOut = IsFeather ? Overlay(FrostyClip, FeatherClip, mask=FeatherMask) : FrostyClip
 
 # ===============================================================================
-#	     Info
+#            No Borders
 # ===============================================================================
 
-""", "Frosty LetterBox Eval")
+""", "Frosty LetterBox Eval") : Eval("   FrostyOut = Resized   ")
+
+# ===============================================================================
+#            Info
+# ===============================================================================
 
 Info ? Eval("""
 
-CL = !IsPillarBox ? "" : FB_FS(((LRCrop / 2.0) <= 0.005) ? 0 : LRCrop / 2.0)
-CR = !IsPillarBox ? "" : FB_FS(((LRCrop / 2.0) <= 0.005) ? 0 : -LRCrop / 2.0)
-CT = !IsLetterBox ? "" : FB_FS(((TBCrop / 2.0) <= 0.005) ? 0 : TBCrop / 2.0)
-CB = !IsLetterBox ? "" : FB_FS(((TBCrop / 2.0) <= 0.005) ? 0 : -TBCrop / 2.0)
-BL = !IsPillarBox ? 0 : !IsBDivider ? BL : BL + BDivider
-BR = !IsPillarBox ? 0 : !IsBDivider ? BR : BR + BDivider
-BT = !IsLetterBox ? 0 : !IsBDivider ? BT : BT + BDivider
-BB = !IsLetterBox ? 0 : !IsBDivider ? BB : BB + BDivider
-SSize = F_OutHeight * 0.035
-SY = (F_OutHeight * 0.5) - (SSize * 6.5)
+InfoCL = CCL + RCL
+InfoCT = CCT + RCT
+InfoCR = CCR + RCR
+InfoCB = CCB + RCB
 
-Cropping = !IsBorders ? "" : "Cropping\n" + \
-(IsPillarBox ? "Left " + CL + "   Right " + CR : "Top " + CT + "   Bottom " + CB) + "\n\n"
-PicW = !IsBorders ? OutWidth : IsPillarBox ? ResizingWidth : OutWidth
-PicH = !IsBorders ? OutHeight : IsPillarBox ? OutHeight : ResizingHeight
+InAspect = (InDAR > 0) ? "Input DAR   " + FB_FS(InDAR, 6, True) + FB_FTF(InDAR) : \
+IsInSAR && (InSAR > 0) ? "Input SAR   " + FB_FS(InSAR, 6, True) + FB_FTF(InSAR) : \
+(PropsSAR > 0) || (!IsInDAR && !IsInSAR && (PropsNum == 1 == PropsDen)) ? \
+"Frame Props SAR   " + \
+FB_FS(PropsSAR, 6, True) + string(PropsNum, "  (%.0f:") + string(PropsDen, "%.0f)") : ""
+
+Cropping = ((InAspect == "") ? "" : "\n\n") + "Total Cropping\n(" + FB_FS(InfoCL) + \
+",  " + FB_FS(InfoCT) + ",  " + FB_FS(-InfoCR) + ",  " + FB_FS(-InfoCB) + ")"
+
+PicW = !IsBorders || IsLetterBox ? OutWidth : Resizing_Width
+PicH = !IsBorders || IsPillarBox ? OutHeight : Resizing_Height
+F_PicW = !IsBorders || IsLetterBox ? F_OutWidth : F_Resizing_Width
+F_PicH = !IsBorders || IsPillarBox ? F_OutHeight : F_Resizing_Height
+
+PicDAR = F_PicW / F_PicH
+
 PicWH = !IsBorders ? "" : \
-string(PicW, "Picture Dimensions\n%.0f x ") + string(PicH, "%.0f") + FB_LCD(PicW, PicH) + "\n\n"
-Borders = (!IsBorders ? "No Borders" : \
-"Borders\n" + (IsPillarBox ? string(BL, "Left %.0f") + string(BR, "   Right %.0f") : \
-string(BT, "Top %.0f") + string(BB, "   Bottom %.0f"))) + "\n\n"
+string(PicW, "\n\nPicture   %.0f x ") + string(PicH, "%.0f") + \
+"\nDAR   " + FB_FS(PicDAR, 6, True) + FB_FTF(PicDAR) + FB_PicMod(PicW, PicH)
 
-InfoText = Cropping + PicWH + Borders + \
-string(OutWidth, "Output Dimensions\n%.0f x ") + string(OutHeight, "%.0f") + \
-FB_LCD(OutWidth, OutHeight) + "\n\n" + Resizer + "\n" + ((RStr == "") ? "" : RStr)
+InfoBL = IsBorders ? (!IsPillarBox || !IsBDivider ? BL : BL + BDivider) : 0
+InfoBT = IsBorders ? (!IsLetterBox || !IsBDivider ? BT : BT + BDivider) : 0
+InfoBR = IsBorders ? (!IsPillarBox || !IsBDivider ? BR : BR + BDivider) : 0
+InfoBB = IsBorders ? (!IsLetterBox || !IsBDivider ? BB : BB + BDivider) : 0
 
-FrostyOut = FrostyOut.subtitle(InfoText, y=SY, size=SSize, text_color=$FFFFE0, align=5, lsp=0)
+BType = !IsBorders ? "" : "\n\nBorders   (" + \
+(FrostyPlain ? "FrostyPlain" : FrostyGradient ? "FrostyGradient" : \
+Clone3 ? "Clone=3" : (Clone == 2) && (Clone2 || Clone1) ? "Clone=2" : \
+Clone1 ? "Clone=1": IsFrostyStatic ? "FrostyStatic" : \
+Frosty ? "Frosty" : "Plain") + ")"
+
+Borders = !IsBorders ? "\n\nNo Borders" : \
+BType + string(InfoBL, "\n(%.0f") + string(InfoBT, ",  %.0f") + \
+string(InfoBR, ",  %.0f") + string(InfoBB, ",  %.0f)")
+
+OutDAR = F_OutWidth / F_OutHeight
+
+OutWH = string(OutWidth, "\n\nOutput   %.0f x ") + string(OutHeight, "%.0f") + \
+"\nDAR   " + FB_FS(OutDAR, 6, True) + FB_FTF(OutDAR) + FB_PicMod(OutWidth, OutHeight)
+
+InfoResizer = "\n\nResizer    " + Resizer + ((RStr == "") ? "" : "\nRStr    " + RStr)
+
+SSize = min(F_OutWidth * 0.04, F_OutHeight * \
+((OutHeight < 300) ? 0.041 : (OutHeight < 400) ? 0.039 : \
+(OutHeight < 500) ? 0.033 : (OutHeight < 600) ? 0.03 : \
+(OutHeight < 1100) ? 0.026 : 0.023))
+
+SY = (F_OutHeight * 0.5) - (SSize * 7.0) - \
+((RStr == "") || !IsBorders ? 0 : SSize * 0.5) + ((InAspect == "") ? SSize : 0)
+
+InfoText = InAspect + Cropping + PicWH + Borders + OutWH + InfoResizer
+
+FrostyOut = FrostyOut.subtitle(InfoText, y=SY, size=SSize, text_color=$FFFFE0, align=2, lsp=10)
 
 """, "Frosty Info Eval") : nop()
 
 # ===============================================================================
-#	     FrostyBorders Output
+#            FrostyBorders Output
 # ===============================================================================
+
+FrostyOut = (AvsBuildNum >= 3593) ? FrostyOut.propSet("_SARNum", 1).propSet("_SARDen", 1) : FrostyOut
 
 return !HasAudio(SourceAudio) ? FrostyOut : AudioDub(FrostyOut, SourceAudio)  }
 
 # ===============================================================================
 # ===============================================================================
-#	     Lowest Common Denominator Function
+#            Helper Functions
 # ===============================================================================
 # ===============================================================================
 
-function FB_LCD(int N, int D)  {
-return string(ContinuedNumerator(N, D), "  (%.0f:") + string(ContinuedDenominator(N, D), "%.0f)")  }
+# -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+#            Float To Fraction
+# -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
-# ===============================================================================
-# ===============================================================================
-#	     Format String Function (Remove Zeros)
-# ===============================================================================
-# ===============================================================================
+function FB_FTF(float Decimal, int "Out")  {
+Out = default(Out, 1)
+Num = (Decimal == 0) ? "0" : string(ContinuedNumerator(Decimal, Limit=10000))
+Den = (Decimal == 0) ? "1" : string(ContinuedDenominator(Decimal, Limit=10000))
+return "  (" + Num + ((Out == 1) ? ":" : " / ") + Den + ")"  }
+
+# -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+#            Format Strings
+# -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 function FB_FS(float F, int "Limit", bool "Keep")  {
-
-Limit = default(Limit, 3)
+Limit = abs(default(Limit, 3))
 Keep = default(Keep, false)
-
-Dec = abs(round(F) - F)
-
-IsDec = (Limit == 0) ? (Dec > 0.5) : (Limit == 1) ? (Dec > 0.05) : \
-(Limit == 2) ? (Dec > 0.005) : (Limit == 3) ? (Dec > 0.0005) : \
-(Limit == 4) ? (Dec > 0.00005) : (Limit == 5) ? (Dec > 0.000005) : (Dec > 0.0000005)
-
-S = !IsDec ? string(F,"%.0f") : (Limit == 1) ? string(F,"%.1f") : (Limit == 2) ? string(F,"%.2f") : \
-(Limit == 3) ? string(F,"%.3f") : (Limit == 4) ? string(F,"%.4f") : (Limit == 5) ? string(F,"%.5f") : string(F,"%.6f")
-
+S = Eval("""string(F, "%.""" + string(Limit) + """f")""")
+S = (Limit == 0) ? S : FB_RemoveTrailingZeros(S)
 SLength = StrLen(S)
-DecPos = FindStr(S, ".")
-LeftS = IsDec ? LeftStr(S, DecPos) : S
-RightS = IsDec ? RightStr(S, SLength - DecPos) : ""
-RightSLength = StrLen(RightS)
-RightSx = RightS + "x"
+NewStr = (Limit == 0) || (FindStr(S, ".") < SLength) ? S : !Keep ? LeftStr(S, SLength - 1) : S + "0"
+return (value(NewStr) == 0) && (FindStr(NewStr, "-") > 0) ? MidStr(NewStr, 2) : NewStr  }
 
-Delx = (FindStr(RightSx, "000000x") > 0) ? 6 : (FindStr(RightSx, "00000x") > 0) ? 5 : \
-(FindStr(RightSx, "0000x") > 0) ? 4 : (FindStr(RightSx, "000x") > 0) ? 3 : \
-(FindStr(RightSx, "00x") > 0) ? 2 : (FindStr(RightSx, "0x") > 0) ? 1 : 0
+# ---------------------------------------
 
-Keep = keep && (abs(value(LeftS)) > 0)
-
-return LeftS + MidStr(RightS, 1, RightSLength - Delx) + (!IsDec && Keep ? ".0" : "")  }
-
-# ===============================================================================
-# ===============================================================================
-#	     Wrapper Functions
-# ===============================================================================
-# ===============================================================================
-
-function iFrostyBorders(clip Source, int "OutWidth", int "OutHeight", val "InDAR", val "InSAR", int "Mod", \
-bool "Frosty", int "FrostyStatic", int "Clone", bool "FrostyGradient", bool "FrostyPlain", bool "Plain", \
-val "BColor", int "BDivider", val "BDColor", int "Feather", \
-float "Bright", float "Cont", float "Sat", float "Blend", float "Blur", float "VBlur", int "Iterations", \
-int "GPlugin", float "Texture", float "TextureC", int "TSoft", bool "Faster", \
-string "Resizer", string "RStr", bool "Info")  {
-
-Info = default(Info, true)
-
-return FrostyBorders(Source, OutWidth, OutHeight, InDAR, InSAR, Mod, \
-Frosty, FrostyStatic, Clone, FrostyGradient, FrostyPlain, Plain, BColor, BDivider, BDColor, Feather, \
-Bright, Cont, Sat, Blend, Blur, VBlur, Iterations, GPlugin, Texture, TextureC, TSoft, Faster, Resizer, RStr, Info)  }
+function FB_RemoveTrailingZeros(string S)  {
+ZeroPos = FindStr(S + "x", "0x")
+return (ZeroPos == 0) ? S : FB_RemoveTrailingZeros(LeftStr(S, ZeroPos - 1))  }
 
 # -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+#            Picture Mod
+# -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
-function Borders(clip Source, int "OutWidth", int "OutHeight", val "InDAR", val "InSAR", int "Mod", \
-bool "Frosty", int "FrostyStatic", int "Clone", bool "FrostyGradient", bool "FrostyPlain", bool "Plain", \
+function FB_PicMod(Video_Width, Video_Height)  {
+
+Width_Mod = \
+(Video_Width % 16 == 0) ? 16 : (Video_Width % 8 == 0) ? 8 : \
+(Video_Width % 4 == 0) ? 4 : (Video_Width % 2 == 0) ? 2 : 1
+Height_Mod = \
+(Video_Height % 16 == 0) ? 16 : (Video_Height % 8 == 0) ? 8 : \
+(Video_Height % 4 == 0) ? 4 : (Video_Height % 2 == 0) ? 2 : 1
+
+return string(Width_Mod, "   (Mod %.0fx") + string(Height_Mod, "%.0f)")  }
+
+# -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+#            IsEqual
+# -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
+function FB_IsEqual(Val1, Val2)  {  return (abs(Val1 - Val2) < 0.00005)  }
+
+# ===============================================================================
+# ===============================================================================
+#            Wrapper Functions
+# ===============================================================================
+# ===============================================================================
+
+function Borders(clip Source, \
+int "OutWidth", int "OutHeight", \
+float "CL", float "CT", float "CR", float "CB", \
+val "CropDAR", float "TCRatio", val "InDAR", val "InSAR", int "Mod", \
+bool "Frosty", int "FrostyStatic", int "Clone", \
+bool "FrostyGradient", bool "FrostyPlain", bool "Plain", \
 val "BColor", int "BDivider", val "BDColor", int "Feather", \
-float "Bright", float "Cont", float "Sat", float "Blend", float "Blur", float "VBlur", int "Iterations", \
-int "GPlugin", float "Texture", float "TextureC", int "TSoft", bool "Faster", \
-string "Resizer", string "RStr", bool "Info")  {
+float "Bright", float "Cont", float "Sat", \
+float "Blend", float "Blur", float "VBlur", int "Iterations", \
+int "GPlugin", float "Texture", float "TextureC", bool "StaticT", \
+int "TSoft", bool "Faster", string "Resizer", string "RStr", bool "Info")  {
 
 Plain = default(Plain, true)
 
-return FrostyBorders(Source, OutWidth, OutHeight, InDAR, InSAR, Mod, \
-Frosty, FrostyStatic, Clone, FrostyGradient, FrostyPlain, Plain, BColor, BDivider, BDColor, Feather, \
-Bright, Cont, Sat, Blend, Blur, VBlur, Iterations, GPlugin, Texture, TextureC, TSoft, Faster, Resizer, RStr, Info)  }
+FrostyBorders(Source, OutWidth, OutHeight, \
+CL, CT, CR, CB, CropDAR, TCRatio, InDAR, InSAR, Mod, \
+Frosty, FrostyStatic, Clone, FrostyGradient, FrostyPlain, Plain, \
+BColor, BDivider, BDColor, Feather, Bright, Cont, Sat, Blend, Blur, VBlur, Iterations, \
+GPlugin, Texture, TextureC, StaticT, TSoft, Faster, Resizer, RStr, Info)  }
 
 # -------------------------------------------------------------------------------
 
-function iBorders(clip Source, int "OutWidth", int "OutHeight", val "InDAR", val "InSAR", int "Mod", \
-bool "Frosty", int "FrostyStatic", int "Clone", bool "FrostyGradient", bool "FrostyPlain", bool "Plain", \
+function iFrostyBorders(clip Source, \
+int "OutWidth", int "OutHeight", \
+float "CL", float "CT", float "CR", float "CB", \
+val "CropDAR", float "TCRatio", val "InDAR", val "InSAR", int "Mod", \
+bool "Frosty", int "FrostyStatic", int "Clone", \
+bool "FrostyGradient", bool "FrostyPlain", bool "Plain", \
 val "BColor", int "BDivider", val "BDColor", int "Feather", \
-float "Bright", float "Cont", float "Sat", float "Blend", float "Blur", float "VBlur", int "Iterations", \
-int "GPlugin", float "Texture", float "TextureC", int "TSoft", bool "Faster", \
-string "Resizer", string "RStr", bool "Info")  {
+float "Bright", float "Cont", float "Sat", \
+float "Blend", float "Blur", float "VBlur", int "Iterations", \
+int "GPlugin", float "Texture", float "TextureC", bool "StaticT", \
+int "TSoft", bool "Faster", string "Resizer", string "RStr", bool "Info")  {
+
+Info = default(Info, true)
+
+FrostyBorders(Source, OutWidth, OutHeight, \
+CL, CT, CR, CB, CropDAR, TCRatio, InDAR, InSAR, Mod, \
+Frosty, FrostyStatic, Clone, FrostyGradient, FrostyPlain, Plain, \
+BColor, BDivider, BDColor, Feather, Bright, Cont, Sat, Blend, Blur, VBlur, Iterations, \
+GPlugin, Texture, TextureC, StaticT, TSoft, Faster, Resizer, RStr, Info)  }
+
+# -------------------------------------------------------------------------------
+
+function iBorders(clip Source, \
+int "OutWidth", int "OutHeight", \
+float "CL", float "CT", float "CR", float "CB", \
+val "CropDAR", float "TCRatio", val "InDAR", val "InSAR", int "Mod", \
+bool "Frosty", int "FrostyStatic", int "Clone", \
+bool "FrostyGradient", bool "FrostyPlain", bool "Plain", \
+val "BColor", int "BDivider", val "BDColor", int "Feather", \
+float "Bright", float "Cont", float "Sat", \
+float "Blend", float "Blur", float "VBlur", int "Iterations", \
+int "GPlugin", float "Texture", float "TextureC", bool "StaticT", \
+int "TSoft", bool "Faster", string "Resizer", string "RStr", bool "Info")  {
 
 Plain = default(Plain, true)
 Info = default(Info, true)
 
-return FrostyBorders(Source, OutWidth, OutHeight, InDAR, InSAR, Mod, \
-Frosty, FrostyStatic, Clone, FrostyGradient, FrostyPlain, Plain, BColor, BDivider, BDColor, Feather, \
-Bright, Cont, Sat, Blend, Blur, VBlur, Iterations, GPlugin, Texture, TextureC, TSoft, Faster, Resizer, RStr, Info)  }
+FrostyBorders(Source, OutWidth, OutHeight, \
+CL, CT, CR, CB, CropDAR, TCRatio, InDAR, InSAR, Mod, \
+Frosty, FrostyStatic, Clone, FrostyGradient, FrostyPlain, Plain, \
+BColor, BDivider, BDColor, Feather, Bright, Cont, Sat, Blend, Blur, VBlur, Iterations, \
+GPlugin, Texture, TextureC, StaticT, TSoft, Faster, Resizer, RStr, Info)  }
 
 # ===============================================================================
 # ===============================================================================
-#	     Resizing Defaults
+#            Resizing Defaults
 # ===============================================================================
 # ===============================================================================
 
-# When a resizing method is specified via the Resizer argument, the functions below are ignored.
-# When the RStr argument is used, the RStr function is ignored.
+# When a resizing method is specified via the Resizer argument, both functions below are ignored.
+# When the RStr argument is used, the RStr function below is ignored.
 
-function FB_Default_Resizer() { return "" }
-function FB_Default_RStr() { return "" }
+function FB_Default_Resizer() { "" }
+function FB_Default_RStr() { "" }
 
 # ===============================================================================
 # ===============================================================================

@@ -99,3 +99,6 @@ hasIsVersionOrGreater ? IsVersionOrGreater(3,7,2) ? import(AviSynthPlugins64PDir
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7,2) ? import(AviSynthPlugins64PDir + "36x/ChromaReconstructorMod.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7,2) ? import(AviSynthPlugins64PDir + "36x/FilmGrain+.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7,2) ? import(AviSynthPlugins64PDir + "36x/sBordersFill.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7,2) ? import(AviSynthPlugins64PDir + "36x/ClipClop.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7,2) ? import(AviSynthPlugins64PDir + "36x/VMAF.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7,2) ? import(AviSynthPlugins64PDir + "36x/ssimulacra.avsi") : nop() : nop()

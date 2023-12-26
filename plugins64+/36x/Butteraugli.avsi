@@ -1,5 +1,5 @@
-function Butteraugli(clip clip1, clip clip2, bool "heatmap")
+function Butteraugli(clip reference, clip distorted, bool "distmap", float "intensity_target", bool "linput")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/Butteraugli.dll")
-        Butteraugli(clip1, clip2, heatmap)
+        Butteraugli(reference, distorted, distmap, intensity_target, linput)
 }

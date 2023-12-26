@@ -9,14 +9,14 @@
 # HOW TO USE
 
 ## AviSynth compatibility mode
-- z_PointResize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
-- z_BilinearResize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
-- z_BicubicResize(clip, int target_width, int target_height, float "b", float "c", float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
-- z_LanczosResize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", int "taps", string "chromaloc_op", string "dither")
-- z_Lanczos4Resize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", int "taps", string "chromaloc_op", string "dither")
-- z_Spline16Resize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
-- z_Spline36Resize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
-- z_Spline64Resize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither")
+- z_PointResize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither", bool "interlaced")
+- z_BilinearResize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither", bool "interlaced")
+- z_BicubicResize(clip, int target_width, int target_height, float "b", float "c", float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither", bool "interlaced")
+- z_LanczosResize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", int "taps", string "chromaloc_op", string "dither", bool "interlaced")
+- z_Lanczos4Resize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", int "taps", string "chromaloc_op", string "dither", bool "interlaced")
+- z_Spline16Resize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither", bool "interlaced")
+- z_Spline36Resize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither", bool "interlaced")
+- z_Spline64Resize(clip, int target_width, int target_height, float "src_left", float "src_top", float "src_width", float "src_height", string "chromaloc_op", string "dither", bool "interlaced")
 
 chromaloc_op - see below for the valid values\
 dither (same as dither_type) - see below for the valid values
@@ -46,7 +46,9 @@ z_ConvertFormat(
 	float "nominal_luminance",
 	bool "approximate_gamma",
     int "use_props"
-    bool "scene_referred")
+    bool "scene_referred"
+    int "bit_depth"
+    string "chroma_subsampling")
 ```
 - width: output width in pixels
 - height: output height in pixels
@@ -110,7 +112,8 @@ z_ConvertFormat(
         "2020_10" ("2020") (14), (Equivalent to 709)
         "2020_12" (15), (Equivalent to 709)
         "st2084" (16),
-        "std-b67" (18)
+        "std-b67" (18),
+        "prophoto" (30)
         ```
 	- primaries
         ```
@@ -125,7 +128,8 @@ z_ConvertFormat(
         "st428" ("xyz") (10),
         "st431-2" ("dci-p3") (11),
         "st432-1" ("display-p3") (12),
-        "jedec-p22" (22)
+        "jedec-p22" (22),
+        "prophoto" (30)
         ```
 	- range (default RGB: `"full"`; YUV < 32-bit: `"limited"`)
         ```
@@ -149,7 +153,8 @@ Format is" `"[locS]=>[locD]"`\
 Example JPEG to MPEG2: `"center=>left"`\
 There is keyword "auto" for source chromaloc_op. When it's used the corresponding input frame property is used, if such frame property doesn't exist default chromaloc is used.\
 There is keyword "same" for destination chromaloc_op. When it's used the corresponding source value is applied for destination too so there is no conversion.
-- interlaced (default: false): whether to use interlaced mode, frame properties (if supported) aren't read
+- interlaced (default: false): whether to use interlaced mode.\
+If `use_props=1` is used and `interlaced` is not specified, frame property `_FieldBased` is read to enable/disable the interlaced mode.
 - resample_filter (default bicubic 0/0.5):
     ```
     "point",
@@ -218,6 +223,12 @@ z_ConvertFormat(pixel_type="yv12", use_props=4) # convert rgb to yuv with the yu
 ```
 
 - scene_referred (default false) - whether to use scene-referred transfer function
+
+- bit_depth: output bit depth (8, 10, 12, 14, 16, 32)\
+It doesn't have effect if `pixel_type` is defined.
+
+- chroma_subsampling: output chroma subsampling ("444", "422", "420")\
+It doesn't have effect if `pixel_type` is defined.
 
 The names of the frame properties that are read and set are: `_ChromaLocation, _ColorRange, _Matrix, _Transfer, _Primaries`, `_SARNum`, `_SARDen`.\
 The frame properties read and set the corresponding numerical index of the parameters. For example: matrix `"709"` has numerical index `1` and the frame property have value of `1`.
