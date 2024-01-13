@@ -1,5 +1,5 @@
 Function ssimulacra(clip reference, clip distorted, bool "simple", int "feature")
 {
 LoadPlugin(AviSynthPlugins64PDir + "36x/ssimulacra.dll")
-        ssimulacra(clip reference, clip distorted, bool "simple", int "feature")
+        ssimulacra(reference, distorted, simple, feature)
 }
