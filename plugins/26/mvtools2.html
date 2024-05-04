@@ -12,7 +12,7 @@
     <h2>Abstract</h2>
     <table class="n">
         <tr><td class="n"><b>Authors:      </b></td><td class="n">&nbsp;</td><td class="n">Manao, Tsp, TSchniede, SEt, Fizick (Alexander Balakhnin), Vit, Firesledge, pinterf</td></tr>
-        <tr><td class="n"><b>Version:      </b></td><td class="n">&nbsp;</td><td class="n">2.7.45</td></tr>
+        <tr><td class="n"><b>Version:      </b></td><td class="n">&nbsp;</td><td class="n">2.7.46</td></tr>
         <tr><td class="n"><b>git:          </b></td><td class="n">&nbsp;</td><td class="n"><a href="https://github.com/pinterf/mvtools/tree/mvtools-pfmod">https://github.com/pinterf/mvtools/tree/mvtools-pfmod</a></td></tr>
         <tr><td class="n"><b>Forum:        </b></td><td class="n">&nbsp;</td><td class="n"><a href="https://forum.doom9.org/showthread.php?t=173356">https://forum.doom9.org/showthread.php?t=173356</a></td></tr>
         <tr><td class="n"><b>Base versions:</b></td><td class="n">&nbsp;</td><td class="n">2.6.0.5 + 2.5.11.22</td></tr>
@@ -21,7 +21,7 @@
         <tr><td class="n"><b>Requirements: </b></td><td class="n">&nbsp;</td><td class="n">YV12, YV16, YV24 or YUY2, Y, YUV420P10-16, YUV422P10-16, YUV444P10-16 for finding vectors</td></tr>
         <tr><td class="n"><b>              </b></td><td class="n">&nbsp;</td><td class="n">8-32 bit Y, YUV 420, 422, 444 and planar RGB for MSuper, MCompensate and MDegrains and MFlowXX family</td></tr>
         <tr><td class="n"><b>License:      </b></td><td class="n">&nbsp;</td><td class="n">GPL</td></tr>
-        
+
     </table>
 
     <h2>Table of contents</h2>
@@ -113,7 +113,7 @@
         with recent Avisynth Plus versions.
         Since 2.7.40 almost all 8-32 bit Y, YUV and planar RGB colorspaces are supported for many filters.
         Except that for motion vector search only 8-16 bit Y or YUV clips are supported.
-        
+
         Use color format conversion and try using (smart) bob-deinterlace for
         interlaced video (<code>SeparateFields</code> may works too with or without
         <code>SelectEven</code>/<code>SelectOdd</code>).
@@ -728,25 +728,28 @@
         <code>SelectEvery(delta*2, n)</code>.
     </p>
     <p class="var">mt</p>
-    <p>Enables internal multi-threading (through avstp.dll). default is true
-       When avstp.dll is not present, parameter is ineffective. 
+    <p>
+        Enables internal multi-threading (through avstp.dll). default is true
+        When avstp.dll is not present, parameter is ineffective.
     </p>
-    <p>Important note!<br>
-       Parameter mt=true is giving a bit worse and not 100% similar result as mt=false.
-       This is _not_ Avisynth's multithreading, this is the filter's internal one.<br>
-       For speedup you can always use Avisynth's mt support (see Prefetch) and 
-       delete avstp.dll or set mt=false if you still need avstp.dll for other tasks.<br>
-       When mt = true and avstp.dll is found then internal multithreading is active.
-       Internal mt is processing the X*Y sized motion block matrix in "slices", where 
-       slices are still matrixes with with a smaller vertical size. The original matrix 
-       is divided vertically to 2, 3, ... (depends on processor count) units.
-       As and example: let's suppose we have two threads. One thread is processing
-       blocks with y coordinates from 0 to height/2-1 (=top half), and the other thread from 
-       height/2 to height-1 (bottom half).
-       Unfortunately - for algorithmical reasons - this speedup results in different output as
-       the single-thread case due to the fact that the unit boundaries are handled specially.
-       A non-multithreaded approach is processing the whole frame in a single run, in one thread, having 
-       only 2 (namely the top and bottom lines) boundary, while the N-thread version has N*2 boundary.
+    <p>
+        Important note!<br />
+        Parameter mt=true is giving a bit worse and not 100% similar result as mt=false.
+        This is _not_ Avisynth's multithreading, this is the filter's internal one.<br />
+        For speedup you can always use Avisynth's mt support (see Prefetch) and
+        delete avstp.dll or set mt=false if you still need avstp.dll for other tasks.<br />
+        When mt = true and avstp.dll is found then internal multithreading is active.
+        Internal mt is processing the X*Y sized motion block matrix in "slices", where
+        slices are still matrixes with with a smaller vertical size. The original matrix
+        is divided vertically to 2, 3, ... (depends on processor count) units.
+        As and example: let's suppose we have two threads. One thread is processing
+        blocks with y coordinates from 0 to height/2-1 (=top half), and the other thread from
+        height/2 to height-1 (bottom half).
+        Unfortunately - for algorithmical reasons - this speedup results in different output as
+        the single-thread case due to the fact that the unit boundaries are handled specially.
+        A non-multithreaded approach is processing the whole frame in a single run, in one thread, having
+        only 2 (namely the top and bottom lines) boundary, while the N-thread version has N*2 boundary.
+    </p>
     <p class="var">scaleCSAD</p>
     <p>
         Fine tune chroma part weight in SAD calculation (since 2.7.18.22)<br />
@@ -1672,11 +1675,11 @@
         from the SSETools plugin, to prevent some artifacts).
         Value is 0 to 255. 255 does nothing. Other values are scaled proportionally for the given bit depth.
         From 2.7.42 version the type of parameter is float instead of integer. This allows more granurality
-        at 10+ bits. 
+        at 10+ bits.
         Calculation:
-          real_limit = limit * (2^(bit_depth - 8)) for 8-16 bits (=limit for 8 bit videos)
+        real_limit = limit * (2^(bit_depth - 8)) for 8-16 bits (=limit for 8 bit videos)
         and
-          real_limit = limit / 255.0 for 32 bit float formats.
+        real_limit = limit / 255.0 for 32 bit float formats.
     </p>
     <p class="var">limitC</p>
     <p>Maximal change of pixel chroma.</p>
@@ -2212,45 +2215,80 @@ Planar2Interleaved() # convert back to normal interleave YUY2
 
     <h2><a name="revisions"></a>VI) Revisions</h2>
 
+
+    <p>2.7.46 (20240503)</p>
+    <ul>
+        <li>Recheck and fix build processes for various compilers<br />
+            (Visual Studio MSVC v143, v141_xp; Intel C++ Compiler 2024.1 ICX, 19.2 ICL; ClangCL; gcc mingw64)
+        </li>
+        <li>Fix (#56): bug in Cross search</li>
+        <li>(unreleased 2.7.46 (20230208) test build in https://github.com/pinterf/mvtools/issues/58)</li>
+        <li>Fix (#58): MFlowFPS memory leak</li>
+        <li>Fix (#49): lsad 0 caused division-by-zero crash</li>
+        <li>Optimization: MDegrain1-6 8 bit: Add avx2 code path (already was in code but disabled, now go live)
+        <li>Optimization: MDegrainN 10-16 bits: SSE4.1 code path (was: C only)</li>
+        <li>Optimization: VerticalBicubic interpolation SSE4.1 version besides SSE2</li>
+        <li>Fix: MRestoreVect was trying to create unaligned frame (crash)</li>
+        <li>(#48) Project files/solution: Intel C++ Compiler 2021 (icx) and 19.2 (icl classic) support on Windows</li>
+        <li>Source internals: MDegrain: for block size of 4, read exactly 4 bytes instead of 8. (in extreme cases it would read past a valid memory area)</li>
+        <li>MDegrain1-6 8 bit: Add avx2 code path (already was in code but disabled, now go live)</li>
+        <li>Possible LLVM-build speedup by not using _mm256_zeroupper in avx2,<br />
+            compilers do that automatically. LLVM builds, because it unoptimizedly saved and restored _all_ ymm registers (slow!)
+        </li>
+    </ul>
+
     <p>2.7.45 (20210608)</p>
     <ul>
-        <li>Fix: change parameter 'ml' from int to float in MBlockFPS.<br />
-            (Other filters with 'ml' are O.K.: MMask, MFlowInter, MFlowFPS are using float.)</li>
-        <li>Fix MBlockFPS html doc as well, which mentions 'thres' instead of 'ml'<br />
-            Add mode 5-8 to MBlockFPS docs</li>
+        <li>
+            Fix: change parameter 'ml' from int to float in MBlockFPS.<br />
+            (Other filters with 'ml' are O.K.: MMask, MFlowInter, MFlowFPS are using float.)
+        </li>
+        <li>
+            Fix MBlockFPS html doc as well, which mentions 'thres' instead of 'ml'<br />
+            Add mode 5-8 to MBlockFPS docs
+        </li>
         <li>move change log from readme to CHANGELOG.md</li>
-        <li>Code change/speedup: MSuper: rfilter=0 and 1<br />
-          8 bit: drop old SSE code, port to SIMD intrinsics. Add SIMD to 16 bit case. Quicker, much quicker.<br />
-          (rfilter: Hierarchical levels smoothing and reducing (halving) filter)</li>
+        <li>
+            Code change/speedup: MSuper: rfilter=0 and 1<br />
+            8 bit: drop old SSE code, port to SIMD intrinsics. Add SIMD to 16 bit case. Quicker, much quicker.<br />
+            (rfilter: Hierarchical levels smoothing and reducing (halving) filter)
+        </li>
         <li>Code change/speedup: MSuper: sharp=1 for pel=2 or 4</li>
-          Bicubic resizer drop old SSE code, port to SIMD intrinsics, implement SIMD intrinsics to 16 bit case.<br />
-          No need for Bilinear.asm and Bilinear-x64.asm any more.</li>
+        Bicubic resizer drop old SSE code, port to SIMD intrinsics, implement SIMD intrinsics to 16 bit case.
+        <br />
+        No need for Bilinear.asm and Bilinear-x64.asm any more.</li>
         <li>SATD: add 8 bit C versions (geee, there wasn't one) (as an alternative to the external asm)</li>
         <li>SAD: add internal SIMD for 8 bit SAD (SSE4.1) (as an alternative to the external asm)</li>
         <li>Overlaps: Add internal SIMD for 8 bit. (as an alternative to the external asm)</li>
-        <li>Source code:<br />
-          In def.h any existing external assembler file can be disabled. <br />
-          The primary reason for this was to quickly test the linux port, for me this was easier than bothering with asm compilation and linking.<br />
-          For non-Windows cases all of these are disabled now.<br />
-          - USE_COPYCODE_ASM (CopyCode-a.asm). Has internal alternative. Same speed.<br />
-          - USE_OVERLAPS_ASM (Overlap-a.asm). asm implements 8 bit only. Has internal SIMD alternative. About the same speed.<br />
-          - USE_SAD_ASM (sad-a.asm) asm implements 8 bit only. Note: Internal 8 bit SIMD SAD is a bit slower that these handcrafted ones.<br />
-          - USE_SATD_ASM (Pixel-a.asm) asm implements 8 bit only. Note: SATD 8 bit has no SIMD replacement yet. <br />
-          - USE_LUMA_ASM (Variance-a.asm) asm implements 8 bit only. Has internal alternative.<br />
-          - USE_FDCT88INT_ASM (fdct_mmx.asm, fdct_mmx_x64.asm) <br />
-                              Only used for 8x8 block sizes. Quick integer version instead of fftw3.<br />
-                              No internal alternative, fftw3 is used instead.<br />
-          - USE_AVSTP (do find search for avstp.dll on Windows)</li>
+        <li>
+            Source code:<br />
+            In def.h any existing external assembler file can be disabled. <br />
+            The primary reason for this was to quickly test the linux port, for me this was easier than bothering with asm compilation and linking.<br />
+            For non-Windows cases all of these are disabled now.<br />
+            - USE_COPYCODE_ASM (CopyCode-a.asm). Has internal alternative. Same speed.<br />
+            - USE_OVERLAPS_ASM (Overlap-a.asm). asm implements 8 bit only. Has internal SIMD alternative. About the same speed.<br />
+            - USE_SAD_ASM (sad-a.asm) asm implements 8 bit only. Note: Internal 8 bit SIMD SAD is a bit slower that these handcrafted ones.<br />
+            - USE_SATD_ASM (Pixel-a.asm) asm implements 8 bit only. Note: SATD 8 bit has no SIMD replacement yet. <br />
+            - USE_LUMA_ASM (Variance-a.asm) asm implements 8 bit only. Has internal alternative.<br />
+            - USE_FDCT88INT_ASM (fdct_mmx.asm, fdct_mmx_x64.asm) <br />
+            Only used for 8x8 block sizes. Quick integer version instead of fftw3.<br />
+            No internal alternative, fftw3 is used instead.<br />
+            - USE_AVSTP (do find search for avstp.dll on Windows)
+        </li>
         <li>Minor and not so minor cosmetics, mainly for GCC.</li>
         <li>Add Cmake build system.</li>
-        <li>MvTools2: Linux/GCC port (needs sse4.1), Dewindowsification.<br />
-          fftw3: MAnalyze dct modes that require fftw3 library will search for libfftw3f_threads.so.3<br />
-          Install either libfftw3-single3 (deb) or fftw-devel (rpm) package");<br />
-          e.g. sudo apt-get update<br />
-               sudo apt-get install libfftw3-dev</li>
-        <li>Not done (will be done in a second phase):<br />
-          Add back some external asms for linux build. For 8 bit SAD and SATD mainly.<br />
-          Linux port is still Intel-only, though every part has C alternative by now.</li>
+        <li>
+            MvTools2: Linux/GCC port (needs sse4.1), Dewindowsification.<br />
+            fftw3: MAnalyze dct modes that require fftw3 library will search for libfftw3f_threads.so.3<br />
+            Install either libfftw3-single3 (deb) or fftw-devel (rpm) package");<br />
+            e.g. sudo apt-get update<br />
+            sudo apt-get install libfftw3-dev
+        </li>
+        <li>
+            Not done (will be done in a second phase):<br />
+            Add back some external asms for linux build. For 8 bit SAD and SATD mainly.<br />
+            Linux port is still Intel-only, though every part has C alternative by now.
+        </li>
         <li>Separate the 3 projects (mvtools2, depan, depan_estimate).</li>
         <li>DePan and DePanEstimate: Linux port</li>
         <li>DePanEstimate: add fft_threads variable (default 1) for fftw3 mode (experimental)</li>
@@ -2258,15 +2296,19 @@ Planar2Interleaved() # convert back to normal interleave YUY2
         <li>mingw build fixes</li>
         <li>Add build instructions to README.md</li>
         <li>experimental avx2 for MDegrain1..6 (was not worth speedwise on my i7700 - memory transfer is bottleneck)</li>
-        <li>experimental 32-bit float internal Overlaps result buffer for MDegrain1..6<br />
+        <li>
+            experimental 32-bit float internal Overlaps result buffer for MDegrain1..6<br />
             whether if it is any quicker/more exact than the integer-scaled arithmetic version<br />
-            (when out32=true, do not use, it is only for development/test, maybe will be removed in the future)</li>
+            (when out32=true, do not use, it is only for development/test, maybe will be removed in the future)
+        </li>
     </ul>
 
     <p>2.7.44 (20201214)</p>
     <ul>
-        <li>MAnalyze: fix motion vector generation inconsistencies across multiple runs.<br />
-            Note: when internal multithreading is used (avstp + mt=true), inconsistencies will still occur by design.</li>
+        <li>
+            MAnalyze: fix motion vector generation inconsistencies across multiple runs.<br />
+            Note: when internal multithreading is used (avstp + mt=true), inconsistencies will still occur by design.
+        </li>
     </ul>
 
     <p>2.7.43 (20200602)</p>
@@ -2281,22 +2323,26 @@ Planar2Interleaved() # convert back to normal interleave YUY2
     </ul>
     <p>2.7.41/b (20200430)</p>
     <ul>
-        <li>(no change in MVTools2, but fixes in Depan.DLL: DepanInterleave and Depan. See their readme)<br />
+        <li>
+            (no change in MVTools2, but fixes in Depan.DLL: DepanInterleave and Depan. See their readme)<br />
         </li>
     </ul>
     <p>2.7.41 (20190502)</p>
     <ul>
         <li>Fix: regression since 2.7.35: MSuper chroma for non-planar YUY2 (Thanks to mkauf)</li>
         <li>Project moved to Visual Studio 2019, v141_xp and v142 toolset</li>
-        <li>(New: DepanStabilize: planar RGB support (8-16bit) - see also there<br />
-            Generate motion vectors with mvtools MDepan, use it for DepanStabilize. Input clip can be planar RGB.)</li>
+        <li>
+            (New: DepanStabilize: planar RGB support (8-16bit) - see also there<br />
+            Generate motion vectors with mvtools MDepan, use it for DepanStabilize. Input clip can be planar RGB.)
+        </li>
     </ul>
 
     <p>2.7.40 (20190212)</p>
     <ul>
         <li>Fix: MFlowInter possible crash with specific parameter and colorspace settings.</li>
         <li>Fix: MFlowInter possible overflow at 16 bit clips (artifacts)</li>
-        <li>MFlow, MFlowInter, MFlowFPS, MFlowBlur, MBlockFPS: support all 8-16 and 32 bit float Y, YUV (4:2:0, 4:2:2, 4:4:4) and planar RGB color spaces.<br />
+        <li>
+            MFlow, MFlowInter, MFlowFPS, MFlowBlur, MBlockFPS: support all 8-16 and 32 bit float Y, YUV (4:2:0, 4:2:2, 4:4:4) and planar RGB color spaces.<br />
             Input clip (and super) format now is fully independent from vector clip's base format (subsampling had to be the same before)<br />
             E.g. make motion vector clips from a YV12 source and apply them on a 8-32 bit 4:4:4 input
         </li>
@@ -2305,7 +2351,8 @@ Planar2Interleaved() # convert back to normal interleave YUY2
     <p>2.7.39 (20190102)</p>
     <ul>
         <li>MSuper: fix 16 bits, pel=2, sharp=2, which caused bottom section artifacts for MDegrains for 8 bit vector origin and 16 bit real clip</li>
-        <li>MDegrain1-6,N: Enhanced:<br />
+        <li>
+            MDegrain1-6,N: Enhanced:<br />
             Input clip (and super) format now is fully independent from vector clip's base format (subsampling had to be the same before)<br />
             E.g. make motion vector clips from a YV12 source and apply them on a 8-32 bit 4:4:4 input
         </li>
