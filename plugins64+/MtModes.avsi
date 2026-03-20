@@ -225,6 +225,9 @@ SetFilterMTMode("DeblendLogo",1)
 SetFilterMTMode("AnalyzeLogo",1)
 SetFilterMTMode("DistanceFunction",1)
 SetFilterMTMode("ExInpaint",1)
+#SetFilterMTMode("AutoAdjust", 3,true)
+SetFilterMTMode("DePanEstimate", 2)
+SetFilterMTMode("DePan", 2)
  
 #########################################
 #keep it the last line please
