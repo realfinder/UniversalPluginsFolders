@@ -144,6 +144,7 @@ Import(AviSynthPlugins64Dir + "25/STpresso.avsi")
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/ChubbyRain2.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/BalanceBorders.avsi") : nop()
 VersionNumber() < 2.60 ? Import(AviSynthPlugins64Dir + "25/Khameleon.avsi") : Import(AviSynthPlugins64Dir + "26/Khameleon_mod.avsi")
+VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/SRFComb.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPlugins64Dir + "25/25b/avstp/avstp.dll")

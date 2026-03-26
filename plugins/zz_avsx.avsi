@@ -201,6 +201,7 @@ AvsPlusVersionNumber < 3682 ? nop() : Import(AviSynthPluginsDir + "avsplus/Chrom
 AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/FilmGrain+.avsi")
 AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/sBordersFill.avsi")
 VersionNumber() < 2.60 ? Import(AviSynthPluginsDir + "25/Khameleon.avsi") : Import(AviSynthPluginsDir + "26/Khameleon_mod.avsi")
+VersionNumber() < 2.60 ? nop() : Import(AviSynthPluginsDir + "26/SRFComb.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")
