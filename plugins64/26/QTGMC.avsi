@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------#
 #                                                                   #
 #                     QTGMC 3.33 by Vit, 2012                       #
-#     QTGMC 3.385 2023 mod by A.SONY, based on v3.33d by Dogway     #
+#     QTGMC 3.388 2026 mod by A.SONY, based on v3.33d by Dogway     #
 #                                                                   #
 #   A high quality deinterlacer using motion-compensated temporal   #
 #  smoothing, with a range of features for quality and convenience  #
@@ -12,6 +12,15 @@
 # Full documentation is in the 'QTGMC' html file that may comes with this script, or even better see avisynth wiki
 #
 # --- LATEST CHANGES ---
+#
+# v3.388s
+# - add int pscrn to change pscrn in both NNEDI3CL and NNEDI3
+#
+# v3.387s
+# - add bool xflateMaTo to use masktools2 mt_ for deflate and inflate
+#
+# v3.386s
+# - Fix EEDI3CL
 #
 # v3.385s
 # - added new EdiMode modes:- NNEDI3CL, EEDI3CL, EEDI3CL+NNEDI3CL, BWDIF+NNEDI3CL and BWDIF+EEDI3CL
@@ -209,7 +218,7 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
                     float "NoiseRestore", string "NoiseDeint", bool "StabilizeNoise", int "InputType", float "ProgSADMask", int "FPSDivisor", \
                     int "ShutterBlur", float "ShutterAngleSrc", float "ShutterAngleOut", int "SBlurLimit", bool "Border", bool "Precise", string "Tuning", \
                     bool "ShowSettings", string "GlobalNames", string "PrevGlobals", int "ForceTR", \
-                    val "BT", val "DetailRestore", val "MotionBlur", val "MBlurLimit", val "NoiseBypass", float "Str", float "Amp", bool "TV_range", int "useEdiExt", int "DftDither", bool "lsbd", bool "lsb", bool "n16", bool "keep_tv_range", String "device_type", int "device_id", bool "n16d", bool "FastMA", bool "ESearchP", bool "Refinemotion" )
+                    val "BT", val "DetailRestore", val "MotionBlur", val "MBlurLimit", val "NoiseBypass", float "Str", float "Amp", bool "TV_range", int "useEdiExt", int "DftDither", bool "lsbd", bool "lsb", bool "n16", bool "keep_tv_range", String "device_type", int "device_id", bool "n16d", bool "FastMA", bool "ESearchP", bool "Refinemotion", bool "xflateMaTo", int "pscrn" )
 {
 	# EdiMode="RepcYadif"/"cYadif" require the Yadif plugin, which doesn't autoload. Typically the calling script would load it.
 
@@ -234,6 +243,7 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
 	
 	# Dogways Added Defaults
 	RefineMotion = default( RefineMotion,        false    )
+	xflateMaTo   = default( xflateMaTo, false)
 	lsbd         = default( lsbd, false)
 	lsb          = default( lsb, false)
 
@@ -555,7 +565,7 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
 	                               (ChromaMotion ? ts1.Merge( ts2, 0.357 ).Merge( bobbed, 0.125 ) : ts1.MergeLuma( ts2, 0.357 ).MergeLuma( bobbed, 0.125 ))
 
 	# Remove areas of difference between temporal blurred motion search clip and bob that are not due to bob-shimmer - removes general motion blur
-	repair0 = (IsClip(srchClip) || Rep0 == 0) ? binomial0 : binomial0.QTGMC_KeepOnlyBobShimmerFixes( bobbed, Rep0, (RepChroma && ChromaMotion) )
+	repair0 = (IsClip(srchClip) || Rep0 == 0) ? binomial0 : binomial0.QTGMC_KeepOnlyBobShimmerFixes( bobbed, Rep0, (RepChroma && ChromaMotion), xflateMaTo )
 
 	# Blur image and soften edges to assist in motion matching of edge blocks. Blocks are matched by SAD (sum of absolute differences between blocks), but even
 	# a slight change in an edge from frame to frame will give a high SAD due to the higher contrast of edges
@@ -847,7 +857,7 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
 
 	# Create interpolated image as starting point for output
 	edi1 = defined(EdiExt) ? EdiExt.PointResize( w,h, 0,(EdiExt.Height()-h)/2, -0,h+epsilon ) : \
-	                         QTGMC_Interpolate( ediInput, InputType, EdiMode, NNSize, NNeurons, EdiQual, EdiMaxD, EdiThreads, bobbed, ChromaEdi )
+	                         QTGMC_Interpolate( ediInput, InputType, EdiMode, NNSize, NNeurons, EdiQual, EdiMaxD, EdiThreads, pscrn, bobbed, ChromaEdi )
 
 	# >>>> Switch to planar YUY2 during next step - remains planar until very end of script except blurring for back blending & SVThin
 
@@ -890,14 +900,14 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
 	                         degrain1.Merge( degrain2, 0.2 ).Merge( edi, 0.0625 )
 
 	# Remove areas of difference between smoothed image and interpolated image that are not bob-shimmer fixes: repairs residual motion blur from temporal smooth
-	repair1 = (Rep1 == 0) ? binomial1 : binomial1.QTGMC_KeepOnlyBobShimmerFixes( edi, Rep1, RepChroma )
+	repair1 = (Rep1 == 0) ? binomial1 : binomial1.QTGMC_KeepOnlyBobShimmerFixes( edi, Rep1, RepChroma, xflateMaTo )
 
 	# Apply source match - use difference between output and source to succesively refine output [extracted to function to clarify main code path]
 	match = (SourceMatch == 0) ? repair1 : \
 	                             repair1.QTGMC_ApplySourceMatch( InputType, ediInput, bVec1,fVec1, bVec2,fVec2, SubPel, SubPelInterp, hpad, vpad, \
 	                                                             ThSAD1, ThSCD1, ThSCD2, SourceMatch, MatchTR1, MatchEdi, MatchNNSize, MatchNNeurons, \
 	                                                             MatchEdiQual, MatchEdiMaxD, MatchTR2, MatchEdi2, MatchNNSize2, MatchNNeurons2, MatchEdiQual2, \
-	                                                             MatchEdiMaxD2, MatchEnhance, EdiThreads, lsb, n16, bomt )
+	                                                             MatchEdiMaxD2, MatchEnhance, EdiThreads, lsb, n16, pscrn, bomt )
 
 	# Lossless=2 - after preparing an interpolated, de-shimmered clip, restore the original source fields into it and clean up any artefacts.
 	# This mode will not give a true lossless result because the resharpening and final temporal smooth are still to come, but it will add further detail.
@@ -955,7 +965,7 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
 	stable  = (TR2 > 0) ? lsb ? stable.ditherpost(mode=6, slice=false) : n16 ? stable.ConvertTo8bit(dither=1) : stable : stable
 
 	# Remove areas of difference between final output & basic interpolated image that are not bob-shimmer fixes: repairs motion blur caused by temporal smooth
-	repair2 = (Rep2 == 0) ? stable : stable.QTGMC_KeepOnlyBobShimmerFixes( edi, Rep2, RepChroma )
+	repair2 = (Rep2 == 0) ? stable : stable.QTGMC_KeepOnlyBobShimmerFixes( edi, Rep2, RepChroma, xflateMaTo )
 
 	# Limit over-sharpening by clamping to neighboring (spatial or temporal) min/max values in original
 	# Occurs here (after final temporal smooth) if SLMode == 3,4. Allows more sharpening here, but more prone to introducing minor artefacts
@@ -1045,7 +1055,7 @@ function QTGMC( clip Input, string "Preset", int "TR0", int "TR1", int "TR2", in
 
 # Interpolate input clip using method given in EdiMode. Use Fallback or Bob as result if mode not in list. If ChromaEdi string if set then interpolate chroma
 # separately with that method (only really useful for EEDIx). The function is used as main algorithm starting point and for first two source-match stages
-function QTGMC_Interpolate( clip Input, int InputType, string EdiMode, int NNSize, int NNeurons, int EdiQual, int EdiMaxD, int EdiThreads, clip "Fallback", \
+function QTGMC_Interpolate( clip Input, int InputType, string EdiMode, int NNSize, int NNeurons, int EdiQual, int EdiMaxD, int EdiThreads, int "pscrn", clip "Fallback", \
                             string "ChromaEdi" )
 {
 	# >>>> YUY2 is interleaved here
@@ -1053,12 +1063,12 @@ function QTGMC_Interpolate( clip Input, int InputType, string EdiMode, int NNSiz
 	ChromaEdi = default( ChromaEdi, "" )
 	CEed = (ChromaEdi == "")
 	
-	NNEDI3clp = EdiMode == "NNEDI3" || EdiMode == "EEDI3+NNEDI3" || EdiMode == "BWDIF+NNEDI3" || EdiMode == "BWDIF+EEDI3" ? Input.NNEDI3( field=-2, nsize=NNSize, nns=NNeurons, qual=EdiQual, threads=EdiThreads, U=CEed,V=CEed ) : undefined
-	NNEDI3clp = EdiMode == "NNEDI3CL" || EdiMode == "EEDI3CL+NNEDI3CL" || EdiMode == "BWDIF+NNEDI3CL" || EdiMode == "BWDIF+EEDI3CL" ? Input.NNEDI3CL( field=-2, nsize=NNSize, nns=NNeurons, qual=EdiQual, planes=!CEed?array(0):undefined) : NNEDI3clp
+	NNEDI3clp = EdiMode == "NNEDI3" || EdiMode == "EEDI3+NNEDI3" || EdiMode == "BWDIF+NNEDI3" || EdiMode == "BWDIF+EEDI3" ? Input.NNEDI3( field=-2, nsize=NNSize, nns=NNeurons, pscrn=pscrn, qual=EdiQual, threads=EdiThreads, U=CEed,V=CEed ) : undefined
+	NNEDI3clp = EdiMode == "NNEDI3CL" || EdiMode == "EEDI3CL+NNEDI3CL" || EdiMode == "BWDIF+NNEDI3CL" || EdiMode == "BWDIF+EEDI3CL" ? Input.NNEDI3CL( field=-2, nsize=NNSize, nns=NNeurons, pscrn=pscrn, qual=EdiQual, planes=!CEed?array(0):undefined) : NNEDI3clp
 	EEDI3clp = EdiMode == "BWDIF+EEDI3" ? isyuy2(Input) ? Input.nonyuy2clipin(true).EEDI3( field=-2, mdis=EdiMaxD, threads=EdiThreads, U=CEed,V=CEed, sclip=NNEDI3clp.nonyuy2clipin(true) ).slimit_dif2(NNEDI3clp.nonyuy2clipin(true),thr=4, U=CEed?3:2,V=CEed?3:2).nonyuy2clipout(true) : Input.EEDI3( field=-2, mdis=EdiMaxD, threads=EdiThreads, U=CEed,V=CEed, sclip=NNEDI3clp ).slimit_dif2(NNEDI3clp,thr=4,U=CEed?3:2,V=CEed?3:2) : \
 	                                      EdiMode == "EEDI3" || EdiMode == "EEDI3+NNEDI3" ? Input.EEDI3( field=-2, mdis=EdiMaxD, threads=EdiThreads, U=CEed,V=CEed, sclip=NNEDI3clp ) : nop()									  
-	EEDI3clp = EdiMode == "BWDIF+EEDI3CL" ? isyuy2(Input) ? Input.nonyuy2clipin(true).EEDI3CL( field=-2, mdis=EdiMaxD, threads=EdiThreads, planes=!CEed?array(0):undefined, sclip=NNEDI3clp.nonyuy2clipin(true) ).slimit_dif2(NNEDI3clp.nonyuy2clipin(true),thr=4, U=CEed?3:2,V=CEed?3:2).nonyuy2clipout(true) : Input.EEDI3CL( field=-2, mdis=EdiMaxD, threads=EdiThreads, planes=!CEed?array(0):undefined, sclip=NNEDI3clp ).slimit_dif2(NNEDI3clp,thr=4,U=CEed?3:2,V=CEed?3:2) : \
-	                                      EdiMode == "EEDI3CL" || EdiMode == "EEDI3CL+NNEDI3CL" ? Input.EEDI3CL( field=-2, mdis=EdiMaxD, threads=EdiThreads, planes=!CEed?array(0):undefined, sclip=NNEDI3clp ) : EEDI3clp
+	EEDI3clp = EdiMode == "BWDIF+EEDI3CL" ? isyuy2(Input) ? Input.nonyuy2clipin(true).EEDI3CL( field=-2, mdis=EdiMaxD, planes=!CEed?array(0):undefined, sclip=NNEDI3clp.nonyuy2clipin(true) ).slimit_dif2(NNEDI3clp.nonyuy2clipin(true),thr=4, U=CEed?3:2,V=CEed?3:2).nonyuy2clipout(true) : Input.EEDI3CL( field=-2, mdis=EdiMaxD, planes=!CEed?array(0):undefined, sclip=NNEDI3clp ).slimit_dif2(NNEDI3clp,thr=4,U=CEed?3:2,V=CEed?3:2) : \
+	                                      EdiMode == "EEDI3CL" || EdiMode == "EEDI3CL+NNEDI3CL" ? Input.EEDI3CL( field=-2, mdis=EdiMaxD, planes=!CEed?array(0):undefined, sclip=NNEDI3clp ) : EEDI3clp
 
 	interp = (InputType == 1)            	 ? Input : \
 	         (EdiMode == "NNEDI3")       	 ? NNEDI3clp : \
@@ -1097,8 +1107,10 @@ function QTGMC_Interpolate( clip Input, int InputType, string EdiMode, int NNSiz
 
 # Functions (from original TGMC) used instead of mt_xxflate with similar operation but a somewhat stronger result. Originally added for speed, they are
 # no longer faster due to improvements in masktools. Difference (visual and speed) is small so may be reverted in a later version.
-function QTGMC_inflate( clip c, int "Y", int "U", int "V" )
+function QTGMC_inflate( clip c, int "Y", int "U", int "V", bool "MaTo" )
 {
+	MaTo=default( MaTo, false )
+!MaTo ? eval("""
 	# >>>> YUY2 is planar here
 	mtY =default( Y, 3 )
 	mtU =default( U, 1 )
@@ -1107,10 +1119,13 @@ function QTGMC_inflate( clip c, int "Y", int "U", int "V" )
 	rgU = (mtU == 3) ? 20 : -1
 	rgV = (mtV == 3) ? 20 : -1
 	mt_logic( c, c.RemoveGrain( rgY, rgU, rgV ), "max", Y=mtY,U=mtU,V=mtV )
+""") : c.mt_inflate( Y=Y,U=U,V=V )
 }
 
-function QTGMC_deflate( clip c, int "Y", int "U", int "V" )
+function QTGMC_deflate( clip c, int "Y", int "U", int "V", bool "MaTo" )
 {
+	MaTo=default( MaTo, false )
+!MaTo ? eval("""
 	# >>>> YUY2 is planar here
 	mtY =default( Y, 3 )
 	mtU =default( U, 1 )
@@ -1119,12 +1134,13 @@ function QTGMC_deflate( clip c, int "Y", int "U", int "V" )
 	rgU = (mtU == 3) ? 20 : -1
 	rgV = (mtV == 3) ? 20 : -1
 	mt_logic( c, c.RemoveGrain( rgY, rgU, rgV ), "min", Y=mtY,U=mtU,V=mtV )
+""") : c.mt_deflate( Y=Y,U=U,V=V )
 }
 
 # Helper function: Compare processed clip with reference clip: only allow thin, horizontal areas of difference, i.e. bob shimmer fixes
 # Rough algorithm: Get difference, deflate vertically by a couple of pixels or so, then inflate again. Thin regions will be removed
 #                  by this process. Restore remaining areas of difference back to as they were in reference clip.
-function QTGMC_KeepOnlyBobShimmerFixes( clip Input, clip Ref, int Rep, bool Chroma )
+function QTGMC_KeepOnlyBobShimmerFixes( clip Input, clip Ref, int Rep, bool Chroma, bool MaTo )
 {
 	# >>>> YUY2 is planar here
 
@@ -1144,7 +1160,7 @@ function QTGMC_KeepOnlyBobShimmerFixes( clip Input, clip Ref, int Rep, bool Chro
 	choke1 =                        diff.  mt_inpand( mode="vertical", U=RCrg,V=RCrg )            #      x x x x x x x x    1 pixel   \
 	choke1 = (ed > 2)             ? choke1.mt_inpand( mode="vertical", U=RCrg,V=RCrg ) : choke1   #      . . . x x x x x    1 pixel    |  Deflate to remove thin areas
 	choke1 = (ed > 5)             ? choke1.mt_inpand( mode="vertical", U=RCrg,V=RCrg ) : choke1   #      . . . . . . x x    1 pixel   /
-	choke1 = (ed % 3 != 0)        ? choke1.QTGMC_deflate( U=RCrg,V=RCrg )              : choke1   #      . x x . x x . x    A bit more deflate & some horizonal effect
+	choke1 = (ed % 3 != 0)        ? choke1.QTGMC_deflate( U=RCrg,V=RCrg, MaTo=MaTo )   : choke1   #      . x x . x x . x    A bit more deflate & some horizonal effect
 	choke1 = (ed == 2 || ed == 5) ? choke1.RemoveGrain( 4              )               : choke1   #      . . x . . x . .    Local median
                                                                                                                       
 	choke1 =                        choke1.mt_expand( mode="vertical", U=RCrg,V=RCrg )            #      x x x x x x x x    1 pixel  \
@@ -1153,22 +1169,22 @@ function QTGMC_KeepOnlyBobShimmerFixes( clip Input, clip Ref, int Rep, bool Chro
 
 	# Over-dilation - extra reflation up to about 1 pixel
 	choke1 = (od == 0)            ? choke1 : \
-	         (od == 1)            ? choke1.QTGMC_inflate( U=RCrg,V=RCrg ) : \
-	         (od == 2)            ? choke1.QTGMC_inflate( U=RCrg,V=RCrg ).QTGMC_inflate( U=RCrg,V=RCrg ) : \
+	         (od == 1)            ? choke1.QTGMC_inflate( U=RCrg,V=RCrg, MaTo=MaTo ) : \
+	         (od == 2)            ? choke1.QTGMC_inflate( U=RCrg,V=RCrg, MaTo=MaTo ).QTGMC_inflate( U=RCrg,V=RCrg, MaTo=MaTo ) : \
 	                                choke1.mt_expand ( U=RCrg,V=RCrg )
 
 	# Areas of negative difference (similar to above)
 	choke2 =                        diff.  mt_expand( mode="vertical", U=RCrg,V=RCrg )         
 	choke2 = (ed > 2)             ? choke2.mt_expand( mode="vertical", U=RCrg,V=RCrg ) : choke2
 	choke2 = (ed > 5)             ? choke2.mt_expand( mode="vertical", U=RCrg,V=RCrg ) : choke2
-	choke2 = (ed % 3 != 0)        ? choke2.QTGMC_inflate( U=RCrg,V=RCrg )              : choke2
+	choke2 = (ed % 3 != 0)        ? choke2.QTGMC_inflate( U=RCrg,V=RCrg, MaTo=MaTo )   : choke2
 	choke2 = (ed == 2 || ed == 5) ? choke2.RemoveGrain( 4              )               : choke2
 	choke2 =                        choke2.mt_inpand( mode="vertical", U=RCrg,V=RCrg )
 	choke2 = (ed > 1)             ? choke2.mt_inpand( mode="vertical", U=RCrg,V=RCrg ) : choke2
 	choke2 = (ed > 4)             ? choke2.mt_inpand( mode="vertical", U=RCrg,V=RCrg ) : choke2
 	choke2 = (od == 0)            ? choke2 : \
-	         (od == 1)            ? choke2.QTGMC_deflate( U=RCrg,V=RCrg )  : \
-	         (od == 2)            ? choke2.QTGMC_deflate( U=RCrg,V=RCrg ).QTGMC_deflate( U=RCrg,V=RCrg ) : \
+	         (od == 1)            ? choke2.QTGMC_deflate( U=RCrg,V=RCrg, MaTo=MaTo )  : \
+	         (od == 2)            ? choke2.QTGMC_deflate( U=RCrg,V=RCrg, MaTo=MaTo ).QTGMC_deflate( U=RCrg,V=RCrg, MaTo=MaTo ) : \
 	                                choke2.mt_inpand ( U=RCrg,V=RCrg )
 
 	# Combine above areas to find those areas of difference to restore
@@ -1229,7 +1245,7 @@ function QTGMC_ApplySourceMatch( clip Deinterlace, int InputType, val Source, va
                                  int SubPel, int SubPelInterp, int hpad, int vpad, int ThSAD1, int ThSCD1, int ThSCD2, int SourceMatch, \
                                  int MatchTR1, string MatchEdi, int MatchNNSize, int MatchNNeurons, int MatchEdiQual, int MatchEdiMaxD,\
                                  int MatchTR2, string MatchEdi2, int MatchNNSize2, int MatchNNeurons2, int MatchEdiQual2, int MatchEdiMaxD2, \
-                                 float MatchEnhance, int EdiThreads, bool lsb, bool n16, bool "bomt" )
+                                 float MatchEnhance, int EdiThreads, bool lsb, bool n16, int "pscrn", bool "bomt" )
 {
 	# >>>> YUY2: 'Deinterlace' is planar, 'Source' is interleaved (changed to planar here for all processing except interpolation) - returns planar result
 	yuy2 = Source.IsYUY2()
@@ -1253,9 +1269,9 @@ function QTGMC_ApplySourceMatch( clip Deinterlace, int InputType, val Source, va
 	noyv16ma1Edi   = MatchEdi =="NNEDI2" || MatchEdi =="NNEDI" || MatchEdi =="cYadif" || MatchEdi =="RepcYadif"
 	noyv16ma2Edi   = MatchEdi2=="NNEDI2" || MatchEdi2=="NNEDI" || MatchEdi2=="cYadif" || MatchEdi2=="RepcYadif"
 	match1Edi      = (SourceMatch == 0) ? NOP() : \
-	!noyv16ma1Edi || !yuy2 ? match1Update.QTGMC_Interpolate( InputType, MatchEdi, MatchNNSize, MatchNNeurons, MatchEdiQual, MatchEdiMaxD, EdiThreads ) : \
+	!noyv16ma1Edi || !yuy2 ? match1Update.QTGMC_Interpolate( InputType, MatchEdi, MatchNNSize, MatchNNeurons, MatchEdiQual, MatchEdiMaxD, EdiThreads, pscrn ) : \
 	                         match1Update.nonyuy2clipout(true) \
-	                                     .QTGMC_Interpolate( InputType, MatchEdi, MatchNNSize, MatchNNeurons, MatchEdiQual, MatchEdiMaxD, EdiThreads ) \
+	                                     .QTGMC_Interpolate( InputType, MatchEdi, MatchNNSize, MatchNNeurons, MatchEdiQual, MatchEdiMaxD, EdiThreads, pscrn ) \
 	                                     .nonyuy2clipin(true)
 	match1Super    = (SourceMatch > 0 && MatchTR1 > 0) ? defined(bomt) ? match1Edi.MSuper( pel=SubPel, sharp=SubPelInterp, levels=1, hpad=hpad, vpad=vpad, mt=bomt ) : match1Edi.MSuper( pel=SubPel, sharp=SubPelInterp, levels=1, hpad=hpad, vpad=vpad ) : NOP()
 	match1Degrain1 = (SourceMatch > 0 && MatchTR1 > 0) ? eval("match1Edi.MDegrain1( match1Super, bVec1,fVec1, thSAD=ThSAD1, thSCD1=ThSCD1,thSCD2=ThSCD2" + sMDegnl + ")") : NOP()
@@ -1277,9 +1293,9 @@ function QTGMC_ApplySourceMatch( clip Deinterlace, int InputType, val Source, va
 	match2Clip     = (SourceMatch < 2 || InputType == 1) ? match1Shp : match1Shp.SeparateFields().SelectEvery( 4, 0,3 ).Weave()
 	match2Diff     = (SourceMatch > 1) ? mt_makediff( Source, match2Clip, U=3,V=3 ) : NOP()
 	match2Edi      = (SourceMatch <= 1) ? NOP() : \
-	!noyv16ma2Edi || !yuy2 ? match2Diff.QTGMC_Interpolate( InputType, MatchEdi2, MatchNNSize2, MatchNNeurons2, MatchEdiQual2, MatchEdiMaxD2, EdiThreads ) : \
+	!noyv16ma2Edi || !yuy2 ? match2Diff.QTGMC_Interpolate( InputType, MatchEdi2, MatchNNSize2, MatchNNeurons2, MatchEdiQual2, MatchEdiMaxD2, EdiThreads, pscrn ) : \
 	                         match2Diff.nonyuy2clipout(true) \
-	                                   .QTGMC_Interpolate( InputType, MatchEdi2, MatchNNSize2, MatchNNeurons2, MatchEdiQual2, MatchEdiMaxD2, EdiThreads ) \
+	                                   .QTGMC_Interpolate( InputType, MatchEdi2, MatchNNSize2, MatchNNeurons2, MatchEdiQual2, MatchEdiMaxD2, EdiThreads, pscrn ) \
 	                                   .nonyuy2clipin(true)
 	match2Super    = (SourceMatch > 1 && MatchTR2 > 0) ? defined(bomt) ? match2Edi.MSuper( pel=SubPel, sharp=SubPelInterp, levels=1, hpad=hpad, vpad=vpad, mt=bomt ) : match2Edi.MSuper( pel=SubPel, sharp=SubPelInterp, levels=1, hpad=hpad, vpad=vpad ) : NOP()
 	match2Degrain1 = (SourceMatch > 1 && MatchTR2 > 0) ? eval("match2Edi.MDegrain1( match2Super, bVec1,fVec1, thSAD=ThSAD1, thSCD1=ThSCD1,thSCD2=ThSCD2" + sMDegnl + ")") : NOP()

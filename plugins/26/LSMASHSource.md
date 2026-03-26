@@ -52,6 +52,10 @@
                 Output frame rate numerator for VFR->CFR (Variable Frame Rate to Constant Frame Rate) conversion.
                 If frame rate is set to a valid value, the conversion is achieved by padding and/or dropping frames at the specified frame rate.
                 Otherwise, output frame rate is set to a computed average frame rate and the output process is performed by actual frame-by-frame.
+
+				NOTE: You must explicitly set this if the source is an AVI file that contains null/drop frames that you would like to keep. For
+				example, AVI files captured using VirtualDub commonly contain null/drop frames that were inserted during the capture process.
+				Unless you provide this parameter, these null frames will be discarded, commonly resulting in loss of audio/video sync.
             + fpsden (default : 1)
                 Output frame rate denominator for VFR->CFR (Variable Frame Rate to Constant Frame Rate) conversion.
                 See 'fpsnum' in details.
@@ -109,7 +113,7 @@
                     "GBRAP12"
                     "GBRAP16"
                     "XYZ12LE"
-            + decoder (defalut : "")
+            + decoder (default : "")
                 Names of preferred decoder candidates separated by comma.
                 For instance, if you prefer to use the 'h264_qsv' and 'mpeg2_qsv' decoders instead of the generally
                 used 'h264' and 'mpeg2video' decoder, then specify as "h264_qsv,mpeg2_qsv". The evaluations are done
@@ -121,7 +125,10 @@
                     - 0 : Use default software decoder.
                     - 1 : Use NVIDIA CUVID acceleration for supported codec, otherwise use default software decoder.
                     - 2 : Use Intel Quick Sync Video acceleration for supported codec, otherwise use default software decoder.
-                    - 3 : Try hardware decoder in the order of CUVID->QSV. If none is available then use default software decoder.
+                    - 3 : Try hardware decoder in the order of CUVID->QSV->DXVA2->D3D11VA->VULKAN. If none is available then use default software decoder.
+                    - 4 : Use DXVA2 hardware acceleration for supported codec, otherwise use default software decoder.
+                    - 5 : Use D3D11 hardware acceleration for supported codec, otherwise use default software decoder.
+                    - 6 : Use VULKAN hardware acceleration for supported codec, otherwise use default software decoder.
                 The LWLDECODER variable can be used to see what decoder is used.
             + ff_loglevel (default : 0)
                 Set the log level in FFmpeg.
@@ -169,84 +176,87 @@
                 which is the first maximum number of channels in audio stream.
                 You can specify channel layout by combination of the name of a channel layout with separator (+) as follows.
                     - the name or mask of a single channel.
-                        FL   (0x1)         = Front Left
-                        FR   (0x2)         = Front Right
-                        FC   (0x4)         = Front Center
-                        LFE  (0x8)         = Low Frequency Effect
-                        BL   (0x10)        = Back Left
-                        BR   (0x20)        = Back Right
-                        FLC  (0x40)        = Front Left of Center
-                        FRC  (0x80)        = Front Right of Center
-                        BC   (0x100)       = Back Center
-                        SL   (0x200)       = Side Left
-                        SR   (0x400)       = Side Right
-                        TC   (0x800)       = Top Center
-                        TFL  (0x1000)      = Top Front Left
-                        TFC  (0x2000)      = Top Front Center
-                        TFR  (0x4000)      = Top Front Right
-                        TBL  (0x8000)      = Top Back Left
-                        TBC  (0x10000)     = Top Back Center
-                        TBR  (0x20000)     = Top Back Right
-                        DL   (0x20000000)  = Stereo Downmixed Left
-                        DR   (0x40000000)  = Stereo Downmixed Right
-                        WL   (0x80000000)  = Wide Left
-                        WR   (0x100000000) = Wide Right
-                        SDL  (0x200000000) = Surround Direct Left
-                        SDR  (0x400000000) = Surround Direct Right
-                        LFE2 (0x800000000) = Low Frequency Effect 2
+                        FL   (0x1)           = Front Left
+                        FR   (0x2)           = Front Right
+                        FC   (0x4)           = Front Center
+                        LFE  (0x8)           = Low Frequency Effect
+                        BL   (0x10)          = Back Left
+                        BR   (0x20)          = Back Right
+                        FLC  (0x40)          = Front Left of Center
+                        FRC  (0x80)          = Front Right of Center
+                        BC   (0x100)         = Back Center
+                        SL   (0x200)         = Side Left
+                        SR   (0x400)         = Side Right
+                        TC   (0x800)         = Top Center
+                        TFL  (0x1000)        = Top Front Left
+                        TFC  (0x2000)        = Top Front Center
+                        TFR  (0x4000)        = Top Front Right
+                        TBL  (0x8000)        = Top Back Left
+                        TBC  (0x10000)       = Top Back Center
+                        TBR  (0x20000)       = Top Back Right
+                        DL   (0x20000000)    = Stereo Downmixed Left
+                        DR   (0x40000000)    = Stereo Downmixed Right
+                        WL   (0x80000000)    = Wide Left
+                        WR   (0x100000000)   = Wide Right
+                        SDL  (0x200000000)   = Surround Direct Left
+                        SDR  (0x400000000)   = Surround Direct Right
+                        LFE2 (0x800000000)   = Low Frequency Effect 2
+                        TSL  (0x1000000000)  = Top Side Left
+                        TSR  (0x2000000000)  = Top Side Right
+                        BFC  (0x4000000000)  = Bottom Front Center
+                        BFL  (0x8000000000)  = Bottom Front Left
+                        BFR  (0x10000000000) = Bottom Front Right
                             $ Example: standard ffmpeg based 5.1ch surround layout : FL+FR+FC+LFE+BL+BR = 0x3f
                     - the name of an usual channel layout.
-                                            libav                   |    ffmpeg
-                        mono           = FC                         | FC
-                        stereo         = FL+FR                      | FL+FR
-                        2.1            = FL+FR+LFE                  | FL+FR+LFE
-                        3.0            = FL+FR+FC                   | FL+FR+FC
-                        3.0(back)      = FL+FR+BC                   | FL+FR+BC
-                        3.1            = FL+FR+FC+LFE               | FL+FR+FC+LFE
-                        4.0            = FL+FR+FC+BC                | FL+FR+FC+BC
-                        quad           = FL+FR+BL+BR                | FL+FR+BL+BR
-                        quad(side)     = FL+FR+SL+SR                | FL+FR+SL+SR
-                        5.0            = FL+FR+FC+SL+SR             | FL+FR+FC+BL+BR
-                        5.1            = FL+FR+FC+LFE+SL+SR         | FL+FR+FC+LFE+BL+BR
-                        6.0            = FL+FR+FC+BC+SL+SR          | FL+FR+FC+BC+SL+SR
-                        6.0(front)     = FL+FR+FLC+FRC+SL+SR        | FL+FR+FLC+FRC+SL+SR
-                        hexagonal      = FL+FR+FC+BL+BR+BC          | FL+FR+FC+BL+BR+BC
-                        6.1            = FL+FR+FC+LFE+BC+SL+SR      | FL+FR+FC+LFE+BC+SL+SR
-                        6.1(front)     = FL+FR+LFE+FLC+FRC+SL+SR    | FL+FR+LFE+FLC+FRC+SL+SR
-                        7.0            = FL+FR+FC+BL+BR+SL+SR       | FL+FR+FC+BL+BR+SL+SR
-                        7.0(front)     = FL+FR+FC+FLC+FRC+SL+SR     | FL+FR+FC+FLC+FRC+SL+SR
-                        7.1            = FL+FR+FC+LFE+BL+BR+SL+SR   | FL+FR+FC+LFE+BL+BR+SL+SR
-                        7.1(wide)      = FL+FR+FC+LFE+FLC+FRC+SL+SR | FL+FR+FC+LFE+BL+BR+FLC+FRC
-                        7.1(wide-side) = N/A                        | FL+FR+FC+LFE+FLC+FRC+SL+SR
-                        octagonal      = FL+FR+FC+BL+BR+BC+SL+SR    | FL+FR+FC+BL+BR+BC+SL+SR
-                        downmix        = DL+DR                      | DL+DR
-                    - a number of channels.
-                                libav                   |     ffmpeg
-                        1 = FC                          | FC
-                        2 = FL+FR                       | FL+FR
-                        3 = FL+FR+FC                    | FL+FR+LFE
-                        4 = FL+FR+BL+BR                 | FL+FR+FC+BC
-                        5 = FL+FR+FC+SL+SR              | FL+FR+FC+BL+BR
-                        6 = FL+FR+FC+LFE+SL+SR          | FL+FR+FC+LFE+BL+BR
-                        7 = FL+FR+FC+LFE+BC+SL+SR       | FL+FR+FC+LFE+BC+SL+SR
-                        8 = FL+FR+FC+LFE+BL+BR+SL+SR    | FL+FR+FC+LFE+BL+BR+SL+SR
+                                            ffmpeg
+                        mono           = FC
+                        stereo         = FL+FR
+                        2.1            = FL+FR+LFE
+                        3.0            = FL+FR+FC
+                        3.0(back)      = FL+FR+BC
+                        3.1            = FL+FR+FC+LFE
+                        4.0            = FL+FR+FC+BC
+                        quad           = FL+FR+BL+BR
+                        quad(side)     = FL+FR+SL+SR
+                        4.1            = FL+FR+FC+LFE+BC
+                        5.0            = FL+FR+FC+BL+BR
+                        5.0(side)      = FL+FR+FC+SL+SR
+                        5.1            = FL+FR+FC+LFE+BL+BR
+                        5.1(side)      = FL+FR+FC+LFE+SL+SR
+                        6.0            = FL+FR+FC+BC+SL+SR
+                        6.0(front)     = FL+FR+FLC+FRC+SL+SR
+                        hexagonal      = FL+FR+FC+BL+BR+BC
+                        6.1            = FL+FR+FC+LFE+BC+SL+SR
+                        6.1(back)      = FL+FR+FC+LFE+BL+BR+BC
+                        6.1(front)     = FL+FR+LFE+FLC+FRC+SL+SR
+                        7.0            = FL+FR+FC+BL+BR+SL+SR
+                        7.0(front)     = FL+FR+FC+FLC+FRC+SL+SR
+                        7.1            = FL+FR+FC+LFE+BL+BR+SL+SR
+                        7.1(wide)      = FL+FR+FC+LFE+BL+BR+FLC+FRC
+                        7.1(wide-side) = FL+FR+FC+LFE+FLC+FRC+SL+SR
+                        7.1(top)       = FL+FR+FC+LFE+BL+BR+TFL+TFR
+                        octagonal      = FL+FR+FC+BL+BR+BC+SL+SR
+                        cube           = FL+FR+BL+BR+TFL+TFR+TBL+TBR
+                        hexadecagonal  = FL+FR+FC+BL+BR+BC+SL+SR+TFL+TFC+TFR+TBL+TBC+TBR+WL+WR
+                        downmix        = DL+DR
+                        22.2           = FL+FR+FC+LFE+BL+BR+FLC+FRC+BC+SL+SR+TC+TFL+TFC+TFR+TBL+TBC+TBR+LFE2+TSL+TSR+BFC+BFL+BFR
                 Note: the above listed notations are the present things.
                     In the future, they might be changed.
             + rate (default : 0)
                 Audio sampling rate or sampling frequency in units of Hz.
                 The value 0 means audio stream is output to the buffer via the resampler at the maximum sampling rate in audio stream.
                 Otherwise, audio stream is output to the buffer via the resampler at specified sampling rate.
-            + decoder (defalut : "")
+            + decoder (default : "")
                 Same as 'decoder' of LSMASHVideoSource().
             + ff_loglevel (default : 0)
                 Same as 'ff_loglevel' of LSMASHVideoSource().
-            + drc_scale (defalut: 1.0)
+            + drc_scale (default: 1.0)
                 Dynamic Range Scale Factor. The factor to apply to dynamic range values from the AC-3 stream. This factor is applied exponentially.
                 0.0 : DRC disabled. Produces full range audio.
                 0.0 < drc_scale <= 1.0 : DRC enabled. Applies a fraction of the stream DRC value. Audio reproduction is between full range and full compression.
                 > 1.0 : DRC enabled. Applies drc_scale asymmetrically. Loud sounds are fully compressed. Soft sounds are enhanced.
                 If `ff_options="drc_scale=x"` is used, `drc_scale` is ignored.
-            + ff_options (defalut: "")
+            + ff_options (default: "")
                 Same as 'ff_options' of LSMASHVideoSource().
 
 ###### LWLibavVideoSource
@@ -286,6 +296,7 @@
                 If set to true, and source file requested repeat and the filter is unable to obey the request, this filter will fail explicitly to eliminate any guesswork.
                 If unspecified, and source file requested repeat and the filter is unable to obey the request, silently returning a VFR clip with a constant (but wrong) fps.
                 Note that this option is ignored when VFR->CFR conversion is enabled.
+                Note that if the source is fake interlaced, this option must be set to false.
             + dominance : (default : 0)
                 Which field, top or bottom, is displayed first.
                     - 0 : Obey source flags
@@ -296,17 +307,17 @@
                     - There is a video frame consisting of two separated field coded pictures.
             + format (default : "")
                 Same as 'format' of LSMASHVideoSource().
-            + decoder (defalut : "")
+            + decoder (default : "")
                 Same as 'decoder' of LSMASHVideoSource().
             + prefer_hw (default : 0)
                 Same as 'prefer_hw' of LSMASHVideoSource().
             + ff_loglevel (default : 0)
                 Same as 'ff_loglevel' of LSMASHVideoSource().
-            + cachedir (defalut: "")
+            + cachedir (default: "")
                 Create *.lwi file under this directory with names encoding the full path to avoid collisions. Set to "" to restore the previous behavior (storing *.lwi along side the source video file).
             + indexingpr (default: true)
                 Whether to print indexing progress to stderr.
-            + ff_options (defalut: "")
+            + ff_options (default: "")
                 Same as 'ff_options' of LSMASHVideoSource().
 
 ###### LWLibavAudioSource
@@ -323,30 +334,35 @@
                 The path of the source file.
             + stream_index (default : -1)
                 The stream index to open in the source file.
-                The value -1 means the defalut audio stream.
+                The value -1 means the default audio stream.
             + cache (default : true)
                 Same as 'cache' of LWLibavVideoSource().
             + cachefile (default : source + ".lwi")
                 Same as 'cachefile' of LWLibavVideoSource().
             + av_sync (default : false)
                 Try Audio/Visual synchronization at the first video frame of the video stream activated in the index file if set to true.
-            + layout (defalut : "")
+            + layout (default : "")
                 Same as 'layout' of LSMASHAudioSource().
             + rate (default : 0)
                 Same as 'rate' of LSMASHAudioSource().
-            + decoder (defalut : "")
+            + decoder (default : "")
                 Same as 'decoder' of LSMASHVideoSource().
             + ff_loglevel (default : 0)
                 Same as 'ff_loglevel' of LSMASHVideoSource().
-            + cachedir (defalut: "")
+            + cachedir (default: "")
                 Create *.lwi file under this directory with names encoding the full path to avoid collisions. Set to "" to restore the previous behavior (storing *.lwi along side the source video file).
             + indexingpr (default: true)
                 Whether to print indexing progress to stderr.
-            + drc_scale (defalut: 1.0)
+            + drc_scale (default: 1.0)
                 Dynamic Range Scale Factor. The factor to apply to dynamic range values from the AC-3 stream. This factor is applied exponentially.
                 0.0 : DRC disabled. Produces full range audio.
                 0.0 < drc_scale <= 1.0 : DRC enabled. Applies a fraction of the stream DRC value. Audio reproduction is between full range and full compression.
                 > 1.0 : DRC enabled. Applies drc_scale asymmetrically. Loud sounds are fully compressed. Soft sounds are enhanced.
                 If `ff_options="drc_scale=x"` is used, `drc_scale` is ignored.
-            + ff_options (defalut: "")
+            + ff_options (default: "")
                 Same as 'ff_options' of LSMASHVideoSource().
+            + fill_agaps (default: 0)
+                Simple filling of audio gaps with silence.
+                This relies on PTS so the audio must have trustworthy PTS.
+                Default `0` means this is disabled.
+                The value is in AVStream->time_base units. For e.g., `fill_agaps=5` with `time_base={1, 1000}` means `5 ms`.

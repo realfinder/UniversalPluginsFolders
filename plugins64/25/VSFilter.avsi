@@ -10,10 +10,10 @@ LoadPlugin(AviSynthPlugins64Dir + "25/VSFilter.dll")
         VobSub(clip, file)
 }
 
-function MaskSub(string "file", int "width", int "height", float "fps", int "length", int "charset", string "vfr", string "pixel_type")
+function MaskSub(string "file", int "width", int "height", float "fps", int "length", int "charset", string "vfr")
 {
 LoadPlugin(AviSynthPlugins64Dir + "25/VSFilter.dll")
-        MaskSub(file, width, height, fps, length, charset, vfr, pixel_type)
+        MaskSub(file, width, height, fps, length, charset, vfr)
 }
 
 function TextSubSwapUV(bool a)

@@ -13,7 +13,7 @@ AvsPlusVersionNumber < 3276 ? VersionNumber() < 2.60 ? LoadPlugin(AviSynthPlugin
 function MaskSub(string "file", int "width", int "height", float "fps", int "length", int "charset", string "vfr", string "pixel_type")
 {
 AvsPlusVersionNumber < 3276 ? VersionNumber() < 2.60 ? LoadPlugin(AviSynthPluginsDir + "25/VSFilter.dll") : LoadPlugin(AviSynthPluginsDir + "26/VSFilter.dll") : LoadPlugin(AviSynthPluginsDir + "avsplus/VSFilter.dll")
-        MaskSub(file, width, height, fps, length, charset, vfr, pixel_type)
+        VersionNumber() < 2.60 ? MaskSub(file, width, height, fps, length, charset, vfr) : MaskSub(file, width, height, fps, length, charset, vfr, pixel_type)
 }
 
 function TextSubSwapUV(bool a)
