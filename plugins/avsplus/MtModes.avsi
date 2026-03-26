@@ -53,7 +53,7 @@ SetFilterMTMode("mt_hysteresis",       MT_MULTI_INSTANCE)
 SetFilterMTMode("sangnom2",            MT_SERIALIZED) #can run with 2 but you should specify threads=1 then, otherwise too many threads will get created without any benefit
 SetFilterMTMode("average",             MT_NICE_FILTER) # starting from v0.94, the plugin self registers the MT mode
 SetFilterMTMode("TMaskCleaner",        MT_MULTI_INSTANCE)
-SetFilterMTMode("checkmate",           MT_NICE_FILTER)
+SetFilterMTMode("checkmate",           MT_MULTI_INSTANCE) #R.F Note: MT_NICE_FILTER crash at least with many threads
 SetFilterMTMode("Deblock",             MT_NICE_FILTER)
 SetFilterMTMode("msharpen",            MT_MULTI_INSTANCE)
 SetFilterMTMode("TColorMask",          MT_NICE_FILTER)
