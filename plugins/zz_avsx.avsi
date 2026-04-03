@@ -202,6 +202,7 @@ AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/FilmG
 AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/sBordersFill.avsi")
 VersionNumber() < 2.60 ? Import(AviSynthPluginsDir + "25/Khameleon.avsi") : Import(AviSynthPluginsDir + "26/Khameleon_mod.avsi")
 VersionNumber() < 2.60 ? nop() : Import(AviSynthPluginsDir + "26/SRFComb.avsi")
+VersionNumber() < 2.60 ? nop() : Import(AviSynthPluginsDir + "26/crt_tv_interlace.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")

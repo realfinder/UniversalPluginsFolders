@@ -1,11 +1,11 @@
 function FeedbackInput(clip input, int "id")
 {
 LoadPlugin(AviSynthPluginsDir + "26/Feedback.dll")
-        DotKillS(input, iterations)
+        FeedbackInput(input, id)
 }
 
 function FeedbackOutput(clip input, int "id")
 {
 LoadPlugin(AviSynthPluginsDir + "26/Feedback.dll")
-        DotKillS(input, iterations)
+        FeedbackOutput(input, id)
 }
