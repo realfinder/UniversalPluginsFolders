@@ -171,6 +171,7 @@ AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/Swipe
 AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/TransformsPack - Main.avsi")
 AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/TransformsPack - Models.avsi")
 AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/TransformsPack - Transfers.avsi")
+AvsPlusVersionNumber < 3661 ? nop() : Import(AviSynthPluginsDir + "avsplus/GradFun3plus.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/yugefunc.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/FillMissing.avsi")
 AvsPlusVersionNumber < 3382 ? nop() : Import(AviSynthPluginsDir + "avsplus/FrameRateConverter.avsi")

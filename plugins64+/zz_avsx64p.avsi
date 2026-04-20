@@ -105,5 +105,6 @@ hasIsVersionOrGreater ? IsVersionOrGreater(3,7,2) ? import(AviSynthPlugins64PDir
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7,2) ? import(AviSynthPlugins64PDir + "36x/BestSource.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7,2) ? import(AviSynthPlugins64PDir + "36x/libbore.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7,2) ? import(AviSynthPlugins64PDir + "36x/pixelshiftplus.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7,3) ? import(AviSynthPlugins64PDir + "36x/GradFun3plus.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7,5) ? import(AviSynthPlugins64PDir + "36x/libplacebo_Render.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7,5) ? import(AviSynthPlugins64PDir + "36x/BlindPP.avsi") : nop() : nop()
