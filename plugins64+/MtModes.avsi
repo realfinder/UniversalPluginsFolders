@@ -228,6 +228,7 @@ SetFilterMTMode("ExInpaint",1)
 #SetFilterMTMode("AutoAdjust", 3,true)
 SetFilterMTMode("DePanEstimate", 2)
 SetFilterMTMode("DePan", 2)
+SetFilterMTMode("eedi3", 2)
  
 #########################################
 #keep it the last line please

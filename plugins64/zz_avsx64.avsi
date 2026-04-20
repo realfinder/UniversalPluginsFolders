@@ -146,6 +146,10 @@ AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/BalanceBorders.a
 VersionNumber() < 2.60 ? Import(AviSynthPlugins64Dir + "25/Khameleon.avsi") : Import(AviSynthPlugins64Dir + "26/Khameleon_mod.avsi")
 VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/SRFComb.avsi")
 VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/crt_tv_interlace.avsi")
+VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/FilmGrainDLL.avsi")
+VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/DeinterlaceSwitch.avsi")
+VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/PerfPan.avsi")
+VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/Info2.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPlugins64Dir + "25/25b/avstp/avstp.dll")
