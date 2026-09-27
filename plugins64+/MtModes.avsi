@@ -230,6 +230,7 @@ SetFilterMTMode("DePanEstimate", 2)
 SetFilterMTMode("DePan", 2)
 SetFilterMTMode("eedi3", 2)
 SetFilterMTMode("DeSpot", 2)
+SetFilterMTMode("SCXvid", 2)
  
 #########################################
 #keep it the last line please
