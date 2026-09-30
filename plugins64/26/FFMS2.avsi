@@ -19,10 +19,10 @@ LoadPlugin(AviSynthPlugins64Dir + "26/ffms2.dll")
 }
 
 
-function FFAudioSource(string "source", int "track", bool "cache", string "cachefile", int "adjustdelay", int "fill_gaps", float "drc_scale", string "varprefix")
+function FFAudioSource(string "source", int "track", bool "cache", string "cachefile", int "adjustdelay", int "fill_gaps", float "drc_scale", string "varprefix", string "layout", float "center_mix", float "surround_mix", float "lfe_mix")
 {
 LoadPlugin(AviSynthPlugins64Dir + "26/ffms2.dll")
-        FFAudioSource(source, track, cache, cachefile, adjustdelay, fill_gaps, drc_scale, varprefix)
+        FFAudioSource(source, track, cache, cachefile, adjustdelay, fill_gaps, drc_scale, varprefix, layout, center_mix, surround_mix, lfe_mix)
 }
 
 function FFGetLogLevel()
@@ -47,26 +47,26 @@ function FFmpegSource2(string "source", int "vtrack", int "atrack", bool "cache"
 	string "cachefile", int "fpsnum", int "fpsden", int "threads", \
 	string "timecodes", int "seekmode", bool "overwrite", int "width", int "height", \
 	string "resizer", string "colorspace", int "rffmode", int "adjustdelay", \
-	int "fill_gaps", float "drc_scale", string "varprefix") {
+	int "fill_gaps", float "drc_scale", string "varprefix", string "layout", float "center_mix", float "surround_mix", float "lfe_mix") {
 LoadPlugin(AviSynthPlugins64Dir + "26/ffms2.dll")
 FFmpegSource2(source, vtrack, atrack, cache, \
 	cachefile, fpsnum, fpsden, threads, \
 	timecodes, seekmode, overwrite, width, height, \
 	resizer, colorspace, rffmode, adjustdelay, \
-	fill_gaps, drc_scale, varprefix)
+	fill_gaps, drc_scale, varprefix, layout, center_mix, surround_mix, lfe_mix)
 }
 
 function FFMS2(string "source", int "vtrack", int "atrack", bool "cache", \
 	string "cachefile", int "fpsnum", int "fpsden", int "threads", \
 	string "timecodes", int "seekmode", bool "overwrite", int "width", int "height", \
 	string "resizer", string "colorspace", int "rffmode", int "adjustdelay", \
-	int "fill_gaps", float "drc_scale", string "varprefix") {
+	int "fill_gaps", float "drc_scale", string "varprefix", string "layout", float "center_mix", float "surround_mix", float "lfe_mix") {
 LoadPlugin(AviSynthPlugins64Dir + "26/ffms2.dll")
 FFMS2(source, vtrack, atrack, cache, \
 	cachefile, fpsnum, fpsden, threads, \
 	timecodes, seekmode, overwrite, width, height, \
 	resizer, colorspace, rffmode, adjustdelay, \
-	fill_gaps, drc_scale, varprefix)
+	fill_gaps, drc_scale, varprefix, layout, center_mix, surround_mix, lfe_mix)
 }
 
 function FFImageSource(string "source", int "width", int "height", string "resizer", \

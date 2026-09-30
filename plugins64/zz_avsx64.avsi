@@ -132,7 +132,7 @@ AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/YAHR.avsi") : no
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "26/SmoothUV2.avsi") : nop()
 AvsPlusVersionNumber < 3276 ? VersionNumber() < 2.60 ? Import(AviSynthPlugins64Dir + "25/VSFilter.avsi") : Import(AviSynthPlugins64Dir + "26/VSFilter.avsi") : nop()
 AvsPlusVersionNumber < 3276 ? VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/FillMargins.avsi") : nop()
-AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "cplugin/stab.avsi") : nop()
+AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/stab.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/Deblock_QED_MT2.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/NonlinUSM.avsi") : nop()
 AvsPlusVersionNumber < 3382 ? Import(AviSynthPlugins64Dir + "25/pSharpen.avsi") : nop()
@@ -150,6 +150,8 @@ VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/FilmGrainDLL.
 VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/DeinterlaceSwitch.avsi")
 VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/PerfPan.avsi")
 VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/Info2.avsi")
+VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/SpotLess_Mod.avsi")
+VersionNumber() < 2.60 ? nop() : Import(AviSynthPlugins64Dir + "26/SpotRemover.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPlugins64Dir + "25/25b/avstp/avstp.dll")

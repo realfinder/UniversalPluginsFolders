@@ -1,0 +1,12 @@
+Function neo_fft_FFT3D(clip clip, float "sigma", float "beta", int_array "planes", int "y", int "u", int "v", int "a", int "bw", int "bh", int "bt", int "ow", int "oh", float "kratio", float "sharpen", float "scutoff", float "svr", float "smin", float "smax", bool "interlaced", int "wintype", int "pframe", int "px", int "py", bool "pshow", float "pcutoff", float "pfactor", float "sigma2", float "sigma3", float "sigma4", float "degrid", float "dehalo", float "hr", float "ht", int "l", int "t", int "r", int "b", int "opt", int "cache_frames", int "cache_mb", bool "mt", int "ncpu", bool "measure", string "fft_backend", int "kalman_warmup")
+{
+LoadPlugin(AviSynthPlugins64PDir + "36x/neo-fft.dll")
+        neo_fft_FFT3D(clip, sigma, beta, planes=planes, y=y, u=u, v=v, a=a, bw=bw, bh=bh, bt=bt, ow=ow, oh=oh, kratio=kratio, sharpen=sharpen, scutoff=scutoff, svr=svr, smin=smin, smax=smax, interlaced=interlaced, wintype=wintype, pframe=pframe, px=px, py=py, pshow=pshow, pcutoff=pcutoff, pfactor=pfactor, sigma2=sigma2, sigma3=sigma3, sigma4=sigma4, degrid=degrid, dehalo=dehalo, hr=hr, ht=ht, l=l, t=t, r=r, b=b, opt=opt, cache_frames=cache_frames, cache_mb=cache_mb, mt=mt, ncpu=ncpu, measure=measure, fft_backend=fft_backend, kalman_warmup=kalman_warmup)
+}
+
+
+Function neo_fft_DFTTest(clip clip, int "ftype", float "sigma", float "sigma2", float "pmin", float "pmax", int "sbsize", int "smode", int "sosize", int "tbsize", int "tmode", int "tosize", int "swin", int "twin", float "sbeta", float "tbeta", bool "zmean", float "f0beta", int_array "nlocation", float "alpha", float_array "slocation", float_array "ssx", float_array "ssy", float_array "sst", int "ssystem", int "dither", int "dither_seed", int_array "planes", int "y", int "u", int "v", int "a", int "opt", int "threads", int "fft_threads", string "fft_backend")
+{
+LoadPlugin(AviSynthPlugins64PDir + "36x/neo-fft.dll")
+        neo_fft_DFTTest(clip, ftype, sigma, sigma2, pmin, pmax, sbsize, smode, sosize, tbsize, tmode, tosize, swin, twin, sbeta, tbeta, zmean, f0beta, nlocation=nlocation, alpha=alpha, slocation=slocation, ssx=ssx, ssy=ssy, sst=sst, ssystem=ssystem, dither=dither, dither_seed=dither_seed, planes=planes, y=y, u=u, v=v, a=a, opt=opt, threads=threads, fft_threads=fft_threads, fft_backend=fft_backend)
+}
