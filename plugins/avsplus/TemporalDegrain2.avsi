@@ -9,13 +9,12 @@
 # Also note, the parameters don't need to be tweaked much.                         #
 #                                                                                  #
 # Required plugins:                                                                #
-# neo_fft3d: https://github.com/HomeOfAviSynthPlusEvolution/neo_FFT3D/releases     #
+# neo_fft: https://github.com/HomeOfAviSynthPlusEvolution/neo-fft/releases         #
 # MaskTools2: https://github.com/pinterf/masktools/releases                        #
 # MVtools2 (mt_*): https://github.com/pinterf/mvtools/releases                     #
 # rgTools (RemoveGrain,Repair): https://github.com/pinterf/RgTools/releases        #
 #                                                                                  #
 # Optional plugins:                                                                #
-# neo_dfttest: https://github.com/HomeOfAviSynthPlusEvolution/neo_DFTTest/releases #
 # FFT3DGPU: https://github.com/pinterf/FFT3dGPU/releases                           #
 # KNLMeansCL: https://github.com/pinterf/KNLMeansCL/releases                       #
 # BM3D: https://github.com/WolframRhodium/VapourSynth-BM3DCUDA/issues/7            #
@@ -34,11 +33,15 @@
 #degrainTR=1,grainLevel=0,postFFT=0
 #degrainTR=1,grainLevel=0,postFFT=1,postSigma=value between 0 and 1
 #degrainTR=1,grainLevel=1,postFFT=0
-#degrainTR=1,grainLevel=1,postFFT=1,postSigma=value between 0 and 2
+#degrainTR=1,grainLevel=1,postFFT=1,postSigma=value between 0 and 1
+#degrainTR=1,grainLevel=1,postFFT=3,postSigma=value between 1 and 2
 #degrainTR=1,grainLevel=2,postFFT=0
-#degrainTR=1,grainLevel=2,postFFT=1,postSigma=value between 0 and 2
-#degrainTR=2,grainLevel=2,postFFT=1,postSigma=value between 0 and 2
-#degrainTR=2,grainLevel=3,postFFT=1,postSigma=value between 0 and 2
+#degrainTR=1,grainLevel=2,postFFT=1,postSigma=value between 0 and 1
+#degrainTR=1,grainLevel=2,postFFT=3,postSigma=value between 1 and 2
+#degrainTR=2,grainLevel=2,postFFT=1,postSigma=value between 0 and 1
+#degrainTR=2,grainLevel=2,postFFT=3,postSigma=value between 1 and 2
+#degrainTR=2,grainLevel=3,postFFT=1,postSigma=value between 0 and 1
+#degrainTR=2,grainLevel=3,postFFT=3,postSigma=value between 1 and 2
 
 # Any degrainTR above 0 not work for very fast-paced films with many particles flying around (explosions, rain). In this case only this setting will work:
 #degrainTR=0,postFFT=1,postSigma=value between 0 and 4
@@ -175,6 +178,10 @@
 # - cleaning chroma only in one step, to ameliorate the chroma shift bug in mvtools MDegrain
 #   * performance is slighty better than in all 2.6.x, while chroma is slightly less cleaned
 #   * basically this reverts to the chroma handling of pre 2.6.0
+# Jan 14, 2024: v2.6.7
+# - forward device_type and device_id to KNLMeansCL
+# Oct 21, 2026: v2.7
+# - use neo_fft instead of neo_fft3d/FFT3dFilter and neo_dfttest/dfttest (old implmentations can still be used by setting limitFFT and postFFT +10 or +20 accrodingly)
 
 
 function TemporalDegrain2 ( clip input, int "degrainTR", int "grainLevel", bool "grainLevelSetup", int "degrainPlane", int "postFFT", float "postSigma", int "postDither", int "fftThreads", \
@@ -367,8 +374,9 @@ function TemporalDegrain2 ( clip input, int "degrainTR", int "grainLevel", bool 
   dgOvNum = Select(grainLevel, 4, 4, 4, 3, 2, 2)
   dgOv = 2*round(limitBlksz/dgOvNum*0.5)
   
-  dgLimit = (degrainTR>0 && firstStepD && limitFFT==1) ? dgO.neo_fft3d(y=LumaD?3:2, u=ChromaD?3:2, v=ChromaD?3:2, sigma=limitSigma, sigma2=dgS2, sigma3=dgS3, sigma4=dgS4, bt=3, bw=limitBlksz, bh=limitBlksz, ow=dgOv, oh=dgOv, ncpu=fftThreads ) : \
-            (degrainTR>0 && firstStepD && limitFFT==11)? dgO.FFT3DFilter(plane=degrainPlane, sigma=limitSigma, sigma2=dgS2, sigma3=dgS3, sigma4=dgS4, bt=3, bw=limitBlksz, bh=limitBlksz, ow=dgOv, oh=dgOv, ncpu=fftThreads) : \
+  dgLimit = (degrainTR>0 && firstStepD && limitFFT==1) ? dgO.neo_fft_fft3d(y=LumaD?3:2, u=ChromaD?3:2, v=ChromaD?3:2, sigma=limitSigma, sigma2=dgS2, sigma3=dgS3, sigma4=dgS4, bt=3, bw=limitBlksz, bh=limitBlksz, ow=dgOv, oh=dgOv, ncpu=fftThreads ) : \
+            (degrainTR>0 && firstStepD && limitFFT==11)? dgO.neo_fft3d(y=LumaD?3:2, u=ChromaD?3:2, v=ChromaD?3:2, sigma=limitSigma, sigma2=dgS2, sigma3=dgS3, sigma4=dgS4, bt=3, bw=limitBlksz, bh=limitBlksz, ow=dgOv, oh=dgOv, ncpu=fftThreads ) : \
+			(degrainTR>0 && firstStepD && limitFFT==21)? dgO.FFT3DFilter(plane=degrainPlane, sigma=limitSigma, sigma2=dgS2, sigma3=dgS3, sigma4=dgS4, bt=3, bw=limitBlksz, bh=limitBlksz, ow=dgOv, oh=dgOv, ncpu=fftThreads) : \
             (degrainTR>0 && firstStepD && limitFFT==2) ? dgO.FFT3DGPU(plane=degrainPlane, sigma=limitSigma, sigma2=dgS2, sigma3=dgS3, sigma4=dgS4, bt=3, bw=limitBlksz, bh=limitBlksz, ow=dgOv, oh=dgOv, precision=2, mode=1) : NOP()
   #dgLimit = grainLevel ? dgLimit.HQdn3D(4,3,6,3) : dgLimit  #for very grainy input this will remove very slightly some more noise
   
@@ -440,11 +448,13 @@ function DT_postFFT(clip in, int postFFT, int postPlane, float postSigma, int po
     dftDither = (postDither < 0) ? postDither*(-1) : 0
     
     out    = (postFFT == 0) ? (postDither > 0 ? in.ConvertBits(16) : in) : \
-             (postFFT == 1) ? neo_fft3d ( postDither > 0 ? in.ConvertBits(16) : in, y=LumaP?3:2, u=ChromaP?3:2, v=ChromaP?3:2, sigma=postSigma, bt=postTD, ncpu=fftThreads, bw=postBlkSz, bh=postBlkSz ) : \
-             (postFFT == 11)? FFT3DFilter( postDither > 0 ? in.ConvertBits(16) : in, plane=postPlane, sigma=postSigma, bt=postTD, ncpu=fftThreads, bw=postBlkSz, bh=postBlkSz ) : \
+             (postFFT == 1) ? neo_fft_fft3d ( postDither > 0 ? in.ConvertBits(16) : in, y=LumaP?3:2, u=ChromaP?3:2, v=ChromaP?3:2, sigma=postSigma, bt=postTD, ncpu=fftThreads, bw=postBlkSz, bh=postBlkSz ) : \
+             (postFFT == 11)? neo_fft3d ( postDither > 0 ? in.ConvertBits(16) : in, y=LumaP?3:2, u=ChromaP?3:2, v=ChromaP?3:2, sigma=postSigma, bt=postTD, ncpu=fftThreads, bw=postBlkSz, bh=postBlkSz ) : \
+			 (postFFT == 21)? FFT3DFilter( postDither > 0 ? in.ConvertBits(16) : in, plane=postPlane, sigma=postSigma, bt=postTD, ncpu=fftThreads, bw=postBlkSz, bh=postBlkSz ) : \
              (postFFT == 2) ? FFT3DGPU( postDither > 0 ? in.ConvertBits(16) : in, plane=postPlane, sigma=postSigma*2/3, bt=postTD, precision=2, mode=1, bw=postBlkSz, bh=postBlkSz ) : \
-             (postFFT == 3) ? neo_dfttest( postDither > 0 ? in.ConvertBits(16) : in, y=LumaP?3:2, u=ChromaP?3:2, v=ChromaP?3:2, sigma=postSigma*4, tbsize=postTD, dither=dftDither, threads=fftThreads, sbsize=postBlkSz, sosize=postBlkSz*9/12, slocation=dftsfile) : \
-             (postFFT == 13)? dfttest( postDither > 0 ? in.ConvertBits(16) : in, Y=LumaP, U=ChromaP, V=ChromaP, sigma=postSigma*4, tbsize=postTD, threads=fftThreads, dither=dftDither, sbsize=postBlkSz, sosize=postBlkSz*9/12, sfile=dftsfile ) : \
+             (postFFT == 3) ? neo_fft_dfttest( postDither > 0 ? in.ConvertBits(16) : in, y=LumaP?3:2, u=ChromaP?3:2, v=ChromaP?3:2, sigma=postSigma*4, tbsize=postTD, dither=dftDither, threads=fftThreads, sbsize=postBlkSz, sosize=postBlkSz*9/12, slocation=dftsfile) : \
+             (postFFT == 13)? neo_dfttest( postDither > 0 ? in.ConvertBits(16) : in, y=LumaP?3:2, u=ChromaP?3:2, v=ChromaP?3:2, sigma=postSigma*4, tbsize=postTD, dither=dftDither, threads=fftThreads, sbsize=postBlkSz, sosize=postBlkSz*9/12, slocation=dftsfile) : \
+			 (postFFT == 23)? dfttest( postDither > 0 ? in.ConvertBits(16) : in, Y=LumaP, U=ChromaP, V=ChromaP, sigma=postSigma*4, tbsize=postTD, threads=fftThreads, dither=dftDither, sbsize=postBlkSz, sosize=postBlkSz*9/12, sfile=dftsfile ) : \
              (postFFT == 4) ? DT_KNLMeansCL( postDither > 0 ? in.ConvertBits(16) : in, a=2, d=postTR, h=postSigma, Luma = LumaP, Chroma = ChromaP, device_type="GPU", device_id=devId) : \
              (postFFT == 5) ? DT_BM3D( postDither > 0 ? in.ConvertBits(16) : in, radius=postTR, sigma=postSigma, chroma=ChromaP, CUDA=cuda, device_id=devId ) : \
              (postFFT == -1)? HQDn3D( postDither > 0 ? in.ConvertBits(16) : in, 0,0,4,1, u=ChromaP?3:2, v=ChromaP?3:2) : NOP()
@@ -510,7 +520,7 @@ function DT_KNLMeansCL(clip input, String "device_type", int "device_id", bool "
     channels = Select( (Luma ? 1 : 0) + (Chroma ? 2 : 0), 0, "Y", "UV", "YUV" )
     strength = (Luma && Chroma) ? h*9/16 : Luma ? h : h/4.7
     temp = (Luma && Chroma) ? YToUV(uplane.BilinearResize(yw,yh), vplane.BilinearResize(yw,yh), input.ExtractY()) : Luma ? input.ExtractY() : input
-    output = KNLMeansCL(temp, a=a, d=d, h=strength, channels = channels)
+    output = KNLMeansCL(temp, a=a, d=d, h=strength, channels=channels, device_type=device_type, device_id=device_id)
     (Luma && Chroma) ? YToUV(output.ExtractU().BilinearResize(cw,ch), output.ExtractV().BilinearResize(cw,ch), output.ExtractY()) : Luma ? YToUV(uplane, vplane, output) : output
 }
 
