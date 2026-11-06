@@ -115,3 +115,4 @@ hasIsVersionOrGreater ? IsVersionOrGreater(3,7,5) ? import(AviSynthPlugins64PDir
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7,5) ? import(AviSynthPlugins64PDir + "36x/neo-fft.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7,5) ? import(AviSynthPlugins64PDir + "36x/neo-mv.avsi") : nop() : nop()
 hasIsVersionOrGreater ? IsVersionOrGreater(3,7,5) ? import(AviSynthPlugins64PDir + "36x/avszip.avsi") : nop() : nop()
+hasIsVersionOrGreater ? IsVersionOrGreater(3,7,5) ? import(AviSynthPlugins64PDir + "36x/AutoAdjust.avsi") : nop() : nop()

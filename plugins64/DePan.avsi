@@ -1,19 +1,19 @@
-function DePan(clip clip, clip "data", float "offset", int "subpixel", float "pixaspect", bool "matchfields", int "mirror", int "blur", bool "info", string "inputlog")
+function DePan(clip clip, clip "data", float "offset", int "subpixel", float "pixaspect", bool "matchfields", int "mirror", int "blur", bool "info", string "inputlog", bool "alphainvert")
 {
 LoadPlugin(AviSynthPlugins64Dir + "26/DePan.dll")
-        DePan(clip, data, offset, subpixel, pixaspect, matchfields, mirror, blur, info, inputlog)
+        DePan(clip, data, offset, subpixel, pixaspect, matchfields, mirror, blur, info, inputlog, alphainvert)
 }
 
-function DePanInterleave(clip clip, clip "data", int "prev", int "next", int "subpixel", float "pixaspect", bool "matchfields", int "mirror", int "blur", bool "info", string "inputlog")
+function DePanInterleave(clip clip, clip "data", int "prev", int "next", int "subpixel", float "pixaspect", bool "matchfields", int "mirror", int "blur", bool "info", string "inputlog", bool "alphainvert")
 {
 LoadPlugin(AviSynthPlugins64Dir + "26/DePan.dll")
-        DePanInterleave(clip, data, prev, next, subpixel, pixaspect, matchfields, mirror, blur, info, inputlog)
+        DePanInterleave(clip, data, prev, next, subpixel, pixaspect, matchfields, mirror, blur, info, inputlog, alphainvert)
 }
 
-function DePanStabilize(clip clip, clip "data", float "cutoff", float "damping", float "initzoom", bool "addzoom", int "prev", int "next", int "mirror", int "blur", int "dxmax", int "dymax", float "zoommax", float "rotmax", int "subpixel", float "pixaspect", int "fitlast", float "tzoom", bool "info", string "inputlog", int "method")
+function DePanStabilize(clip clip, clip "data", float "cutoff", float "damping", float "initzoom", bool "addzoom", int "prev", int "next", int "mirror", int "blur", int "dxmax", int "dymax", float "zoommax", float "rotmax", int "subpixel", float "pixaspect", int "fitlast", float "tzoom", bool "info", string "inputlog", int "method", bool "alphainvert")
 {
 LoadPlugin(AviSynthPlugins64Dir + "26/DePan.dll")
-        DePanStabilize(clip, data, cutoff, damping, initzoom, addzoom, prev, next, mirror, blur, dxmax, dymax, zoommax, rotmax, subpixel, pixaspect, fitlast, tzoom, info, inputlog, method)
+        DePanStabilize(clip, data, cutoff, damping, initzoom, addzoom, prev, next, mirror, blur, dxmax, dymax, zoommax, rotmax, subpixel, pixaspect, fitlast, tzoom, info, inputlog, method, alphainvert)
 }
 
 function DePanScenes(clip clip, string "inputlog", int "plane")
