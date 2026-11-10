@@ -207,6 +207,7 @@ VersionNumber() < 2.60 ? nop() : Import(AviSynthPluginsDir + "26/crt_tv_interlac
 VersionNumber() < 2.60 ? nop() : Import(AviSynthPluginsDir + "26/FilmGrainDLL.avsi")
 VersionNumber() < 2.60 ? nop() : Import(AviSynthPluginsDir + "26/PerfPan.avsi")
 VersionNumber() < 2.60 ? nop() : Import(AviSynthPluginsDir + "26/Info2.avsi")
+AvsPlusVersionNumber > 2294 ? import(AviSynthPluginsDir + "cplugin/plus/assrender.avsi") : import(AviSynthPluginsDir + "cplugin/assrender.avsi")
 
 function AVSTP_A_SONY() {
 LoadPlugin(AviSynthPluginsDir + "25/258/avstp/avstp.dll")
